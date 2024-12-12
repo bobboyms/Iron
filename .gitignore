@@ -1,0 +1,43 @@
+# Binários e objetos de compilação
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+*.a
+*.lib
+a.out
+program
+
+# Diretórios de build
+build/
+cmake-build-*/
+out/
+dist/
+program.dSYM/
+
+# Arquivos de log ou temporários
+*.log
+*.tmp
+
+# Configurações de editor/IDE
+.vscode/
+.idea/
+.antlr/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Ambiente virtual Python
+venv/
+
+# Gerados pelo ANTLR
+*.tokens
+*.interp
+
+# Caso tenha um Makefile, para ignorar o target padrão
+Makefile.in
+CMakeCache.txt
+CMakeFiles/
