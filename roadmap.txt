@@ -1,0 +1,2 @@
+sobrecarga de operadores
+DTS ou DSTs de linguagens como OCamel e haskel

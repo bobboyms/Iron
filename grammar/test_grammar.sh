@@ -28,7 +28,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-grun Iron program -gui < input.txt
+grun Iron program -gui < variables.txt
 if [ $? -ne 0 ]; then
     echo "Erro ao executar grun."
     exit 1
