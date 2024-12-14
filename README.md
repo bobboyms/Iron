@@ -45,17 +45,43 @@ Este guia irá ajudá-lo a configurar seu ambiente de desenvolvimento no macOS p
 
 O ANTLR é uma ferramenta para geração de analisadores léxicos e sintáticos a partir de gramáticas. Usaremos o ANTLR para gerar código C++ a partir de uma gramática `.g4` e também sua runtime C++.
 
-### 2.1 Instalar o ANTLR4 Tools (para gerar código)
+### 2.1 Instalar o ANTLR4 (para gerar código)
 
-1. Crie um ambiente virtual Python para isolar as dependências:
+1. Faça o download do ANTLR:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
+   cd /usr/local/lib
+   sudo curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
    ```
    
 2. Instale a ferramenta do ANTLR4 (Python):
    ```bash
-   pip install antlr4-tools
+   echo 'export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"' >> ~/.zshrc
+   echo 'alias antlr4="java -Xmx500M -cp \"/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH\" org.antlr.v4.Tool"' >> ~/.zshrc
+   echo 'alias grun="java -Xmx500M -cp \"/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH\" org.antlr.v4.gui.TestRig"' >> ~/.zshrc
+   ```
+
+   Em seguida, recarregue o arquivo de configuração do seu shell:
+   ```bash
+   source ~/.zshrc
+   ```
+
+3. Testar a instalação
+
+  ```bash
+      antlr4 Expr.g4
+      javac Expr*.java
+   ```
+
+   ```bash
+      grun Expr expr -gui < input.txt
+   ```
+
+   ```bash
+      grun Expr expr -tree < input.txt
+   ```
+
+   ```bash
+      grun Expr expr -tokens < input.txt
    ```
 
 ### 2.2 Instalar a Runtime C++ do ANTLR
@@ -100,7 +126,7 @@ O ANTLR é uma ferramenta para geração de analisadores léxicos e sintáticos 
 Sempre que você tiver um arquivo de gramática, por exemplo `MyGrammar.g4`, poderá gerar código C++ com o comando:
 
 ```bash
-antlr4 -Dlanguage=Cpp MyGrammar.g4
+antlr4 -Dlanguage=Cpp -o ./parsers Iron.g4
 ```
 
 Isso criará arquivos `.h` e `.cpp` correspondentes à sua gramática. Lembre-se de executar este comando dentro do ambiente virtual (caso esteja usando o `venv`).
@@ -264,3 +290,12 @@ Crie ou edite `.vscode/tasks.json`:
 - Se usar outro shell (bash, fish), ajuste o procedimento de acordo com o shell.
 
 Com esses passos, você deve ter um ambiente de desenvolvimento funcional no macOS, pronto para trabalhar com C++, LLVM, Clang++ e ANTLR no VSCode.
+
+
+echo 'export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"' >> ~/.zshrc
+
+
+alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+alias grun='java -Xmx500M -cp "/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH" org.antlr.v4.gui.TestRig'
+
+

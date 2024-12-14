@@ -1,0 +1,12 @@
+let xx1: int
+let nn: string
+let rr: float
+let du: double
+let bo: boolean
+
+let xxx1: int = 112
+let xnn: string = "a'oapaneção25+25-.drtÇéão"
+let xrr: float = 125.2365
+let xdu: double = 1254880022.1212554
+let xbo: boolean = false
+let xbox: boolean = true

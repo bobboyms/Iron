@@ -9,6 +9,7 @@
 *.lib
 a.out
 program
+test_program
 
 # Diretórios de build
 build/
@@ -16,6 +17,10 @@ cmake-build-*/
 out/
 dist/
 program.dSYM/
+test_program.dSYM/
+
+grammar/*.java
+grammar/*.class
 
 # Arquivos de log ou temporários
 *.log
