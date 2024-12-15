@@ -1,11 +1,1 @@
-import module.*
-import module.casa.janela
-
-public fn soma() {}
-fn soma() {}
-fn soma() {}
-fn soma() {}
-
-@main(arf) {
-    let x:int
-}
+xsd

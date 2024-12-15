@@ -17,17 +17,32 @@ public:
   virtual void enterProgram(IronParser::ProgramContext *ctx) = 0;
   virtual void exitProgram(IronParser::ProgramContext *ctx) = 0;
 
-  virtual void enterMulDiv(IronParser::MulDivContext *ctx) = 0;
-  virtual void exitMulDiv(IronParser::MulDivContext *ctx) = 0;
+  virtual void enterImportStatement(IronParser::ImportStatementContext *ctx) = 0;
+  virtual void exitImportStatement(IronParser::ImportStatementContext *ctx) = 0;
 
-  virtual void enterAddSub(IronParser::AddSubContext *ctx) = 0;
-  virtual void exitAddSub(IronParser::AddSubContext *ctx) = 0;
+  virtual void enterQualifiedName(IronParser::QualifiedNameContext *ctx) = 0;
+  virtual void exitQualifiedName(IronParser::QualifiedNameContext *ctx) = 0;
 
-  virtual void enterParens(IronParser::ParensContext *ctx) = 0;
-  virtual void exitParens(IronParser::ParensContext *ctx) = 0;
+  virtual void enterEntryPoint(IronParser::EntryPointContext *ctx) = 0;
+  virtual void exitEntryPoint(IronParser::EntryPointContext *ctx) = 0;
 
-  virtual void enterInt(IronParser::IntContext *ctx) = 0;
-  virtual void exitInt(IronParser::IntContext *ctx) = 0;
+  virtual void enterBody(IronParser::BodyContext *ctx) = 0;
+  virtual void exitBody(IronParser::BodyContext *ctx) = 0;
+
+  virtual void enterFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) = 0;
+  virtual void exitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) = 0;
+
+  virtual void enterStatement(IronParser::StatementContext *ctx) = 0;
+  virtual void exitStatement(IronParser::StatementContext *ctx) = 0;
+
+  virtual void enterVarDeclaration(IronParser::VarDeclarationContext *ctx) = 0;
+  virtual void exitVarDeclaration(IronParser::VarDeclarationContext *ctx) = 0;
+
+  virtual void enterDataFormat(IronParser::DataFormatContext *ctx) = 0;
+  virtual void exitDataFormat(IronParser::DataFormatContext *ctx) = 0;
+
+  virtual void enterVarTypes(IronParser::VarTypesContext *ctx) = 0;
+  virtual void exitVarTypes(IronParser::VarTypesContext *ctx) = 0;
 
 
 };

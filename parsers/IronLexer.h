@@ -12,8 +12,12 @@
 class  IronLexer : public antlr4::Lexer {
 public:
   enum {
-    T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, INT = 7, 
-    WS = 8
+    T__0 = 1, COLON = 2, EQ = 3, SEMICOLON = 4, DOT = 5, STAR = 6, L_CURLY = 7, 
+    R_CURLY = 8, L_BRACKET = 9, R_BRACKET = 10, L_PAREN = 11, R_PAREN = 12, 
+    FUNCTION = 13, LET = 14, PUBLIC = 15, IMPORT = 16, TYPE_INT = 17, TYPE_CHAR = 18, 
+    TYPE_FLOAT = 19, TYPE_STRING = 20, TYPE_BOOLEAN = 21, TYPE_DOUBLE = 22, 
+    REAL_NUMBER = 23, INT_NUMBER = 24, BOOLEAN_VALUE = 25, STRING_LITERAL = 26, 
+    IDENTIFIER = 27, NEWLINE = 28, WS = 29
   };
 
   explicit IronLexer(antlr4::CharStream *input);

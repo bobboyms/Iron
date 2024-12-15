@@ -19,17 +19,32 @@ public:
   virtual void enterProgram(IronParser::ProgramContext * /*ctx*/) override { }
   virtual void exitProgram(IronParser::ProgramContext * /*ctx*/) override { }
 
-  virtual void enterMulDiv(IronParser::MulDivContext * /*ctx*/) override { }
-  virtual void exitMulDiv(IronParser::MulDivContext * /*ctx*/) override { }
+  virtual void enterImportStatement(IronParser::ImportStatementContext * /*ctx*/) override { }
+  virtual void exitImportStatement(IronParser::ImportStatementContext * /*ctx*/) override { }
 
-  virtual void enterAddSub(IronParser::AddSubContext * /*ctx*/) override { }
-  virtual void exitAddSub(IronParser::AddSubContext * /*ctx*/) override { }
+  virtual void enterQualifiedName(IronParser::QualifiedNameContext * /*ctx*/) override { }
+  virtual void exitQualifiedName(IronParser::QualifiedNameContext * /*ctx*/) override { }
 
-  virtual void enterParens(IronParser::ParensContext * /*ctx*/) override { }
-  virtual void exitParens(IronParser::ParensContext * /*ctx*/) override { }
+  virtual void enterEntryPoint(IronParser::EntryPointContext * /*ctx*/) override { }
+  virtual void exitEntryPoint(IronParser::EntryPointContext * /*ctx*/) override { }
 
-  virtual void enterInt(IronParser::IntContext * /*ctx*/) override { }
-  virtual void exitInt(IronParser::IntContext * /*ctx*/) override { }
+  virtual void enterBody(IronParser::BodyContext * /*ctx*/) override { }
+  virtual void exitBody(IronParser::BodyContext * /*ctx*/) override { }
+
+  virtual void enterFunctionDeclaration(IronParser::FunctionDeclarationContext * /*ctx*/) override { }
+  virtual void exitFunctionDeclaration(IronParser::FunctionDeclarationContext * /*ctx*/) override { }
+
+  virtual void enterStatement(IronParser::StatementContext * /*ctx*/) override { }
+  virtual void exitStatement(IronParser::StatementContext * /*ctx*/) override { }
+
+  virtual void enterVarDeclaration(IronParser::VarDeclarationContext * /*ctx*/) override { }
+  virtual void exitVarDeclaration(IronParser::VarDeclarationContext * /*ctx*/) override { }
+
+  virtual void enterDataFormat(IronParser::DataFormatContext * /*ctx*/) override { }
+  virtual void exitDataFormat(IronParser::DataFormatContext * /*ctx*/) override { }
+
+  virtual void enterVarTypes(IronParser::VarTypesContext * /*ctx*/) override { }
+  virtual void exitVarTypes(IronParser::VarTypesContext * /*ctx*/) override { }
 
 
   virtual void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override { }
