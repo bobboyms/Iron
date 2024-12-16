@@ -66,8 +66,3 @@ TEST(IronLexerTests, Identifiers) {
     testToken("myVariable", IronLexer::IDENTIFIER, "myVariable");
     testToken("_var123", IronLexer::IDENTIFIER, "_var123");
 }
-
-// Testes para tokens ignorados
-TEST(IronLexerTests, IgnoredTokens) {
-    testToken("\n", IronLexer::NEWLINE, "\n");
-}

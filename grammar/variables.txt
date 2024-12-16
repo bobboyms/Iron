@@ -1,1 +1,36 @@
-xsd
+import sistema.io
+import sistema.rede.*
+
+fn soma(numero: int, numero: int=20) {
+    let numero: int
+}
+
+fn soma(numero: int, numero: int=20):int {
+    let numero: int
+}
+
+fn outro():int {
+}
+
+fn outro(soma:(a:int, b:int):int):int {
+    soma()
+}
+
+@main(args) {
+    let numero: int = 10
+    let mensagem: string = "Processando..."
+    let valido: boolean = true
+    let funcao: float = 2 * 3
+
+    let x: int
+    
+    2 * 3 / (2 + 3.12)
+
+    let result: float = 2.345 * 3.34 / 5 + (1.254 - 10)
+
+    soma(numero:10, nome:"jose")
+
+    let resultado: float = soma(numero:10, nome:"jose", idade:outro())
+
+    let funcao: float = (idade:int, peso:float):int -> 2 * 3 + soma()
+}

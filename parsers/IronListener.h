@@ -26,17 +26,50 @@ public:
   virtual void enterEntryPoint(IronParser::EntryPointContext *ctx) = 0;
   virtual void exitEntryPoint(IronParser::EntryPointContext *ctx) = 0;
 
-  virtual void enterBody(IronParser::BodyContext *ctx) = 0;
-  virtual void exitBody(IronParser::BodyContext *ctx) = 0;
+  virtual void enterStatementList(IronParser::StatementListContext *ctx) = 0;
+  virtual void exitStatementList(IronParser::StatementListContext *ctx) = 0;
 
   virtual void enterFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) = 0;
   virtual void exitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) = 0;
 
-  virtual void enterStatement(IronParser::StatementContext *ctx) = 0;
-  virtual void exitStatement(IronParser::StatementContext *ctx) = 0;
+  virtual void enterArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) = 0;
+  virtual void exitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) = 0;
+
+  virtual void enterArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) = 0;
+  virtual void exitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) = 0;
+
+  virtual void enterFunctionSignature(IronParser::FunctionSignatureContext *ctx) = 0;
+  virtual void exitFunctionSignature(IronParser::FunctionSignatureContext *ctx) = 0;
+
+  virtual void enterFunctionReturnType(IronParser::FunctionReturnTypeContext *ctx) = 0;
+  virtual void exitFunctionReturnType(IronParser::FunctionReturnTypeContext *ctx) = 0;
+
+  virtual void enterFunctionArgs(IronParser::FunctionArgsContext *ctx) = 0;
+  virtual void exitFunctionArgs(IronParser::FunctionArgsContext *ctx) = 0;
+
+  virtual void enterFunctionArg(IronParser::FunctionArgContext *ctx) = 0;
+  virtual void exitFunctionArg(IronParser::FunctionArgContext *ctx) = 0;
+
+  virtual void enterFunctionCall(IronParser::FunctionCallContext *ctx) = 0;
+  virtual void exitFunctionCall(IronParser::FunctionCallContext *ctx) = 0;
+
+  virtual void enterFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx) = 0;
+  virtual void exitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx) = 0;
+
+  virtual void enterFunctionCallArg(IronParser::FunctionCallArgContext *ctx) = 0;
+  virtual void exitFunctionCallArg(IronParser::FunctionCallArgContext *ctx) = 0;
 
   virtual void enterVarDeclaration(IronParser::VarDeclarationContext *ctx) = 0;
   virtual void exitVarDeclaration(IronParser::VarDeclarationContext *ctx) = 0;
+
+  virtual void enterAssignment(IronParser::AssignmentContext *ctx) = 0;
+  virtual void exitAssignment(IronParser::AssignmentContext *ctx) = 0;
+
+  virtual void enterExpr(IronParser::ExprContext *ctx) = 0;
+  virtual void exitExpr(IronParser::ExprContext *ctx) = 0;
+
+  virtual void enterNumber(IronParser::NumberContext *ctx) = 0;
+  virtual void exitNumber(IronParser::NumberContext *ctx) = 0;
 
   virtual void enterDataFormat(IronParser::DataFormatContext *ctx) = 0;
   virtual void exitDataFormat(IronParser::DataFormatContext *ctx) = 0;

@@ -7,15 +7,20 @@ grammar Iron;
 // Símbolos
 COLON      : ':' ;
 EQ         : '=' ;
-SEMICOLON  : ';' ;
+SEMICOLON  : ';' ; // Mantido caso seja necessário no futuro
 DOT        : '.' ;
 STAR       : '*' ;
 L_CURLY    : '{' ;
 R_CURLY    : '}' ;
-L_BRACKET  : '[' ;
-R_BRACKET  : ']' ;
 L_PAREN    : '(' ;
 R_PAREN    : ')' ;
+PLUS       : '+' ;
+MINUS      : '-' ;
+DIV        : '/' ;
+L_BRACKET: '[' ;
+R_BRACKET: ']' ;
+ARROW : '->' ;
+
 
 // Palavras reservadas
 FUNCTION   : 'fn' ;
@@ -41,7 +46,7 @@ STRING_LITERAL : '"' ~["\r\n]* '"' ;
 IDENTIFIER : [a-zA-Z_] [a-zA-Z0-9_]* ;
 
 // Ignorar espaços em branco e quebras de linha como tokens separados
-NEWLINE : '\r'? '\n' ;
+NEWLINE : '\r'? '\n' -> skip ;
 WS      : [ \t]+ -> skip ;
 
 // ---------------------------------
@@ -50,12 +55,12 @@ WS      : [ \t]+ -> skip ;
 
 // Ponto de entrada da gramática
 program
-    : importStatement* body entryPoint? NEWLINE? EOF
+    : importStatement* (functionDeclaration | entryPoint)* EOF
     ;
 
 // Declaração de importação
 importStatement
-    : IMPORT qualifiedName (DOT STAR)? NEWLINE
+    : IMPORT qualifiedName (DOT STAR)?
     ;
 
 // Nome qualificado para importação (ex.: module.casa.janela)
@@ -65,28 +70,87 @@ qualifiedName
 
 // Ponto de entrada principal
 entryPoint
-    : '@main' '(' argVar=IDENTIFIER ')' L_CURLY (statement | NEWLINE)* R_CURLY NEWLINE? EOF?
+    : '@main' '(' argVar=IDENTIFIER ')' L_CURLY statementList R_CURLY
     ;
 
-// Corpo do programa
-body
-    : (statement | functionDeclaration | NEWLINE)*
+// Lista de declarações dentro do ponto de entrada ou função
+statementList
+    : (varDeclaration | expr | functionCall)*
     ;
 
 // Declaração de função
 functionDeclaration
-    : PUBLIC? FUNCTION functionName=IDENTIFIER L_PAREN R_PAREN L_CURLY NEWLINE? R_CURLY NEWLINE?
+    : PUBLIC? FUNCTION functionName=IDENTIFIER functionSignature
+        L_CURLY statementList R_CURLY
     ;
 
-// Declarações dentro do @main
-statement
-    : varDeclaration
+//(peso:float, idade:int):float -> peso * idade
+arrowFunctionInline:
+    functionSignature ARROW expr
+;
+
+arrowFunctionBlock:
+    functionSignature ARROW
+    L_CURLY statementList R_CURLY
+;
+
+functionSignature:
+    L_PAREN functionArgs? R_PAREN functionReturnType?
+;
+
+// Tipo de retorno da função
+functionReturnType
+    : COLON varTypes
+    ;
+
+// Argumentos da função
+functionArgs
+    : functionArg (',' functionArg)*
+    ;
+
+// Argumento da função
+functionArg
+    : IDENTIFIER COLON (varTypes | functionSignature) assignment?
+    ;
+
+// Chamada de função
+functionCall
+    : IDENTIFIER L_PAREN functionCallArgs? R_PAREN
+    ;
+
+// Argumentos da chamada de função
+functionCallArgs
+    : functionCallArg (',' functionCallArg)*
+    ;
+
+// Argumento da chamada de função
+functionCallArg
+    : varName=IDENTIFIER COLON (dataFormat | functionCall | arrowFunctionInline | arrowFunctionBlock)
     ;
 
 // Declaração de variável
 varDeclaration
-    : LET varName=IDENTIFIER COLON varTypes (EQ dataFormat)? NEWLINE
+    : LET varName=IDENTIFIER COLON varTypes assignment?
     ;
+
+// Atribuição
+assignment
+    : EQ (arrowFunctionInline | arrowFunctionBlock | dataFormat | expr )
+    ;
+
+// Expressão matemática com precedência adequada
+expr:   expr ('*'|'/') expr
+    |   expr ('+'|'-') expr
+    |   number
+    |   functionCall
+    |   varName=IDENTIFIER
+    |   '(' expr ')'
+    ;
+
+number:
+     REAL_NUMBER
+    | INT_NUMBER
+;
 
 // Formato de dados para inicializadores
 dataFormat
