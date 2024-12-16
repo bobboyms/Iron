@@ -5,32 +5,38 @@ fn soma(numero: int, numero: int=20) {
     let numero: int
 }
 
-fn soma(numero: int, numero: int=20):int {
-    let numero: int
+fn soma(numero: int, outro: int=20):int {
+    let numero: int = 21
+
+    return numero - outro
 }
 
 fn outro():int {
 }
 
 fn outro(soma:(a:int, b:int):int):int {
+    return soma()
+}
+
+fn outro(soma:(a:int, b:int):int):float {
     soma()
+    return 1.25
+}
+
+fn outro(soma:(a:int, b:int):int):float {
+    let x:int = 28
+    return x
 }
 
 @main(args) {
-    let numero: int = 10
-    let mensagem: string = "Processando..."
-    let valido: boolean = true
-    let funcao: float = 2 * 3
+    let funcaoInline: fn = (idade:int, peso:float):int -> 2 * 3 + soma()
 
-    let x: int
-    
-    2 * 3 / (2 + 3.12)
+    let funcaoBlock: fn = (altura:float, calc:fn = (altura:float):float -> {
+            return altura / 1.5
+        }
+    ): float -> {
+        return calc(altura:altura)
+    }
 
-    let result: float = 2.345 * 3.34 / 5 + (1.254 - 10)
-
-    soma(numero:10, nome:"jose")
-
-    let resultado: float = soma(numero:10, nome:"jose", idade:outro())
-
-    let funcao: float = (idade:int, peso:float):int -> 2 * 3 + soma()
+    funcaoBlock(altura:1.78)
 }

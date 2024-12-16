@@ -209,7 +209,7 @@ TEST_F(IronParserTest, MissingVariableName) {
     // Testa a declaração sem o nome da variável
     std::string input = R"(
         @main(args) {
-            let : int = 10
+            let : int =  2 * 3 + soma()
         }
     )";
     SetUpParser(input);
@@ -242,7 +242,7 @@ TEST_F(IronParserTest, MissingNewline) {
     // Testa a declaração sem fechar o bloco do programa
     std::string input = R"(
         @main(args) {
-            let x: int = 10
+            int x = 10
     )"; // Falta fechar com '}'
     SetUpParser(input);
     CheckSyntaxErrors(1);
@@ -274,7 +274,7 @@ TEST_F(IronParserTest, InvalidIdentifier) {
     // Testa a declaração com identificador inválido (contém caracteres especiais)
     std::string input = R"(
         @main(args) {
-            let x$: int = 10
+            let 2x$: int = 10
         }
     )";
     SetUpParser(input);
@@ -285,7 +285,7 @@ TEST_F(IronParserTest, InvalidIdentifierWithSpecialCharacters) {
     // Testa a declaração com identificador contendo caracteres especiais
     std::string input = R"(
         @main(args) {
-            let @var: int = 10
+            let fn: int = 10
         }
     )";
     SetUpParser(input);

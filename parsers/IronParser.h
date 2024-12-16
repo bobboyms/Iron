@@ -15,20 +15,20 @@ public:
     T__0 = 1, T__1 = 2, COLON = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
     L_CURLY = 8, R_CURLY = 9, L_PAREN = 10, R_PAREN = 11, PLUS = 12, MINUS = 13, 
     DIV = 14, L_BRACKET = 15, R_BRACKET = 16, ARROW = 17, FUNCTION = 18, 
-    LET = 19, PUBLIC = 20, IMPORT = 21, TYPE_INT = 22, TYPE_CHAR = 23, TYPE_FLOAT = 24, 
-    TYPE_STRING = 25, TYPE_BOOLEAN = 26, TYPE_DOUBLE = 27, REAL_NUMBER = 28, 
-    INT_NUMBER = 29, BOOLEAN_VALUE = 30, STRING_LITERAL = 31, IDENTIFIER = 32, 
-    NEWLINE = 33, WS = 34
+    LET = 19, PUBLIC = 20, IMPORT = 21, RETURN = 22, TYPE_INT = 23, TYPE_CHAR = 24, 
+    TYPE_FLOAT = 25, TYPE_STRING = 26, TYPE_BOOLEAN = 27, TYPE_DOUBLE = 28, 
+    REAL_NUMBER = 29, INT_NUMBER = 30, BOOLEAN_VALUE = 31, STRING_LITERAL = 32, 
+    IDENTIFIER = 33, NEWLINE = 34, WS = 35
   };
 
   enum {
     RuleProgram = 0, RuleImportStatement = 1, RuleQualifiedName = 2, RuleEntryPoint = 3, 
-    RuleStatementList = 4, RuleFunctionDeclaration = 5, RuleArrowFunctionInline = 6, 
-    RuleArrowFunctionBlock = 7, RuleFunctionSignature = 8, RuleFunctionReturnType = 9, 
-    RuleFunctionArgs = 10, RuleFunctionArg = 11, RuleFunctionCall = 12, 
-    RuleFunctionCallArgs = 13, RuleFunctionCallArg = 14, RuleVarDeclaration = 15, 
-    RuleAssignment = 16, RuleExpr = 17, RuleNumber = 18, RuleDataFormat = 19, 
-    RuleVarTypes = 20
+    RuleStatementList = 4, RuleReturn = 5, RuleFunctionDeclaration = 6, 
+    RuleArrowFunctionInline = 7, RuleArrowFunctionBlock = 8, RuleFunctionSignature = 9, 
+    RuleFunctionReturnType = 10, RuleFunctionArgs = 11, RuleFunctionArg = 12, 
+    RuleFunctionCall = 13, RuleFunctionCallArgs = 14, RuleFunctionCallArg = 15, 
+    RuleVarDeclaration = 16, RuleAssignment = 17, RuleExpr = 18, RuleNumber = 19, 
+    RuleDataFormat = 20, RuleVarTypes = 21
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -53,6 +53,7 @@ public:
   class QualifiedNameContext;
   class EntryPointContext;
   class StatementListContext;
+  class ReturnContext;
   class FunctionDeclarationContext;
   class ArrowFunctionInlineContext;
   class ArrowFunctionBlockContext;
@@ -150,6 +151,8 @@ public:
     ExprContext* expr(size_t i);
     std::vector<FunctionCallContext *> functionCall();
     FunctionCallContext* functionCall(size_t i);
+    std::vector<ReturnContext *> return_();
+    ReturnContext* return_(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -157,6 +160,21 @@ public:
   };
 
   StatementListContext* statementList();
+
+  class  ReturnContext : public antlr4::ParserRuleContext {
+  public:
+    ReturnContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *RETURN();
+    ExprContext *expr();
+    FunctionCallContext *functionCall();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  ReturnContext* return_();
 
   class  FunctionDeclarationContext : public antlr4::ParserRuleContext {
   public:
@@ -307,7 +325,8 @@ public:
     FunctionCallArgContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *COLON();
-    antlr4::tree::TerminalNode *IDENTIFIER();
+    std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
+    antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
     DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
     ArrowFunctionInlineContext *arrowFunctionInline();
@@ -419,6 +438,7 @@ public:
     antlr4::tree::TerminalNode *TYPE_FLOAT();
     antlr4::tree::TerminalNode *TYPE_INT();
     antlr4::tree::TerminalNode *TYPE_STRING();
+    antlr4::tree::TerminalNode *FUNCTION();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

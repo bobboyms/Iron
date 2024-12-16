@@ -27,6 +27,7 @@ FUNCTION   : 'fn' ;
 LET        : 'let' ;
 PUBLIC     : 'public' ;
 IMPORT     : 'import' ;
+RETURN     : 'return' ;
 
 // Tipos de dados
 TYPE_INT       : 'int' ;
@@ -75,7 +76,11 @@ entryPoint
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList
-    : (varDeclaration | expr | functionCall)*
+    : (varDeclaration | expr | functionCall | return)*
+    ;
+
+return:
+    RETURN (expr | functionCall)
     ;
 
 // Declaração de função
@@ -125,7 +130,7 @@ functionCallArgs
 
 // Argumento da chamada de função
 functionCallArg
-    : varName=IDENTIFIER COLON (dataFormat | functionCall | arrowFunctionInline | arrowFunctionBlock)
+    : varName=IDENTIFIER COLON (dataFormat | functionCall | arrowFunctionInline | arrowFunctionBlock | varName=IDENTIFIER)
     ;
 
 // Declaração de variável
@@ -168,4 +173,5 @@ varTypes
     | TYPE_FLOAT
     | TYPE_INT
     | TYPE_STRING
+    | FUNCTION
     ;

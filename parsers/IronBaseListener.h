@@ -31,6 +31,9 @@ public:
   virtual void enterStatementList(IronParser::StatementListContext * /*ctx*/) override { }
   virtual void exitStatementList(IronParser::StatementListContext * /*ctx*/) override { }
 
+  virtual void enterReturn(IronParser::ReturnContext * /*ctx*/) override { }
+  virtual void exitReturn(IronParser::ReturnContext * /*ctx*/) override { }
+
   virtual void enterFunctionDeclaration(IronParser::FunctionDeclarationContext * /*ctx*/) override { }
   virtual void exitFunctionDeclaration(IronParser::FunctionDeclarationContext * /*ctx*/) override { }
 

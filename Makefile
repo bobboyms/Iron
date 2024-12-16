@@ -12,7 +12,7 @@ GTEST_LIBS = -L/opt/homebrew/lib -lgtest -lgtest_main
 TARGET = program
 SRC = main.cpp
 TEST_TARGET = test_program
-TEST_SRC = tests/test_lexer.cpp tests/test_var_parser.cpp
+TEST_SRC = tests/test_lexer.cpp tests/test_var_parser.cpp tests/test_function_parser.cpp
 # Arquivos .cpp gerados pelo ANTLR4
 
 # 
