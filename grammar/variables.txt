@@ -1,42 +1,7 @@
-import sistema.io
-import sistema.rede.*
-
 fn soma(numero: int, numero: int=20) {
     let numero: int
 }
 
-fn soma(numero: int, outro: int=20):int {
-    let numero: int = 21
-
-    return numero - outro
-}
-
-fn outro():int {
-}
-
-fn outro(soma:(a:int, b:int):int):int {
-    return soma()
-}
-
-fn outro(soma:(a:int, b:int):int):float {
-    soma()
-    return 1.25
-}
-
-fn outro(soma:(a:int, b:int):int):float {
-    let x:int = 28
-    return x
-}
-
-@main(args) {
-    let funcaoInline: fn = (idade:int, peso:float):int -> 2 * 3 + soma()
-
-    let funcaoBlock: fn = (altura:float, calc:fn = (altura:float):float -> {
-            return altura / 1.5
-        }
-    ): float -> {
-        return calc(altura:altura)
-    }
-
-    funcaoBlock(altura:1.78)
+fn soma(numero: int, numero: int=20) {
+    let numero: int
 }

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <antlr4-runtime.h>
-#include "../parsers/IronLexer.h"
-#include "../parsers/IronParser.h"
+#include "../src/parsers/IronLexer.h"
+#include "../src/parsers/IronParser.h"
 
 // Fixture para os testes do IronParser
 class IronParserTest : public ::testing::Test {

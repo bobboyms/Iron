@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <antlr4-runtime.h>
-#include "../parsers/IronLexer.h"
+#include "../src/parsers/IronLexer.h"
 
 // Função auxiliar para testar tokens individuais
 void testToken(const std::string& input, int expectedTokenType, const std::string& expectedText) {

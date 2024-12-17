@@ -1,2 +1,28 @@
 sobrecarga de operadores
 DTS ou DSTs de linguagens como OCamel e haskel
+
+if (signature) {
+        std::cout << " - Assinatura da Função: " << std::endl;
+
+        // Visita os argumentos da função
+        auto args = signature->functionArgs();
+        if (args) {
+            for (auto arg : args->functionArg()) {
+                std::cout << "   - Argumento: " << arg->IDENTIFIER()->getText()
+                          << " do tipo: " << arg->varTypes()->getText() << std::endl;
+            }
+        }
+
+        // Tipo de retorno
+        auto returnType = signature->functionReturnType();
+        if (returnType) {
+            std::cout << " - Tipo de Retorno: " << returnType->varTypes()->getText() << std::endl;
+        }
+    }
+
+    // Visita a lista de statements no corpo da função
+    auto body = ctx->statementList();
+    if (body) {
+        std::cout << " - Corpo da Função: " << std::endl;
+        //visitChildren(body);
+    }
