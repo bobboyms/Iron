@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -32,3 +35,5 @@ namespace iron {
     }
 
 } // namespace iron
+
+#endif // UTILS_H

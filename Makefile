@@ -16,7 +16,7 @@ TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp tests/test_va
 # Arquivos .cpp gerados pelo ANTLR4
 
 # 
-ANTLR_CPP = src/ScopeManager.cpp src/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp
+ANTLR_CPP = src/Colors.cpp src/ScopeManager.cpp src/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp
 
 # Alvo padrão: compilar o programa
 all: $(TARGET) $(TEST_TARGET)
@@ -28,17 +28,16 @@ $(TARGET): $(SRC)
 # Regra para compilar o programa de testes
 $(TEST_TARGET): $(TEST_SRC)
 	$(CXX) $(CXXFLAGS) $(ANTLR_INCLUDES) $(ANTLR_LIBS) $(GTEST_INCLUDES) $(GTEST_LIBS) $(TEST_SRC) $(ANTLR_CPP) -o $(TEST_TARGET)
-	./$(TEST_TARGET)
-	rm -f $(TEST_TARGET)
-
 
 # Regra para executar o programa
 run: $(TARGET)
 	./$(TARGET)
+	rm -f $(TARGET) 
 
 # Regra para executar os testes
 test: $(TEST_TARGET)
 	./$(TEST_TARGET)
+	rm -f $(TEST_TARGET)
 
 # Limpeza dos arquivos gerados
 clean:

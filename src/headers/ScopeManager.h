@@ -6,10 +6,13 @@
 #include <vector>
 #include <stack>
 #include <iostream>
+#include "IronExceptions.h"
+#include "Colors.h"
+#include "Utils.h"
 
 // Estrutura para armazenar informações sobre um símbolo
 struct SymbolInfo {
-    std::string type;
+    int type;
     std::string scope;
     int line;
 };
@@ -24,7 +27,7 @@ public:
     void end();
     std::string currentScopeName() const;
 
-    bool addSymbol(const std::string& name, const std::string& type, const std::string& scope, int line);
+    bool addSymbol(const std::string& name, const int type, const std::string& scope, int line);
     bool removeSymbol(const std::string& name);
     SymbolInfo* lookupSymbol(const std::string& name);
     void printTable() const;

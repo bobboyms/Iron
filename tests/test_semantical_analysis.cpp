@@ -2,7 +2,7 @@
 #include <memory>
 #include "../src/headers/SemanticalAnalysis.h"
 #include "../src/headers/ScopeManager.h"
-#include "../src/headers/SemanticException.h"
+#include "../src/headers/IronExceptions.h"
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
 #include "antlr4-runtime.h"
@@ -56,6 +56,18 @@ TEST_F(SemanticalAnalysisTest, ValidNestedScopes) {
 
     EXPECT_NO_THROW(runAnalysis(input));
 }
+
+TEST_F(SemanticalAnalysisTest, ValidExpr) {
+    std::string input = R"(
+        fn test() {
+            let b:int = 12
+            let x:int = b
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
 
 TEST_F(SemanticalAnalysisTest, VariableWithFn) {
     std::string input = R"(
@@ -116,4 +128,79 @@ TEST_F(SemanticalAnalysisTest, DuplicateVariableWithDifferentType) {
     EXPECT_THROW({
         runAnalysis(input);
     }, VariableRedefinitionException);
+}
+
+TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression) {
+    std::string input = R"(
+        fn teste() {
+            x
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, VariableNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, VariableNotFoundInAssignment) {
+    std::string input = R"(
+        fn teste() {
+            x = 10
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, VariableNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, VariableNotExpression) {
+    std::string input = R"(
+        fn teste() {
+            let x:int = b
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, VariableNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, ValidVariableAndExpression) {
+    std::string input = R"(
+        fn soma() {
+            let b:int = 12
+            let x:int = b
+            b + x * 25
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, ValidComplexExpression) {
+    std::string input = R"(
+        fn teste() {
+            let b:int = 12
+            let x:int = b
+            25 + x * b * x
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+
+TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression2) {
+    std::string input = R"(
+        fn teste() {
+            let b:int = 12
+            let x:int = b
+            25 + x * x * c
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, VariableNotFoundException);
 }

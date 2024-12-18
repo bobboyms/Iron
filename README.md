@@ -126,7 +126,7 @@ O ANTLR é uma ferramenta para geração de analisadores léxicos e sintáticos 
 Sempre que você tiver um arquivo de gramática, por exemplo `MyGrammar.g4`, poderá gerar código C++ com o comando:
 
 ```bash
-antlr4 -Dlanguage=Cpp -o ./parsers Iron.g4
+antlr4 -Dlanguage=Cpp -o ./src/parsers Iron.g4
 ```
 
 Isso criará arquivos `.h` e `.cpp` correspondentes à sua gramática. Lembre-se de executar este comando dentro do ambiente virtual (caso esteja usando o `venv`).

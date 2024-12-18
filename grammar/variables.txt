@@ -1,7 +1,6 @@
-fn soma(numero: int, numero: int=20) {
-    let numero: int
-}
-
-fn soma(numero: int, numero: int=20) {
-    let numero: int
+fn teste() {
+    let a:int = 25
+    let b:int = "casa"
+    let c:int = 32
+    a + b * c
 }

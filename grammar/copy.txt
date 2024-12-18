@@ -1,35 +1,10 @@
-import sistema.io
-import sistema.rede.*
 
-fn soma(numero: int,
-        numero: int=20) {
-    let numero: int
+//vai falhar e gerar VariableNotFoundException
+fun teste() {
+    x
 }
 
-public fn soma(numero: int,
-        numero: int=20):int {
-    let numero: int
-}
-
-fn outro():int {
-}
-
-
-@main(args) {
-    let numero: int = 10
-    let mensagem: string = "Processando..."
-    let valido: boolean = true
-
-    2 * 3 / (2 + 3.12) 
-
-    let result: float = 2.345 + 3.34 - 5 * 3 / 2
-
-    soma(numero:10,nome:"jose")
-
-    let resultado: string = soma(numero:10,nome:"jose",idade:outro(
-        func:outro(
-            func:outro()
-        )
-    ))
-
+//vai falhar e gerar VariableNotFoundException
+fun teste() {
+    x = 10
 }

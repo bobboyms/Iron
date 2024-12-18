@@ -76,7 +76,7 @@ entryPoint
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList
-    : (varDeclaration | expr | functionCall | return)*
+    : (varDeclaration | varAssignment | expr | functionCall | return)*
     ;
 
 return:
@@ -141,6 +141,10 @@ varDeclaration
 // Atribuição
 assignment
     : EQ (arrowFunctionInline | arrowFunctionBlock | dataFormat | expr )
+    ;
+
+varAssignment
+    : varName=IDENTIFIER EQ (arrowFunctionInline | arrowFunctionBlock | dataFormat | expr )
     ;
 
 // Expressão matemática com precedência adequada

@@ -27,8 +27,8 @@ public:
     RuleArrowFunctionInline = 7, RuleArrowFunctionBlock = 8, RuleFunctionSignature = 9, 
     RuleFunctionReturnType = 10, RuleFunctionArgs = 11, RuleFunctionArg = 12, 
     RuleFunctionCall = 13, RuleFunctionCallArgs = 14, RuleFunctionCallArg = 15, 
-    RuleVarDeclaration = 16, RuleAssignment = 17, RuleExpr = 18, RuleNumber = 19, 
-    RuleDataFormat = 20, RuleVarTypes = 21
+    RuleVarDeclaration = 16, RuleAssignment = 17, RuleVarAssignment = 18, 
+    RuleExpr = 19, RuleNumber = 20, RuleDataFormat = 21, RuleVarTypes = 22
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -66,6 +66,7 @@ public:
   class FunctionCallArgContext;
   class VarDeclarationContext;
   class AssignmentContext;
+  class VarAssignmentContext;
   class ExprContext;
   class NumberContext;
   class DataFormatContext;
@@ -147,6 +148,8 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
+    std::vector<VarAssignmentContext *> varAssignment();
+    VarAssignmentContext* varAssignment(size_t i);
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
     std::vector<FunctionCallContext *> functionCall();
@@ -373,6 +376,25 @@ public:
   };
 
   AssignmentContext* assignment();
+
+  class  VarAssignmentContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *varName = nullptr;
+    VarAssignmentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *EQ();
+    antlr4::tree::TerminalNode *IDENTIFIER();
+    ArrowFunctionInlineContext *arrowFunctionInline();
+    ArrowFunctionBlockContext *arrowFunctionBlock();
+    DataFormatContext *dataFormat();
+    ExprContext *expr();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  VarAssignmentContext* varAssignment();
 
   class  ExprContext : public antlr4::ParserRuleContext {
   public:

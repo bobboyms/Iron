@@ -17,13 +17,13 @@ void ScopeManager::end() {
 // Retorna o nome do escopo atual
 std::string ScopeManager::currentScopeName() const {
     if (!scopeNameStack.empty()) {
-        return scopeNameStack.top(); // Retorna o nome do escopo atual
+        return scopeNameStack.top();
     }
-    return "global"; // Escopo padrão (global) caso a pilha esteja vazia
+    throw ScopeNotFoundException(color::colorText("Semantic error: scope not found", color::RED));
 }
 
 // Adiciona um símbolo ao escopo atual
-bool ScopeManager::addSymbol(const std::string& name, const std::string& type, const std::string& scope, int line) {
+bool ScopeManager::addSymbol(const std::string& name, const int type, const std::string& scope, int line) {
     if (scopeStack.empty()) {
         return false;
     }

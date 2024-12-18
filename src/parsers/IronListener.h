@@ -68,6 +68,9 @@ public:
   virtual void enterAssignment(IronParser::AssignmentContext *ctx) = 0;
   virtual void exitAssignment(IronParser::AssignmentContext *ctx) = 0;
 
+  virtual void enterVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
+  virtual void exitVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
+
   virtual void enterExpr(IronParser::ExprContext *ctx) = 0;
   virtual void exitExpr(IronParser::ExprContext *ctx) = 0;
 
