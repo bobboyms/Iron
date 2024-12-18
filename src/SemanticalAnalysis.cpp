@@ -32,8 +32,6 @@ void SemanticalAnalysis::analyze() {
     scopeManager->end();
 }
 
-
-// Visita uma lista de declarações dentro de uma função
 void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext* ctx) {
     for (auto child : ctx->children) {
         if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(child)) {
@@ -42,7 +40,6 @@ void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext* ct
         if (auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext*>(child)) {
             visitVarAssignment(varAssignment);
         }
-
         if (auto expression = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expression);
         }
@@ -73,30 +70,33 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                 ));
             }
 
+            // Verificação segura da variável anterior
             if (!previousVarName.empty()) {
                 SymbolInfo* previousSymbolInfo = scopeManager->lookupSymbol(previousVarName);
 
-                if (TokenMap::isNumber(symbolInfo->type) != TokenMap::isNumber(previousSymbolInfo->type)) {
-                    iron::printf("Atual {} != diferente da {}", varName, previousVarName);
-
-                    throw TypeMismatchException(iron::format(
-                        "Variable {} is incompatible with variable {}. Line: {}, Scope: {}",
-                        color::colorText(varName, color::BOLD_GREEN),
-                        color::colorText(previousVarName, color::BOLD_GREEN),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(
-                            iron::format("{} {}", 
-                                TokenMap::getTokenText(TokenMap::FUNCTION),
-                                scope), 
-                                color::BOLD_YELLOW)
-                    ));
+                if (!previousSymbolInfo) {
+                    previousVarName.clear();
+                } else {
+                    if (TokenMap::isNumber(symbolInfo->type) != TokenMap::isNumber(previousSymbolInfo->type)) {
+                        throw TypeMismatchException(iron::format(
+                            "Variable {} is incompatible with variable {}. Line: {}, Scope: {}",
+                            color::colorText(varName, color::BOLD_GREEN),
+                            color::colorText(previousVarName, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(
+                                iron::format("{} {}", 
+                                    TokenMap::getTokenText(TokenMap::FUNCTION),
+                                    scope), 
+                                    color::BOLD_YELLOW)
+                        ));
+                    }
                 }
             }
+
             previousVarName = varName;
         }
     }
 
-    // Percorre os filhos da expressão
     for (auto child : ctx->children) {
         if (auto expression = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expression);
@@ -112,6 +112,7 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
 
 
+
 void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ctx) {
     std::string varName = ctx->varName->getText();
     int line = ctx->getStart()->getLine();
@@ -122,7 +123,7 @@ void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ct
         throw VariableNotFoundException(iron::format(
             "Variable '{}' not found. Line: {}, Scope: {}",
             color::colorText(varName, color::BOLD_GREEN),
-            std::to_string(line),  // <<< ERRO AQUI symbolInfo->line
+            color::colorText(std::to_string(line), color::YELLOW),
             color::colorText(
                 iron::format("{} {}", 
                     TokenMap::getTokenText(TokenMap::FUNCTION),
@@ -170,6 +171,11 @@ void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext* 
 }
 
 void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx) {
+
+    if (!ctx->functionName) {
+        throw std::runtime_error("Function name is missing.");
+    }
+
     std::string functionName = ctx->functionName->getText();
     int line = ctx->functionName->getLine();
 

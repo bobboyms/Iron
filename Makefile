@@ -1,6 +1,9 @@
 # Caminho do compilador e flags
 CXX = /opt/homebrew/opt/llvm/bin/clang++
-CXXFLAGS = -g -std=c++17 -I/opt/homebrew/opt/llvm/include -L/opt/homebrew/opt/llvm/lib -lLLVM-19
+CXXFLAGS = -g -std=c++17  -I/opt/homebrew/opt/llvm/include -L/opt/homebrew/opt/llvm/lib -lLLVM-19
+
+# -fsanitize=address,undefined -fno-omit-frame-pointer
+# 
 ANTLR_INCLUDES = -I/usr/local/include/antlr4-runtime  # Headers do runtime ANTLR
 ANTLR_LIBS = /usr/local/lib/libantlr4-runtime.a       # Biblioteca estática do runtime ANTLR
 
@@ -9,7 +12,7 @@ GTEST_INCLUDES = -I/opt/homebrew/include
 GTEST_LIBS = -L/opt/homebrew/lib -lgtest -lgtest_main
 
 # Nome do executável e arquivo fonte
-TARGET = program
+TARGET = program 
 SRC = src/main.cpp
 TEST_TARGET = test_program
 TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp tests/test_var_parser.cpp tests/test_function_parser.cpp
@@ -32,7 +35,7 @@ $(TEST_TARGET): $(TEST_SRC)
 # Regra para executar o programa
 run: $(TARGET)
 	./$(TARGET)
-	rm -f $(TARGET) 
+#	rm -f $(TARGET) 
 
 # Regra para executar os testes
 test: $(TEST_TARGET)

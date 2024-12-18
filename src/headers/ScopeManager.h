@@ -30,6 +30,7 @@ public:
     bool addSymbol(const std::string& name, const int type, const std::string& scope, int line);
     bool removeSymbol(const std::string& name);
     SymbolInfo* lookupSymbol(const std::string& name);
+    SymbolInfo* lookupSymbolGlobal(const std::string& name);
     void printTable() const;
 };
 

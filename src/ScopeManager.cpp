@@ -45,6 +45,18 @@ SymbolInfo* ScopeManager::lookupSymbol(const std::string& name) {
     return nullptr;
 }
 
+SymbolInfo* ScopeManager::lookupSymbolGlobal(const std::string& name) {
+    if (!scopeStack.empty()) {
+        auto& globalScope = scopeStack.front(); // Primeiro escopo é o global
+        auto found = globalScope.find(name);
+        if (found != globalScope.end()) {
+            return &found->second;
+        }
+    }
+    return nullptr;
+}
+
+
 // Imprime a tabela de símbolos
 void ScopeManager::printTable() const {
     std::cout << "\n--- Tabela de Símbolos ---" << std::endl;

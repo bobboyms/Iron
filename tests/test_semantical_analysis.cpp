@@ -204,3 +204,55 @@ TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression2) {
         runAnalysis(input);
     }, VariableNotFoundException);
 }
+
+TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVare) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:int = 32
+            let c:int = 28
+            let d:int = 15
+            let e:string = "olá mundo"
+            (a + b * (c + d) - e)
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarb) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:string = "32"
+            let c:int = 28
+            let d:int = 15
+            let e:string = "olá mundo"
+            (a + b * (c + d) - e)
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarc) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:int = 32
+            let c:string = "456"
+            let d:int = 15
+            let e:string = "olá mundo"
+            let n:int = (a + b * (c + d) - e)
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}
+
