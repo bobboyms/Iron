@@ -97,6 +97,10 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         }
     }
 
+    if (ctx->number()) {
+        iron::printf("numero: {}", ctx->number()->getText());
+    }
+
     for (auto child : ctx->children) {
         if (auto expression = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expression);

@@ -39,11 +39,8 @@ int main() {
     std::string input = R"(
         fn teste() {
             let a:int = 25
-            let b:int = 32
-            let c:int = 28
-            let d:int = 15
-            let e:string = "olá mundo"
-            (a + b * (c + d) - e)
+            let b:string = "x"
+            b + 12
         }
     )";
 
