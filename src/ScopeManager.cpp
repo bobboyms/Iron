@@ -1,76 +1,62 @@
 #include "headers/ScopeManager.h"
 
-// Inicia um novo escopo
-void ScopeManager::start(const std::string& scopeName) {
-    scopeStack.emplace_back();       // Adiciona um novo mapa vazio para o novo escopo
-    scopeNameStack.push(scopeName);  // Adiciona o nome do escopo à pilha
+// Implementação da classe SymbolTable
+SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parentScope)
+    : parent(parentScope) {}
+
+void SymbolTable::addSymbol(const std::string& name, const SymbolInfo& info) {
+    if (symbols.find(name) != symbols.end()) {
+        throw std::runtime_error("Symbol '" + name + "' already defined in the current scope.");
+    }
+    symbols[name] = info;
 }
 
-// Finaliza o escopo atual
-void ScopeManager::end() {
+std::optional<SymbolInfo> SymbolTable::lookup(const std::string& name) const {
+    auto it = symbols.find(name);
+    if (it != symbols.end()) {
+        return it->second;
+    }
+    if (parent) {
+        return parent->lookup(name);
+    }
+    return std::nullopt;
+}
+
+void SymbolTable::printSymbols(const std::string& scopeName) const {
+    std::cout << "Scope: " << scopeName << "\n";
+    for (const auto& [name, info] : symbols) {
+        std::cout << "  Name: " << name << ", Type: " << info.type
+                  << ", Data Type: " << info.dataType << "\n";
+    }
+    std::cout << "---\n";
+}
+
+// Implementação da classe ScopeManager
+void ScopeManager::enterScope(const std::string& scopeName) {
+    auto newScope = std::make_shared<SymbolTable>(currentScope());
+    scopeStack.push(newScope);
+    std::cout << "Entered scope: " << scopeName << "\n";
+}
+
+void ScopeManager::exitScope(const std::string& scopeName) {
     if (!scopeStack.empty()) {
-        scopeStack.pop_back();       // Remove o escopo atual
-        scopeNameStack.pop();        // Remove o nome do escopo atual
-    } 
+        scopeStack.pop();
+        std::cout << "Exited scope: " << scopeName << "\n";
+    } else {
+        throw std::runtime_error("Attempted to exit a non-existent scope.");
+    }
 }
 
-// Retorna o nome do escopo atual
+std::shared_ptr<SymbolTable> ScopeManager::currentScope() const {
+    if (!scopeStack.empty()) {
+        return scopeStack.top();
+    }
+    return nullptr;
+}
+
 std::string ScopeManager::currentScopeName() const {
-    if (!scopeNameStack.empty()) {
-        return scopeNameStack.top();
-    }
-    throw ScopeNotFoundException(color::colorText("Semantic error: scope not found", color::RED));
-}
-
-// Adiciona um símbolo ao escopo atual
-bool ScopeManager::addSymbol(const std::string& name, const int type, const std::string& scope, int line) {
-    if (scopeStack.empty()) {
-        return false;
-    }
-
-    auto& currentScope = scopeStack.back();
-
-    currentScope[name] = {type, scope, line};
-    return true;
-}
-
-// Busca um símbolo nos escopos aninhados
-SymbolInfo* ScopeManager::lookupSymbol(const std::string& name) {
-    for (auto it = scopeStack.rbegin(); it != scopeStack.rend(); ++it) {
-        auto found = it->find(name);
-        if (found != it->end()) {
-            return &found->second;
-        }
-    }
-    return nullptr;
-}
-
-SymbolInfo* ScopeManager::lookupSymbolGlobal(const std::string& name) {
     if (!scopeStack.empty()) {
-        auto& globalScope = scopeStack.front(); // Primeiro escopo é o global
-        auto found = globalScope.find(name);
-        if (found != globalScope.end()) {
-            return &found->second;
-        }
+        return "Current Scope";
     }
-    return nullptr;
-}
-
-
-// Imprime a tabela de símbolos
-void ScopeManager::printTable() const {
-    std::cout << "\n--- Tabela de Símbolos ---" << std::endl;
-
-    int scopeLevel = scopeStack.size();
-    for (auto it = scopeStack.rbegin(); it != scopeStack.rend(); ++it, --scopeLevel) {
-        std::cout << "Escopo #" << scopeLevel << " (" << scopeNameStack.top() << "):\n";
-        for (const auto& [name, info] : *it) {
-            std::cout << "  Nome: " << name
-                      << ", Tipo: " << info.type
-                      << ", Escopo: " << info.scope
-                      << ", Linha: " << info.line << std::endl;
-        }
-    }
-
-    std::cout << "--- Fim da Tabela ---\n" << std::endl;
+    return "Global";
 }

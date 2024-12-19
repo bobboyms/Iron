@@ -1,37 +1,45 @@
 #ifndef SCOPE_MANAGER_H
 #define SCOPE_MANAGER_H
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <stack>
 #include <iostream>
+#include <unordered_map>
+#include <string>
+#include <memory>
+#include <optional>
+#include <stack>
 #include "IronExceptions.h"
 #include "Colors.h"
-#include "Utils.h"
 
-// Estrutura para armazenar informações sobre um símbolo
+// Estrutura para armazenar informações de símbolos
 struct SymbolInfo {
     int type;
-    std::string scope;
-    int line;
+    int dataType;
+    std::shared_ptr<class SymbolTable> scope;
 };
 
-class ScopeManager {
+// Classe para representar a Tabela de Símbolos
+class SymbolTable {
 private:
-    std::vector<std::unordered_map<std::string, SymbolInfo>> scopeStack;
-    std::stack<std::string> scopeNameStack; // Pilha de nomes dos escopos
+    std::unordered_map<std::string, SymbolInfo> symbols;
+    std::shared_ptr<SymbolTable> parent;
 
 public:
-    void start(const std::string& scopeName);
-    void end();
-    std::string currentScopeName() const;
+    SymbolTable(std::shared_ptr<SymbolTable> parentScope = nullptr);
+    void addSymbol(const std::string& name, const SymbolInfo& info);
+    std::optional<SymbolInfo> lookup(const std::string& name) const;
+    void printSymbols(const std::string& scopeName) const;
+};
 
-    bool addSymbol(const std::string& name, const int type, const std::string& scope, int line);
-    bool removeSymbol(const std::string& name);
-    SymbolInfo* lookupSymbol(const std::string& name);
-    SymbolInfo* lookupSymbolGlobal(const std::string& name);
-    void printTable() const;
+// Gerenciador de escopos usando uma pilha
+class ScopeManager {
+private:
+    std::stack<std::shared_ptr<SymbolTable>> scopeStack;
+
+public:
+    void enterScope(const std::string& scopeName);
+    void exitScope(const std::string& scopeName);
+    std::shared_ptr<SymbolTable> currentScope() const;
+    std::string currentScopeName() const;
 };
 
 #endif // SCOPE_MANAGER_H
