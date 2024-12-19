@@ -18,7 +18,7 @@ SemanticalAnalysis::~SemanticalAnalysis() {
 void SemanticalAnalysis::analyze() {
     // Inicializa o escopo global
 
-    scopeManager->start(TokenMap::getTokenText(TokenMap::GLOBAL));
+    scopeManager->enterScope(TokenMap::getTokenText(TokenMap::GLOBAL)); //start(TokenMap::getTokenText(TokenMap::GLOBAL));
     IronParser::ProgramContext* programContext = parser->program();
 
     // Processa todas as declarações no programa
@@ -29,7 +29,7 @@ void SemanticalAnalysis::analyze() {
     }
 
     // Finaliza o escopo global após processar todas as declarações
-    scopeManager->end();
+    scopeManager->exitScope(TokenMap::getTokenText(TokenMap::GLOBAL));
 }
 
 void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext* ctx) {
@@ -55,9 +55,10 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
         if (auto variable = ctx->varName) {
             const std::string scope = scopeManager->currentScopeName();
-            SymbolInfo* symbolInfo = scopeManager->lookupSymbol(varName);
 
-            if (!symbolInfo) {
+            auto optSymbolInfo = scopeManager->currentScope()->lookup(varName);
+
+            if (!optSymbolInfo.has_value()) {
                 throw VariableNotFoundException(iron::format(
                     "Variable '{}' not found. Line: {}, Scope: {}",
                     color::colorText(varName, color::BOLD_GREEN),
@@ -72,12 +73,18 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
             // Verificação segura da variável anterior
             if (!previousVarName.empty()) {
-                SymbolInfo* previousSymbolInfo = scopeManager->lookupSymbol(previousVarName);
+                auto optPreviousSymbolInfo = scopeManager->currentScope()->lookup(previousVarName);
 
-                if (!previousSymbolInfo) {
+                if (!optPreviousSymbolInfo.has_value()) {
                     previousVarName.clear();
                 } else {
-                    if (TokenMap::isNumber(symbolInfo->type) != TokenMap::isNumber(previousSymbolInfo->type)) {
+                    
+                    SymbolInfo symbolInfo = optSymbolInfo.value();
+                    SymbolInfo previousSymbolInfo = optPreviousSymbolInfo.value();
+
+                    iron::printf("Previous variable: {}, Atual var name {}", previousVarName, varName);
+                    iron::printf("Previous Type: {}, Atual Type {}", std::to_string(previousSymbolInfo.dataType), std::to_string(symbolInfo.dataType));
+                    if (TokenMap::isNumber(symbolInfo.dataType) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
                         throw TypeMismatchException(iron::format(
                             "Variable {} is incompatible with variable {}. Line: {}, Scope: {}",
                             color::colorText(varName, color::BOLD_GREEN),
@@ -113,17 +120,22 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
     }
 }
 
-
-
-
-
 void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ctx) {
     std::string varName = ctx->varName->getText();
     int line = ctx->getStart()->getLine();
 
     const std::string scope = scopeManager->currentScopeName();
-    SymbolInfo* symbolInfo = scopeManager->lookupSymbol(varName);
-    if (!symbolInfo) {
+    auto result = scopeManager->currentScope()->lookup(varName);
+
+    if (result.has_value()) {
+        SymbolInfo symbolInfo = result.value();
+
+        // Aqui você pode adicionar lógica para verificar tipos ou realizar outras validações
+        iron::printf("Variable '{}' found in scope '{}', type: '{}'.\n",
+                     color::colorText(varName, color::BOLD_GREEN),
+                     color::colorText(scope, color::BOLD_YELLOW),
+                     color::colorText(std::to_string(symbolInfo.type), color::CYAN));
+    } else {
         throw VariableNotFoundException(iron::format(
             "Variable '{}' not found. Line: {}, Scope: {}",
             color::colorText(varName, color::BOLD_GREEN),
@@ -132,7 +144,7 @@ void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ct
                 iron::format("{} {}", 
                     TokenMap::getTokenText(TokenMap::FUNCTION),
                     scope), 
-                    color::BOLD_YELLOW)
+                color::BOLD_YELLOW)
         ));
     }
 }
@@ -150,32 +162,40 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
 void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext* ctx) {
     std::string varName = ctx->varName->getText();
     std::string varType = ctx->varTypes()->getText();
+    
+    iron::printf("Declaration varName: {}, varType: {}", varName, TokenMap::getTokenType(varType));
 
     int line = ctx->getStart()->getLine();
 
-    if (scopeManager->lookupSymbol(varName)) {
-        
-        const std::string scope = scopeManager->currentScopeName();
-        SymbolInfo* SymbolInfo = scopeManager->lookupSymbol(scope);
+    const std::string scope = scopeManager->currentScopeName();
+    auto result = scopeManager->currentScope()->lookup(varName);
 
-        throw VariableRedefinitionException(iron::format("Variable {} already declared. Line: {}, {}", 
-            color::colorText(varName,color::BOLD_GREEN), std::to_string(line) ,
-            color::colorText(iron::format("{} {}", SymbolInfo->type ,scope),color::BOLD_YELLOW)));
+    if (result.has_value()) {
+        SymbolInfo symbolInfo = result.value();
+
+        throw VariableRedefinitionException(iron::format(
+            "Variable {} already declared. Line: {}, Scope: {}, Type: {}",
+            color::colorText(varName, color::BOLD_GREEN),
+            color::colorText(std::to_string(line), color::YELLOW),
+            color::colorText(scope, color::BOLD_YELLOW),
+            color::colorText(std::to_string(symbolInfo.type), color::CYAN)));
     }
 
-    scopeManager->addSymbol(varName, TokenMap::getTokenType(varType), scopeManager->currentScopeName(), line);
+    scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
 
     for (auto child : ctx->children) {
+        if (auto assignment = dynamic_cast<IronParser::VarAssignmentContext*>(child)) {
+            visitVarAssignment(assignment);
+        }
+
         if (auto assignment = dynamic_cast<IronParser::AssignmentContext*>(child)) {
             visitAssignment(assignment);
         }
     }
-
-    
 }
 
-void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx) {
 
+void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx) {
     if (!ctx->functionName) {
         throw std::runtime_error("Function name is missing.");
     }
@@ -184,16 +204,21 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
     int line = ctx->functionName->getLine();
 
     // Verifica duplicata no escopo global antes de iniciar um novo escopo
-    if (scopeManager->lookupSymbol(functionName)) {
-        throw FunctionRedefinitionException(iron::format("Function {} already declared. Line: {}, {}", 
-            functionName, std::to_string(line),scopeManager->currentScopeName()));
+    auto result = scopeManager->currentScope()->lookup(functionName);
+
+    if (result.has_value()) {
+        throw FunctionRedefinitionException(iron::format(
+            "Function {} already declared. Line: {}, Scope: {}",
+            color::colorText(functionName, color::BOLD_GREEN),
+            color::colorText(std::to_string(line), color::YELLOW),
+            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW)));
     }
 
     // Adiciona a função ao escopo global
-    scopeManager->addSymbol(functionName, TokenMap::FUNCTION, TokenMap::getTokenText(TokenMap::GLOBAL), line);
+    scopeManager->currentScope()->addSymbol(functionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
 
     // Inicia um novo escopo para o corpo da função
-    scopeManager->start(functionName);
+    scopeManager->enterScope(functionName);
 
     // Processa o corpo da função
     for (auto child : ctx->children) {
@@ -203,5 +228,6 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
     }
 
     // Finaliza o escopo ao sair da função
-    scopeManager->end();
+    scopeManager->exitScope(functionName);
 }
+

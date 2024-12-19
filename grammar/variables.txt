@@ -1,5 +1,5 @@
 fn teste() {
-    let a:int = 25
-    let b:int = 10
-    a + b * 15
+            let a:int = 25
+            let b:string = "25"
+            a + b
 }

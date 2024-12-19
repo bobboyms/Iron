@@ -25,13 +25,13 @@ int runAnalysis(const std::string& input) {
 
     } catch (const SemanticException& e) {
         std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
-        return 0; // Erro semântico específico
+        return 1; // Erro semântico específico
     } catch (const std::exception& e) {
         std::cerr << color::colorText("Unexpected error: ", color::RED) << e.what() << std::endl;
-        return 0; // Outros erros padrão
+        return 2; // Outros erros padrão
     } catch (...) {
         std::cerr << color::colorText("I panicked, I need a psychoanalyst: ", color::BOLD_RED) << std::endl;
-        return 0; // Exceções não esperadas
+        return 3; // Exceções não esperadas
     }
 }
 
@@ -39,8 +39,8 @@ int main() {
     std::string input = R"(
         fn teste() {
             let a:int = 25
-            let b:string = "x"
-            b + 12
+            let b:string = "32"
+            a + b
         }
     )";
 
