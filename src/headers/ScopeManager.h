@@ -33,13 +33,17 @@ public:
 // Gerenciador de escopos usando uma pilha
 class ScopeManager {
 private:
-    std::stack<std::shared_ptr<SymbolTable>> scopeStack;
+    // Pilha de pares <nome_do_escopo, SymbolTable>
+    std::stack<std::pair<std::string, std::shared_ptr<SymbolTable>>> scopeStack;
+    // Mapa para acessar escopos pelo nome
+    std::unordered_map<std::string, std::shared_ptr<SymbolTable>> scopeMap;
 
 public:
     void enterScope(const std::string& scopeName);
     void exitScope(const std::string& scopeName);
     std::shared_ptr<SymbolTable> currentScope() const;
     std::string currentScopeName() const;
+    std::shared_ptr<SymbolTable> getScopeByName(const std::string& scopeName) const;
 };
 
 #endif // SCOPE_MANAGER_H

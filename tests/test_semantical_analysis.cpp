@@ -256,3 +256,88 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarc) {
     }, TypeMismatchException);
 }
 
+TEST_F(SemanticalAnalysisTest, TypeMismatchException_VariableWithDifferentType) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:string = "32"
+            25 + 1.25 + a * 2.36 - b
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, TypeMismatchException_NumberWithString) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:string = "32"
+            25 + 1.25 + b * 2.36 - a
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ValidExpression_NoException) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:int = 32
+            a + 1.25 + b * 2.36 - a
+        }
+    )";
+
+    EXPECT_NO_THROW({
+        runAnalysis(input);
+    });
+}
+
+TEST_F(SemanticalAnalysisTest, TypeMismatchException_OperationBetweenNumberAndString) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:string = "hello"
+            a + b
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ValidNestedExpression) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 10
+            let b:int = 20
+            let c:int = 30
+            (a + b) * c - a
+        }
+    )";
+
+    EXPECT_NO_THROW({
+        runAnalysis(input);
+    });
+}
+
+TEST_F(SemanticalAnalysisTest, TypeMismatchException_NestedExpression) {
+    std::string input = R"(
+        fn teste() {
+            let a:int = 10
+            let b:string = "20"
+            let c:int = 30
+            (a + b) * c
+        }
+    )";
+
+    EXPECT_THROW({
+        runAnalysis(input);
+    }, TypeMismatchException);
+}

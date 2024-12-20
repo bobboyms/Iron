@@ -277,10 +277,11 @@ public:
 
   class  FunctionArgContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *varName = nullptr;
     FunctionArgContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *IDENTIFIER();
     antlr4::tree::TerminalNode *COLON();
+    antlr4::tree::TerminalNode *IDENTIFIER();
     VarTypesContext *varTypes();
     FunctionSignatureContext *functionSignature();
     AssignmentContext *assignment();
@@ -294,11 +295,12 @@ public:
 
   class  FunctionCallContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *functionName = nullptr;
     FunctionCallContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *IDENTIFIER();
     antlr4::tree::TerminalNode *L_PAREN();
     antlr4::tree::TerminalNode *R_PAREN();
+    antlr4::tree::TerminalNode *IDENTIFIER();
     FunctionCallArgsContext *functionCallArgs();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;

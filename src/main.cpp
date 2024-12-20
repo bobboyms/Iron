@@ -37,10 +37,12 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn teste() {
-            let a:int = 25
-            let b:string = "32"
-            a + b
+        fn soma(): int {
+            let x: int = 25
+        }
+
+        fn soma(): int {
+            let y: int = 30
         }
     )";
 

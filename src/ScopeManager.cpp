@@ -1,4 +1,5 @@
 #include "headers/ScopeManager.h"
+#include <stdexcept>
 
 // Implementação da classe SymbolTable
 SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parentScope)
@@ -34,14 +35,25 @@ void SymbolTable::printSymbols(const std::string& scopeName) const {
 // Implementação da classe ScopeManager
 void ScopeManager::enterScope(const std::string& scopeName) {
     auto newScope = std::make_shared<SymbolTable>(currentScope());
-    scopeStack.push(newScope);
+    scopeStack.push({scopeName, newScope});
+    scopeMap[scopeName] = newScope; // Armazena no mapa
     std::cout << "Entered scope: " << scopeName << "\n";
 }
 
 void ScopeManager::exitScope(const std::string& scopeName) {
     if (!scopeStack.empty()) {
+        auto topScope = scopeStack.top();
         scopeStack.pop();
-        std::cout << "Exited scope: " << scopeName << "\n";
+
+        // Se o topo da pilha corresponde ao escopo que desejamos sair
+        if (topScope.first == scopeName) {
+            scopeMap.erase(scopeName);
+            std::cout << "Exited scope: " << scopeName << "\n";
+        } else {
+            // Caso deseje tratar a situação de tentar sair de um escopo diferente
+            // do que está no topo, você pode lançar um erro ou uma exceção:
+            throw std::runtime_error("Attempted to exit a scope that is not on top of the stack.");
+        }
     } else {
         throw std::runtime_error("Attempted to exit a non-existent scope.");
     }
@@ -49,14 +61,22 @@ void ScopeManager::exitScope(const std::string& scopeName) {
 
 std::shared_ptr<SymbolTable> ScopeManager::currentScope() const {
     if (!scopeStack.empty()) {
-        return scopeStack.top();
+        return scopeStack.top().second;
     }
     return nullptr;
 }
 
 std::string ScopeManager::currentScopeName() const {
     if (!scopeStack.empty()) {
-        return "Current Scope";
+        return scopeStack.top().first;
     }
     return "Global";
+}
+
+std::shared_ptr<SymbolTable> ScopeManager::getScopeByName(const std::string& scopeName) const {
+    auto it = scopeMap.find(scopeName);
+    if (it != scopeMap.end()) {
+        return it->second;
+    }
+    return nullptr;
 }

@@ -47,65 +47,92 @@ void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext* ct
 }
 
 void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
-    static std::string previousVarName;
 
-    if (ctx->varName) {
-        std::string varName = ctx->varName->getText();
-        int line = ctx->getStart()->getLine();
+    struct PreviousVarStruct {
+        std::string name;
+        int type;
+    };
 
-        if (auto variable = ctx->varName) {
-            const std::string scope = scopeManager->currentScopeName();
+    static PreviousVarStruct reviousVarStruct;
+    int line = ctx->getStart()->getLine();
 
-            auto optSymbolInfo = scopeManager->currentScope()->lookup(varName);
+    auto validatePreviousVariable = [&](const std::string& varName, int currentType, const std::string& scope) {
+        auto optPreviousSymbolInfo = scopeManager->currentScope()->lookup(reviousVarStruct.name);
 
-            if (!optSymbolInfo.has_value()) {
-                throw VariableNotFoundException(iron::format(
-                    "Variable '{}' not found. Line: {}, Scope: {}",
+        if (!optPreviousSymbolInfo.has_value()) {
+            reviousVarStruct.name.clear();
+        } else {
+            SymbolInfo previousSymbolInfo = optPreviousSymbolInfo.value();
+            if (TokenMap::isNumber(currentType) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
+                throw TypeMismatchException(iron::format(
+                    "Variable {} is incompatible with variable {}. Line: {}, Scope: {}",
                     color::colorText(varName, color::BOLD_GREEN),
+                    color::colorText(reviousVarStruct.name, color::BOLD_GREEN),
                     color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(
                         iron::format("{} {}", 
                             TokenMap::getTokenText(TokenMap::FUNCTION),
                             scope), 
-                            color::BOLD_YELLOW)
+                        color::BOLD_YELLOW)
                 ));
             }
-
-            // Verificação segura da variável anterior
-            if (!previousVarName.empty()) {
-                auto optPreviousSymbolInfo = scopeManager->currentScope()->lookup(previousVarName);
-
-                if (!optPreviousSymbolInfo.has_value()) {
-                    previousVarName.clear();
-                } else {
-                    
-                    SymbolInfo symbolInfo = optSymbolInfo.value();
-                    SymbolInfo previousSymbolInfo = optPreviousSymbolInfo.value();
-
-                    iron::printf("Previous variable: {}, Atual var name {}", previousVarName, varName);
-                    iron::printf("Previous Type: {}, Atual Type {}", std::to_string(previousSymbolInfo.dataType), std::to_string(symbolInfo.dataType));
-                    if (TokenMap::isNumber(symbolInfo.dataType) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
-                        throw TypeMismatchException(iron::format(
-                            "Variable {} is incompatible with variable {}. Line: {}, Scope: {}",
-                            color::colorText(varName, color::BOLD_GREEN),
-                            color::colorText(previousVarName, color::BOLD_GREEN),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(
-                                iron::format("{} {}", 
-                                    TokenMap::getTokenText(TokenMap::FUNCTION),
-                                    scope), 
-                                    color::BOLD_YELLOW)
-                        ));
-                    }
-                }
-            }
-
-            previousVarName = varName;
         }
+    };
+
+    if (ctx->varName) {
+        std::string varName = ctx->varName->getText();
+
+        const std::string scope = scopeManager->currentScopeName();
+        auto optSymbolInfo = scopeManager->currentScope()->lookup(varName);
+
+        if (!optSymbolInfo.has_value()) {
+            throw VariableNotFoundException(iron::format(
+                "Variable '{}' not found. Line: {}, Scope: {}",
+                color::colorText(varName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(
+                    iron::format("{} {}", 
+                        TokenMap::getTokenText(TokenMap::FUNCTION),
+                        scope), 
+                    color::BOLD_YELLOW)
+            ));
+        }
+
+        if (!reviousVarStruct.name.empty()) {
+            SymbolInfo symbolInfo = optSymbolInfo.value();
+            if (reviousVarStruct.type == TokenMap::NUMBER) {
+                if (!TokenMap::isNumber(symbolInfo.dataType)) {
+                    throw TypeMismatchException(iron::format(
+                        "Variable {} is incompatible with Number {}. Line: {}, Scope: {}",
+                        color::colorText(varName, color::BOLD_GREEN),
+                        color::colorText(reviousVarStruct.name, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(
+                            iron::format("{} {}", 
+                                TokenMap::getTokenText(TokenMap::FUNCTION),
+                                scope), 
+                            color::BOLD_YELLOW)
+                    ));
+                }
+            } else {
+                validatePreviousVariable(varName, symbolInfo.dataType, scope);
+            }
+        }
+
+        reviousVarStruct.name = varName;
+        reviousVarStruct.type = optSymbolInfo.value().dataType;
     }
 
     if (ctx->number()) {
-        iron::printf("numero: {}", ctx->number()->getText());
+        const std::string number = ctx->number()->getText();
+        const std::string scope = scopeManager->currentScopeName();
+
+        if (!reviousVarStruct.name.empty()) {
+            validatePreviousVariable(number, TokenMap::NUMBER, scope);
+        }
+
+        reviousVarStruct.name = number;
+        reviousVarStruct.type = TokenMap::NUMBER;
     }
 
     for (auto child : ctx->children) {
@@ -116,9 +143,11 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
     // Limpa a variável anterior ao sair do nó raiz
     if (ctx->parent == nullptr) {
-        previousVarName.clear();
+        reviousVarStruct.name.clear();
     }
 }
+
+
 
 void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ctx) {
     std::string varName = ctx->varName->getText();
@@ -129,12 +158,6 @@ void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ct
 
     if (result.has_value()) {
         SymbolInfo symbolInfo = result.value();
-
-        // Aqui você pode adicionar lógica para verificar tipos ou realizar outras validações
-        iron::printf("Variable '{}' found in scope '{}', type: '{}'.\n",
-                     color::colorText(varName, color::BOLD_GREEN),
-                     color::colorText(scope, color::BOLD_YELLOW),
-                     color::colorText(std::to_string(symbolInfo.type), color::CYAN));
     } else {
         throw VariableNotFoundException(iron::format(
             "Variable '{}' not found. Line: {}, Scope: {}",
@@ -162,10 +185,10 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
 void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext* ctx) {
     std::string varName = ctx->varName->getText();
     std::string varType = ctx->varTypes()->getText();
-    
-    iron::printf("Declaration varName: {}, varType: {}", varName, TokenMap::getTokenType(varType));
 
     int line = ctx->getStart()->getLine();
+
+    
 
     const std::string scope = scopeManager->currentScopeName();
     auto result = scopeManager->currentScope()->lookup(varName);
@@ -184,8 +207,8 @@ void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext* 
     scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
 
     for (auto child : ctx->children) {
-        if (auto assignment = dynamic_cast<IronParser::VarAssignmentContext*>(child)) {
-            visitVarAssignment(assignment);
+        if (auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext*>(child)) {
+            visitVarAssignment(varAssignment);
         }
 
         if (auto assignment = dynamic_cast<IronParser::AssignmentContext*>(child)) {
@@ -203,8 +226,12 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
     std::string functionName = ctx->functionName->getText();
     int line = ctx->functionName->getLine();
 
+    iron::printf("Function: {}", functionName);
+
     // Verifica duplicata no escopo global antes de iniciar um novo escopo
-    auto result = scopeManager->currentScope()->lookup(functionName);
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+    auto result = globalScope->lookup(functionName);    
+
 
     if (result.has_value()) {
         throw FunctionRedefinitionException(iron::format(
@@ -214,20 +241,20 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW)));
     }
 
-    // Adiciona a função ao escopo global
-    scopeManager->currentScope()->addSymbol(functionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
+    if (ctx->functionSignature()->functionReturnType()) {
+         std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+         globalScope->addSymbol(functionName, {TokenMap::FUNCTION, TokenMap::getTokenType(type), nullptr});
+    } else {
+         globalScope->addSymbol(functionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
+    }
 
-    // Inicia um novo escopo para o corpo da função
     scopeManager->enterScope(functionName);
-
-    // Processa o corpo da função
     for (auto child : ctx->children) {
         if (auto statementList = dynamic_cast<IronParser::StatementListContext*>(child)) {
             visitStatementList(statementList);
         }
     }
 
-    // Finaliza o escopo ao sair da função
     scopeManager->exitScope(functionName);
 }
 

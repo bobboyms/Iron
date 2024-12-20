@@ -1,5 +1,9 @@
+fn valor():int {
+    return 25
+}
+
 fn teste() {
             let a:int = 25
             let b:string = "25"
-            a + b
+            a + b * 3.25 / valor()
 }

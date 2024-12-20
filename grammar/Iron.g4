@@ -115,12 +115,12 @@ functionArgs
 
 // Argumento da função
 functionArg
-    : IDENTIFIER COLON (varTypes | functionSignature) assignment?
+    : varName=IDENTIFIER COLON (varTypes | functionSignature) assignment?
     ;
 
 // Chamada de função
 functionCall
-    : IDENTIFIER L_PAREN functionCallArgs? R_PAREN
+    : functionName=IDENTIFIER L_PAREN functionCallArgs? R_PAREN
     ;
 
 // Argumentos da chamada de função
