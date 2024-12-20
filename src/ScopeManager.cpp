@@ -37,7 +37,7 @@ void ScopeManager::enterScope(const std::string& scopeName) {
     auto newScope = std::make_shared<SymbolTable>(currentScope());
     scopeStack.push({scopeName, newScope});
     scopeMap[scopeName] = newScope; // Armazena no mapa
-    std::cout << "Entered scope: " << scopeName << "\n";
+    //std::cout << "Entered scope: " << scopeName << "\n";
 }
 
 void ScopeManager::exitScope(const std::string& scopeName) {
@@ -48,7 +48,7 @@ void ScopeManager::exitScope(const std::string& scopeName) {
         // Se o topo da pilha corresponde ao escopo que desejamos sair
         if (topScope.first == scopeName) {
             scopeMap.erase(scopeName);
-            std::cout << "Exited scope: " << scopeName << "\n";
+            //std::cout << "Exited scope: " << scopeName << "\n";
         } else {
             // Caso deseje tratar a situação de tentar sair de um escopo diferente
             // do que está no topo, você pode lançar um erro ou uma exceção:

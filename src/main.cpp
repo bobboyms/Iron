@@ -37,12 +37,17 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn soma(): int {
-            let x: int = 25
+        fn addOne(x:float): int {
+            return 1
         }
 
-        fn soma(): int {
-            let y: int = 30
+        fn doubleValue(num: int, test:string): int {
+            return num * 2
+        }
+
+        fn main(bb:boolean): int {
+            let base: int = 5
+            return doubleValue(base) + addOne()
         }
     )";
 

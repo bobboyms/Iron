@@ -341,3 +341,68 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchException_NestedExpression) {
         runAnalysis(input);
     }, TypeMismatchException);
 }
+
+TEST_F(SemanticalAnalysisTest, IncompatibleTypesStringAndInt) {
+    std::string input = R"(
+        fn sub(): int {
+            return 5
+        }
+
+        fn soma(): int {
+            let y: string = "hello"
+            y * sub()
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration) {
+    std::string input = R"(
+        fn soma(): int {
+            return sub() + 10
+        }
+
+        fn sub(): int {
+            return 5
+        }
+    )";
+
+    EXPECT_NO_THROW({
+        runAnalysis(input);
+    });
+}
+
+TEST_F(SemanticalAnalysisTest, CompatibleTypesWithFunctionCalls) {
+    std::string input = R"(
+        fn sub(): int {
+            return 5
+        }
+
+        fn soma(): int {
+            let x: int = 10
+            return x + sub()  // ambos int, operação válida
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, ChainedFunctionCallsCompatible) {
+    std::string input = R"(
+        fn addOne(): int {
+            return 1
+        }
+
+        fn doubleValue(num: int): int {
+            return num * 2
+        }
+
+        fn main(): int {
+            let base: int = 5
+            return doubleValue(base) + addOne()
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}

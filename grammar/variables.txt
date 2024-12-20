@@ -1,9 +1,3 @@
-fn valor():int {
+fn valor(oi:int, bb:string):int {
     return 25
-}
-
-fn teste() {
-            let a:int = 25
-            let b:string = "25"
-            a + b * 3.25 / valor()
 }

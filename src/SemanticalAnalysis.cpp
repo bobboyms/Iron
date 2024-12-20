@@ -47,26 +47,36 @@ void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext* ct
 }
 
 void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
-
     struct PreviousVarStruct {
         std::string name;
+        int localDatatype;
         int type;
     };
 
     static PreviousVarStruct reviousVarStruct;
     int line = ctx->getStart()->getLine();
 
-    auto validatePreviousVariable = [&](const std::string& varName, int currentType, const std::string& scope) {
+    auto validatePreviousVariable = [&](const std::string& varName, int currentDatatype, int type, const std::string& scope) {
         auto optPreviousSymbolInfo = scopeManager->currentScope()->lookup(reviousVarStruct.name);
 
         if (!optPreviousSymbolInfo.has_value()) {
             reviousVarStruct.name.clear();
         } else {
+
+            
             SymbolInfo previousSymbolInfo = optPreviousSymbolInfo.value();
-            if (TokenMap::isNumber(currentType) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
+            if (TokenMap::isNumber(currentDatatype) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
+                std::string errMessage;
+                if (type == TokenMap::FUNCTION) {
+                    errMessage =  "The return of fn {}:{}  is incompatible with Variable {}. Line: {}, Scope: {}";
+                } else {
+                    errMessage = "Variable {}:{} is incompatible with Variable {}. Line: {}, Scope: {}";
+                }
+
                 throw TypeMismatchException(iron::format(
-                    "Variable {} is incompatible with variable {}. Line: {}, Scope: {}",
+                    errMessage,
                     color::colorText(varName, color::BOLD_GREEN),
+                    color::colorText(TokenMap::getTokenText(currentDatatype), color::BOLD_GREEN),
                     color::colorText(reviousVarStruct.name, color::BOLD_GREEN),
                     color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(
@@ -81,7 +91,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
     if (ctx->varName) {
         std::string varName = ctx->varName->getText();
-
         const std::string scope = scopeManager->currentScopeName();
         auto optSymbolInfo = scopeManager->currentScope()->lookup(varName);
 
@@ -100,7 +109,7 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
         if (!reviousVarStruct.name.empty()) {
             SymbolInfo symbolInfo = optSymbolInfo.value();
-            if (reviousVarStruct.type == TokenMap::NUMBER) {
+            if (reviousVarStruct.localDatatype == TokenMap::NUMBER) {
                 if (!TokenMap::isNumber(symbolInfo.dataType)) {
                     throw TypeMismatchException(iron::format(
                         "Variable {} is incompatible with Number {}. Line: {}, Scope: {}",
@@ -115,12 +124,13 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                     ));
                 }
             } else {
-                validatePreviousVariable(varName, symbolInfo.dataType, scope);
+                validatePreviousVariable(varName, symbolInfo.dataType, symbolInfo.type, scope);
             }
         }
 
         reviousVarStruct.name = varName;
-        reviousVarStruct.type = optSymbolInfo.value().dataType;
+        reviousVarStruct.localDatatype = optSymbolInfo.value().dataType;
+        reviousVarStruct.type = TokenMap::VARIABLE;
     }
 
     if (ctx->number()) {
@@ -128,13 +138,68 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         const std::string scope = scopeManager->currentScopeName();
 
         if (!reviousVarStruct.name.empty()) {
-            validatePreviousVariable(number, TokenMap::NUMBER, scope);
+            validatePreviousVariable(number, TokenMap::NUMBER, TokenMap::NUMBER, scope);
         }
 
         reviousVarStruct.name = number;
+        reviousVarStruct.localDatatype = TokenMap::NUMBER;
         reviousVarStruct.type = TokenMap::NUMBER;
     }
 
+    if (ctx->functionCall()) {
+        std::string functionName = ctx->functionCall()->functionName->getText();
+        std::string scope = scopeManager->currentScopeName();
+        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+
+        if (!globalScope) {
+            throw std::runtime_error("Global scope not found.");
+        }
+
+        auto result = globalScope->lookup(functionName);
+        if (!result.has_value()) {
+            throw VariableNotFoundException(iron::format(
+                "Function '{}' not found. Line: {}, Scope: {}",
+                color::colorText(functionName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(
+                    iron::format("{} {}", 
+                        TokenMap::getTokenText(TokenMap::FUNCTION),
+                        scope), 
+                    color::BOLD_YELLOW)
+            ));
+        }
+
+        SymbolInfo globalFunction = result.value();
+
+        // Verifica compatibilidade com a variável anterior, se existir
+        if (!reviousVarStruct.name.empty()) {
+            if (reviousVarStruct.localDatatype == TokenMap::NUMBER) {
+                // Se a variável anterior é um número, a função deve retornar um tipo numérico
+                if (!TokenMap::isNumber(globalFunction.dataType)) {
+                    throw TypeMismatchException(iron::format(
+                        "Function return value {} is incompatible with Number {}. Line: {}, Scope: {}",
+                        color::colorText(functionName, color::BOLD_GREEN),
+                        color::colorText(reviousVarStruct.name, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(
+                            iron::format("{} {}",
+                                TokenMap::getTokenText(TokenMap::FUNCTION),
+                                scope),
+                            color::BOLD_YELLOW)
+                    ));
+                }
+            } else {
+                // Caso contrário, valida com a função validatePreviousVariable
+                validatePreviousVariable(functionName, globalFunction.dataType, TokenMap::FUNCTION, scope);
+            }
+        }
+
+        reviousVarStruct.name = functionName;
+        reviousVarStruct.localDatatype = globalFunction.dataType;
+        reviousVarStruct.type = TokenMap::FUNCTION;
+    }
+
+    // Visita filhos recursivamente
     for (auto child : ctx->children) {
         if (auto expression = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expression);
@@ -146,7 +211,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         reviousVarStruct.name.clear();
     }
 }
-
 
 
 void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ctx) {
@@ -249,6 +313,11 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
     }
 
     scopeManager->enterScope(functionName);
+
+    if (ctx->functionSignature()) {
+        visitFunctionSignature(ctx->functionSignature());
+    }
+
     for (auto child : ctx->children) {
         if (auto statementList = dynamic_cast<IronParser::StatementListContext*>(child)) {
             visitStatementList(statementList);
@@ -257,4 +326,45 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
 
     scopeManager->exitScope(functionName);
 }
+
+void SemanticalAnalysis::visitFunctionSignature(IronParser::FunctionSignatureContext* ctx) {
+    for (auto child : ctx->children) {
+        if (auto functionArgs = dynamic_cast<IronParser::FunctionArgsContext*>(child)) {
+            visitFunctionArgs(functionArgs);
+        }
+    }
+}
+
+void SemanticalAnalysis::visitFunctionArgs(IronParser::FunctionArgsContext* ctx) {
+    for (auto child : ctx->children) {
+        if (auto functionArg = dynamic_cast<IronParser::FunctionArgContext*>(child)) {
+            visitFunctionArg(functionArg);
+        }
+    }
+}
+
+void SemanticalAnalysis::visitFunctionArg(IronParser::FunctionArgContext* ctx) {
+    std::string varName = ctx->varName->getText();
+    std::string varType = ctx->varTypes()->getText();
+    int line = ctx->getStart()->getLine();
+
+    const std::string scope = scopeManager->currentScopeName();
+    auto result = scopeManager->currentScope()->lookup(varName);
+
+    iron::printf("Function: {} VarName: {} VarType: {} ", scope, varName, varType);
+
+    if (result.has_value()) {
+        SymbolInfo symbolInfo = result.value();
+
+        throw VariableRedefinitionException(iron::format(
+            "Variable {} already declared. Line: {}, Scope: {}, Type: {}",
+            color::colorText(varName, color::BOLD_GREEN),
+            color::colorText(std::to_string(line), color::YELLOW),
+            color::colorText(scope, color::BOLD_YELLOW),
+            color::colorText(std::to_string(symbolInfo.type), color::CYAN)));
+    }
+
+    scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
+}
+
 
