@@ -21,14 +21,12 @@ private:
     void visitExpr(IronParser::ExprContext* ctx);
     void visitAssignment(IronParser::AssignmentContext* ctx);
 
-    void functionSignature(IronParser::FunctionSignatureContext* ctx);
-    void functionArgs(IronParser::FunctionArgsContext* ctx);
-    void functionArg(IronParser::FunctionArgContext* ctx);
+    void visitFunctionSignature(IronParser::FunctionSignatureContext* ctx);
+    void visitFunctionArgs(IronParser::FunctionArgsContext* ctx);
+    void visitFunctionArg(IronParser::FunctionArgContext* ctx);
 
-    //std::unordered_map<antlr4::ParserRuleContext*, std::string> typeMap;
-    std::string left;
-    std::string op;
-    std::string right;
+    void visitFunctionCallArgs(IronParser::FunctionCallArgsContext* ctx);
+    void visitFunctionCallArg(IronParser::FunctionCallArgContext* ctx);
 
 
 public:

@@ -1221,12 +1221,12 @@ IronParser::FunctionArgContext::FunctionArgContext(ParserRuleContext *parent, si
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* IronParser::FunctionArgContext::IDENTIFIER() {
-  return getToken(IronParser::IDENTIFIER, 0);
-}
-
 tree::TerminalNode* IronParser::FunctionArgContext::COLON() {
   return getToken(IronParser::COLON, 0);
+}
+
+tree::TerminalNode* IronParser::FunctionArgContext::IDENTIFIER() {
+  return getToken(IronParser::IDENTIFIER, 0);
 }
 
 IronParser::VarTypesContext* IronParser::FunctionArgContext::varTypes() {
@@ -1273,7 +1273,7 @@ IronParser::FunctionArgContext* IronParser::functionArg() {
   try {
     enterOuterAlt(_localctx, 1);
     setState(137);
-    match(IronParser::IDENTIFIER);
+    antlrcpp::downCast<FunctionArgContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
     setState(138);
     match(IronParser::COLON);
     setState(141);
@@ -1325,16 +1325,16 @@ IronParser::FunctionCallContext::FunctionCallContext(ParserRuleContext *parent, 
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* IronParser::FunctionCallContext::IDENTIFIER() {
-  return getToken(IronParser::IDENTIFIER, 0);
-}
-
 tree::TerminalNode* IronParser::FunctionCallContext::L_PAREN() {
   return getToken(IronParser::L_PAREN, 0);
 }
 
 tree::TerminalNode* IronParser::FunctionCallContext::R_PAREN() {
   return getToken(IronParser::R_PAREN, 0);
+}
+
+tree::TerminalNode* IronParser::FunctionCallContext::IDENTIFIER() {
+  return getToken(IronParser::IDENTIFIER, 0);
 }
 
 IronParser::FunctionCallArgsContext* IronParser::FunctionCallContext::functionCallArgs() {
@@ -1373,7 +1373,7 @@ IronParser::FunctionCallContext* IronParser::functionCall() {
   try {
     enterOuterAlt(_localctx, 1);
     setState(146);
-    match(IronParser::IDENTIFIER);
+    antlrcpp::downCast<FunctionCallContext *>(_localctx)->functionName = match(IronParser::IDENTIFIER);
     setState(147);
     match(IronParser::L_PAREN);
     setState(149);
@@ -1564,7 +1564,7 @@ IronParser::FunctionCallArgContext* IronParser::functionCallArg() {
 
     case 5: {
       setState(167);
-      antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
+      antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->anotherVarName = match(IronParser::IDENTIFIER);
       break;
     }
 

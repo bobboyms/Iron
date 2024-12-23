@@ -43,6 +43,7 @@ namespace TokenMap {
         // tipos de controle
         VARIABLE,
         VOID,
+        NUMBER,
     };
 
     inline const std::unordered_map<int, std::string> tokenText = {
@@ -79,7 +80,8 @@ namespace TokenMap {
         // tipos de controle
         {GLOBAL, "global"},
         {VARIABLE, "variable"},
-        {VOID, "void"}
+        {VOID, "void"},
+        {NUMBER, "number"}
     };
 
 
@@ -105,6 +107,7 @@ namespace TokenMap {
             case TokenMap::TYPE_DOUBLE:
             case TokenMap::TYPE_FLOAT:
             case TokenMap::TYPE_INT:
+            case TokenMap::NUMBER:
                 return true;
             default:
                 return false;

@@ -1,5 +1,7 @@
-fn teste() {
-            let a:int = 25
-            let b:string = "25"
-            a + b
-}
+fn mult(x:int, b:int):int {
+            x * b
+        }
+
+        fn soma(x:int, b:int) {
+            x + b * mult(x:x,b:b)
+        }
