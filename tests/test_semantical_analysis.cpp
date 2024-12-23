@@ -394,3 +394,30 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchIntAndFloatLiteral) {
 
     EXPECT_NO_THROW(runAnalysis(input));
 }
+
+TEST_F(SemanticalAnalysisTest, FunctionArgNotFound) {
+    std::string input = R"(
+        fn sub(ax:int, bx:int): int {}
+
+        fn soma(): int {
+            let y: string = "hello"
+            32.25 * sub(ax: 1, nx: 25)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), FunctionArgNotFoundException);
+}
+
+
+TEST_F(SemanticalAnalysisTest, FunctionArgFound) {
+    std::string input = R"(
+        fn sub(ax:int, bx:int, nx:int): int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: 32, nx: 25)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+

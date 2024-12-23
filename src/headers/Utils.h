@@ -44,6 +44,15 @@ namespace iron {
         return std::nullopt;
     }
 
+    int typeOfRealNumber(const std::string valor) {
+        if (!valor.empty() && valor.back() == 'F') {
+            return TokenMap::TYPE_FLOAT;
+        }
+        if (!valor.empty() && valor.back() == 'D') {
+            return TokenMap::TYPE_DOUBLE;
+        }
+    }
+
 } // namespace iron
 
 #endif // UTILS_H

@@ -54,6 +54,12 @@ public:
         : SemanticException(msg) {}
 };
 
+class FunctionArgNotFoundException : public SemanticException {
+public:
+    explicit FunctionArgNotFoundException(const std::string& msg)
+        : SemanticException(msg) {}
+};
+
 class LexusNotFoundException : public std::exception {
 private:
     std::string message; // Mensagem de erro

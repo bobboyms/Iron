@@ -38,7 +38,7 @@ TYPE_BOOLEAN   : 'boolean' ;
 TYPE_DOUBLE    : 'double' ;
 
 // Literais
-REAL_NUMBER    : '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? ;
+REAL_NUMBER    : '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
 INT_NUMBER     : '-'? [0-9]+ ;
 BOOLEAN_VALUE  : 'true' | 'false' ;
 STRING_LITERAL : '"' ~["\r\n]* '"' ;

@@ -415,9 +415,36 @@ void SemanticalAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext
 
     //valida se o argumento existe na função que está sendo chamada
     if (auto argOpt = iron::getArgumentByName(globalFunction.value(), argName)) {
-        auto [argName, argType] = *argOpt;
+        auto [foundArgName, foundArgType] = *argOpt;
+
+        if (ctx->dataFormat()) {
+            bool isIntLiteral = ctx->dataFormat()->INT_NUMBER();
+            bool isRealLiteral = ctx->dataFormat()->REAL_NUMBER();
+
+            if (foundArgType == TokenMap::TYPE_INT) {
+                if (!isIntLiteral) {
+                    iron::printf(
+                        "Argument {} is incompatible with type int. Line: {}",
+                        foundArgName,
+                        line
+                    );
+                }
+            }
+
+            else if (foundArgType == TokenMap::TYPE_FLOAT || foundArgType == TokenMap::TYPE_DOUBLE) {
+                if (!isRealLiteral) {
+                    iron::printf(
+                        "Argument {} is incompatible with type {}. Line: {}",
+                        foundArgName,
+                        (foundArgType == TokenMap::TYPE_FLOAT ? "float" : "double"),
+                        line
+                    );
+                }
+            }
+        }
+        
     } else {
-        throw FunctionNotFoundException(iron::format(
+        throw FunctionArgNotFoundException(iron::format(
             "Argument {} not found in function fn {}. Line: {}",
             color::colorText(argName, color::BOLD_GREEN),
             color::colorText(functionCallName, color::BOLD_GREEN),
