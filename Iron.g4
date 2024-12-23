@@ -130,7 +130,7 @@ functionCallArgs
 
 // Argumento da chamada de função
 functionCallArg
-    : varName=IDENTIFIER COLON (dataFormat | functionCall | arrowFunctionInline | arrowFunctionBlock | varName=IDENTIFIER)
+    : varName=IDENTIFIER COLON (dataFormat | functionCall | arrowFunctionInline | arrowFunctionBlock | anotherVarName=IDENTIFIER)
     ;
 
 // Declaração de variável

@@ -15,6 +15,7 @@ struct SymbolInfo {
     int type;
     int dataType;
     std::shared_ptr<class SymbolTable> scope;
+    std::vector<std::pair<std::string, int>> args;
 };
 
 // Classe para representar a Tabela de Símbolos
@@ -26,8 +27,10 @@ private:
 public:
     SymbolTable(std::shared_ptr<SymbolTable> parentScope = nullptr);
     void addSymbol(const std::string& name, const SymbolInfo& info);
-    std::optional<SymbolInfo> lookup(const std::string& name) const;
     void printSymbols(const std::string& scopeName) const;
+    std::optional<SymbolInfo> lookup(const std::string& name) const;
+    SymbolInfo* lookupPtr(const std::string& name);
+
 };
 
 // Gerenciador de escopos usando uma pilha

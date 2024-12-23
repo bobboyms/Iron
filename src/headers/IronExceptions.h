@@ -17,6 +17,7 @@ public:
     }
 };
 
+
 class VariableRedefinitionException : public SemanticException {
 public:
     explicit VariableRedefinitionException(const std::string& msg)
@@ -47,6 +48,11 @@ public:
         : SemanticException(msg) {}
 };
 
+class FunctionNotFoundException : public SemanticException {
+public:
+    explicit FunctionNotFoundException(const std::string& msg)
+        : SemanticException(msg) {}
+};
 
 class LexusNotFoundException : public std::exception {
 private:

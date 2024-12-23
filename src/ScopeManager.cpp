@@ -12,6 +12,19 @@ void SymbolTable::addSymbol(const std::string& name, const SymbolInfo& info) {
     symbols[name] = info;
 }
 
+SymbolInfo* SymbolTable::lookupPtr(const std::string& name) {
+    auto it = symbols.find(name);
+    if (it != symbols.end()) {
+        return &it->second;
+    }
+    if (parent) {
+        return parent->lookupPtr(name);
+    }
+    return nullptr;
+}
+
+
+
 std::optional<SymbolInfo> SymbolTable::lookup(const std::string& name) const {
     auto it = symbols.find(name);
     if (it != symbols.end()) {

@@ -1564,7 +1564,7 @@ IronParser::FunctionCallArgContext* IronParser::functionCallArg() {
 
     case 5: {
       setState(167);
-      antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
+      antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->anotherVarName = match(IronParser::IDENTIFIER);
       break;
     }
 

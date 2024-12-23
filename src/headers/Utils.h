@@ -34,6 +34,16 @@ namespace iron {
         std::cout << result << "\n";
     }
 
+    std::optional<std::pair<std::string, int>> getArgumentByName(const SymbolInfo& info, const std::string& argName)
+    {
+        for (const auto& arg : info.args) {
+            if (arg.first == argName) {
+                return arg;
+            }
+        }
+        return std::nullopt;
+    }
+
 } // namespace iron
 
 #endif // UTILS_H

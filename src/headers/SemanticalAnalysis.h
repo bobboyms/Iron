@@ -25,10 +25,8 @@ private:
     void visitFunctionArgs(IronParser::FunctionArgsContext* ctx);
     void visitFunctionArg(IronParser::FunctionArgContext* ctx);
 
-    //std::unordered_map<antlr4::ParserRuleContext*, std::string> typeMap;
-    std::string left;
-    std::string op;
-    std::string right;
+    void visitFunctionCallArgs(IronParser::FunctionCallArgsContext* ctx);
+    void visitFunctionCallArg(IronParser::FunctionCallArgContext* ctx);
 
 
 public:

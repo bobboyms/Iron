@@ -1,3 +1,7 @@
-fn valor(oi:int, bb:string):int {
-    return 25
-}
+fn mult(x:int, b:int):int {
+            x * b
+        }
+
+        fn soma(x:int, b:int) {
+            x + b * mult(x:x,b:b)
+        }
