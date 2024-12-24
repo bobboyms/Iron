@@ -44,6 +44,7 @@ namespace TokenMap {
         VARIABLE,
         VOID,
         NUMBER,
+        NO_REAL_NUMBER,
     };
 
     inline const std::unordered_map<int, std::string> tokenText = {
@@ -81,7 +82,8 @@ namespace TokenMap {
         {GLOBAL, "global"},
         {VARIABLE, "variable"},
         {VOID, "void"},
-        {NUMBER, "number"}
+        {NUMBER, "number"},
+        {NO_REAL_NUMBER, "not_is_a_real_number"},
     };
 
 

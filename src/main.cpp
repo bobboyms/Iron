@@ -38,10 +38,13 @@ int runAnalysis(const std::string& input) {
 int main() {
     std::string input = R"(
         
-        fn sub(ax:int, bx:float): int {}
+        fn div():int {}
+        fn mult(n:int, p:float):float {}
+
+        fn sub(ax:int, bx:float):int {}
 
         fn soma(): int {
-            32.25 * sub(ax: 1, bx: 25.32)
+            32.25 * sub(ax: div(), bx: mult(n:22, p:25.00F))
         }
     )";
 

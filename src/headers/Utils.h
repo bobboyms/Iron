@@ -47,10 +47,11 @@ namespace iron {
     int typeOfRealNumber(const std::string valor) {
         if (!valor.empty() && valor.back() == 'F') {
             return TokenMap::TYPE_FLOAT;
-        }
+        } else 
         if (!valor.empty() && valor.back() == 'D') {
             return TokenMap::TYPE_DOUBLE;
         }
+        return TokenMap::NO_REAL_NUMBER;
     }
 
 } // namespace iron

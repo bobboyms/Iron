@@ -1,5 +1,8 @@
-fn sub(ax:int, bx:float): int {}
+
+fn mult(n:int, z:float):float {}
+
+        fn sub(ax:int, bx:float):int {}
 
         fn soma(): int {
-            32.25 * sub(ax: 1, bx: 25.23F)
+            32.25 * sub(ax: 1, bx: mult(n:22, z:22.33))
         }

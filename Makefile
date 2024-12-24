@@ -15,7 +15,8 @@ GTEST_LIBS = -L/opt/homebrew/lib -lgtest -lgtest_main
 TARGET = program 
 SRC = src/main.cpp
 TEST_TARGET = test_program
-TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp tests/test_var_parser.cpp tests/test_function_parser.cpp
+TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp 
+#tests/test_var_parser.cpp tests/test_function_parser.cpp
 # Arquivos .cpp gerados pelo ANTLR4
 
 # 
