@@ -38,6 +38,7 @@ private:
                               const std::string& actualFunctionName,
                               std::shared_ptr<SymbolTable> parentScope);
 
+    void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx);
 
 public:
     SemanticalAnalysis(std::unique_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);

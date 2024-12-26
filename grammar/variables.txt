@@ -1,8 +1,7 @@
+fn xpo(): int {
+}
 
-fn mult(n:int, z:float):float {}
-
-        fn sub(ax:int, bx:float):int {}
-
-        fn soma(): int {
-            32.25 * sub(ax: 1, bx: mult(n:22, z:22.33))
-        }
+fn main() {
+    let inline: fn = (a: int, b: int) -> a + b
+    inline(a:12, b:14)
+}

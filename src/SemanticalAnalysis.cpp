@@ -68,16 +68,18 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
             if (TokenMap::isNumber(currentDatatype) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
                 std::string errMessage;
                 if (type == TokenMap::FUNCTION) {
-                    errMessage =  "The return of fn {}:{}  is incompatible with Variable {}. Line: {}, Scope: {}";
-                } else {
-                    errMessage = "Variable {}:{} is incompatible with Variable {}. Line: {}, Scope: {}";
+                    errMessage =  "The return of fn {} is incompatible with Variable {}. Line: {}, Scope: {}";
+                } else if (type == TokenMap::VARIABLE) {
+                     errMessage = "Variable {} is incompatible with Variable {}. Line: {}, Scope: {}";
+                } else if (type == TokenMap::NUMBER) {
+                    errMessage = "The number {} is incompatible with Variable {}. Line: {}, Scope: {}";
                 }
+
 
                 throw TypeMismatchException(iron::format(
                     errMessage,
                     color::colorText(varName, color::BOLD_GREEN),
-                    color::colorText(TokenMap::getTokenText(currentDatatype), color::BOLD_GREEN),
-                    color::colorText(reviousVarStruct.name, color::BOLD_GREEN),
+                    color::colorText(iron::getTextAfterUnderscore(reviousVarStruct.name), color::BOLD_GREEN),
                     color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(
                         iron::format("{} {}", 
@@ -147,18 +149,30 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
     }
 
     if (ctx->functionCall()) {
+
         std::string functionName = ctx->functionCall()->functionName->getText();
         std::string currentScopeName = scopeManager->currentScopeName();
         auto currentScope = scopeManager->currentScope();
-        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
 
-        if (!globalScope) {
-            throw std::runtime_error("Global scope not found.");
-        }
+        bool isLocal = false;
+        std::optional<SymbolInfo> result;
+        std::string globalFunctionName;
 
-        auto result = globalScope->lookup(functionName);
-        if (!result.has_value()) {
-            throw VariableNotFoundException(iron::format(
+        auto functionNameResult = currentScope->lookup(functionName);
+        if (functionNameResult.has_value()) {
+            if (functionNameResult.value().dataType == TokenMap::FUNCTION) {
+                globalFunctionName = iron::format("{}_{}", currentScopeName, functionName);
+                isLocal = true;
+                result = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL))->lookup(currentScopeName);
+            } else {
+                auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+                if (!globalScope) {
+                    throw std::runtime_error("Global scope not found.");
+                }
+                result = globalScope->lookup(functionName);
+            }
+        } else {
+            throw FunctionNotFoundException(iron::format(
                 "Function '{}' not found. Line: {}, Scope: {}",
                 color::colorText(functionName, color::BOLD_GREEN),
                 color::colorText(std::to_string(line), color::YELLOW),
@@ -170,15 +184,29 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
             ));
         }
 
-        SymbolInfo globalFunction = result.value();
-       // auto localFunction = scopeManager->currentScope()->lookup(functionName);
+        if (result.has_value()) {
+            SymbolInfo arrowFunction = result.value();
+        } else {
+            throw FunctionNotFoundException(iron::format(
+                "Function '{}' not found. Line: {}, Scope: {}",
+                color::colorText(functionName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(
+                    iron::format("{} {}", 
+                        TokenMap::getTokenText(TokenMap::FUNCTION),
+                        currentScopeName), 
+                    color::BOLD_YELLOW)
+            ));
+        }
 
-        //globalFunction.args.size();
-        if (ctx->functionCall()->functionCallArgs()) {
-            auto functionCallName = ctx->functionCall()->functionName->getText();
-            scopeManager->enterScope(functionCallName);
-            visitFunctionCallArgs(ctx->functionCall()->functionCallArgs(),functionCallName,currentScope);
-            scopeManager->exitScope(functionCallName);
+        const SymbolInfo& globalFunction = result.value();
+        if (ctx->functionCall()) {
+            if (ctx->functionCall()->functionCallArgs()) {
+                std::string functionCallName = isLocal ? globalFunctionName : functionName;
+                scopeManager->enterScope(functionCallName);
+                visitFunctionCallArgs(ctx->functionCall()->functionCallArgs(), functionCallName, currentScope);
+                scopeManager->exitScope(functionCallName);
+            }
         }
 
         // Verifica compatibilidade com a variável anterior, se existir
@@ -200,13 +228,17 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                 }
             } else {
                 // Caso contrário, valida com a função validatePreviousVariable
-                validatePreviousVariable(functionName, globalFunction.dataType, TokenMap::FUNCTION, currentScopeName);
+                std::string validatedFunctionName = isLocal ? globalFunctionName : functionName;
+                validatePreviousVariable(validatedFunctionName, globalFunction.dataType, TokenMap::FUNCTION, currentScopeName);
             }
         }
 
-        reviousVarStruct.name = functionName;
-        reviousVarStruct.localDatatype = globalFunction.dataType;
+        reviousVarStruct.name = isLocal ? globalFunctionName : functionName;
+        reviousVarStruct.localDatatype = isLocal 
+            ? scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL))->lookup(globalFunctionName).value().dataType 
+            : globalFunction.dataType;
         reviousVarStruct.type = TokenMap::FUNCTION;
+        
     }
 
     // Visita filhos recursivamente
@@ -250,6 +282,9 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
     for (auto child : ctx->children) {
         if (auto expr = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expr);
+        }
+        if (auto function = dynamic_cast<IronParser::ArrowFunctionInlineContext*>(child)) {
+            visitArrowFunctionInline(function);
         }
     }
 }
@@ -575,4 +610,39 @@ void SemanticalAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext
             color::colorText(std::to_string(line), color::YELLOW)
         ));
     }
+}
+
+void SemanticalAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx) {
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+
+    auto currentScopeName = scopeManager->currentScopeName();
+
+    iron::printf("currentScopeName: {}", currentScopeName);
+
+    if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent->parent)) {
+        std::string globalFunctionName = iron::format("{}_{}",currentScopeName, varDeclaration->varName->getText());
+        iron::printf("globalFunctionName: {}", globalFunctionName);
+
+        if (ctx->functionSignature()->functionReturnType()) {
+            std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+            globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::getTokenType(type), nullptr});
+        } else {
+            globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
+        }
+
+        scopeManager->enterScope(globalFunctionName);
+
+        if (ctx->functionSignature()) {
+            visitFunctionSignature(ctx->functionSignature());
+        }
+
+        if (ctx->expr()) {
+            visitExpr(ctx->expr());
+        }
+
+        scopeManager->exitScope(globalFunctionName);
+
+    }
+
+    
 }

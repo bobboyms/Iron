@@ -66,17 +66,6 @@ TEST_F(SemanticalAnalysisTest, ValidExpr) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticalAnalysisTest, VariableWithFn) {
-    std::string input = R"(
-        fn another() {
-            let x: int
-            let b: fn = (a: int, b: int) -> a * b
-        }
-    )";
-
-    EXPECT_NO_THROW(runAnalysis(input));
-}
-
 // --- Testes Negativos ---
 TEST_F(SemanticalAnalysisTest, DuplicateFunctionDeclaration) {
     std::string input = R"(
@@ -657,7 +646,36 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch8) {
 }
 
 
+TEST_F(SemanticalAnalysisTest, InlineFunctionDeclaration) {
+    std::string input = R"(
+        fn main() {
+            let inline: fn = (a: int, b: int) -> a + b
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionDeclarationWhithCall) {
+    std::string input = R"(
+        fn main() {
+            let inline: fn = (a: int, b: int) -> a + b
+            inline(a:12, b:14)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
 
+TEST_F(SemanticalAnalysisTest, InlineFunctionDeclarationWhithCallAndLocalVariable) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline: fn = (a: int, b: int):int -> (xb + b) * a
+            inline(a:12, b:14)
+        }
+    )";
 
-
+    EXPECT_NO_THROW(runAnalysis(input));
+}
