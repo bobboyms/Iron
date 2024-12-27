@@ -1,2 +1,4 @@
-fn main(x:int = "32") {
-        }
+fn main() {
+    let x:string
+    let n: int = 12.25
+}

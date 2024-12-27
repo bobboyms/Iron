@@ -37,7 +37,10 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn main(x:double = true) {}
+        fn main() {
+            let x:string = 25
+            let n: int = 12.25
+        }
     )";
 
     return runAnalysis(input);

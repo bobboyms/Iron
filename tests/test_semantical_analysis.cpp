@@ -888,4 +888,20 @@ TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithPreciseValue) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
+TEST_F(SemanticalAnalysisTest, MultipleArgumentsValidAssignment) {
+    std::string input = R"(
+        fn main(x:double = 32.2541250, n:int, z:float, bb:string = "olá mundo", pp:boolean) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloatValue) {
+    std::string input = R"(
+        fn main(x:double = 32.2541250, n:int, z:float, bb:string = "olá mundo", pp:boolean = 2.36) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
 

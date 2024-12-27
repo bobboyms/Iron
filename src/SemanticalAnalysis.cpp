@@ -164,7 +164,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                 globalFunctionName = iron::format("{}_{}", currentScopeName, functionName);
                 isLocal = true;
                 result = globalScope->lookup(globalFunctionName);
-                iron::printf("Encontrou? {} ", functionName);
             } else {
                 auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
                 if (!globalScope) {
@@ -187,9 +186,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
         if (result.has_value()) {
             SymbolInfo arrowFunction = result.value();
-
-            iron::printf("função encontrada {}, retorno type {}", globalFunctionName, TokenMap::getTokenText(arrowFunction.dataType));
-            scopeManager->currentScope()->printSymbols("GLOBAL");
         } else {
             throw FunctionNotFoundException(iron::format(
                 "Function '{}' not found. Line: {}, Scope: {}",
@@ -216,8 +212,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         // Verifica compatibilidade com a variável anterior, se existir
         if (!reviousVarStruct.name.empty()) {
             if (reviousVarStruct.localDatatype == TokenMap::NUMBER) {
-                iron::printf("Retorno anterior: {} tipo anterior: {}", reviousVarStruct.name, TokenMap::getTokenText(reviousVarStruct.localDatatype));
-                iron::printf("Retorno retorno atual {}", TokenMap::getTokenText(globalFunction.dataType));
                 // Se a variável anterior é um número, a função deve retornar um tipo numérico
                 if (!TokenMap::isNumber(globalFunction.dataType)) {
                     throw TypeMismatchException(iron::format(
@@ -335,8 +329,43 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
             }
 
         }
-    }
+        if (auto var = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent)) {
+            auto varName = var->varName->getText();
+            auto varType = var->varTypes()->getText();
+            auto dataFormat = ctx->dataFormat()->getText();
+            auto dataFormatType = TokenMap::determineType(dataFormat);
 
+            if (TokenMap::isRealNumber(TokenMap::getTokenType(varType))) {
+                //iron::printf("É numero real {}, tipo {}", TokenMap::isRealNumber(TokenMap::getTokenType(argType)), TokenMap::getTokenText(dataFormatType));
+                if (TokenMap::REAL_NUMBER != dataFormatType) {
+                    throw TypeMismatchException(iron::format(
+                        "The type of argument {} is an {}, and the data format {} is {}. Line: {}, Scope: {}",
+                        color::colorText(varName, color::BOLD_GREEN),
+                        color::colorText(varType, color::BOLD_GREEN),
+                        color::colorText(dataFormat, color::BOLD_GREEN),
+                        color::colorText(TokenMap::getTokenText(dataFormatType), color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(iron::format("fn {}", scopeManager->currentScopeName()), color::YELLOW)
+                    ));
+                }
+                
+            } else
+            if (TokenMap::getTokenType(varType) != dataFormatType) {
+                
+                throw TypeMismatchException(iron::format(
+                        "The type of variable {} is an {}, and the data format {} is {}. Line: {}, Scope: {}",
+                        color::colorText(varName, color::BOLD_GREEN),
+                        color::colorText(varType, color::BOLD_GREEN),
+                        color::colorText(dataFormat, color::BOLD_GREEN),
+                        color::colorText(TokenMap::getTokenText(dataFormatType), color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(iron::format("fn {}", scopeManager->currentScopeName()), color::YELLOW)
+                ));
+
+            }
+
+        }
+    }
 
 }
 
@@ -364,15 +393,23 @@ void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext* 
 
     scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
 
+    if (ctx->assignment()) {
+        visitAssignment(ctx->assignment());
+    } else {
+        throw UninitializedVariableException(iron::format(
+            "Variable {} has not been initialized. Line: {}, Scope: {}",
+            color::colorText(varName, color::BOLD_GREEN),
+            color::colorText(std::to_string(line), color::YELLOW),
+            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW)));
+    }
+
     for (auto child : ctx->children) {
         if (auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext*>(child)) {
             visitVarAssignment(varAssignment);
         }
-
-        if (auto assignment = dynamic_cast<IronParser::AssignmentContext*>(child)) {
-            visitAssignment(assignment);
-        }
     }
+
+    
 }
 
 
