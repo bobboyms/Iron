@@ -68,16 +68,18 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
             if (TokenMap::isNumber(currentDatatype) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
                 std::string errMessage;
                 if (type == TokenMap::FUNCTION) {
-                    errMessage =  "The return of fn {}:{}  is incompatible with Variable {}. Line: {}, Scope: {}";
-                } else {
-                    errMessage = "Variable {}:{} is incompatible with Variable {}. Line: {}, Scope: {}";
+                    errMessage =  "The return of fn {} is incompatible with Variable {}. Line: {}, Scope: {}";
+                } else if (type == TokenMap::VARIABLE) {
+                     errMessage = "Variable {} is incompatible with Variable {}. Line: {}, Scope: {}";
+                } else if (type == TokenMap::NUMBER) {
+                    errMessage = "The number {} is incompatible with Variable {}. Line: {}, Scope: {}";
                 }
+
 
                 throw TypeMismatchException(iron::format(
                     errMessage,
                     color::colorText(varName, color::BOLD_GREEN),
-                    color::colorText(TokenMap::getTokenText(currentDatatype), color::BOLD_GREEN),
-                    color::colorText(reviousVarStruct.name, color::BOLD_GREEN),
+                    color::colorText(iron::getTextAfterUnderscore(reviousVarStruct.name), color::BOLD_GREEN),
                     color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(
                         iron::format("{} {}", 
@@ -147,42 +149,76 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
     }
 
     if (ctx->functionCall()) {
+
         std::string functionName = ctx->functionCall()->functionName->getText();
-        std::string currentScope = scopeManager->currentScopeName();
+        std::string currentScopeName = scopeManager->currentScopeName();
+        auto currentScope = scopeManager->currentScope();
         auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
 
-        if (!globalScope) {
-            throw std::runtime_error("Global scope not found.");
-        }
+        bool isLocal = false;
+        std::string globalFunctionName;
+        std::optional<SymbolInfo> result;
 
-        auto result = globalScope->lookup(functionName);
-        if (!result.has_value()) {
-            throw VariableNotFoundException(iron::format(
+        auto functionNameResult = currentScope->lookup(functionName);
+        if (functionNameResult.has_value()) {
+            if (functionNameResult.value().dataType == TokenMap::FUNCTION) {
+                globalFunctionName = iron::format("{}_{}", currentScopeName, functionName);
+                isLocal = true;
+                result = globalScope->lookup(globalFunctionName);
+                iron::printf("Encontrou? {} ", functionName);
+            } else {
+                auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+                if (!globalScope) {
+                    throw std::runtime_error("Global scope not found.");
+                }
+                result = globalScope->lookup(functionName);
+            }
+        } else {
+            throw FunctionNotFoundException(iron::format(
                 "Function '{}' not found. Line: {}, Scope: {}",
                 color::colorText(functionName, color::BOLD_GREEN),
                 color::colorText(std::to_string(line), color::YELLOW),
                 color::colorText(
                     iron::format("{} {}", 
                         TokenMap::getTokenText(TokenMap::FUNCTION),
-                        currentScope), 
+                        currentScopeName), 
                     color::BOLD_YELLOW)
             ));
         }
 
-        SymbolInfo globalFunction = result.value();
-       // auto localFunction = scopeManager->currentScope()->lookup(functionName);
+        if (result.has_value()) {
+            SymbolInfo arrowFunction = result.value();
 
-        //globalFunction.args.size();
-        if (ctx->functionCall()->functionCallArgs()) {
-            auto functionCallName = ctx->functionCall()->functionName->getText();
-            scopeManager->enterScope(functionCallName);
-            visitFunctionCallArgs(ctx->functionCall()->functionCallArgs());
-            scopeManager->exitScope(functionCallName);
+            iron::printf("função encontrada {}, retorno type {}", globalFunctionName, TokenMap::getTokenText(arrowFunction.dataType));
+            scopeManager->currentScope()->printSymbols("GLOBAL");
+        } else {
+            throw FunctionNotFoundException(iron::format(
+                "Function '{}' not found. Line: {}, Scope: {}",
+                color::colorText(functionName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(
+                    iron::format("{} {}", 
+                        TokenMap::getTokenText(TokenMap::FUNCTION),
+                        currentScopeName), 
+                    color::BOLD_YELLOW)
+            ));
+        }
+
+        const SymbolInfo& globalFunction = result.value();
+        if (ctx->functionCall()) {
+            if (ctx->functionCall()->functionCallArgs()) {
+                std::string functionCallName = isLocal ? globalFunctionName : functionName;
+                scopeManager->enterScope(functionCallName);
+                visitFunctionCallArgs(ctx->functionCall()->functionCallArgs(), functionCallName, currentScope);
+                scopeManager->exitScope(functionCallName);
+            }
         }
 
         // Verifica compatibilidade com a variável anterior, se existir
         if (!reviousVarStruct.name.empty()) {
             if (reviousVarStruct.localDatatype == TokenMap::NUMBER) {
+                iron::printf("Retorno anterior: {} tipo anterior: {}", reviousVarStruct.name, TokenMap::getTokenText(reviousVarStruct.localDatatype));
+                iron::printf("Retorno retorno atual {}", TokenMap::getTokenText(globalFunction.dataType));
                 // Se a variável anterior é um número, a função deve retornar um tipo numérico
                 if (!TokenMap::isNumber(globalFunction.dataType)) {
                     throw TypeMismatchException(iron::format(
@@ -199,13 +235,17 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                 }
             } else {
                 // Caso contrário, valida com a função validatePreviousVariable
-                validatePreviousVariable(functionName, globalFunction.dataType, TokenMap::FUNCTION, currentScope);
+                std::string validatedFunctionName = isLocal ? globalFunctionName : functionName;
+                validatePreviousVariable(validatedFunctionName, globalFunction.dataType, TokenMap::FUNCTION, currentScopeName);
             }
         }
 
-        reviousVarStruct.name = functionName;
-        reviousVarStruct.localDatatype = globalFunction.dataType;
+        reviousVarStruct.name = isLocal ? globalFunctionName : functionName;
+        reviousVarStruct.localDatatype = isLocal 
+            ? scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL))->lookup(globalFunctionName).value().dataType 
+            : globalFunction.dataType;
         reviousVarStruct.type = TokenMap::FUNCTION;
+        
     }
 
     // Visita filhos recursivamente
@@ -250,6 +290,9 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
         if (auto expr = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expr);
         }
+        if (auto function = dynamic_cast<IronParser::ArrowFunctionInlineContext*>(child)) {
+            visitArrowFunctionInline(function);
+        }
     }
 }
 
@@ -260,8 +303,6 @@ void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext* 
     std::string varType = ctx->varTypes()->getText();
 
     int line = ctx->getStart()->getLine();
-
-    
 
     const std::string scope = scopeManager->currentScopeName();
     auto result = scopeManager->currentScope()->lookup(varName);
@@ -324,10 +365,7 @@ void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclaratio
     scopeManager->enterScope(functionName);
 
     if (ctx->functionSignature()) {
-        //iron::printf("1 Function: {}", functionName);
         visitFunctionSignature(ctx->functionSignature());
-        //iron::printf("2 Function: {}", functionName);
-
     }
 
     for (auto child : ctx->children) {
@@ -388,66 +426,228 @@ void SemanticalAnalysis::visitFunctionArg(IronParser::FunctionArgContext* ctx) {
     }
 }
 
-void SemanticalAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext* ctx) {
+void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext* ctx,
+                                           const std::string& actualFunctionName,
+                                           std::shared_ptr<SymbolTable> parentScope)
+{
+    // Se a call tem argumentos
+    if (ctx->functionCallArgs()) {
+        // visita cada argumento, passando o MESMO nome de função
+        visitFunctionCallArgs(ctx->functionCallArgs(), actualFunctionName, parentScope);
+    }
+}
+
+// Visita a lista de argumentos da função "actualFunctionName"
+void SemanticalAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext* ctx,
+                                               const std::string& actualFunctionName,
+                                               std::shared_ptr<SymbolTable> parentScope)
+{
     for (auto child : ctx->children) {
         if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext*>(child)) {
-            visitFunctionCallArg(functionCallArg);
+            visitFunctionCallArg(functionCallArg, actualFunctionName, parentScope);
         }
     }
 }
-void SemanticalAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext* ctx) {
-    
+
+// Visita um único argumento "argName" de "actualFunctionName"
+void SemanticalAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext* ctx,
+                                              const std::string& actualFunctionName,
+                                              std::shared_ptr<SymbolTable> parentScope)
+{
+    // Exemplo de debug
     auto line = ctx->getStart()->getLine();
-    auto functionCallName = scopeManager->currentScopeName();
+
+    // O nome do parâmetro formal
     auto argName = ctx->varName->getText();
-    //auto anotherVarName = ctx->anotherVarName->getText();
-    
-    
-    auto globalFunction = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL))->lookup(functionCallName);
 
-    if (!globalFunction.has_value()) {
+    // Procura a função (actualFunctionName) no escopo global
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+    if (!globalScope) {
+        throw std::runtime_error("Global scope not found.");
+    }
 
+    auto globalFunctionOpt = globalScope->lookup(actualFunctionName);
+    if (!globalFunctionOpt.has_value()) {
         throw FunctionNotFoundException(iron::format(
             "Function fn {} not found. Line: {}",
-            color::colorText(functionCallName, color::BOLD_GREEN),
+            color::colorText(actualFunctionName, color::BOLD_GREEN),
             color::colorText(std::to_string(line), color::YELLOW)));
     }
 
-    //valida se o argumento existe na função que está sendo chamada
-    if (auto argOpt = iron::getArgumentByName(globalFunction.value(), argName)) {
+    // Verifica se "argName" existe na lista de parâmetros formais dessa função
+    if (auto argOpt = iron::getArgumentByName(globalFunctionOpt.value(), argName)) {
         auto [foundArgName, foundArgType] = *argOpt;
 
+        // Se o parser identificou algo como 'dataFormat', checa se é int, float, etc.
         if (ctx->dataFormat()) {
-            bool isIntLiteral = ctx->dataFormat()->INT_NUMBER();
+            bool isIntLiteral  = ctx->dataFormat()->INT_NUMBER();
             bool isRealLiteral = ctx->dataFormat()->REAL_NUMBER();
 
             if (foundArgType == TokenMap::TYPE_INT) {
                 if (!isIntLiteral) {
-                    iron::printf(
+                    throw TypeMismatchException(iron::format(
                         "Argument {} is incompatible with type int. Line: {}",
-                        foundArgName,
-                        line
-                    );
+                        color::colorText(foundArgName, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW)
+                    ));
                 }
             }
-
-            else if (foundArgType == TokenMap::TYPE_FLOAT || foundArgType == TokenMap::TYPE_DOUBLE) {
+            else if (foundArgType == TokenMap::TYPE_FLOAT
+                  || foundArgType == TokenMap::TYPE_DOUBLE)
+            {
                 if (!isRealLiteral) {
-                    iron::printf(
+                    throw TypeMismatchException(iron::format(
                         "Argument {} is incompatible with type {}. Line: {}",
-                        foundArgName,
-                        (foundArgType == TokenMap::TYPE_FLOAT ? "float" : "double"),
-                        line
+                        color::colorText(foundArgName, color::BOLD_GREEN),
+                        color::colorText(
+                            foundArgType == TokenMap::TYPE_FLOAT ? "float" : "double",
+                            color::BOLD_GREEN
+                        ),
+                        color::colorText(std::to_string(line), color::YELLOW)
+                    ));
+                } else {
+                    auto literalType = iron::typeOfRealNumber(
+                        ctx->dataFormat()->REAL_NUMBER()->getText()
                     );
+
+                    if (literalType == TokenMap::NO_REAL_NUMBER) {
+                        auto dataType = ctx->dataFormat()->getText();
+                        throw TypeMismatchException(iron::format(
+                            "Invalid real number type for argument {}. Expected {} or {}. Line: {}",
+                            color::colorText(foundArgName, color::BOLD_GREEN),
+                            color::colorText(iron::format("{}{}", dataType, "D"), color::BOLD_GREEN),
+                            color::colorText(iron::format("{}{}", dataType, "F"), color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW)
+                        ));
+                    }
+
+                    if (foundArgType == TokenMap::TYPE_FLOAT  && literalType == TokenMap::TYPE_FLOAT) {
+                        // OK
+                    }
+                    else if (foundArgType == TokenMap::TYPE_DOUBLE && literalType == TokenMap::TYPE_DOUBLE) {
+                        // OK
+                    }
+                    else {
+                        throw TypeMismatchException(iron::format(
+                            "Invalid real number type for argument {}. Expected {}, found {}. Line: {}",
+                            color::colorText(foundArgName, color::BOLD_GREEN),
+                            color::colorText(
+                                foundArgType == TokenMap::TYPE_FLOAT ? "float" : "double",
+                                color::BOLD_GREEN
+                            ),
+                            color::colorText(
+                                literalType == TokenMap::TYPE_DOUBLE ? "double" : "float",
+                                color::BOLD_GREEN
+                            ),
+                            color::colorText(std::to_string(line), color::YELLOW)
+                        ));
+                    }
                 }
             }
         }
-        
-    } else {
+
+        // Se for algo como "varName: anotherVarName"
+        if (ctx->anotherVarName) {
+            auto anotherVarName = ctx->anotherVarName->getText();
+            auto anotherVarLookup = parentScope->lookup(anotherVarName);
+
+            if (anotherVarLookup.has_value()) {
+                auto symbolInfo = anotherVarLookup.value();
+
+                if (symbolInfo.type != TokenMap::VARIABLE) {
+                    throw VariableNotFoundException(iron::format(
+                        "{} is not a variable in that scope (fn {}). Line: {}",
+                        color::colorText(anotherVarName, color::BOLD_GREEN),
+                        color::colorText(parentScope ? parentScope->getName() : "Global", color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW)
+                    ));
+                }
+
+                if (foundArgType != symbolInfo.dataType) {
+                    throw TypeMismatchException(iron::format(
+                        "Argument {} is incompatible with Variable {}. Line: {}",
+                        color::colorText(foundArgName, color::BOLD_GREEN),
+                        color::colorText(anotherVarName, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW)
+                    ));
+                }
+            } else {
+                throw VariableNotFoundException(iron::format(
+                    "Variable {} not found in that scope (fn {}). Line: {}",
+                    color::colorText(anotherVarName, color::BOLD_GREEN),
+                    color::colorText(parentScope ? parentScope->getName() : "Global", color::BOLD_GREEN),
+                    color::colorText(std::to_string(line), color::YELLOW)
+                ));
+            }
+        }
+
+        // Se o valor do argumento for outra functionCall, 
+        // precisamos descobrir o nome REAL dessa functionCall
+        if (ctx->functionCall()) {
+            
+
+            auto innerFunctionName = ctx->functionCall()->functionName->getText();
+            iron::printf("innerFunctionName: {} Argname {}", innerFunctionName, argName);
+
+            if (auto argOpt = iron::getArgumentByName(globalFunctionOpt.value(), argName)) {
+                auto innerFunction = scopeManager->currentScope()->lookup(innerFunctionName);
+                auto [foundArgName, foundArgType] = *argOpt;
+                if (foundArgType != innerFunction->dataType) {
+                    throw TypeMismatchException(iron::format(
+                        "The return of function {} need be {}. Line: {}",
+                        color::colorText(iron::format("fn {}", innerFunctionName), color::BOLD_GREEN),
+                        color::colorText(TokenMap::getTokenText(foundArgType), color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW)
+                    ));
+                }
+                iron::printf("foundArgName: {} foundArgType: {}", foundArgName, foundArgType);
+            }
+
+            // Agora chamamos recursivamente o visitFunctionCall, 
+            // passamos "innerFunctionName" e o MESMO parentScope:
+            visitFunctionCall(ctx->functionCall(), innerFunctionName, parentScope);
+        }
+    }
+    else {
+        // Se não encontrou esse argName na função actualFunctionName
         throw FunctionArgNotFoundException(iron::format(
             "Argument {} not found in function fn {}. Line: {}",
             color::colorText(argName, color::BOLD_GREEN),
-            color::colorText(functionCallName, color::BOLD_GREEN),
-            color::colorText(std::to_string(line), color::YELLOW)));
+            color::colorText(actualFunctionName, color::BOLD_GREEN),
+            color::colorText(std::to_string(line), color::YELLOW)
+        ));
     }
+}
+
+void SemanticalAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx) {
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+
+    auto currentScopeName = scopeManager->currentScopeName();
+
+    if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent->parent)) {
+        std::string globalFunctionName = iron::format("{}_{}",currentScopeName, varDeclaration->varName->getText());
+
+        if (ctx->functionSignature()->functionReturnType()) {
+            std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+            globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::getTokenType(type), nullptr});
+            iron::printf("Tem tipo {}", type);
+        } else {
+            globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
+        }
+
+        scopeManager->enterScope(globalFunctionName);
+
+        if (ctx->functionSignature()) {
+            visitFunctionSignature(ctx->functionSignature());
+        }
+
+        if (ctx->expr()) {
+            visitExpr(ctx->expr());
+        }
+
+        scopeManager->exitScope(globalFunctionName);
+
+    }
+
+    
 }

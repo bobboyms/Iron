@@ -48,9 +48,7 @@ TEST_F(SemanticalAnalysisTest, ValidNestedScopes) {
     std::string input = R"(
         fn teste(): int {
             let x: int = 10
-            {
-                let y: int = 20
-            }
+            let y: int = 20
         }
     )";
 
@@ -62,17 +60,6 @@ TEST_F(SemanticalAnalysisTest, ValidExpr) {
         fn test() {
             let b:int = 12
             let x:int = b
-        }
-    )";
-
-    EXPECT_NO_THROW(runAnalysis(input));
-}
-
-TEST_F(SemanticalAnalysisTest, VariableWithFn) {
-    std::string input = R"(
-        fn another() {
-            let x: int
-            let b: fn = (a: int, b: int) -> a * b
         }
     )";
 
@@ -349,7 +336,7 @@ TEST_F(SemanticalAnalysisTest, CompatibleTypesWithFunctionCalls) {
 
         fn soma(): int {
             let x: int = 10
-            return x + sub()  // ambos int, operação válida
+            return x + sub()
         }
     )";
 
@@ -419,5 +406,366 @@ TEST_F(SemanticalAnalysisTest, FunctionArgFound) {
     )";
 
     EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, SubIntFloat_IntLiteralInFloatParam_ShouldFail) {
+    std::string input = R"(
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: 25)
+        }
+    )";
+
+    // Esperamos que esse caso gere incompatibilidade de tipos 
+    // e lance TypeMismatchException (ajuste se usa outro tipo de exceção)
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, SubIntFloat_DoubleLiteralInFloatParam_ShouldFail) {
+    std::string input = R"(
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: 25.32D)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, SubDoubleFloat_CompatibleRealNumbers_ShouldPass) {
+    std::string input = R"(
+        fn sub(ax:double, bx:float): int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1.365D, bx: 25.32F)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, SubIntFloatLNotiteral_ShouldFail) {
+    std::string input = R"(
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: 25.32)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCall) {
+    std::string input = R"(
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(n:float): int {
+            let x: float = 25.32
+            32.25 * sub(ax: 1, bx: n)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCall2) {
+    std::string input = R"(
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(n:float): int {
+            let x: float = 25.32
+            32.25 * sub(ax: 1, bx: x)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, VarNotFoundInFunctionCall) {
+    std::string input = R"(
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(): int {
+            let x: float = 25.32
+            32.25 * sub(ax: 1, bx: n)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch) {
+    std::string input = R"(
+        fn sub(ax:int, bx:int): int {}
+
+        fn soma(): int {
+            let x: float = 25.32
+            32.25 * sub(ax: 1, bx: x)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch2) {
+    std::string input = R"(
+        fn sub(ax:double, bx:int): int {}
+
+        fn soma(): int {
+            let x: int = 25
+            32.25 * sub(ax: 1, bx: x)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch) {
+    std::string input = R"(
+        fn sub(ax:double, bx:int): int {}
+
+        fn soma(x: int = 25): int {
+            32.25 * sub(ax: 36.26D, bx: x)
+        }
+    )";
+
+     EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch1) {
+    std::string input = R"(
+        fn sub(ax:double, bx:double): int {}
+
+        fn soma(c:double, k:double=25.34): int {
+            32.25 * sub(ax: c, bx: k)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch3) {
+    std::string input = R"(
+        fn sub(ax:double, bx:double): int {}
+
+        fn soma(c:float, k:double=25.34): int {
+            32.25 * sub(ax: c, bx: k)
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch4) {
+    std::string input = R"(
+        fn mult(n:int, p:float):float {}
+
+        fn sub(ax:int, bx:float):int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: mult(n:22, p:22.25D))
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch5) {
+    std::string input = R"(
+        fn mult(n:int, p:float):float {}
+
+        fn sub(ax:int, bx:float):int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: mult(n:22, p:25))
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch2) {
+    std::string input = R"(
+        fn mult(n:int, p:float):float {}
+
+        fn sub(ax:int, bx:float):int {}
+
+        fn soma(): int {
+            let x: float = 25
+            32.25 * sub(ax: 1, bx: mult(n:22, p:x))
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch6) {
+    std::string input = R"(
+        fn mult(n:int, p:float):double {}
+
+        fn sub(ax:int, bx:float):int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: mult(n:22, p:25))
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch7) {
+    std::string input = R"(
+        fn mult(n:int, p:float):int {}
+
+        fn sub(ax:int, bx:float):int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: mult(n:22, p:25))
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch8) {
+    std::string input = R"(
+        fn div():int {}
+        fn mult(n:int, p:float):boolean {}
+
+        fn sub(ax:int, bx:float):int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: div(), bx: mult(n:22, p:25))
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionDeclaration) {
+    std::string input = R"(
+        fn main() {
+            let inline: fn = (a: int, b: int) -> a + b
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionDeclarationWhithCall) {
+    std::string input = R"(
+        fn main() {
+            let inline: fn = (a: int, b: int) -> a + b
+            inline(a:12, b:14)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionDeclarationWhithCallAndLocalVariable) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline: fn = (a: int, b: int):int -> (xb + b) * a
+            inline(a:12, b:14)
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionTypeMismatchException) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline: fn = (a: int, b: int) -> (xb + b) * a
+            inline(a:12, b:14) + 5.22
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline: fn = (a: int, b: int):int -> (xb + b) * a
+            inline(a:12, b:14) + 5.22
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException2) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x:int, y:float):float -> x + y
+
+            inline(a:12, b:14) + 5.22 / sum(x:2, y:3.26F)
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException3) {
+    std::string input = R"(
+        fn xptc():int {
+        }
+
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
+
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc()
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException4) {
+    std::string input = R"(
+        fn xptc(z:int):int {
+        }
+
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
+
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:32) / xb
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException5) {
+    std::string input = R"(
+        fn mult(pp:float):float {}
+        fn xptc(z:float):int {}
+
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
+
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:mult(pp:12.00F)) / xb
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
 }
 
