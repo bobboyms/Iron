@@ -153,17 +153,19 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         std::string functionName = ctx->functionCall()->functionName->getText();
         std::string currentScopeName = scopeManager->currentScopeName();
         auto currentScope = scopeManager->currentScope();
+        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
 
         bool isLocal = false;
-        std::optional<SymbolInfo> result;
         std::string globalFunctionName;
+        std::optional<SymbolInfo> result;
 
         auto functionNameResult = currentScope->lookup(functionName);
         if (functionNameResult.has_value()) {
             if (functionNameResult.value().dataType == TokenMap::FUNCTION) {
                 globalFunctionName = iron::format("{}_{}", currentScopeName, functionName);
                 isLocal = true;
-                result = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL))->lookup(currentScopeName);
+                result = globalScope->lookup(globalFunctionName);
+                iron::printf("Encontrou? {} ", functionName);
             } else {
                 auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
                 if (!globalScope) {
@@ -186,6 +188,9 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
 
         if (result.has_value()) {
             SymbolInfo arrowFunction = result.value();
+
+            iron::printf("função encontrada {}, retorno type {}", globalFunctionName, TokenMap::getTokenText(arrowFunction.dataType));
+            scopeManager->currentScope()->printSymbols("GLOBAL");
         } else {
             throw FunctionNotFoundException(iron::format(
                 "Function '{}' not found. Line: {}, Scope: {}",
@@ -212,6 +217,8 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         // Verifica compatibilidade com a variável anterior, se existir
         if (!reviousVarStruct.name.empty()) {
             if (reviousVarStruct.localDatatype == TokenMap::NUMBER) {
+                iron::printf("Retorno anterior: {} tipo anterior: {}", reviousVarStruct.name, TokenMap::getTokenText(reviousVarStruct.localDatatype));
+                iron::printf("Retorno retorno atual {}", TokenMap::getTokenText(globalFunction.dataType));
                 // Se a variável anterior é um número, a função deve retornar um tipo numérico
                 if (!TokenMap::isNumber(globalFunction.dataType)) {
                     throw TypeMismatchException(iron::format(
@@ -617,15 +624,13 @@ void SemanticalAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlin
 
     auto currentScopeName = scopeManager->currentScopeName();
 
-    iron::printf("currentScopeName: {}", currentScopeName);
-
     if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent->parent)) {
         std::string globalFunctionName = iron::format("{}_{}",currentScopeName, varDeclaration->varName->getText());
-        iron::printf("globalFunctionName: {}", globalFunctionName);
 
         if (ctx->functionSignature()->functionReturnType()) {
             std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
             globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::getTokenType(type), nullptr});
+            iron::printf("Tem tipo {}", type);
         } else {
             globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
         }

@@ -679,3 +679,96 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionDeclarationWhithCallAndLocalVariabl
 
     EXPECT_NO_THROW(runAnalysis(input));
 }
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionTypeMismatchException) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline: fn = (a: int, b: int) -> (xb + b) * a
+            inline(a:12, b:14) + 5.22
+        }
+    )";
+
+   EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline: fn = (a: int, b: int):int -> (xb + b) * a
+            inline(a:12, b:14) + 5.22
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException2) {
+    std::string input = R"(
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x:int, y:float):float -> x + y
+
+            inline(a:12, b:14) + 5.22 / sum(x:2, y:3.26F)
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException3) {
+    std::string input = R"(
+        fn xptc():int {
+        }
+
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
+
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc()
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException4) {
+    std::string input = R"(
+        fn xptc(z:int):int {
+        }
+
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
+
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:32) / xb
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException5) {
+    std::string input = R"(
+        fn mult(pp:float):float {
+        }
+
+        fn xptc(z:float):int {
+        }
+
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
+
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:mult(pp:12.00F)) / xb
+        }
+    )";
+
+   EXPECT_NO_THROW(runAnalysis(input));
+}
+
