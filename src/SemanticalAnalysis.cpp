@@ -63,8 +63,8 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
             reviousVarStruct.name.clear();
         } else {
 
-            
             SymbolInfo previousSymbolInfo = optPreviousSymbolInfo.value();
+
             if (TokenMap::isNumber(currentDatatype) != TokenMap::isNumber(previousSymbolInfo.dataType)) {
                 std::string errMessage;
                 if (type == TokenMap::FUNCTION) {
@@ -74,7 +74,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                 } else if (type == TokenMap::NUMBER) {
                     errMessage = "The number {} is incompatible with Variable {}. Line: {}, Scope: {}";
                 }
-
 
                 throw TypeMismatchException(iron::format(
                     errMessage,
@@ -286,6 +285,9 @@ void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext* ct
 }
 
 void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
+    
+    const int line = ctx->getStart()->getLine();
+    
     for (auto child : ctx->children) {
         if (auto expr = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expr);
@@ -293,7 +295,49 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
         if (auto function = dynamic_cast<IronParser::ArrowFunctionInlineContext*>(child)) {
             visitArrowFunctionInline(function);
         }
+
     }
+
+    if (ctx->dataFormat()) {
+        if (auto arg = dynamic_cast<IronParser::FunctionArgContext*>(ctx->parent)) {
+            auto argName = arg->varName->getText();
+            auto argType = arg->varTypes()->getText();
+            auto dataFormat = ctx->dataFormat()->getText();
+            auto dataFormatType = TokenMap::determineType(dataFormat);
+
+            if (TokenMap::isRealNumber(TokenMap::getTokenType(argType))) {
+                //iron::printf("É numero real {}, tipo {}", TokenMap::isRealNumber(TokenMap::getTokenType(argType)), TokenMap::getTokenText(dataFormatType));
+                if (TokenMap::REAL_NUMBER != dataFormatType) {
+                    throw TypeMismatchException(iron::format(
+                        "The type of argument {} is an {}, and the data format {} is {}. Line: {}, Scope: {}",
+                        color::colorText(argName, color::BOLD_GREEN),
+                        color::colorText(argType, color::BOLD_GREEN),
+                        color::colorText(dataFormat, color::BOLD_GREEN),
+                        color::colorText(TokenMap::getTokenText(dataFormatType), color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(iron::format("fn {}", scopeManager->currentScopeName()), color::YELLOW)
+                    ));
+                }
+                
+            } else
+            if (TokenMap::getTokenType(argType) != dataFormatType) {
+                
+                throw TypeMismatchException(iron::format(
+                        "The type of argument {} is an {}, and the data format {} is {}. Line: {}, Scope: {}",
+                        color::colorText(argName, color::BOLD_GREEN),
+                        color::colorText(argType, color::BOLD_GREEN),
+                        color::colorText(dataFormat, color::BOLD_GREEN),
+                        color::colorText(TokenMap::getTokenText(dataFormatType), color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(iron::format("fn {}", scopeManager->currentScopeName()), color::YELLOW)
+                ));
+
+            }
+
+        }
+    }
+
+
 }
 
 
@@ -417,6 +461,9 @@ void SemanticalAnalysis::visitFunctionArg(IronParser::FunctionArgContext* ctx) {
     // adciona argumento da função ao escopo atual
     scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
 
+    if (ctx->assignment()) {
+        visitAssignment(ctx->assignment());
+    }
 
     //adicionao argumento da função ao escopo global
     auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
@@ -587,20 +634,18 @@ void SemanticalAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext
             
 
             auto innerFunctionName = ctx->functionCall()->functionName->getText();
-            iron::printf("innerFunctionName: {} Argname {}", innerFunctionName, argName);
 
             if (auto argOpt = iron::getArgumentByName(globalFunctionOpt.value(), argName)) {
                 auto innerFunction = scopeManager->currentScope()->lookup(innerFunctionName);
                 auto [foundArgName, foundArgType] = *argOpt;
                 if (foundArgType != innerFunction->dataType) {
                     throw TypeMismatchException(iron::format(
-                        "The return of function {} need be {}. Line: {}",
+                        "The return of function {} must be {}. Line: {}",
                         color::colorText(iron::format("fn {}", innerFunctionName), color::BOLD_GREEN),
                         color::colorText(TokenMap::getTokenText(foundArgType), color::BOLD_GREEN),
                         color::colorText(std::to_string(line), color::YELLOW)
                     ));
                 }
-                iron::printf("foundArgName: {} foundArgType: {}", foundArgName, foundArgType);
             }
 
             // Agora chamamos recursivamente o visitFunctionCall, 
@@ -630,7 +675,6 @@ void SemanticalAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlin
         if (ctx->functionSignature()->functionReturnType()) {
             std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
             globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::getTokenType(type), nullptr});
-            iron::printf("Tem tipo {}", type);
         } else {
             globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr});
         }

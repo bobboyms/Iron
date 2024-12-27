@@ -769,3 +769,123 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException5) {
    EXPECT_NO_THROW(runAnalysis(input));
 }
 
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithInteger) {
+    std::string input = R"(
+        fn main(x:boolean = 21) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloat) {
+    std::string input = R"(
+        fn main(x:boolean = 21.36) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithString) {
+    std::string input = R"(
+        fn main(x:boolean = "olá mundo") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+//
+
+TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithFloat) {
+    std::string input = R"(
+        fn main(x:int = 21.2) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithString) {
+    std::string input = R"(
+        fn main(x:int = "olá mundo") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+//
+
+TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithInteger) {
+    std::string input = R"(
+        fn main(x:float = 12) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInteger) {
+    std::string input = R"(
+        fn main(x:double = 15) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithString) {
+    std::string input = R"(
+        fn main(x:float = "22.37") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInvalidString) {
+    std::string input = R"(
+        fn main(x:double = "15. + olá") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+
+//***** */
+TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithTrue) {
+    std::string input = R"(
+        fn main(x:boolean = true) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithFalse) {
+    std::string input = R"(
+        fn main(x:boolean = false) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, IntegerArgumentValidAssignment) {
+    std::string input = R"(
+        fn main(x:int = 25) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, FloatArgumentValidAssignment) {
+    std::string input = R"(
+        fn main(x:float = 25.00) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithPreciseValue) {
+    std::string input = R"(
+        fn main(x:double = 32.2541250) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+
