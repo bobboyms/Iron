@@ -754,11 +754,8 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException4) {
 
 TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException5) {
     std::string input = R"(
-        fn mult(pp:float):float {
-        }
-
-        fn xptc(z:float):int {
-        }
+        fn mult(pp:float):float {}
+        fn xptc(z:float):int {}
 
         fn main() {
             let xb: int = 36
