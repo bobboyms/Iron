@@ -38,7 +38,7 @@ int runAnalysis(const std::string& input) {
 int main() {
     std::string input = R"(
         fn main() {
-            let x:string = 25
+            let x:string
             let n: int = 12.25
         }
     )";

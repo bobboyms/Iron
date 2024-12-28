@@ -95,8 +95,8 @@ TEST_F(SemanticalAnalysisTest, DuplicateVariableInSameScope) {
 TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope) {
     std::string input = R"(
         fn teste() {
-            let x: int
-            let x: float
+            let x: int = 0
+            let x: float = 0.0
         }
     )";
 
@@ -106,7 +106,7 @@ TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope) {
 TEST_F(SemanticalAnalysisTest, DuplicateVariableWithDifferentType) {
     std::string input = R"(
         fn teste() {
-            let x: int
+            let x: int = 12
             let x: fn = (a: int, b: int) -> a * b
         }
     )";
@@ -594,7 +594,7 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch2) {
         fn sub(ax:int, bx:float):int {}
 
         fn soma(): int {
-            let x: float = 25
+            let x: float = 25.00
             32.25 * sub(ax: 1, bx: mult(n:22, p:x))
         }
     )";
@@ -903,5 +903,28 @@ TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloatValue) {
 
     EXPECT_THROW(runAnalysis(input), TypeMismatchException);
 }
+
+TEST_F(SemanticalAnalysisTest, UninitializedVariableWithFloatAssignment) {
+    std::string input = R"(
+        fn main() {
+            let x: string
+            let n: float = 12.25
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), UninitializedVariableException);
+}
+
+TEST_F(SemanticalAnalysisTest, UninitializedVariableWithStringAssignment) {
+    std::string input = R"(
+        fn main() {
+            let x: string = "hi lorena"
+            let n: int
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), UninitializedVariableException);
+}
+
 
 
