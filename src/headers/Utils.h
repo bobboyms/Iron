@@ -54,21 +54,8 @@ namespace iron {
         return TokenMap::NO_REAL_NUMBER;
     }
 
-    #include <string>
-
-    // Função para obter todo o texto após o primeiro "_"
-    std::string getTextAfterUnderscore(const std::string& input) {
-        // Encontra a posição do primeiro "_"
-        size_t pos = input.find('_');
-        
-        // Verifica se "_" foi encontrado
-        if (pos != std::string::npos && pos + 1 < input.length()) {
-            // Retorna a substring após o "_"
-            return input.substr(pos + 1);
-        }
-        
-        // Retorna string vazia se "_" não for encontrado ou não houver texto após "_"
-        return input;
+    std::string createFunctionName(std::string currentScopeName, std::string functionName) {
+        return format("gfn_{}_{}",currentScopeName, functionName);
     }
 
 
