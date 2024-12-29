@@ -95,8 +95,8 @@ TEST_F(SemanticalAnalysisTest, DuplicateVariableInSameScope) {
 TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope) {
     std::string input = R"(
         fn teste() {
-            let x: int
-            let x: float
+            let x: int = 0
+            let x: float = 0.0
         }
     )";
 
@@ -106,7 +106,7 @@ TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope) {
 TEST_F(SemanticalAnalysisTest, DuplicateVariableWithDifferentType) {
     std::string input = R"(
         fn teste() {
-            let x: int
+            let x: int = 12
             let x: fn = (a: int, b: int) -> a * b
         }
     )";
@@ -594,7 +594,7 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch2) {
         fn sub(ax:int, bx:float):int {}
 
         fn soma(): int {
-            let x: float = 25
+            let x: float = 25.00
             32.25 * sub(ax: 1, bx: mult(n:22, p:x))
         }
     )";
@@ -768,4 +768,205 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException5) {
 
    EXPECT_NO_THROW(runAnalysis(input));
 }
+
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithInteger) {
+    std::string input = R"(
+        fn main(x:boolean = 21) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloat) {
+    std::string input = R"(
+        fn main(x:boolean = 21.36) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithString) {
+    std::string input = R"(
+        fn main(x:boolean = "olá mundo") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+//
+
+TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithFloat) {
+    std::string input = R"(
+        fn main(x:int = 21.2) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithString) {
+    std::string input = R"(
+        fn main(x:int = "olá mundo") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+//
+
+TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithInteger) {
+    std::string input = R"(
+        fn main(x:float = 12) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInteger) {
+    std::string input = R"(
+        fn main(x:double = 15) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithString) {
+    std::string input = R"(
+        fn main(x:float = "22.37") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInvalidString) {
+    std::string input = R"(
+        fn main(x:double = "15. + olá") {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+
+//***** */
+TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithTrue) {
+    std::string input = R"(
+        fn main(x:boolean = true) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithFalse) {
+    std::string input = R"(
+        fn main(x:boolean = false) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, IntegerArgumentValidAssignment) {
+    std::string input = R"(
+        fn main(x:int = 25) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, FloatArgumentValidAssignment) {
+    std::string input = R"(
+        fn main(x:float = 25.00) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithPreciseValue) {
+    std::string input = R"(
+        fn main(x:double = 32.2541250) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, MultipleArgumentsValidAssignment) {
+    std::string input = R"(
+        fn main(x:double = 32.2541250, n:int, z:float, bb:string = "olá mundo", pp:boolean) {}
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloatValue) {
+    std::string input = R"(
+        fn main(x:double = 32.2541250, n:int, z:float, bb:string = "olá mundo", pp:boolean = 2.36) {}
+    )";
+
+    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, UninitializedVariableWithFloatAssignment) {
+    std::string input = R"(
+        fn main() {
+            let x: string
+            let n: float = 12.25
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), UninitializedVariableException);
+}
+
+TEST_F(SemanticalAnalysisTest, UninitializedVariableWithStringAssignment) {
+    std::string input = R"(
+        fn main() {
+            let x: string = "hi lorena"
+            let n: int
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), UninitializedVariableException);
+}
+
+//**** */
+
+TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_InlineFunctionMissingParameter) {
+    std::string input = R"(
+        fn main() {
+            let inline:fn = (a:int, b:float, c:boolean) -> a + b
+            inline(a:12,c:true)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_InlineFunctionAndSubMissingParameter) {
+    std::string input = R"(
+        fn sub(x:int, y:float):int {
+        }
+
+        fn main() {
+            let inline:fn = (a:int,b:float, c:boolean) -> a + b
+            inline(a:23,b:12.00F,c:true) * sub(x:12)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_SubCallAndInlineDeclaration) {
+    std::string input = R"(
+        fn sub(x:int, y:int):int {}
+
+        fn main() {
+            let add:fn = (pp:int):int -> pp + 32
+            let inline:fn = (a:int,b:float, c:boolean):int -> a + b
+            sub(x:12, y:add(pp:25)) * inline(a:32, c:false)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+}
+
+
+
 

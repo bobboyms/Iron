@@ -2,8 +2,11 @@
 #define TOKEN_MAP_H
 
 #include "Colors.h"
+#include "IronExceptions.h"
 #include <string>
 #include <unordered_map>
+#include <regex>
+
 
 namespace TokenMap {
 
@@ -45,6 +48,7 @@ namespace TokenMap {
         VOID,
         NUMBER,
         NO_REAL_NUMBER,
+        REAL_NUMBER,
     };
 
     inline const std::unordered_map<int, std::string> tokenText = {
@@ -84,6 +88,7 @@ namespace TokenMap {
         {VOID, "void"},
         {NUMBER, "number"},
         {NO_REAL_NUMBER, "not_is_a_real_number"},
+        {REAL_NUMBER, "real_number"},
     };
 
 
@@ -114,10 +119,42 @@ namespace TokenMap {
             default:
                 return false;
         }
+    }
+
+    inline  bool isRealNumber(int type) {
+        switch (type) {
+            case TokenMap::TYPE_DOUBLE:
+            case TokenMap::TYPE_FLOAT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    inline int determineType(const std::string& input) {
+        // Definição das expressões regulares com base nas regras fornecidas
+        static const std::regex realNumberRegex(R"(^-?\d+\.\d+([eE][+-]?\d+)?[FD]?$)");
+        static const std::regex intNumberRegex(R"(^-?\d+$)");
+        static const std::regex booleanValueRegex(R"(^true|false$)");
+        static const std::regex stringLiteralRegex(R"(^"[^"\r\n]*"$)");
+
+        if (std::regex_match(input, realNumberRegex)) {
+            return TokenMap::REAL_NUMBER;
+        }
+        if (std::regex_match(input, intNumberRegex)) {
+            return TokenMap::TYPE_INT;
+        }
+        if (std::regex_match(input, booleanValueRegex)) {
+            return TokenMap::TYPE_BOOLEAN;
+        }
+        if (std::regex_match(input, stringLiteralRegex)) {
+            return TokenMap::TYPE_STRING;
+        }
+
+        throw SemanticException("Isn't impossivel determine the type of " + input);
+    }
 }
 
 
-
-} // namespace TokenMap
 
 #endif // TOKEN_MAP_H
