@@ -18,6 +18,7 @@ struct SymbolInfo {
     int dataType;
     std::shared_ptr<class SymbolTable> scope;
     std::vector<std::pair<std::string, int>> args;
+    std::string alias;
 };
 
 // ---------------------------------------------------------------------
