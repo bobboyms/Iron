@@ -517,8 +517,8 @@ void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext* ctx,
                                            std::shared_ptr<SymbolTable> parentScope)
 {
 
-    iron::printf("Chegou {}, Atual {}", actualFunctionName, ctx->functionName->getText());
-    iron::printf("O que foi encontrado: {}", ctx->functionName->getText());
+    //iron::printf("Chegou {}, Atual {}", actualFunctionName, ctx->functionName->getText());
+    //iron::printf("O que foi encontrado: {}", ctx->functionName->getText());
 
     auto line = ctx->getStart()->getLine();
     auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
@@ -553,7 +553,7 @@ void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext* ctx,
             }
         }
 
-        iron::printf("size {}, Size global: {}", std::to_string(callArgsSize), globalArgsSize);
+        //iron::printf("size {}, Size global: {}", std::to_string(callArgsSize), globalArgsSize);
 
         if (globalArgsSize != callArgsSize) {
             throw ArgumentCountMismatchException(iron::format(
@@ -586,10 +586,34 @@ void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext* ctx,
 void SemanticalAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext* ctx,
                                                const std::string& actualFunctionName,
                                                std::shared_ptr<SymbolTable> parentScope)
-{
+{   
+    
     for (auto child : ctx->children) {
         if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext*>(child)) {
             visitFunctionCallArg(functionCallArg, actualFunctionName, parentScope);
+        }
+    }
+
+
+    
+    std::vector<std::string> sequenceOfArgs;
+    for (auto child : ctx->children) {
+        if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext*>(child)) {
+            sequenceOfArgs.push_back(functionCallArg->varName->getText());
+        }
+    }
+
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+    auto args = globalScope->lookup(actualFunctionName).value().args;
+
+    for (size_t i = 0; i < args.size(); ++i) {
+        if (sequenceOfArgs[i] != args[i].first) { // args[i].first é o nome do argumento formal
+            throw ArgumentOrderMismatchException(iron::format(
+                "Argument order mismatch in function '{}'. Expected '{}', but got '{}'.",
+                color::colorText(iron::format("fn {}", iron::getTextAfterUnderscore(actualFunctionName)),color::BOLD_GREEN),
+                color::colorText(args[i].first,color::BOLD_GREEN),
+                color::colorText(sequenceOfArgs[i], color::BOLD_GREEN)
+            ));
         }
     }
 }

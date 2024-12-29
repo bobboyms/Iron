@@ -967,6 +967,87 @@ TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_SubCallAndInlineDeclaration
     EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
 }
 
+TEST_F(SemanticalAnalysisTest, FunctionCallWithMissingArguments) {
+    std::string input = R"(
+        fn adicionar(a:int, b:int): int {
+            return a + b
+        }
+
+        fn main() {
+            let soma: int = adicionar(a: 5)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+}
+
+
+TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException) {
+    std::string input = R"(
+        fn sub(x:int, y:int):int {}
+
+        fn main() {
+            let add:fn = (pp:int):int -> pp + 32
+            let inline:fn = (a:int,b:float, c:boolean):int -> a + b
+            sub(x:12, y:add(pp:25)) * inline(b:25.00F,a:32, c:false)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_InlineFunction) {
+    std::string input = R"(
+        fn main() {
+            let inline:fn = (a:int, b:float, c:boolean):int -> a + b
+            inline(c:true, a:32, b:25.00F)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_NestedFunction) {
+    std::string input = R"(
+        fn multiply(x:int, y:float):float {}
+
+        fn main() {
+            multiply(y:25.00F, x:10)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_MixedVariablesAndFunctions) {
+    std::string input = R"(
+        fn sub(a:int, b:int, c:boolean):int {}
+
+        fn main() {
+            let x:int = 10
+            let y:int = 20
+            sub(b:y, c:false, a:x)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_FunctionReturn) {
+    std::string input = R"(
+        fn addOne(n:int):int {
+            return n + 1
+        }
+
+        fn doubleValue(x:int, y:int):int {}
+
+        fn main() {
+            doubleValue(y:addOne(n:2), x:5)
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+}
 
 
 

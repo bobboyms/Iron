@@ -43,7 +43,7 @@ int main() {
         fn main() {
             let add:fn = (pp:int):int -> pp + 32
             let inline:fn = (a:int,b:float, c:boolean):int -> a + b
-            sub(x:12, y:add(pp:25)) * inline(a:32, c:false)
+            sub(x:12, y:add(pp:25)) * inline(b:25.00F,a:32, c:false)
         }
     )";
 

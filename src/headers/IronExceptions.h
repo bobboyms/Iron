@@ -17,6 +17,14 @@ public:
     }
 };
 
+
+
+class ArgumentOrderMismatchException : public SemanticException {
+public:
+    explicit ArgumentOrderMismatchException(const std::string& message)
+        : SemanticException(message) {}
+};
+
 class ArgumentCountMismatchException : public SemanticException {
 public:
     explicit ArgumentCountMismatchException(const std::string& message)
