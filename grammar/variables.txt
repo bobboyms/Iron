@@ -1,22 +1,7 @@
-fn main() {
-    sub(x:12, y:sub())
+fn sub(x:int, y:int):int {
+    return x - y
 }
 
- iron::printf("size {}", std::to_string(ctx->functionCallArgs()->children.size()));
-        int callArgsSize = 0;
-        for (auto child : ctx->functionCallArgs()->children) {
-            if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext*>(child)) {
-                callArgsSize+=1;
-            }
-        }
-
-        if (globalArgsSize != callArgsSize) {
-            throw ArgumentCountMismatchException(iron::format(
-                "Function '{}' expects {} arguments, but {} were provided. Line: {}",
-                color::colorText(
-                    iron::format("fn {}", iron::getTextAfterUnderscore(actualFunctionName)), color::BOLD_GREEN),
-                color::colorText(std::to_string(globalArgsSize), color::BOLD_GREEN),
-                color::colorText(std::to_string(callArgsSize), color::BOLD_GREEN),
-                color::colorText(std::to_string(line), color::YELLOW)
-            ));
-        }
+fn main():int {
+    return sub(x:25, y:12)
+}

@@ -40,6 +40,10 @@ private:
 
     void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx);
 
+    void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx);
+
+    void visitReturn(IronParser::ReturnContext* ctx);
+
 public:
     SemanticalAnalysis(std::unique_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);
     ~SemanticalAnalysis();

@@ -43,6 +43,9 @@ void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext* ct
         if (auto expression = dynamic_cast<IronParser::ExprContext*>(child)) {
             visitExpr(expression);
         }
+        if (auto returnctx = dynamic_cast<IronParser::ReturnContext*>(child)) {
+            visitReturn(returnctx);
+        }
     }
 }
 
@@ -278,6 +281,9 @@ void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext* ctx) {
         }
         if (auto function = dynamic_cast<IronParser::ArrowFunctionInlineContext*>(child)) {
             visitArrowFunctionInline(function);
+        }
+        if (auto function = dynamic_cast<IronParser::ArrowFunctionBlockContext*>(child)) {
+            visitArrowFunctionBlock(function);
         }
 
     }
@@ -525,11 +531,14 @@ void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext* ctx,
             }
         }
 
+        std::string aliasName = !functionSymbolInfo.alias.empty() ? functionSymbolInfo.alias : actualFunctionName;
+
+
         if (globalArgsSize != callArgsSize) {
             throw ArgumentCountMismatchException(iron::format(
                 "Function '{}' expects {} arguments, but {} were provided. Line: {}",
                 color::colorText(
-                    iron::format("fn {}", functionSymbolInfo.alias), color::BOLD_GREEN),
+                    iron::format("fn {}", aliasName), color::BOLD_GREEN),
                 color::colorText(std::to_string(globalArgsSize), color::BOLD_GREEN),
                 color::colorText(std::to_string(callArgsSize), color::BOLD_GREEN),
                 color::colorText(std::to_string(line), color::YELLOW)
@@ -740,6 +749,46 @@ void SemanticalAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlin
         scopeManager->exitScope(globalFunctionName);
 
     }
-
     
+}
+
+void SemanticalAnalysis::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx) {
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+    auto currentScopeName = scopeManager->currentScopeName();
+
+    if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent->parent)) {
+        auto blockFunctionName = varDeclaration->varName->getText();
+        std::string globalFunctionName = iron::createFunctionName(currentScopeName, blockFunctionName);
+
+        if (ctx->functionSignature()->functionReturnType()) {
+            std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+            globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::getTokenType(type), nullptr, {}, blockFunctionName});
+        } else {
+            globalScope->addSymbol(globalFunctionName, {TokenMap::FUNCTION, TokenMap::VOID, nullptr, {}, blockFunctionName});
+        }
+
+        scopeManager->enterScope(globalFunctionName);
+
+        if (ctx->functionSignature()) {
+            visitFunctionSignature(ctx->functionSignature());
+        }
+
+        if (ctx->statementList()) {
+            visitStatementList(ctx->statementList());
+        }
+
+        scopeManager->exitScope(globalFunctionName);
+
+    }
+}
+
+void SemanticalAnalysis::visitReturn(IronParser::ReturnContext* ctx) {
+    if (ctx->expr()) {
+        visitExpr(ctx->expr());
+    }
+
+    if (ctx->functionCall()) {
+        std::string functionName = ctx->functionCall()->functionName->getText();
+        visitFunctionCall(ctx->functionCall(), functionName, scopeManager->currentScope());
+    }
 }

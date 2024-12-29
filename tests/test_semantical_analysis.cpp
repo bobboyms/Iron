@@ -325,8 +325,10 @@ TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration) {
         }
     )";
 
-    EXPECT_NO_THROW(runAnalysis(input));
+    EXPECT_THROW(runAnalysis(input), FunctionNotFoundException);
 }
+
+
 
 TEST_F(SemanticalAnalysisTest, CompatibleTypesWithFunctionCalls) {
     std::string input = R"(
@@ -1050,4 +1052,17 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_FunctionReturn) {
 }
 
 
+TEST_F(SemanticalAnalysisTest, ArrowFunctionBlockNoError) {
+    std::string input = R"(
+        fn value():int{
+            25
+        }
+        fn main() {
+            let blockFn : fn = (a:int, c:int):int ->{}
+            (blockFn(a:32, c:25) * (36 / value()))
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
