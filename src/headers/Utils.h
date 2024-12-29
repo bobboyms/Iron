@@ -68,7 +68,7 @@ namespace iron {
         }
         
         // Retorna string vazia se "_" não for encontrado ou não houver texto após "_"
-        return "";
+        return input;
     }
 
 

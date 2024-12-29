@@ -1,7 +1,4 @@
-fn xptc():int {}
-
 fn main() {
-    let inline: fn = (x:int):int -> x * 21
-    let sum: fn =(x: int, y: int):float -> 2.25 + x + y
-    5.22 * inline(x:25) + xptc() + 1
+    let x:string
+    let n: int = 12.25
 }

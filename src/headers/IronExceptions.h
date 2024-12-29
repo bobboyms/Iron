@@ -18,6 +18,14 @@ public:
 };
 
 
+
+
+class UninitializedVariableException : public SemanticException {
+public:
+    explicit UninitializedVariableException(const std::string& msg)
+        : SemanticException(msg) {}
+};
+
 class VariableRedefinitionException : public SemanticException {
 public:
     explicit VariableRedefinitionException(const std::string& msg)
