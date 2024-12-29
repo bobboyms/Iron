@@ -165,7 +165,6 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
                 globalFunctionName = iron::format("{}_{}", currentScopeName, functionName);
                 isLocal = true;
                 result = globalScope->lookup(globalFunctionName);
-                iron::printf("Encontrou? {} ", functionName);
             } else {
                 auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
                 if (!globalScope) {
@@ -189,7 +188,7 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         if (result.has_value()) {
             SymbolInfo arrowFunction = result.value();
 
-            iron::printf("função encontrada {}, retorno type {}", globalFunctionName, TokenMap::getTokenText(arrowFunction.dataType));
+            //iron::printf("função encontrada {}, retorno type {}", globalFunctionName, TokenMap::getTokenText(arrowFunction.dataType));
             scopeManager->currentScope()->printSymbols("GLOBAL");
         } else {
             throw FunctionNotFoundException(iron::format(
@@ -205,13 +204,13 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
         }
 
         const SymbolInfo& globalFunction = result.value();
-        if (ctx->functionCall()) {
-            if (ctx->functionCall()->functionCallArgs()) {
-                std::string functionCallName = isLocal ? globalFunctionName : functionName;
-                scopeManager->enterScope(functionCallName);
-                visitFunctionCallArgs(ctx->functionCall()->functionCallArgs(), functionCallName, currentScope);
-                scopeManager->exitScope(functionCallName);
-            }
+        std::string functionCallName = isLocal ? globalFunctionName : functionName;
+        visitFunctionCall(ctx->functionCall(), functionCallName, currentScope);
+        
+        if (ctx->functionCall()->functionCallArgs()) {
+            scopeManager->enterScope(functionCallName);
+            visitFunctionCallArgs(ctx->functionCall()->functionCallArgs(), functionCallName, currentScope);
+            scopeManager->exitScope(functionCallName);
         }
 
         // Verifica compatibilidade com a variável anterior, se existir
@@ -246,6 +245,7 @@ void SemanticalAnalysis::visitExpr(IronParser::ExprContext* ctx) {
             : globalFunction.dataType;
         reviousVarStruct.type = TokenMap::FUNCTION;
         
+       
     }
 
     // Visita filhos recursivamente
@@ -430,10 +430,48 @@ void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext* ctx,
                                            const std::string& actualFunctionName,
                                            std::shared_ptr<SymbolTable> parentScope)
 {
+
+    iron::printf("Chegou {}", actualFunctionName);
+
+    auto line = ctx->getStart()->getLine();
+    auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+    auto globalFunctionSymbalInfo = globalScope->lookup(actualFunctionName);
+    auto globalArgsSize = globalFunctionSymbalInfo->args.size();
+
+    
     // Se a call tem argumentos
     if (ctx->functionCallArgs()) {
-        // visita cada argumento, passando o MESMO nome de função
+        int callArgsSize = 0;
+        for (auto child : ctx->functionCallArgs()->children) {
+            if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext*>(child)) {
+                callArgsSize+=1;
+            }
+        }
+
+        if (globalArgsSize != callArgsSize) {
+            throw ArgumentCountMismatchException(iron::format(
+                "Function '{}' expects {} arguments, but {} were provided. Line: {}",
+                color::colorText(
+                    iron::format("fn {}", iron::getTextAfterUnderscore(actualFunctionName)), color::BOLD_GREEN),
+                color::colorText(std::to_string(globalArgsSize), color::BOLD_GREEN),
+                color::colorText(std::to_string(callArgsSize), color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW)
+            ));
+        }
+    
         visitFunctionCallArgs(ctx->functionCallArgs(), actualFunctionName, parentScope);
+    } else {
+        
+        if (globalArgsSize > 0) {
+            throw ArgumentCountMismatchException(iron::format(
+                "Function '{}' expects {} arguments, but {} were provided. Line: {}",
+                color::colorText(
+                    iron::format("fn {}", iron::getTextAfterUnderscore(actualFunctionName)), color::BOLD_GREEN),
+                color::colorText(std::to_string(globalArgsSize), color::BOLD_GREEN),
+                color::colorText(std::to_string(0), color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW)
+            ));
+        }
     }
 }
 

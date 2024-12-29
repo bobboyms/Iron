@@ -17,6 +17,11 @@ public:
     }
 };
 
+class ArgumentCountMismatchException : public SemanticException {
+public:
+    explicit ArgumentCountMismatchException(const std::string& message)
+        : SemanticException(message) {}
+};
 
 class VariableRedefinitionException : public SemanticException {
 public:
