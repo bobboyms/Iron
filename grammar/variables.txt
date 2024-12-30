@@ -1,7 +1,3 @@
-fn sub(x:int, y:int):int {
-    return x - y
-}
-
 fn main():int {
-    return sub(x:25, y:12)
+    let inline: string = (a:int):int -> a * 21
 }
