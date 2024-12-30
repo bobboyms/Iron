@@ -14,10 +14,10 @@ int runAnalysis(const std::string& input) {
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_unique<IronParser>(&tokens);
-        auto scopeManager = std::make_unique<ScopeManager>();
+        auto scopeManager = std::make_unique<iron::ScopeManager>();
 
         // Executa a análise semântica
-        SemanticalAnalysis analysis(std::move(parser), std::move(scopeManager));
+        iron::SemanticalAnalysis analysis(std::move(parser), std::move(scopeManager));
         analysis.analyze();
 
         std::cout << "Análise semântica concluída com sucesso." << std::endl;
@@ -37,13 +37,12 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
+        fn sub(x:int, y:int):int {
+            return x - y
+        }
 
-        fn sub(x:int, y:int):int {}
-
-        fn main() {
-            let add:fn = (pp:int):int -> pp + 32
-            let inline:fn = (a:int,b:float, c:boolean):int -> a + b
-            sub(x:12, y:add(pp:25)) * inline(a:32, c:false)
+        fn main():int {
+            let inline: string = (a:int):int -> a * 21
         }
     )";
 

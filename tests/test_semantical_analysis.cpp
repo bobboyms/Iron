@@ -11,7 +11,7 @@ class SemanticalAnalysisTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Cria um gerenciador de escopos
-        scopeManager = std::make_unique<ScopeManager>();
+        scopeManager = std::make_unique<iron::ScopeManager>();
     }
 
     void runAnalysis(const std::string& input) {
@@ -19,14 +19,14 @@ protected:
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_unique<IronParser>(&tokens);
-        semanticalAnalysis = std::make_unique<SemanticalAnalysis>(std::move(parser), std::move(scopeManager));
+        semanticalAnalysis = std::make_unique<iron::SemanticalAnalysis>(std::move(parser), std::move(scopeManager));
 
         // Executa a análise semântica
         semanticalAnalysis->analyze();
     }
 
-    std::unique_ptr<ScopeManager> scopeManager;
-    std::unique_ptr<SemanticalAnalysis> semanticalAnalysis;
+    std::unique_ptr<iron::ScopeManager> scopeManager;
+    std::unique_ptr<iron::SemanticalAnalysis> semanticalAnalysis;
 };
 
 // --- Testes Positivos ---
@@ -325,8 +325,10 @@ TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration) {
         }
     )";
 
-    EXPECT_NO_THROW(runAnalysis(input));
+    EXPECT_THROW(runAnalysis(input), FunctionNotFoundException);
 }
+
+
 
 TEST_F(SemanticalAnalysisTest, CompatibleTypesWithFunctionCalls) {
     std::string input = R"(
@@ -1050,4 +1052,17 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_FunctionReturn) {
 }
 
 
+TEST_F(SemanticalAnalysisTest, ArrowFunctionBlockNoError) {
+    std::string input = R"(
+        fn value():int{
+            25
+        }
+        fn main() {
+            let blockFn : fn = (a:int, c:int):int ->{}
+            (blockFn(a:32, c:25) * (36 / value()))
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
