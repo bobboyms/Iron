@@ -49,6 +49,7 @@ namespace TokenMap {
         NUMBER,
         NO_REAL_NUMBER,
         REAL_NUMBER,
+        PRIVATE,
     };
 
     inline const std::unordered_map<int, std::string> tokenText = {
@@ -89,6 +90,7 @@ namespace TokenMap {
         {NUMBER, "number"},
         {NO_REAL_NUMBER, "not_is_a_real_number"},
         {REAL_NUMBER, "real_number"},
+        {PRIVATE, "private"}
     };
 
 

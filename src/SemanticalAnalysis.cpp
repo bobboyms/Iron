@@ -10,9 +10,8 @@
 namespace iron {
 
 
-
-    SemanticalAnalysis::SemanticalAnalysis(std::unique_ptr<IronParser> parser, std::unique_ptr<iron::ScopeManager> scopeManager)
-        : parser(std::move(parser)), scopeManager(std::move(scopeManager)) {
+    SemanticalAnalysis::SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<iron::ScopeManager> scopeManager)
+        : parser(parser), scopeManager(std::move(scopeManager)) {
     }
 
     // Destrutor

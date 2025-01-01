@@ -1,0 +1,7 @@
+
+public fn main():int {
+    
+    let tmp1:float = idade int to float
+    let tmp2:float = call()
+    let soma:float = PLUS 2, tmp2
+}

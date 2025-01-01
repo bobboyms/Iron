@@ -1,3 +1,3 @@
-fn main():int {
+fn main(x:int, y:float, j:double, b:boolean):int {
     let inline: string = (a:int):int -> a * 21
 }

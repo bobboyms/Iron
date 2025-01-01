@@ -57,7 +57,7 @@ void ironlexerLexerInitialize() {
 #endif
   auto staticData = std::make_unique<IronLexerStaticData>(
     std::vector<std::string>{
-      "T__0", "T__1", "COLON", "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", 
+      "T__0", "COMMA", "COLON", "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", 
       "R_CURLY", "L_PAREN", "R_PAREN", "PLUS", "MINUS", "DIV", "L_BRACKET", 
       "R_BRACKET", "ARROW", "FUNCTION", "LET", "PUBLIC", "IMPORT", "RETURN", 
       "TYPE_INT", "TYPE_CHAR", "TYPE_FLOAT", "TYPE_STRING", "TYPE_BOOLEAN", 
@@ -77,7 +77,7 @@ void ironlexerLexerInitialize() {
       "'string'", "'boolean'", "'double'"
     },
     std::vector<std::string>{
-      "", "", "", "COLON", "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", 
+      "", "", "COMMA", "COLON", "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", 
       "R_CURLY", "L_PAREN", "R_PAREN", "PLUS", "MINUS", "DIV", "L_BRACKET", 
       "R_BRACKET", "ARROW", "FUNCTION", "LET", "PUBLIC", "IMPORT", "RETURN", 
       "TYPE_INT", "TYPE_CHAR", "TYPE_FLOAT", "TYPE_STRING", "TYPE_BOOLEAN", 

@@ -5,6 +5,7 @@
 #include "headers/SemanticalAnalysis.h"
 #include "headers/ScopeManager.h"
 #include "headers/IronExceptions.h"
+#include "headers/HighLevelIR.h"
 #include "headers/Colors.h"
 
 int runAnalysis(const std::string& input) {
@@ -13,14 +14,22 @@ int runAnalysis(const std::string& input) {
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
-        auto parser = std::make_unique<IronParser>(&tokens);
-        auto scopeManager = std::make_unique<iron::ScopeManager>();
+        auto parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticalAnalysis analysis(std::move(parser), std::move(scopeManager));
+        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<iron::ScopeManager>()));
         analysis.analyze();
 
-        std::cout << "Análise semântica concluída com sucesso." << std::endl;
+        // Rewind
+        tokens.seek(0);
+        parser->reset();
+
+        iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
+        const auto hlir = hightLevelCodeGenerator.generateCode();
+
+        std::cout << hlir << std::endl;
+
+        //std::cout << "Análise semântica concluída com sucesso." << std::endl;
         return 0; // Sucesso
 
     } catch (const SemanticException& e) {
@@ -37,12 +46,8 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn sub(x:int, y:int):int {
-            return x - y
-        }
-
-        fn main():int {
-            let inline: string = (a:int):int -> a * 21
+        fn sub(a:int, b:float):int {}
+        fn main(name:string):int {
         }
     )";
 
