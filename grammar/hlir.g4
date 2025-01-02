@@ -142,7 +142,7 @@ cast:
 math_op: ( MULT | DIV | PLUS | MINUS ) opLeft COMMA opRight;
 
 expr:
-    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number);
+    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number | anotherVarName=IDENTIFIER);
 
 number:
      REAL_NUMBER

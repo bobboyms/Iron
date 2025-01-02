@@ -86,6 +86,24 @@ TEST_F(HlIrTest, HlIrTestFuncDeclarationTest) {
     EXPECT_NO_THROW(runAnalysis(input, output));
 }
 
+TEST_F(HlIrTest, AssignmentNoConversionTest) {
+    std::string input = R"(
+        public fn main(name:string):int {
+            let a:int = 10
+            let result:int = a
+        }
+    )";
+
+    std::string output = R"(
+        public fn main (name:string): int { 
+            let a:int = 10
+            let result:int = a
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input, output));
+}
+
 TEST_F(HlIrTest, HlIrTestVarDeclaraTest) {
     std::string input = R"(
         public fn main(name:string):int {
@@ -128,17 +146,18 @@ TEST_F(HlIrTest, HlIrTestExpr1Test) {
         private fn value (): float { 
         } 
         public fn main (name:string): int { 
-            let a:float = 10.00F
-            let b:double = 12.00D
-            let c:float = 65.00F
-            let e:int = 12
-            let tmp_1:int = a float to int
-            let tmp_2:int = b double to int
-            let tmp_3:int = PLUS tmp_1, tmp_2
-            let tmp_4:float = value()
-            let tmp_5:int = MULT tmp_3, tmp_4
-            let result:int = tmp_5
-        } 
+        let a:float = 10.00F
+        let b:double = 12.00D
+        let c:float = 65.00F
+        let e:int = 12
+        let tmp_1:double = a float to double
+        let tmp_2:double = PLUS tmp_1, b
+        let tmp_3:float = value()
+        let tmp_4:double = tmp_3 float to double
+        let tmp_5:double = MULT tmp_2, tmp_4
+        let tmp_6:int = tmp_5 double to int
+        let result:int = tmp_6
+} 
     )";
 
     
@@ -156,7 +175,7 @@ TEST_F(HlIrTest, HlIrTestExpr2Test) {
             let c:float = 65.00F
             let e:int = 12
 
-            let result:int = a + b * value()
+            let result:float = a + b * value()
         }
     )";
 
@@ -168,12 +187,13 @@ TEST_F(HlIrTest, HlIrTestExpr2Test) {
             let b:double = 12.00D
             let c:float = 65.00F
             let e:int = 12
-            let tmp_1:int = a float to int
-            let tmp_2:int = b double to int
-            let tmp_3:float = value()
-            let tmp_4:int = MULT tmp_2, tmp_3
-            let tmp_5:int = PLUS tmp_1, tmp_4
-            let result:int = tmp_5
+            let tmp_1:float = value()
+            let tmp_2:double = tmp_1 float to double
+            let tmp_3:double = MULT b, tmp_2
+            let tmp_4:double = a float to double
+            let tmp_5:double = PLUS tmp_4, tmp_3
+            let tmp_6:float = tmp_5 double to float
+            let result:float = tmp_6
         } 
     )";
 
@@ -185,32 +205,150 @@ TEST_F(HlIrTest, HlIrTestExpr3Test) {
         fn value():float {}
 
         public fn main(name:string):int {
-            let a:float = 10.00F
-            let b:double = 12.00D
-            let c:float = 65.00F
+            let a:int = 10
+            let b:int = 12
+            let c:int = 65
             let e:int = 12
 
-            let result:int = (a + (b * 26) / value())
+            let result:double = (a + (b * 26) / value()) - e
         }
     )";
 
     std::string output = R"(
-        private fn value (): float { 
+    private fn value (): float { 
+} 
+public fn main (name:string): int { 
+let a:int = 10
+let b:int = 12
+let c:int = 65
+let e:int = 12
+let tmp_1:int = 26
+let tmp_2:int = MULT b, tmp_1
+let tmp_3:float = value()
+let tmp_4:float = tmp_2 int to float
+let tmp_5:float = DIV tmp_4, tmp_3
+let tmp_6:float = a int to float
+let tmp_7:float = PLUS tmp_6, tmp_5
+let tmp_8:float = e int to float
+let tmp_9:float = MINUS tmp_7, tmp_8
+let tmp_10:double = tmp_9 float to double
+let result:double = tmp_10
+} 
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input, output));
+}
+
+// Test 2: Atribuição com conversão segura (int para float)
+TEST_F(HlIrTest, AssignmentIntToFloatConversionTest) {
+    std::string input = R"(
+        public fn main(name:string):float {
+            let a:int = 10
+            let result:float = a
         }
-        public fn main (name:string): int { 
-        let a:float = 10.00F
-        let b:double = 12.00D
-        let c:float = 65.00F
-        let e:int = 12
-        let tmp_1:int = a float to int
-        let tmp_2:int = b double to int
-        let tmp_3:int = 26
-        let tmp_4:int = MULT tmp_2, tmp_3
-        let tmp_5:float = value()
-        let tmp_6:int = DIV tmp_4, tmp_5
-        let tmp_7:int = PLUS tmp_1, tmp_6
-        let result:int = tmp_7
+    )";
+
+    std::string output = R"(
+        public fn main (name:string): float { 
+            let a:int = 10
+            let tmp_1:float = a int to float
+            let result:float = tmp_1
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input, output));
+}
+
+// Test 3: Operação entre variáveis do mesmo tipo (float + float)
+TEST_F(HlIrTest, OperationSameTypeTest) {
+    std::string input = R"(
+        public fn main(name:string):float {
+            let a:float = 10.0F
+            let b:float = 20.0F
+            let result:float = a + b
+        }
+    )";
+
+    std::string output = R"(
+        public fn main (name:string): float { 
+            let a:float = 10.0F
+            let b:float = 20.0F
+            let tmp_1:float = PLUS a, b
+            let result:float = tmp_1
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input, output));
+}
+
+// Test 4: Operação entre tipos diferentes com conversão (int + float)
+TEST_F(HlIrTest, OperationIntAndFloatConversionTest) {
+    std::string input = R"(
+        public fn main(name:string):float {
+            let a:int = 10
+            let b:float = 20.5F
+            let result:float = a + b
+        }
+    )";
+
+    std::string output = R"(
+        public fn main (name:string): float { 
+            let a:int = 10
+            let b:float = 20.5F
+            let tmp_1:float = a int to float
+            let tmp_2:float = PLUS tmp_1, b
+            let result:float = tmp_2
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input, output));
+}
+
+// Test 5: Conversão em operações aritméticas complexas
+TEST_F(HlIrTest, ComplexArithmeticOperationConversionTest) {
+    std::string input = R"(
+        fn value():double {}
+    
+        public fn main(name:string):double {
+            let a:int = 5
+            let b:float = 3.2F
+            let c:double = 7.8D
+            let result:double = (a + b) * value()
+        }
+    )";
+
+    std::string output = R"(
+        private fn value (): double { 
         } 
+        public fn main (name:string): double { 
+            let a:int = 5
+            let b:float = 3.2F
+            let c:double = 7.8D
+            let tmp_1:float = a int to float
+            let tmp_2:float = PLUS tmp_1, b
+            let tmp_3:double = value()
+            let tmp_4:double = tmp_2 float to double
+            let tmp_5:double = MULT tmp_4, tmp_3
+            let result:double = tmp_5
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input, output));
+}
+
+TEST_F(HlIrTest, AssignmentDoubleToDoubleNoConversionTest) {
+    std::string input = R"(
+        public fn main(name:string):double {
+            let a:double = 10.0D
+            let result:double = a
+        }
+    )";
+
+    std::string output = R"(
+        public fn main (name:string): double { 
+            let a:double = 10.0D
+            let result:double = a
+        }
     )";
 
     EXPECT_NO_THROW(runAnalysis(input, output));

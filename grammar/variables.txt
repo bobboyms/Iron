@@ -1,3 +1,2 @@
-public fn main(name:string):int {
-    let result:int = (a + (b * 26) / value())
-}
+fn sub() {}
+        public fn main(name:string):int {}

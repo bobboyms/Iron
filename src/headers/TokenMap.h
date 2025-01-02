@@ -197,6 +197,32 @@ namespace TokenMap {
 
         return type;
     }
+
+    inline int getTypePrecedence(int dataType) {
+    // Defina a precedência de tipos conforme sua implementação em TokenMap
+        switch(dataType) {
+            case TokenMap::TYPE_INT:
+                return 1;
+            case TokenMap::TYPE_FLOAT:
+                return 2;
+            case TokenMap::TYPE_DOUBLE:
+                return 3;
+            default:
+                throw std::runtime_error("TokenMap Error: Invalid type");
+        }
+    }
+
+    inline int getHigherPrecedenceType(int type1, int type2) {
+        int precedence1 = getTypePrecedence(type1);
+        int precedence2 = getTypePrecedence(type2);
+        
+        if (precedence1 >= precedence2) {
+            return type1;
+        } else {
+            return type2;
+        }
+    }
+
 }
 
 

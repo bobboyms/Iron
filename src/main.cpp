@@ -46,16 +46,8 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn value():float {}
-
-        public fn main(name:string):int {
-            let a:float = 10.00F
-            let b:double = 12.00D
-            let c:float = 65.00F
-            let e:int = 12
-
-            let result:int = ((a + b) * value())
-        }
+        fn sub() {}
+        public fn main(name:string):int {}
     )";
 
     return runAnalysis(input);

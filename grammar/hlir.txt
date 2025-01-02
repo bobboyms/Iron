@@ -1,15 +1,12 @@
-private fn value (): float { 
+private fn value (): int { 
 } 
 public fn main (name:string): int { 
-let a:float = 10.00F
-let b:double = 12.00D
-let c:float = 65.00F
+let a:int = 10
+let b:int = 12
+let c:int = 65
 let e:int = 12
-let tmp_1:int = a float to int
-let tmp_2:int = b double to int
-let tmp_3:int = 26
-let tmp_4:int = MULT tmp_2, tmp_3
-let tmp_5:float = value()
-let tmp_6:int = DIV tmp_4, tmp_5
-let tmp_7:int = PLUS tmp_1, tmp_6
+let tmp_1:int = PLUS a, b
+let tmp_2:int = value()
+let tmp_3:int = MULT tmp_1, tmp_2
+let result:int = tmp_3
 }
