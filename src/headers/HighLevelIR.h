@@ -14,13 +14,17 @@ namespace iron {
         std::stringstream sb;
         std::shared_ptr<IronParser> parser;
         std::unique_ptr<ScopeManager> scopeManager;
+        int tempVarCounter = 0;
+
+
+        std::string generateTempVar();
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx);
         void visitStatementList(IronParser::StatementListContext* ctx) ;
         void visitVarDeclaration(IronParser::VarDeclarationContext* ctx) ;
         void visitVarAssignment(IronParser::VarAssignmentContext* ctx) ;
 
-        void visitExpr(IronParser::ExprContext* ctx) ;
+        std::string visitExpr(IronParser::ExprContext* ctx) ;
         void visitAssignment(IronParser::AssignmentContext* ctx) ;
 
         void visitFunctionSignature(IronParser::FunctionSignatureContext* ctx) ;

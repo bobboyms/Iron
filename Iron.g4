@@ -149,12 +149,12 @@ varAssignment
     ;
 
 // Expressão matemática com precedência adequada
-expr:   expr (mult='*'| div='/') expr
-    |   expr (plus='+'|minus='-') expr
+expr:   left=expr (mult='*'| div='/') right=expr
+    |   left=expr (plus='+'|minus='-') right=expr
     |   number
     |   functionCall
     |   varName=IDENTIFIER
-    |   '(' expr ')'
+    |   L_PAREN expr R_PAREN
     ;
 
 number:

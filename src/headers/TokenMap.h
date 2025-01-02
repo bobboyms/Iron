@@ -10,6 +10,8 @@
 
 namespace TokenMap {
 
+    const auto MAIN_TYPE = "MAIN_TYPE_EXPR";
+
     enum Token {
         GLOBAL = 1,
         COLON,
@@ -154,6 +156,46 @@ namespace TokenMap {
         }
 
         throw SemanticException("Isn't impossivel determine the type of " + input);
+    }
+
+    inline bool isValidFloatChar(char c) {
+        return std::isdigit(c) || c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-';
+    }
+
+    // Função para determinar o tipo de um literal de ponto flutuante com validação
+    inline int determineFloatType(const std::string& literal) {
+        if (literal.empty()) {
+            throw std::invalid_argument("Literal vazio");
+        }
+
+        // Verifica se o último caractere é um sufixo
+        char lastChar = literal.back();
+        int type = TokenMap::TYPE_FLOAT; // Tipo padrão
+
+        if (lastChar == 'd' || lastChar == 'D') {
+            type = TokenMap::TYPE_DOUBLE;
+        }
+
+        // Se o último caractere é um sufixo, remova-o para validar o restante do literal
+        std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'l' || lastChar == 'L') 
+                                ? literal.substr(0, literal.size() - 1) 
+                                : literal;
+
+        // Verifica se todos os caracteres na parte numérica são válidos
+        for (char c : numericPart) {
+            if (!isValidFloatChar(c)) {
+                throw std::invalid_argument("Literal contém caracteres inválidos: " + std::string(1, c));
+            }
+        }
+
+        // (Opcional) Verifica se a parte numérica pode ser convertida para um tipo de ponto flutuante
+        try {
+            std::stod(numericPart); // Tenta converter para double
+        } catch (const std::exception&) {
+            throw std::invalid_argument("Literal numérico inválido: " + numericPart);
+        }
+
+        return type;
     }
 }
 

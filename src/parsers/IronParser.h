@@ -405,9 +405,11 @@ public:
 
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
+    IronParser::ExprContext *left = nullptr;
     antlr4::Token *varName = nullptr;
     antlr4::Token *mult = nullptr;
     antlr4::Token *div = nullptr;
+    IronParser::ExprContext *right = nullptr;
     antlr4::Token *plus = nullptr;
     antlr4::Token *minus = nullptr;
     ExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);

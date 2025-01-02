@@ -2030,6 +2030,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 23, _ctx)) {
         case 1: {
           _localctx = _tracker.createInstance<ExprContext>(parentContext, parentState);
+          _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleExpr);
           setState(202);
 
@@ -2053,12 +2054,13 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
             throw NoViableAltException(this);
           }
           setState(207);
-          expr(7);
+          antlrcpp::downCast<ExprContext *>(_localctx)->right = expr(7);
           break;
         }
 
         case 2: {
           _localctx = _tracker.createInstance<ExprContext>(parentContext, parentState);
+          _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleExpr);
           setState(208);
 
@@ -2082,7 +2084,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
             throw NoViableAltException(this);
           }
           setState(213);
-          expr(6);
+          antlrcpp::downCast<ExprContext *>(_localctx)->right = expr(6);
           break;
         }
 
