@@ -46,12 +46,14 @@ namespace TokenMap {
         TYPE_DOUBLE,
 
         // tipos de controle
+        
         VARIABLE,
         VOID,
         NUMBER,
         NO_REAL_NUMBER,
         REAL_NUMBER,
         PRIVATE,
+        ARGUMENT,
     };
 
     inline const std::unordered_map<int, std::string> tokenText = {
@@ -92,7 +94,8 @@ namespace TokenMap {
         {NUMBER, "number"},
         {NO_REAL_NUMBER, "not_is_a_real_number"},
         {REAL_NUMBER, "real_number"},
-        {PRIVATE, "private"}
+        {PRIVATE, "private"},
+        {ARGUMENT, "arg"},
     };
 
 
@@ -177,7 +180,7 @@ namespace TokenMap {
         }
 
         // Se o último caractere é um sufixo, remova-o para validar o restante do literal
-        std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'l' || lastChar == 'L') 
+        std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'd' || lastChar == 'D') 
                                 ? literal.substr(0, literal.size() - 1) 
                                 : literal;
 

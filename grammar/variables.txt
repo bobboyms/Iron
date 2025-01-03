@@ -1,2 +1,8 @@
-fn sub() {}
-        public fn main(name:string):int {}
+fn soma(n:float): int {
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26)
+                }
+            }
+        }

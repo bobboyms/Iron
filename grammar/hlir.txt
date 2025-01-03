@@ -1,12 +1,7 @@
-private fn value (): int { 
-} 
-public fn main (name:string): int { 
-let a:int = 10
-let b:int = 12
-let c:int = 65
-let e:int = 12
-let tmp_1:int = PLUS a, b
-let tmp_2:int = value()
-let tmp_3:int = MULT tmp_1, tmp_2
-let result:int = tmp_3
+private fn gfn_teste_inline_inline(a:int, b:int):int {
+let tmp_1:int = MULT a, b
 }
+
+private fn teste (): void { 
+let inline:fn = gfn_teste_inline
+} 

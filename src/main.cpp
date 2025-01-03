@@ -24,10 +24,10 @@ int runAnalysis(const std::string& input) {
         tokens.seek(0);
         parser->reset();
 
-        iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
-        const auto hlir = hightLevelCodeGenerator.generateCode();
+        //iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
+        //const auto hlir = hightLevelCodeGenerator.generateCode();
 
-        std::cout << hlir << std::endl;
+        //std::cout << hlir << std::endl;
 
         //std::cout << "Análise semântica concluída com sucesso." << std::endl;
         return 0; // Sucesso
@@ -46,8 +46,11 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn sub() {}
-        public fn main(name:string):int {}
+        fn sub(ax:int, bx:double): int {}
+
+        fn soma(): int {
+            32.25 * sub(ax: 1, bx: 25.32)
+        }
     )";
 
     return runAnalysis(input);

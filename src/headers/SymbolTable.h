@@ -45,6 +45,8 @@ namespace iron {
         // Busca (por cópia) com std::optional
         std::optional<SymbolInfo> lookup(const std::string& name) const;
 
+        std::optional<SymbolInfo> lookupNoParent(const std::string& name) const;
+
         // Busca retornando ponteiro (útil para modificações diretas)
         SymbolInfo* lookupPtr(const std::string& name);
 

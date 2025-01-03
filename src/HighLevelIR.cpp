@@ -39,14 +39,14 @@ namespace iron {
         // Finaliza o escopo global após processar todas as declarações
         scopeManager->exitScope(TokenMap::getTokenText(TokenMap::GLOBAL));
 
-        return localSb->str(); //globalSb->str() + "\n" + 
+        return globalSb->str() + "\n" + localSb->str();
     }
 
     void HighLevelIR::visitStatementList(IronParser::StatementListContext* ctx, std::stringstream* sb) 
     {
         for (auto child : ctx->children) {
             if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(child)) {
-                visitVarDeclaration(varDeclaration);
+                visitVarDeclaration(varDeclaration, sb);
             }
             if (auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext*>(child)) {
                 visitVarAssignment(varAssignment);
@@ -112,6 +112,10 @@ namespace iron {
 
             auto leftSymbol = leftSymbolOpt.value();
             auto rightSymbol = rightSymbolOpt.value();
+            //iron::printf("leftVar: {}, rightSymbol: {}", leftVar, rightVar);
+            //iron::printf("leftSymbol: {}, rightSymbol: {}", TokenMap::getTokenText(leftSymbol.dataType), TokenMap::getTokenText(rightSymbol.dataType));
+
+            
 
             int higherType = TokenMap::getHigherPrecedenceType(leftSymbol.dataType, rightSymbol.dataType);
 
@@ -157,10 +161,10 @@ namespace iron {
 
             auto symbolOpt = currentScope->lookup(varName);
 
-            iron::printf("varName: {}", symbolOpt->alias);
-            if (symbolOpt.has_value() && !symbolOpt->alias.empty()) {
-                throw std::runtime_error("HLIR Error: Undefined variable: " + symbolOpt->alias);
-            }
+            //iron::printf("varName: {}", varName);
+            //if (symbolOpt.has_value() && !symbolOpt->alias.empty()) {
+            //    throw std::runtime_error("HLIR Error: Undefined variable: " + symbolOpt->alias);
+            //}
             return varName;
 
         } 
@@ -178,12 +182,20 @@ namespace iron {
                 currentScope->addSymbol(tempVar, {TokenMap::VARIABLE, dataType, nullptr});
                 return tempVar;
             } else {
-                std::string globalFunctionName = createFunctionName(scopeManager->currentScopeName(), functionName);
-                auto functionSymbolInfo = globalScope->lookup(globalFunctionName);
-                if (functionSymbolInfo.has_value()) {
+                const std::string globalFunctionName = createFunctionName(currentScope->getName(), functionName);
+                iron::printf("Expr globalFunctionName: {}", globalFunctionName);
+                auto globalFunctionOpt = globalScope->lookup(globalFunctionName);
+                if (globalFunctionOpt.has_value()) {
+                    std::string tempVar = generateTempVar(); 
+                    int dataType = globalFunctionOpt.value().dataType;
+                    *sb << iron::format("let {}:{} = {}()\n", tempVar, TokenMap::getTokenText(dataType), globalFunctionName);
+                    currentScope->addSymbol(tempVar, {TokenMap::VARIABLE, dataType, nullptr});
+                    return tempVar;
+
                 } else {
-                    throw std::runtime_error("HLIR Error: Function fn " + globalFunctionName + " not found");
+                    throw std::runtime_error("HLIR Error: Function fn " + functionName + " not found");
                 }
+                 
             }
         } else if (ctx->number())
         {
@@ -191,6 +203,10 @@ namespace iron {
             std::string currentScopeName = scopeManager->currentScopeName();
 
             int dataType = TokenMap::determineType(numberLiteral);
+
+            if (dataType == TokenMap::REAL_NUMBER) {
+                dataType = TokenMap::determineFloatType(numberLiteral);
+            }
             
             const std::string tempVar = generateTempVar();
             currentScope->addSymbol(tempVar, {TokenMap::VARIABLE, dataType, nullptr});
@@ -231,7 +247,7 @@ namespace iron {
             }
 
             if (ctx->expr()) {
-                const auto rightVarName = visitExpr(ctx->expr(),sb);
+                const auto rightVarName = visitExpr(ctx->expr(), sb);
                 const auto rightSymbolOpt = currentScope->lookup(rightVarName);
                 if (auto varDecl = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent)) {
                     std::string leftVarName      = varDecl->varName->getText();
@@ -258,24 +274,25 @@ namespace iron {
 
                 }
                 
-                
             }
 
-            // Visita todos os filhos que podem ser expressão ou arrow function
-            for (auto child : ctx->children) {
-                if (auto arrowInline = dynamic_cast<IronParser::ArrowFunctionInlineContext*>(child)) {
-                    visitArrowFunctionInline(arrowInline, sb);
-                } else if (auto arrowBlock = dynamic_cast<IronParser::ArrowFunctionBlockContext*>(child)) {
-                    visitArrowFunctionBlock(arrowBlock);
-                }
+            if (ctx->arrowFunctionInline()) {
+                visitArrowFunctionInline(ctx->arrowFunctionInline(), globalSb);
             }
+
+             if (ctx->arrowFunctionBlock()) {
+                visitArrowFunctionBlock(ctx->arrowFunctionBlock(), globalSb);
+            }
+
+            
     }
 
     void HighLevelIR::visitVarAssignment(IronParser::VarAssignmentContext* ctx) 
     {
+        iron::printf("visitVarAssignment","");
     }
 
-    void HighLevelIR::visitVarDeclaration(IronParser::VarDeclarationContext* ctx) {
+    void HighLevelIR::visitVarDeclaration(IronParser::VarDeclarationContext* ctx, std::stringstream* sb) {
         std::string varName = ctx->varName->getText();
         std::string varType = ctx->varTypes()->getText();
 
@@ -286,16 +303,19 @@ namespace iron {
 
         if (TokenMap::getTokenType(varType) == TokenMap::FUNCTION) {
             auto alias = iron::createFunctionName(scopeManager->currentScope()->getName(), varName);
+            //iron::printf("varName: {}, alias: {}", alias, varName);
             scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr,{}, alias});
 
             if (ctx->assignment()) {
                 visitAssignment(ctx->assignment(), globalSb);
             }
 
+            *sb << iron::format("let {}:{} = {}\n", varName, varType, alias);
+
         } else {
             scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
             if (ctx->assignment()) {
-                visitAssignment(ctx->assignment(), localSb);
+                visitAssignment(ctx->assignment(), sb);
             }
         }
 
@@ -353,7 +373,7 @@ namespace iron {
 
     void HighLevelIR::visitFunctionArgs(IronParser::FunctionArgsContext* ctx, std::stringstream* sb)
     {
-        int commaCount = ctx->COMMA().size(); // quantidade de vírgulas
+        int commaCount = ctx->COMMA().size();
         int argIndex = 0;
 
         // Para cada filho que seja FunctionArgContext
@@ -361,6 +381,7 @@ namespace iron {
             if (auto* arg = dynamic_cast<IronParser::FunctionArgContext*>(child)) {
                 bool hasComma = (argIndex < commaCount); 
                 visitFunctionArg(arg, hasComma, sb);
+                //iron::printf("arg: {}", arg->getText());
                 argIndex++;
             }
         }
@@ -375,10 +396,10 @@ namespace iron {
         if (comma) {
             *sb << iron::format("{}:{}, ", argName, dataType);
         } else {
-            *localSb << iron::format("{}:{}", argName, dataType);
+            *sb << iron::format("{}:{}", argName, dataType);
         }
 
-        scopeManager->currentScope()->addSymbol(argName, {TokenMap::VARIABLE, TokenMap::getTokenType(dataType), nullptr});
+        scopeManager->currentScope()->addSymbol(argName, {TokenMap::ARGUMENT, TokenMap::getTokenType(dataType), nullptr});
 
         //adicionao argumento da função ao escopo global
         auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
@@ -408,6 +429,65 @@ namespace iron {
     {
     }
 
+    void HighLevelIR::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx, std::stringstream* sb) {
+        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+        std::string currentScopeName = scopeManager->currentScopeName();
+
+        // Verifica se o nó pai é uma declaração de variável (VarDeclarationContext)
+        if (auto* varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent->parent)) {
+            // Nome "original" da arrow function
+            std::string arrowFuncName = varDeclaration->varName->getText();
+
+            // Cria um nome único para a função no escopo global
+            std::string globalFunctionName = iron::createFunctionName(currentScopeName, arrowFuncName);
+
+            // Verifica se há tipo de retorno na assinatura da arrow function
+            std::string returnTypeStr;
+            if (ctx->functionSignature()->functionReturnType()) {
+                returnTypeStr = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+            } else {
+                returnTypeStr = TokenMap::getTokenText(TokenMap::VOID);
+            }
+
+            //iron::printf("Criou função: {}", globalFunctionName);
+
+            // Adiciona a função ao escopo global
+            globalScope->addSymbol(
+                arrowFuncName,
+                {
+                    TokenMap::FUNCTION, 
+                    TokenMap::getTokenType(returnTypeStr),
+                    nullptr,
+                    {},
+                    globalFunctionName
+                }
+            );
+
+            // Entra no escopo da função inline
+            scopeManager->enterScope(globalFunctionName);
+            // Escreve a declaração da função no globalSb
+            *sb << iron::format("private fn {}(", 
+                                    globalFunctionName);
+
+            if (ctx->functionSignature()->functionArgs()) {
+                visitFunctionArgs(ctx->functionSignature()->functionArgs(), sb);
+            }
+
+            *sb << iron::format("):{} {\n", 
+                                    returnTypeStr);
+            
+            if (ctx->statementList()) {
+                visitStatementList(ctx->statementList(), sb);
+            }
+
+            *sb << iron::format("}\n", "");
+            // Sai do escopo
+            scopeManager->exitScope(globalFunctionName);
+
+            
+        }
+    }
+
     void HighLevelIR::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx, std::stringstream* sb) {
         auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
         std::string currentScopeName = scopeManager->currentScopeName();
@@ -421,59 +501,48 @@ namespace iron {
             std::string globalFunctionName = iron::createFunctionName(currentScopeName, arrowFuncName);
 
             // Verifica se há tipo de retorno na assinatura da arrow function
+            std::string returnTypeStr;
             if (ctx->functionSignature()->functionReturnType()) {
-                std::string returnTypeStr = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
-                globalScope->addSymbol(
-                    globalFunctionName,
-                    {
-                        TokenMap::FUNCTION, 
-                        TokenMap::getTokenType(returnTypeStr),
-                        nullptr,
-                        {},
-                        arrowFuncName
-                    }
-                );
-
-                *sb << iron::format("fn {}(", globalFunctionName);
-                if (ctx->functionSignature()->functionArgs()) {
-                    visitFunctionArgs(ctx->functionSignature()->functionArgs(),sb);
-                }
-                *sb << iron::format(")", globalFunctionName);
-
+                returnTypeStr = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
             } else {
-                // Caso não haja tipo de retorno, define como VOID
-                globalScope->addSymbol(
-                    globalFunctionName,
-                    {
-                        TokenMap::FUNCTION, 
-                        TokenMap::VOID, 
-                        nullptr, 
-                        {}, 
-                        arrowFuncName
-                    }
-                );
+                returnTypeStr = TokenMap::getTokenText(TokenMap::VOID);
             }
+
+            // Adiciona a função ao escopo global
+            globalScope->addSymbol(
+                globalFunctionName,
+                {
+                    TokenMap::FUNCTION, 
+                    TokenMap::getTokenType(returnTypeStr),
+                    nullptr,
+                    {},
+                    arrowFuncName
+                }
+            );
 
             // Entra no escopo da função inline
             scopeManager->enterScope(globalFunctionName);
+            // Escreve a declaração da função no globalSb
+            *sb << iron::format("private fn {}(", 
+                                    globalFunctionName);
 
-            // Se houver assinatura (parâmetros), visite-a
-            if (ctx->functionSignature()) {
-                visitFunctionSignature(ctx->functionSignature(),sb);
+            if (ctx->functionSignature()->functionArgs()) {
+                visitFunctionArgs(ctx->functionSignature()->functionArgs(), sb);
             }
 
-            // Se houver expressão (corpo inline), visite
+            *sb << iron::format("):{} {\n", 
+                                    returnTypeStr);
+            
             if (ctx->expr()) {
                 visitExpr(ctx->expr(), sb);
             }
 
+            *sb << iron::format("}\n", "");
             // Sai do escopo
             scopeManager->exitScope(globalFunctionName);
-        }
-    }
 
-    void HighLevelIR::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx) 
-    {
+            
+        }
     }
 
     void HighLevelIR::visitReturn(IronParser::ReturnContext* ctx) 

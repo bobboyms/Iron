@@ -450,7 +450,7 @@ TEST_F(SemanticalAnalysisTest, SubDoubleFloat_CompatibleRealNumbers_ShouldPass) 
 
 TEST_F(SemanticalAnalysisTest, SubIntFloatLNotiteral_ShouldFail) {
     std::string input = R"(
-        fn sub(ax:int, bx:float): int {}
+        fn sub(ax:int, bx:double): int {}
 
         fn soma(): int {
             32.25 * sub(ax: 1, bx: 25.32)

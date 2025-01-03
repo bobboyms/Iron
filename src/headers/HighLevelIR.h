@@ -22,7 +22,7 @@ namespace iron {
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx, std::stringstream* sb);
         void visitStatementList(IronParser::StatementListContext* ctx, std::stringstream* sb) ;
-        void visitVarDeclaration(IronParser::VarDeclarationContext* ctx) ;
+        void visitVarDeclaration(IronParser::VarDeclarationContext* ctx, std::stringstream* sb) ;
         void visitVarAssignment(IronParser::VarAssignmentContext* ctx) ;
 
         std::string visitExpr(IronParser::ExprContext* ctx, std::stringstream* sb) ;
@@ -45,7 +45,7 @@ namespace iron {
                                 std::shared_ptr<SymbolTable> parentScope) ;
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx, std::stringstream* sb) ;
-        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx) ;
+        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx, std::stringstream* sb) ;
         void visitReturn(IronParser::ReturnContext* ctx) ;
         
 

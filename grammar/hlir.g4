@@ -43,6 +43,7 @@ TYPE_FLOAT     : 'float' ;
 TYPE_STRING    : 'string' ;
 TYPE_BOOLEAN   : 'boolean' ;
 TYPE_DOUBLE    : 'double' ;
+VOID           : 'void' ;
 
 CAST:  'cast' ;
 
@@ -97,7 +98,7 @@ functionSignature:
 
 // Tipo de retorno da função
 functionReturnType
-    : COLON varTypes
+    : COLON (varTypes | VOID)
     ;
 
 // Argumentos da função
@@ -165,4 +166,5 @@ varTypes
     | TYPE_FLOAT
     | TYPE_INT
     | TYPE_STRING
+    | FUNCTION
     ;
