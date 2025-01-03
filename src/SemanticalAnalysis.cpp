@@ -117,15 +117,10 @@ namespace iron {
 
             if (!optSymbolInfo.has_value()) {
                 throw VariableNotFoundException(iron::format(
-                    "Variable '{}' not found. Line: {}, Scope: {}",
+                    "Variable '{}' not found. Line: {}",
                     color::colorText(varName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(
-                        iron::format("{} {}", 
-                                    TokenMap::getTokenText(TokenMap::FUNCTION),
-                                    currentScopeName), 
-                        color::BOLD_YELLOW)
-                ));
+                    color::colorText(std::to_string(line), color::YELLOW))
+                );
             }
 
             // Verifica compatibilidade com a última expressão visitada (se houver)

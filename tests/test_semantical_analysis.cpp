@@ -1066,3 +1066,60 @@ TEST_F(SemanticalAnalysisTest, ArrowFunctionBlockNoError) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
+// Teste 1: Redeclaração de variáveis em escopos aninhados
+TEST_F(SemanticalAnalysisTest, VariableRedeclarationInNestedScopes_DoesNotThrow) {
+    std::string input = R"(
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * x
+                }
+                let result:float =  27 * block(a:12, b:12.26)
+            }
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Teste 2: Uso de variável indefinida lança exceção
+TEST_F(SemanticalAnalysisTest, UndefinedVariableUsage_ThrowsVariableNotFoundException) {
+    std::string input = R"(
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * xt
+                }
+                let result:float =  block(a:12, b:12.26)
+            }
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+}
+
+// Teste 3: Declarações de funções aninhadas com chamadas de funções
+TEST_F(SemanticalAnalysisTest, NestedFunctionDeclarationsWithFunctionCalls_DoesNotThrow) {
+    std::string input = R"(
+        fn sub():double {
+            return 5.25
+        }
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * x
+                }
+                let result:float =  27 * block(a:12, b:12.26) / sub()
+            }
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+

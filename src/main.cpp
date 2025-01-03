@@ -46,10 +46,15 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-        fn sub(ax:int, bx:double): int {}
-
-        fn soma(): int {
-            32.25 * sub(ax: 1, bx: 25.32)
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * x
+                }
+                let result:float =  27 * block(a:12, b:12.26)
+            }
         }
     )";
 
