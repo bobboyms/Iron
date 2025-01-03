@@ -1,12 +1,12 @@
-grammar Iron;
+grammar hlir;
 
 // ---------------------------------
 // Regras do Lexer (Tokens)
 // ---------------------------------
 
 // Símbolos
-COMMA: ',' ;
 COLON      : ':' ;
+COMMA: ',' ;
 EQ         : '=' ;
 SEMICOLON  : ';' ; // Mantido caso seja necessário no futuro
 DOT        : '.' ;
@@ -15,28 +15,38 @@ L_CURLY    : '{' ;
 R_CURLY    : '}' ;
 L_PAREN    : '(' ;
 R_PAREN    : ')' ;
-PLUS       : '+' ;
-MINUS      : '-' ;
-DIV        : '/' ;
+MULT: 'MULT' ;
+PLUS       : 'PLUS' ;
+MINUS      : 'MINUS' ;
+DIV        : 'DIV' ;
 L_BRACKET: '[' ;
 R_BRACKET: ']' ;
+AT: '@' ;
 ARROW : '->' ;
+UNDERSCORE: '_';
+
 
 
 // Palavras reservadas
 FUNCTION   : 'fn' ;
 LET        : 'let' ;
 PUBLIC     : 'public' ;
+PRIVATE    : 'private' ;
 IMPORT     : 'import' ;
 RETURN     : 'return' ;
 
 // Tipos de dados
+TO: 'to' ;
 TYPE_INT       : 'int' ;
 TYPE_CHAR      : 'char' ;
 TYPE_FLOAT     : 'float' ;
 TYPE_STRING    : 'string' ;
 TYPE_BOOLEAN   : 'boolean' ;
 TYPE_DOUBLE    : 'double' ;
+VOID           : 'void' ;
+
+CAST:  'cast' ;
+
 
 // Literais
 REAL_NUMBER    : '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
@@ -57,7 +67,7 @@ WS      : [ \t]+ -> skip ;
 
 // Ponto de entrada da gramática
 program
-    : importStatement* (functionDeclaration | entryPoint)* EOF
+    : importStatement* functionDeclaration* EOF
     ;
 
 // Declaração de importação
@@ -70,35 +80,17 @@ qualifiedName
     : IDENTIFIER (DOT IDENTIFIER)*
     ;
 
-// Ponto de entrada principal
-entryPoint
-    : '@main' '(' argVar=IDENTIFIER ')' L_CURLY statementList R_CURLY
-    ;
-
 // Lista de declarações dentro do ponto de entrada ou função
 statementList
-    : (varDeclaration | varAssignment | expr | functionCall | return)*
+    : expr*
     ;
 
-return:
-    RETURN (expr | functionCall)
-    ;
 
 // Declaração de função
 functionDeclaration
-    : PUBLIC? FUNCTION functionName=IDENTIFIER functionSignature
+    : (PRIVATE | PUBLIC)? FUNCTION functionName=IDENTIFIER functionSignature
         L_CURLY statementList R_CURLY
     ;
-
-//(peso:float, idade:int):float -> peso * idade
-arrowFunctionInline:
-    functionSignature ARROW expr
-;
-
-arrowFunctionBlock:
-    functionSignature ARROW
-    L_CURLY statementList R_CURLY
-;
 
 functionSignature:
     L_PAREN functionArgs? R_PAREN functionReturnType?
@@ -106,17 +98,17 @@ functionSignature:
 
 // Tipo de retorno da função
 functionReturnType
-    : COLON varTypes
+    : COLON (varTypes | VOID)
     ;
 
 // Argumentos da função
 functionArgs
-    : functionArg (COMMA functionArg)*
+    : functionArg (',' functionArg)*
     ;
 
 // Argumento da função
 functionArg
-    : varName=IDENTIFIER COLON (varTypes | functionSignature) assignment?
+    : varName=IDENTIFIER COLON (varTypes | functionSignature)
     ;
 
 // Chamada de função
@@ -126,36 +118,32 @@ functionCall
 
 // Argumentos da chamada de função
 functionCallArgs
-    : functionCallArg (COMMA functionCallArg)*
+    : functionCallArg (',' functionCallArg)*
     ;
 
 // Argumento da chamada de função
 functionCallArg
-    : varName=IDENTIFIER COLON (dataFormat | functionCall | arrowFunctionInline | arrowFunctionBlock | anotherVarName=IDENTIFIER)
+    : varName=IDENTIFIER COLON (dataFormat | functionCall anotherVarName=IDENTIFIER)
     ;
 
-// Declaração de variável
-varDeclaration
-    : LET varName=IDENTIFIER COLON varTypes assignment?
-    ;
 
-// Atribuição
-assignment
-    : EQ (arrowFunctionInline | arrowFunctionBlock | dataFormat | expr )
-    ;
 
-varAssignment
-    : varName=IDENTIFIER EQ (arrowFunctionInline | arrowFunctionBlock | dataFormat | expr )
-    ;
 
-// Expressão matemática com precedência adequada
-expr:   left=expr (mult='*'| div='/') right=expr
-    |   left=expr (plus='+'|minus='-') right=expr
-    |   number
-    |   functionCall
-    |   varName=IDENTIFIER
-    |   L_PAREN expr R_PAREN
-    ;
+
+op: (varName=IDENTIFIER | number );
+opRight: op;
+opLeft: op;
+
+typeRight: varTypes;
+typeLeft: varTypes;
+
+cast:
+    anotherVarName=IDENTIFIER typeLeft TO typeRight;
+
+math_op: ( MULT | DIV | PLUS | MINUS ) opLeft COMMA opRight;
+
+expr:
+    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number | anotherVarName=IDENTIFIER);
 
 number:
      REAL_NUMBER

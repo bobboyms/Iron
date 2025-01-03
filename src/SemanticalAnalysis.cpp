@@ -10,9 +10,8 @@
 namespace iron {
 
 
-
-    SemanticalAnalysis::SemanticalAnalysis(std::unique_ptr<IronParser> parser, std::unique_ptr<iron::ScopeManager> scopeManager)
-        : parser(std::move(parser)), scopeManager(std::move(scopeManager)) {
+    SemanticalAnalysis::SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<iron::ScopeManager> scopeManager)
+        : parser(parser), scopeManager(std::move(scopeManager)) {
     }
 
     // Destrutor
@@ -118,15 +117,10 @@ namespace iron {
 
             if (!optSymbolInfo.has_value()) {
                 throw VariableNotFoundException(iron::format(
-                    "Variable '{}' not found. Line: {}, Scope: {}",
+                    "Variable '{}' not found. Line: {}",
                     color::colorText(varName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(
-                        iron::format("{} {}", 
-                                    TokenMap::getTokenText(TokenMap::FUNCTION),
-                                    currentScopeName), 
-                        color::BOLD_YELLOW)
-                ));
+                    color::colorText(std::to_string(line), color::YELLOW))
+                );
             }
 
             // Verifica compatibilidade com a última expressão visitada (se houver)
@@ -406,23 +400,24 @@ namespace iron {
 
         int line = ctx->getStart()->getLine();
 
-        const std::string scope = scopeManager->currentScopeName();
-        auto result = scopeManager->currentScope()->lookup(varName);
+        const std::string scopeName = scopeManager->currentScopeName();
+        auto existingSymbol = scopeManager->currentScope()->lookupNoParent(varName);
 
-        if (result.has_value()) {
-            SymbolInfo symbolInfo = result.value();
-
+        if (existingSymbol.has_value()) {
             throw VariableRedefinitionException(iron::format(
-                "Variable {} already declared. Line: {}, Scope: {}, Type: {}",
-                color::colorText(varName, color::BOLD_GREEN),
-                color::colorText(std::to_string(line), color::YELLOW),
-                color::colorText(scope, color::BOLD_YELLOW),
-                color::colorText(std::to_string(symbolInfo.type), color::CYAN)));
+                    "Variable {} already declared. Line: {}, Scope: {}, Type: {}",
+                    color::colorText(varName, color::BOLD_GREEN),
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(scopeName, color::BOLD_YELLOW),
+                    color::colorText(std::to_string(existingSymbol->type), color::CYAN)));
         }
+        
 
         //auto arrowFunctionName = varDeclaration->varName->getText());
         if (TokenMap::getTokenType(varType) == TokenMap::FUNCTION) {
             auto alias = iron::createFunctionName(scopeManager->currentScope()->getName(), varName);
+            //iron::printf("VarName {} scopeName: {}", varName, scopeName);
+            //auto localScope = scopeManager->getScopeByName(scopeName);
             scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr,{}, alias});
         } else {
             scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
@@ -516,22 +511,25 @@ namespace iron {
         int line = ctx->getStart()->getLine();
 
         const std::string scope = scopeManager->currentScopeName();
-        auto result = scopeManager->currentScope()->lookup(varName);
+        auto result = scopeManager->currentScope()->lookupNoParent(varName);
+
 
 
         if (result.has_value()) {
             SymbolInfo symbolInfo = result.value();
 
-            throw VariableRedefinitionException(iron::format(
-                "Function arg {} already declared. Line: {}, Scope: fn {}",
-                color::colorText(varName, color::BOLD_GREEN),
-                color::colorText(std::to_string(line), color::YELLOW),
-                color::colorText(scope, color::BOLD_YELLOW),
-                color::colorText(TokenMap::getTokenText(symbolInfo.type), color::CYAN)));
+            if (symbolInfo.type == TokenMap::ARGUMENT) {
+                throw VariableRedefinitionException(iron::format(
+                    "Function arg {} already declared. Line: {}, Scope: fn {}",
+                    color::colorText(varName, color::BOLD_GREEN),
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(scope, color::BOLD_YELLOW),
+                    color::colorText(TokenMap::getTokenText(symbolInfo.type), color::CYAN)));
+                }
         }
 
         // adciona argumento da função ao escopo atual
-        scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr});
+        scopeManager->currentScope()->addSymbol(varName, {TokenMap::ARGUMENT, TokenMap::getTokenType(varType), nullptr});
 
         if (ctx->assignment()) {
             visitAssignment(ctx->assignment());
@@ -696,7 +694,7 @@ namespace iron {
             }
             // Se o literal é REAL_NUMBER, mas precisamos checar se é float ou double
             else if (isRealLiteral) {
-                auto realLiteralType = iron::typeOfRealNumber(ctx->dataFormat()->REAL_NUMBER()->getText());
+                auto realLiteralType = TokenMap::determineFloatType(ctx->dataFormat()->REAL_NUMBER()->getText());
                 if (realLiteralType != expectedArgType) {
                     throw TypeMismatchException(iron::format(
                         "Argument '{}' expects type '{}', but got '{}'. Line: {}",
@@ -724,9 +722,9 @@ namespace iron {
             }
 
             SymbolInfo varSymbolInfo = anotherVarLookup.value();
-            if (varSymbolInfo.type != TokenMap::VARIABLE) {
+            if (varSymbolInfo.type != TokenMap::VARIABLE && varSymbolInfo.type != TokenMap::ARGUMENT) {
                 throw VariableNotFoundException(iron::format(
-                    "'{}' is not a variable in scope 'fn {}'. Line: {}",
+                    "The '{}' is not a variable in scope 'fn {}'. Line: {}",
                     color::colorText(anotherVarName, color::BOLD_GREEN),
                     color::colorText(parentScope->getName(), color::BOLD_GREEN),
                     color::colorText(std::to_string(line), color::YELLOW)

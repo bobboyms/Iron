@@ -450,7 +450,7 @@ TEST_F(SemanticalAnalysisTest, SubDoubleFloat_CompatibleRealNumbers_ShouldPass) 
 
 TEST_F(SemanticalAnalysisTest, SubIntFloatLNotiteral_ShouldFail) {
     std::string input = R"(
-        fn sub(ax:int, bx:float): int {}
+        fn sub(ax:int, bx:double): int {}
 
         fn soma(): int {
             32.25 * sub(ax: 1, bx: 25.32)
@@ -1060,6 +1060,63 @@ TEST_F(SemanticalAnalysisTest, ArrowFunctionBlockNoError) {
         fn main() {
             let blockFn : fn = (a:int, c:int):int ->{}
             (blockFn(a:32, c:25) * (36 / value()))
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Teste 1: Redeclaração de variáveis em escopos aninhados
+TEST_F(SemanticalAnalysisTest, VariableRedeclarationInNestedScopes_DoesNotThrow) {
+    std::string input = R"(
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * x
+                }
+                let result:float =  27 * block(a:12, b:12.26)
+            }
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Teste 2: Uso de variável indefinida lança exceção
+TEST_F(SemanticalAnalysisTest, UndefinedVariableUsage_ThrowsVariableNotFoundException) {
+    std::string input = R"(
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * xt
+                }
+                let result:float =  block(a:12, b:12.26)
+            }
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+}
+
+// Teste 3: Declarações de funções aninhadas com chamadas de funções
+TEST_F(SemanticalAnalysisTest, NestedFunctionDeclarationsWithFunctionCalls_DoesNotThrow) {
+    std::string input = R"(
+        fn sub():double {
+            return 5.25
+        }
+        fn soma(n:float): int {
+            let x: float = 25.32
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26) * x
+                }
+                let result:float =  27 * block(a:12, b:12.26) / sub()
+            }
         }
     )";
 

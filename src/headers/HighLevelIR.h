@@ -1,5 +1,5 @@
-#ifndef SEMANTICAL_ANALYSIS_H
-#define SEMANTICAL_ANALYSIS_H
+#ifndef HLIR_H
+#define HLIR_H
 
 #include "../parsers/IronParser.h"
 #include "ScopeManager.h"
@@ -8,44 +8,51 @@
 #include <stack>
 
 namespace iron {
-    class HighLevelIR : public Visitors {
+
+    class HighLevelIR {
     private:
-        std::unique_ptr<IronParser> parser;
+        std::stringstream* localSb;
+        std::stringstream* globalSb;
+        std::shared_ptr<IronParser> parser;
         std::unique_ptr<ScopeManager> scopeManager;
+        int tempVarCounter = 0;
 
-        void visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx) override;
-        void visitStatementList(IronParser::StatementListContext* ctx) override;
-        void visitVarDeclaration(IronParser::VarDeclarationContext* ctx) override;
-        void visitVarAssignment(IronParser::VarAssignmentContext* ctx) override;
 
-        void visitExpr(IronParser::ExprContext* ctx) override;
-        void visitAssignment(IronParser::AssignmentContext* ctx) override;
+        std::string generateTempVar();
 
-        void visitFunctionSignature(IronParser::FunctionSignatureContext* ctx) override;
-        void visitFunctionArgs(IronParser::FunctionArgsContext* ctx) override;
-        void visitFunctionArg(IronParser::FunctionArgContext* ctx) override;
+        void visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx, std::stringstream* sb);
+        void visitStatementList(IronParser::StatementListContext* ctx, std::stringstream* sb) ;
+        void visitVarDeclaration(IronParser::VarDeclarationContext* ctx, std::stringstream* sb) ;
+        void visitVarAssignment(IronParser::VarAssignmentContext* ctx) ;
+
+        std::string visitExpr(IronParser::ExprContext* ctx, std::stringstream* sb) ;
+        void visitAssignment(IronParser::AssignmentContext* ctx, std::stringstream* sb) ;
+
+        void visitFunctionSignature(IronParser::FunctionSignatureContext* ctx, std::stringstream* sb) ;
+        void visitFunctionArgs(IronParser::FunctionArgsContext* ctx, std::stringstream* sb) ;
+        void visitFunctionArg(IronParser::FunctionArgContext* ctx, bool comma, std::stringstream* sb);
 
         void visitFunctionCall(IronParser::FunctionCallContext* ctx,
                             const std::string& actualFunctionName,
-                            std::shared_ptr<SymbolTable> parentScope) override;
+                            std::shared_ptr<SymbolTable> parentScope) ;
 
         void visitFunctionCallArgs(IronParser::FunctionCallArgsContext* ctx,
                                 const std::string& actualFunctionName,
-                                std::shared_ptr<SymbolTable> parentScope) override;
+                                std::shared_ptr<SymbolTable> parentScope) ;
 
         void visitFunctionCallArg(IronParser::FunctionCallArgContext* ctx,
                                 const std::string& actualFunctionName,
-                                std::shared_ptr<SymbolTable> parentScope) override;
+                                std::shared_ptr<SymbolTable> parentScope) ;
 
-        void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx) override;
-        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx) override;
-        void visitReturn(IronParser::ReturnContext* ctx) override;
+        void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx, std::stringstream* sb) ;
+        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx, std::stringstream* sb) ;
+        void visitReturn(IronParser::ReturnContext* ctx) ;
         
 
         
 
     public:
-        HighLevelIR(std::unique_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);
+        HighLevelIR(std::shared_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);
         ~HighLevelIR();
         std::string generateCode();
     };
@@ -53,4 +60,4 @@ namespace iron {
 
 
 
-#endif // SEMANTICAL_ANALYSIS_H
+#endif // HLIR_H

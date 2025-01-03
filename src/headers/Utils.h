@@ -34,7 +34,7 @@ namespace iron {
         std::cout << result << "\n";
     }
 
-    std::optional<std::pair<std::string, int>> getArgumentByName(const SymbolInfo& info, const std::string& argName)
+    inline std::optional<std::pair<std::string, int>> getArgumentByName(const SymbolInfo& info, const std::string& argName)
     {
         for (const auto& arg : info.args) {
             if (arg.first == argName) {
@@ -44,7 +44,7 @@ namespace iron {
         return std::nullopt;
     }
 
-    int typeOfRealNumber(const std::string valor) {
+    inline int typeOfRealNumber(const std::string valor) {
         if (!valor.empty() && valor.back() == 'F') {
             return TokenMap::TYPE_FLOAT;
         } else 
@@ -54,7 +54,7 @@ namespace iron {
         return TokenMap::NO_REAL_NUMBER;
     }
 
-    std::string createFunctionName(std::string currentScopeName, std::string functionName) {
+    inline std::string createFunctionName(std::string currentScopeName, std::string functionName) {
         return format("gfn_{}_{}",currentScopeName, functionName);
     }
 

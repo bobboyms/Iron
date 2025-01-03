@@ -47,6 +47,14 @@ namespace iron {
         return std::nullopt;
     }
 
+    std::optional<SymbolInfo> SymbolTable::lookupNoParent(const std::string& name) const {
+        auto it = symbols.find(name);
+        if (it != symbols.end()) {
+            return it->second; // Retorna cópia do SymbolInfo
+        }
+        return std::nullopt;
+    }
+
     void SymbolTable::printSymbols(const std::string& scopeName) const {
         std::cout << "Scope: " << scopeName << "\n";
         for (const auto& [symName, info] : symbols) {

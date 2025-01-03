@@ -1,3 +1,8 @@
-fn main():int {
-    let inline: string = (a:int):int -> a * 21
-}
+fn soma(n:float): int {
+            let block:fn = (a:int, b:float):int -> {
+                let block:fn = (a:int, b:float):int -> {
+                    let block:fn = (a:int, b:float):int -> {}
+                    let result:float =  block(a:12, b:12.26)
+                }
+            }
+        }

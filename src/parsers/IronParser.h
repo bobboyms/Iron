@@ -12,7 +12,7 @@
 class  IronParser : public antlr4::Parser {
 public:
   enum {
-    T__0 = 1, T__1 = 2, COLON = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
+    T__0 = 1, COMMA = 2, COLON = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
     L_CURLY = 8, R_CURLY = 9, L_PAREN = 10, R_PAREN = 11, PLUS = 12, MINUS = 13, 
     DIV = 14, L_BRACKET = 15, R_BRACKET = 16, ARROW = 17, FUNCTION = 18, 
     LET = 19, PUBLIC = 20, IMPORT = 21, RETURN = 22, TYPE_INT = 23, TYPE_CHAR = 24, 
@@ -267,6 +267,8 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<FunctionArgContext *> functionArg();
     FunctionArgContext* functionArg(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -316,6 +318,8 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<FunctionCallArgContext *> functionCallArg();
     FunctionCallArgContext* functionCallArg(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -401,7 +405,13 @@ public:
 
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
+    IronParser::ExprContext *left = nullptr;
     antlr4::Token *varName = nullptr;
+    antlr4::Token *mult = nullptr;
+    antlr4::Token *div = nullptr;
+    IronParser::ExprContext *right = nullptr;
+    antlr4::Token *plus = nullptr;
+    antlr4::Token *minus = nullptr;
     ExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     NumberContext *number();

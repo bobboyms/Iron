@@ -12,7 +12,7 @@
 class  IronLexer : public antlr4::Lexer {
 public:
   enum {
-    T__0 = 1, T__1 = 2, COLON = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
+    T__0 = 1, COMMA = 2, COLON = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
     L_CURLY = 8, R_CURLY = 9, L_PAREN = 10, R_PAREN = 11, PLUS = 12, MINUS = 13, 
     DIV = 14, L_BRACKET = 15, R_BRACKET = 16, ARROW = 17, FUNCTION = 18, 
     LET = 19, PUBLIC = 20, IMPORT = 21, RETURN = 22, TYPE_INT = 23, TYPE_CHAR = 24, 
