@@ -24,10 +24,10 @@ int runAnalysis(const std::string& input) {
         tokens.seek(0);
         parser->reset();
 
-        //iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
-        //const auto hlir = hightLevelCodeGenerator.generateCode();
+        iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
+        const auto hlir = hightLevelCodeGenerator.generateCode();
 
-        //std::cout << hlir << std::endl;
+        std::cout << hlir << std::endl;
 
         //std::cout << "Análise semântica concluída com sucesso." << std::endl;
         return 0; // Sucesso
@@ -46,15 +46,10 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
+
         fn soma(n:float): int {
-            let x: float = 25.32
-            let block:fn = (a:int, b:float):int -> {
-                let block:fn = (a:int, b:float):int -> {
-                    let block:fn = (a:int, b:float):int -> {}
-                    let result:float =  block(a:12, b:12.26) * x
-                }
-                let result:float =  27 * block(a:12, b:12.26)
-            }
+            let block:fn = ():int -> {}
+            block()
         }
     )";
 

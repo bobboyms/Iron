@@ -17,7 +17,7 @@ SRC = src/main.cpp
 TEST_TARGET = test_program
 TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp tests/test_hlir.cpp
 
-ANTLR_CPP = src/Colors.cpp src/ScopeManager.cpp src/HighLevelIR.cpp src/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp
+ANTLR_CPP = src/WriterCodeHLIR.cpp src/Colors.cpp src/ScopeManager.cpp src/HighLevelIR.cpp src/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp
 
 # Alvo padrão: compilar o programa
 all: $(TARGET) $(TEST_TARGET)
