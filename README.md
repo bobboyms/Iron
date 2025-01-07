@@ -127,6 +127,8 @@ Sempre que você tiver um arquivo de gramática, por exemplo `MyGrammar.g4`, pod
 
 ```bash
 antlr4 -Dlanguage=Cpp -o ./src/parsers Iron.g4
+
+antlr4 -Dlanguage=Cpp -o ./src/parsers HightLavelIR.g4
 ```
 
 Isso criará arquivos `.h` e `.cpp` correspondentes à sua gramática. Lembre-se de executar este comando dentro do ambiente virtual (caso esteja usando o `venv`).

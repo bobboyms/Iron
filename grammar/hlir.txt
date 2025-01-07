@@ -1,26 +1,2 @@
-private fn gfn_gfn_gfn_soma_block_block_block(a:int, b:float):int {
-}
-private fn gfn_gfn_soma_block_block(a:int, b:float):int {
-let block:fn = gfn_gfn_gfn_soma_block_block_block
-let tmp_1:int = gfn_gfn_gfn_soma_block_block_block()
-let tmp_2:float = tmp_1 int to float
-let tmp_3:float = MULT tmp_2, x
-let result:float = tmp_3
-}
-private fn soma (n:float): int { 
-let x:float = 25.32
-let block:fn = gfn_soma_block
+private fn soma (): void { 
 } 
-private fn sub (): double { 
-} 
-private fn gfn_soma_block(a:int, b:float):int {
-let block:fn = gfn_gfn_soma_block_block
-let tmp_4:int = 27
-let tmp_5:int = gfn_gfn_soma_block_block()
-let tmp_6:int = MULT tmp_4, tmp_5
-let tmp_7:double = sub()
-let tmp_8:double = tmp_6 int to double
-let tmp_9:double = DIV tmp_8, tmp_7
-let tmp_10:float = tmp_9 double to float
-let result:float = tmp_10
-}

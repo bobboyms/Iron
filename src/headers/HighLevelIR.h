@@ -3,6 +3,8 @@
 
 #include "WriterCodeHLIR.h"
 #include "../parsers/IronParser.h"
+#include "../parsers/HightLavelIRParser.h"
+#include "../parsers/HightLavelIRLexer.h"
 #include "ScopeManager.h"
 #include "Visitors.h"
 #include <memory>
@@ -56,6 +58,7 @@ namespace iron {
         HighLevelIR(std::shared_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);
         ~HighLevelIR();
         std::string generateCode();
+        std::shared_ptr<HightLavelIRParser> generateParser();
     };
 }
 

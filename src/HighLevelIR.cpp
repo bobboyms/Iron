@@ -22,6 +22,19 @@ namespace iron {
     std::string HighLevelIR::generateTempVar() {
         return "tmp_" + std::to_string(++tempVarCounter);
     }
+    
+    std::shared_ptr<HightLavelIRParser> HighLevelIR::generateParser() {
+        const auto code = generateCode();
+
+        std::cout << code << std::endl;
+
+        antlr4::ANTLRInputStream inputStream(code);
+        HightLavelIRLexer lexer(&inputStream);
+        antlr4::CommonTokenStream tokens(&lexer);
+        auto parser = std::make_shared<HightLavelIRParser>(&tokens);
+        return parser;
+
+    }
 
     std::string HighLevelIR::generateCode() 
     {

@@ -6,6 +6,7 @@
 #include "headers/ScopeManager.h"
 #include "headers/IronExceptions.h"
 #include "headers/HighLevelIR.h"
+#include "headers/LLVMIR.h"
 #include "headers/Colors.h"
 
 int runAnalysis(const std::string& input) {
@@ -25,9 +26,12 @@ int runAnalysis(const std::string& input) {
         parser->reset();
 
         iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
-        const auto hlir = hightLevelCodeGenerator.generateCode();
+        const auto hlirCode = hightLevelCodeGenerator.generateCode();
+        
+        //std::cout << hlir << std::endl;
 
-        std::cout << hlir << std::endl;
+        iron::LLVMIR llvmir(hlirCode, std::move(std::make_unique<iron::ScopeManager>()));
+        std::cout << llvmir.generateCode() << std::endl;
 
         //std::cout << "Análise semântica concluída com sucesso." << std::endl;
         return 0; // Sucesso
@@ -46,10 +50,7 @@ int runAnalysis(const std::string& input) {
 
 int main() {
     std::string input = R"(
-
-        fn soma(n:float): int {
-            let block:fn = ():int -> {}
-            block()
+        fn soma() {
         }
     )";
 

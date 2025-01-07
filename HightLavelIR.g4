@@ -1,4 +1,4 @@
-grammar hlir;
+grammar HightLavelIR;
 
 // ---------------------------------
 // Regras do Lexer (Tokens)
@@ -67,7 +67,7 @@ WS      : [ \t]+ -> skip ;
 
 // Ponto de entrada da gramática
 program
-    : importStatement* functionDeclaration* EOF
+    : importStatement* ( functionDeclaration )* EOF
     ;
 
 // Declaração de importação
