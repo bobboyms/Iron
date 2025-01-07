@@ -36,12 +36,32 @@ namespace iron {
         void visitFunctionDeclaration(HightLavelIRParser::FunctionDeclarationContext* ctx);
 
 
-        void visitFunctionSignature(HightLavelIRParser::FunctionSignatureContext* ctx) ;
-        void visitFunctionArgs(HightLavelIRParser::FunctionArgsContext* ctx) ;
-        void visitFunctionArg(HightLavelIRParser::FunctionArgContext* ctx);
+        
+        void visitFunctionSignature(
+            HightLavelIRParser::FunctionSignatureContext* ctx,
+            llvm::Type*& functionReturnType,
+            std::vector<llvm::Type*>& argTypes,
+            std::vector<std::string>& argNames
+        );
+        void visitFunctionArgs(
+        HightLavelIRParser::FunctionArgsContext* ctx,
+        std::vector<llvm::Type*>& argTypes,
+        std::vector<std::string>& argNames
+        );
+        void visitFunctionArg(
+            HightLavelIRParser::FunctionArgContext* ctx,
+            std::vector<llvm::Type*>& argTypes,
+            std::vector<std::string>& argNames
+        );
         void visitFunctionCall(HightLavelIRParser::FunctionCallContext* ctx) ;
         void visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext* ctx) ;
         void visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext* ctx) ;
+        void visitFunctionReturnType(
+            HightLavelIRParser::FunctionReturnTypeContext* ctx,
+            llvm::Type*& functionReturnType
+        );
+
+        llvm::Type* mapType(const int type);
         
 
     public:

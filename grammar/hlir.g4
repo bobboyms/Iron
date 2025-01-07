@@ -67,7 +67,7 @@ WS      : [ \t]+ -> skip ;
 
 // Ponto de entrada da gramática
 program
-    : importStatement* functionDeclaration* EOF
+    : importStatement* ( functionDeclaration )* EOF
     ;
 
 // Declaração de importação
@@ -143,7 +143,9 @@ cast:
 math_op: ( MULT | DIV | PLUS | MINUS ) opLeft COMMA opRight;
 
 expr:
-    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number | anotherVarName=IDENTIFIER);
+    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number | assignment);
+
+assignment:anotherVarName=IDENTIFIER;
 
 number:
      REAL_NUMBER

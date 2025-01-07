@@ -1,2 +1,7 @@
-private fn soma (): void { 
-} 
+public fn main (name:string): int { 
+            let a:float = 10.00F
+            let b:float = 10.00F
+
+            let tmp_1: float = PLUS a, b
+            let r:int = tmp_1
+        } 

@@ -76,6 +76,9 @@ public:
   virtual void enterExpr(HightLavelIRParser::ExprContext * /*ctx*/) override { }
   virtual void exitExpr(HightLavelIRParser::ExprContext * /*ctx*/) override { }
 
+  virtual void enterAssignment(HightLavelIRParser::AssignmentContext * /*ctx*/) override { }
+  virtual void exitAssignment(HightLavelIRParser::AssignmentContext * /*ctx*/) override { }
+
   virtual void enterNumber(HightLavelIRParser::NumberContext * /*ctx*/) override { }
   virtual void exitNumber(HightLavelIRParser::NumberContext * /*ctx*/) override { }
 

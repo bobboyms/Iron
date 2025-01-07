@@ -4,6 +4,19 @@
 #include <exception>
 #include <string>
 
+class LLVMException : public std::exception {
+private:
+    std::string message; // Mensagem de erro
+
+public:
+    explicit LLVMException(const std::string& msg) : message(msg) {}
+
+    // Retorna a mensagem de erro
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
+};
+
 class SemanticException : public std::exception {
 private:
     std::string message; // Mensagem de erro
