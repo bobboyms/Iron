@@ -1,7 +1,2 @@
-private fn gfn_teste_inline_inline(a:int, b:int):int {
-let tmp_1:int = MULT a, b
-}
-
-private fn teste (): void { 
-let inline:fn = gfn_teste_inline
+private fn soma (): void { 
 } 

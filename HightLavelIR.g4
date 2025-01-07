@@ -1,4 +1,4 @@
-grammar hlir;
+grammar HightLavelIR;
 
 // ---------------------------------
 // Regras do Lexer (Tokens)
@@ -43,6 +43,7 @@ TYPE_FLOAT     : 'float' ;
 TYPE_STRING    : 'string' ;
 TYPE_BOOLEAN   : 'boolean' ;
 TYPE_DOUBLE    : 'double' ;
+VOID           : 'void' ;
 
 CAST:  'cast' ;
 
@@ -66,7 +67,7 @@ WS      : [ \t]+ -> skip ;
 
 // Ponto de entrada da gramática
 program
-    : importStatement* functionDeclaration* EOF
+    : importStatement* ( functionDeclaration )* EOF
     ;
 
 // Declaração de importação
@@ -97,7 +98,7 @@ functionSignature:
 
 // Tipo de retorno da função
 functionReturnType
-    : COLON varTypes
+    : COLON (varTypes | VOID)
     ;
 
 // Argumentos da função
@@ -142,7 +143,7 @@ cast:
 math_op: ( MULT | DIV | PLUS | MINUS ) opLeft COMMA opRight;
 
 expr:
-    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number);
+    LET varName=IDENTIFIER COLON varTypes EQ (math_op | functionCall | cast | number | anotherVarName=IDENTIFIER);
 
 number:
      REAL_NUMBER
@@ -165,4 +166,5 @@ varTypes
     | TYPE_FLOAT
     | TYPE_INT
     | TYPE_STRING
+    | FUNCTION
     ;

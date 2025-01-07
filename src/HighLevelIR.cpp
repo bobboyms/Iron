@@ -3,46 +3,62 @@
 #include "headers/Colors.h"
 #include "headers/TokenMap.h"
 #include "headers/Utils.h"
+
+
 #include <iostream>
 
 namespace iron {
 
     HighLevelIR::HighLevelIR(std::shared_ptr<IronParser> parser, 
                                            std::unique_ptr<ScopeManager> scopeManager)
-        : parser(parser), scopeManager(std::move(scopeManager)), 
-          localSb(new std::stringstream()), globalSb(new std::stringstream())
+        : parser(parser), scopeManager(std::move(scopeManager)), writerCodeHLIR(new WriterCodeHLIR())
     {
     }
 
     HighLevelIR::~HighLevelIR() 
     {
-        delete globalSb;
-        delete localSb;
     }
 
     std::string HighLevelIR::generateTempVar() {
         return "tmp_" + std::to_string(++tempVarCounter);
+    }
+    
+    std::shared_ptr<HightLavelIRParser> HighLevelIR::generateParser() {
+        const auto code = generateCode();
+
+        std::cout << code << std::endl;
+
+        antlr4::ANTLRInputStream inputStream(code);
+        HightLavelIRLexer lexer(&inputStream);
+        antlr4::CommonTokenStream tokens(&lexer);
+        auto parser = std::make_shared<HightLavelIRParser>(&tokens);
+        return parser;
+
     }
 
     std::string HighLevelIR::generateCode() 
     {
         scopeManager->enterScope(TokenMap::getTokenText(TokenMap::GLOBAL));
         IronParser::ProgramContext* programContext = parser->program();
+        
 
         // Processa todas as declarações no programa
+        auto writer = writerCodeHLIR->getWriter(TokenMap::getTokenText(TokenMap::GLOBAL));
         for (auto child : programContext->children) {
             if (auto funcDecl = dynamic_cast<IronParser::FunctionDeclarationContext*>(child)) {
-                visitFunctionDeclaration(funcDecl, localSb);
+                visitFunctionDeclaration(funcDecl);
             }
         }
 
-        // Finaliza o escopo global após processar todas as declarações
-        scopeManager->exitScope(TokenMap::getTokenText(TokenMap::GLOBAL));
+        
 
-        return globalSb->str() + "\n" + localSb->str();
+        // Finaliza o escopo global após processar todas as declarações
+
+        scopeManager->exitScope(TokenMap::getTokenText(TokenMap::GLOBAL));
+        return writerCodeHLIR->getCode();
     }
 
-    void HighLevelIR::visitStatementList(IronParser::StatementListContext* ctx, std::stringstream* sb) 
+    void HighLevelIR::visitStatementList(IronParser::StatementListContext* ctx, std::shared_ptr<std::stringstream> sb) 
     {
         for (auto child : ctx->children) {
             if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext*>(child)) {
@@ -60,7 +76,7 @@ namespace iron {
         }
     }
 
-    std::string HighLevelIR::visitExpr(IronParser::ExprContext* ctx, std::stringstream* sb) 
+    std::string HighLevelIR::visitExpr(IronParser::ExprContext* ctx, std::shared_ptr<std::stringstream> sb) 
     {
         auto currentScope = scopeManager->currentScope();
         
@@ -158,13 +174,6 @@ namespace iron {
         // Verifica se é uma variável
         else if (ctx->varName) {
             std::string varName = ctx->varName->getText();
-
-            auto symbolOpt = currentScope->lookup(varName);
-
-            //iron::printf("varName: {}", varName);
-            //if (symbolOpt.has_value() && !symbolOpt->alias.empty()) {
-            //    throw std::runtime_error("HLIR Error: Undefined variable: " + symbolOpt->alias);
-            //}
             return varName;
 
         } 
@@ -174,6 +183,7 @@ namespace iron {
             auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
             auto functionName = ctx->functionCall()->functionName->getText();
             //iron::printf("functionName: {}", functionName);
+            iron::printf("functionName {}", functionName);
             auto functionSymbolInfo = globalScope->lookup(functionName);
             if (functionSymbolInfo.has_value()) {
                 std::string tempVar = generateTempVar(); 
@@ -183,12 +193,12 @@ namespace iron {
                 return tempVar;
             } else {
                 const std::string globalFunctionName = createFunctionName(currentScope->getName(), functionName);
-                iron::printf("Expr globalFunctionName: {}", globalFunctionName);
+                //iron::printf("Expr globalFunctionName: {}", globalFunctionName);
                 auto globalFunctionOpt = globalScope->lookup(globalFunctionName);
                 if (globalFunctionOpt.has_value()) {
                     std::string tempVar = generateTempVar(); 
                     int dataType = globalFunctionOpt.value().dataType;
-                    *sb << iron::format("let {}:{} = {}()\n", tempVar, TokenMap::getTokenText(dataType), globalFunctionName);
+                    *sb << iron::format("let {}:{} = {}()\n", tempVar, TokenMap::getTokenText(dataType), functionName);
                     currentScope->addSymbol(tempVar, {TokenMap::VARIABLE, dataType, nullptr});
                     return tempVar;
 
@@ -218,7 +228,7 @@ namespace iron {
     }
 
 
-    void HighLevelIR::visitAssignment(IronParser::AssignmentContext* ctx, std::stringstream* sb) {
+    void HighLevelIR::visitAssignment(IronParser::AssignmentContext* ctx, std::shared_ptr<std::stringstream> sb) {
             int line = ctx->getStart()->getLine();
             auto currentScope = scopeManager->currentScope();
 
@@ -277,12 +287,14 @@ namespace iron {
             }
 
             if (ctx->arrowFunctionInline()) {
-                visitArrowFunctionInline(ctx->arrowFunctionInline(), globalSb);
-            }
+                visitArrowFunctionInline(ctx->arrowFunctionInline());
+            } 
+            
 
              if (ctx->arrowFunctionBlock()) {
-                visitArrowFunctionBlock(ctx->arrowFunctionBlock(), globalSb);
+                visitArrowFunctionBlock(ctx->arrowFunctionBlock());
             }
+            
 
             
     }
@@ -292,22 +304,20 @@ namespace iron {
         iron::printf("visitVarAssignment","");
     }
 
-    void HighLevelIR::visitVarDeclaration(IronParser::VarDeclarationContext* ctx, std::stringstream* sb) {
+    void HighLevelIR::visitVarDeclaration(IronParser::VarDeclarationContext* ctx, std::shared_ptr<std::stringstream> sb) {
         std::string varName = ctx->varName->getText();
         std::string varType = ctx->varTypes()->getText();
 
         int line = ctx->getStart()->getLine();
-
-        const std::string scope = scopeManager->currentScopeName();
-        const auto result = scopeManager->currentScope()->lookup(varName);
+        const std::string scopeName = scopeManager->currentScopeName();
 
         if (TokenMap::getTokenType(varType) == TokenMap::FUNCTION) {
             auto alias = iron::createFunctionName(scopeManager->currentScope()->getName(), varName);
             //iron::printf("varName: {}, alias: {}", alias, varName);
-            scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr,{}, alias});
 
+            scopeManager->currentScope()->addSymbol(varName, {TokenMap::VARIABLE, TokenMap::getTokenType(varType), nullptr,{}, alias});
             if (ctx->assignment()) {
-                visitAssignment(ctx->assignment(), globalSb);
+                visitAssignment(ctx->assignment(), sb);
             }
 
             *sb << iron::format("let {}:{} = {}\n", varName, varType, alias);
@@ -323,7 +333,7 @@ namespace iron {
 
     }
 
-    void HighLevelIR::visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx, std::stringstream* sb) 
+    void HighLevelIR::visitFunctionDeclaration(IronParser::FunctionDeclarationContext* ctx) 
     {   
         std::string visibility;
         if (ctx->PUBLIC()) {
@@ -346,32 +356,34 @@ namespace iron {
         }
 
         scopeManager->enterScope(functionName);
-        *sb << iron::format("{} {} {} (",visibility, fn, functionName);
+        auto writer = writerCodeHLIR->getWriter(functionName);
+
+        *writer->localSb << iron::format("{} {} {} (",visibility, fn, functionName);
 
         if (ctx->functionSignature()) {
-            visitFunctionSignature(ctx->functionSignature(), sb);
+            visitFunctionSignature(ctx->functionSignature(), writer->localSb);
         }
         
-        *sb << iron::format("): {} { \n", returnType); //"" << returnType << "{"
+        *writer->localSb << iron::format("): {} { \n", returnType); //"" << returnType << "{"
         for (auto child : ctx->children) {
             if (auto statementList = dynamic_cast<IronParser::StatementListContext*>(child)) {
-                visitStatementList(statementList, sb);
+                visitStatementList(statementList, writer->localSb);
             }
         }
 
-        *sb << iron::format("} \n", returnType);
+        *writer->localSb << iron::format("} \n", returnType);
         scopeManager->exitScope(functionName);
     
     }
 
-    void HighLevelIR::visitFunctionSignature(IronParser::FunctionSignatureContext* ctx, std::stringstream* sb) 
+    void HighLevelIR::visitFunctionSignature(IronParser::FunctionSignatureContext* ctx, std::shared_ptr<std::stringstream> sb) 
     {
         if (ctx->functionArgs()) {
             visitFunctionArgs(ctx->functionArgs(), sb);
         }
     }
 
-    void HighLevelIR::visitFunctionArgs(IronParser::FunctionArgsContext* ctx, std::stringstream* sb)
+    void HighLevelIR::visitFunctionArgs(IronParser::FunctionArgsContext* ctx, std::shared_ptr<std::stringstream> sb)
     {
         int commaCount = ctx->COMMA().size();
         int argIndex = 0;
@@ -388,7 +400,7 @@ namespace iron {
     }
 
 
-    void HighLevelIR::visitFunctionArg(IronParser::FunctionArgContext* ctx, bool comma, std::stringstream* sb) 
+    void HighLevelIR::visitFunctionArg(IronParser::FunctionArgContext* ctx, bool comma, std::shared_ptr<std::stringstream> sb) 
     {
         const auto argName = ctx->varName->getText();
         const auto dataType = ctx->varTypes()->getText();
@@ -429,7 +441,7 @@ namespace iron {
     {
     }
 
-    void HighLevelIR::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx, std::stringstream* sb) {
+    void HighLevelIR::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext* ctx) {
         auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
         std::string currentScopeName = scopeManager->currentScopeName();
 
@@ -449,46 +461,50 @@ namespace iron {
                 returnTypeStr = TokenMap::getTokenText(TokenMap::VOID);
             }
 
-            //iron::printf("Criou função: {}", globalFunctionName);
-
             // Adiciona a função ao escopo global
             globalScope->addSymbol(
-                arrowFuncName,
+                globalFunctionName,
                 {
                     TokenMap::FUNCTION, 
                     TokenMap::getTokenType(returnTypeStr),
                     nullptr,
                     {},
-                    globalFunctionName
+                    arrowFuncName
                 }
             );
 
+            
+
             // Entra no escopo da função inline
             scopeManager->enterScope(globalFunctionName);
+            auto writer = writerCodeHLIR->getWriter(globalFunctionName);
             // Escreve a declaração da função no globalSb
-            *sb << iron::format("private fn {}(", 
+            *writer->localSb << iron::format("private fn {}(", 
                                     globalFunctionName);
 
+            
             if (ctx->functionSignature()->functionArgs()) {
-                visitFunctionArgs(ctx->functionSignature()->functionArgs(), sb);
+                visitFunctionArgs(ctx->functionSignature()->functionArgs(), writer->localSb);
             }
 
-            *sb << iron::format("):{} {\n", 
+            *writer->localSb << iron::format("):{} {\n", 
                                     returnTypeStr);
             
             if (ctx->statementList()) {
-                visitStatementList(ctx->statementList(), sb);
+                visitStatementList(ctx->statementList(), writer->localSb);
             }
 
-            *sb << iron::format("}\n", "");
+            
+
+            *writer->localSb << iron::format("}\n", "");
             // Sai do escopo
             scopeManager->exitScope(globalFunctionName);
-
+            
             
         }
     }
 
-    void HighLevelIR::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx, std::stringstream* sb) {
+    void HighLevelIR::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext* ctx) {
         auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
         std::string currentScopeName = scopeManager->currentScopeName();
 
@@ -522,22 +538,25 @@ namespace iron {
 
             // Entra no escopo da função inline
             scopeManager->enterScope(globalFunctionName);
+
+            auto writer = writerCodeHLIR->getWriter(globalFunctionName);
+
             // Escreve a declaração da função no globalSb
-            *sb << iron::format("private fn {}(", 
+            *writer->localSb << iron::format("private fn {}(", 
                                     globalFunctionName);
 
             if (ctx->functionSignature()->functionArgs()) {
-                visitFunctionArgs(ctx->functionSignature()->functionArgs(), sb);
+                visitFunctionArgs(ctx->functionSignature()->functionArgs(), writer->localSb);
             }
 
-            *sb << iron::format("):{} {\n", 
+            *writer->localSb << iron::format("):{} {\n", 
                                     returnTypeStr);
             
             if (ctx->expr()) {
-                visitExpr(ctx->expr(), sb);
+                visitExpr(ctx->expr(), writer->localSb);
             }
 
-            *sb << iron::format("}\n", "");
+            *writer->localSb << iron::format("}\n", "");
             // Sai do escopo
             scopeManager->exitScope(globalFunctionName);
 
