@@ -1,4 +1,4 @@
-#include "headers/ScopeManager.h"
+#include "../headers/ScopeManager.h"
 #include <stdexcept>
 
 // -----------------------------------------------------

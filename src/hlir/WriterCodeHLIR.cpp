@@ -1,5 +1,5 @@
 // WriterCodeHLIR.cpp
-#include "headers/WriterCodeHLIR.h"
+#include "../headers/WriterCodeHLIR.h"
 #include <stdexcept>
 
 namespace iron {

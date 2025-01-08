@@ -1,8 +1,8 @@
-#include "headers/HighLevelIR.h"
-#include "headers/IronExceptions.h"
-#include "headers/Colors.h"
-#include "headers/TokenMap.h"
-#include "headers/Utils.h"
+#include "../headers/HighLevelIR.h"
+#include "../headers/IronExceptions.h"
+#include "../headers/Colors.h"
+#include "../headers/TokenMap.h"
+#include "../headers/Utils.h"
 
 
 #include <iostream>

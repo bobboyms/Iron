@@ -1,14 +1,13 @@
-#include "headers/SemanticalAnalysis.h"
-#include "headers/IronExceptions.h"
-#include "headers/Colors.h"
-#include "headers/TokenMap.h"
-#include "headers/Utils.h"
+#include "../headers/SemanticalAnalysis.h"
+#include "../headers/IronExceptions.h"
+#include "../headers/Colors.h"
+#include "../headers/TokenMap.h"
+#include "../headers/Utils.h"
 #include <iostream>
 
 // Construtor
 
 namespace iron {
-
 
     SemanticalAnalysis::SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<iron::ScopeManager> scopeManager)
         : parser(parser), scopeManager(std::move(scopeManager)) {

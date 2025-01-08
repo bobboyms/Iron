@@ -1,7 +1,7 @@
-#include "headers/LLVMIR.h"
-#include "headers/IronExceptions.h"
-#include "headers/TokenMap.h"
-#include "headers/Utils.h"
+#include "../headers/LLVMIR.h"
+#include "../headers/IronExceptions.h"
+#include "../headers/TokenMap.h"
+#include "../headers/Utils.h"
 
 namespace iron {
 
