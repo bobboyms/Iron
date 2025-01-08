@@ -4,101 +4,117 @@
 #include <exception>
 #include <string>
 
-class LLVMException : public std::exception {
+class LLVMException : public std::exception
+{
 private:
     std::string message; // Mensagem de erro
 
 public:
-    explicit LLVMException(const std::string& msg) : message(msg) {}
+    explicit LLVMException(const std::string &msg) : message(msg) {}
 
     // Retorna a mensagem de erro
-    const char* what() const noexcept override {
+    const char *what() const noexcept override
+    {
         return message.c_str();
     }
 };
 
-class SemanticException : public std::exception {
+class SemanticException : public std::exception
+{
 private:
     std::string message; // Mensagem de erro
 
 public:
-    explicit SemanticException(const std::string& msg) : message(msg) {}
+    explicit SemanticException(const std::string &msg) : message(msg) {}
 
     // Retorna a mensagem de erro
-    const char* what() const noexcept override {
+    const char *what() const noexcept override
+    {
         return message.c_str();
     }
 };
 
-class ArgumentOrderMismatchException : public SemanticException {
+class ArgumentOrderMismatchException : public SemanticException
+{
 public:
-    explicit ArgumentOrderMismatchException(const std::string& message)
+    explicit ArgumentOrderMismatchException(const std::string &message)
         : SemanticException(message) {}
 };
 
-class ArgumentCountMismatchException : public SemanticException {
+class ArgumentCountMismatchException : public SemanticException
+{
 public:
-    explicit ArgumentCountMismatchException(const std::string& message)
+    explicit ArgumentCountMismatchException(const std::string &message)
         : SemanticException(message) {}
 };
 
-class UninitializedVariableException : public SemanticException {
+class UninitializedVariableException : public SemanticException
+{
 public:
-    explicit UninitializedVariableException(const std::string& msg)
+    explicit UninitializedVariableException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class VariableRedefinitionException : public SemanticException {
+class VariableRedefinitionException : public SemanticException
+{
 public:
-    explicit VariableRedefinitionException(const std::string& msg)
+    explicit VariableRedefinitionException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class FunctionRedefinitionException : public SemanticException {
+class FunctionRedefinitionException : public SemanticException
+{
 public:
-    explicit FunctionRedefinitionException(const std::string& msg)
+    explicit FunctionRedefinitionException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class VariableNotFoundException : public SemanticException {
+class VariableNotFoundException : public SemanticException
+{
 public:
-    explicit VariableNotFoundException(const std::string& msg)
+    explicit VariableNotFoundException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class ScopeNotFoundException : public SemanticException {
+class ScopeNotFoundException : public SemanticException
+{
 public:
-    explicit ScopeNotFoundException(const std::string& msg)
+    explicit ScopeNotFoundException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class TypeMismatchException : public SemanticException {
+class TypeMismatchException : public SemanticException
+{
 public:
-    explicit TypeMismatchException(const std::string& msg)
+    explicit TypeMismatchException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class FunctionNotFoundException : public SemanticException {
+class FunctionNotFoundException : public SemanticException
+{
 public:
-    explicit FunctionNotFoundException(const std::string& msg)
+    explicit FunctionNotFoundException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class FunctionArgNotFoundException : public SemanticException {
+class FunctionArgNotFoundException : public SemanticException
+{
 public:
-    explicit FunctionArgNotFoundException(const std::string& msg)
+    explicit FunctionArgNotFoundException(const std::string &msg)
         : SemanticException(msg) {}
 };
 
-class LexusNotFoundException : public std::exception {
+class LexusNotFoundException : public std::exception
+{
 private:
     std::string message; // Mensagem de erro
 
 public:
-    explicit LexusNotFoundException(const std::string& msg) : message(msg) {}
+    explicit LexusNotFoundException(const std::string &msg) : message(msg) {}
 
     // Retorna a mensagem de erro
-    const char* what() const noexcept override {
+    const char *what() const noexcept override
+    {
         return message.c_str();
     }
 };

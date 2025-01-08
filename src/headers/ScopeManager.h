@@ -3,12 +3,13 @@
 
 #include "SymbolTable.h"
 
-
-namespace iron {
-// ---------------------------------------------------------------------
-// Gerenciador de escopos usando uma pilha
-// ---------------------------------------------------------------------
-class ScopeManager {
+namespace iron
+{
+    // ---------------------------------------------------------------------
+    // Gerenciador de escopos usando uma pilha
+    // ---------------------------------------------------------------------
+    class ScopeManager
+    {
     private:
         // Pilha de pares <nome_do_escopo, SymbolTable>
         std::stack<std::pair<std::string, std::shared_ptr<SymbolTable>>> scopeStack;
@@ -18,10 +19,10 @@ class ScopeManager {
 
     public:
         // Entra em um novo escopo
-        void enterScope(const std::string& scopeName);
+        void enterScope(const std::string &scopeName);
 
         // Sai do escopo especificado (deve ser o topo)
-        void exitScope(const std::string& scopeName);
+        void exitScope(const std::string &scopeName);
 
         // Retorna o escopo atual (topo da pilha)
         std::shared_ptr<SymbolTable> currentScope() const;
@@ -30,12 +31,9 @@ class ScopeManager {
         std::string currentScopeName() const;
 
         // Recupera escopo pelo nome (se ainda existir)
-        std::shared_ptr<SymbolTable> getScopeByName(const std::string& scopeName) const;
+        std::shared_ptr<SymbolTable> getScopeByName(const std::string &scopeName) const;
     };
 
 }
-
-
-
 
 #endif // SCOPE_MANAGER_H

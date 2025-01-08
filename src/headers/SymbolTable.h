@@ -1,7 +1,6 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-
 #include <iostream>
 #include <unordered_map>
 #include <string>
@@ -12,19 +11,22 @@
 #include "IronExceptions.h"
 #include "Colors.h"
 
-namespace iron {
+namespace iron
+{
     // ---------------------------------------------------------------------
     // Estrutura para armazenar informações de símbolos
     // ---------------------------------------------------------------------
-    struct SymbolInfo {
+    struct SymbolInfo
+    {
         int type;
         int dataType;
         std::shared_ptr<class SymbolTable> scope;
         std::vector<std::pair<std::string, int>> args;
         std::string alias;
-        llvm::AllocaInst* alloca;
+        llvm::AllocaInst *alloca;
     };
-    class SymbolTable {
+    class SymbolTable
+    {
     private:
         // (Opcional) nome do escopo, se você quiser armazenar
         std::string name;
@@ -36,27 +38,27 @@ namespace iron {
         SymbolTable(std::shared_ptr<SymbolTable> parentScope = nullptr);
 
         // Construtor adicional que recebe um nome de escopo
-        SymbolTable(const std::string& scopeName, std::shared_ptr<SymbolTable> parentScope);
+        SymbolTable(const std::string &scopeName, std::shared_ptr<SymbolTable> parentScope);
 
         // Adiciona símbolo ao escopo
-        void addSymbol(const std::string& name, const SymbolInfo& info);
+        void addSymbol(const std::string &name, const SymbolInfo &info);
 
         // Exibe todos os símbolos
-        void printSymbols(const std::string& scopeName) const;
+        void printSymbols(const std::string &scopeName) const;
 
         // Busca (por cópia) com std::optional
-        std::optional<SymbolInfo> lookup(const std::string& name) const;
+        std::optional<SymbolInfo> lookup(const std::string &name) const;
 
-        std::optional<SymbolInfo> lookupNoParent(const std::string& name) const;
+        std::optional<SymbolInfo> lookupNoParent(const std::string &name) const;
 
         // Busca retornando ponteiro (útil para modificações diretas)
-        SymbolInfo* lookupPtr(const std::string& name);
+        SymbolInfo *lookupPtr(const std::string &name);
 
         // Getter para o pai (caso você queira acessar)
         std::shared_ptr<SymbolTable> getParent() const { return parent; }
 
         // Getter para o nome do escopo (caso queira usar)
-        const std::string& getName() const { return name; }
+        const std::string &getName() const { return name; }
     };
 
 }

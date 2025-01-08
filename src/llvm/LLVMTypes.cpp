@@ -3,20 +3,33 @@
 #include "../headers/TokenMap.h"
 #include "../headers/Utils.h"
 
-namespace iron {
+namespace iron
+{
     // Converte tipos do HighLevelIR para o LLVM Type
-    llvm::Type* LLVMIR::mapType(const int type) {
-        if (type == TokenMap::TYPE_INT) {
+    llvm::Type *LLVMIR::mapType(const int type)
+    {
+        if (type == TokenMap::TYPE_INT)
+        {
             return llvm::Type::getInt32Ty(context);
-        } else if (type == TokenMap::TYPE_FLOAT) {
+        }
+        else if (type == TokenMap::TYPE_FLOAT)
+        {
             return llvm::Type::getFloatTy(context);
-        } else if (type == TokenMap::TYPE_DOUBLE) {
+        }
+        else if (type == TokenMap::TYPE_DOUBLE)
+        {
             return llvm::Type::getDoubleTy(context);
-        } else if (type == TokenMap::TYPE_CHAR) {
+        }
+        else if (type == TokenMap::TYPE_CHAR)
+        {
             return llvm::Type::getInt8Ty(context);
-        } else if (type == TokenMap::TYPE_BOOLEAN) {
+        }
+        else if (type == TokenMap::TYPE_BOOLEAN)
+        {
             return llvm::Type::getInt1Ty(context);
-        } else if (type == TokenMap::VOID) {
+        }
+        else if (type == TokenMap::VOID)
+        {
             return llvm::Type::getVoidTy(context);
         }
         // Adicione outros tipos conforme necessário

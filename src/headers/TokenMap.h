@@ -7,12 +7,13 @@
 #include <unordered_map>
 #include <regex>
 
-
-namespace TokenMap {
+namespace TokenMap
+{
 
     const auto MAIN_TYPE = "MAIN_TYPE_EXPR";
 
-    enum Token {
+    enum Token
+    {
         GLOBAL = 1,
         COLON,
         EQ,
@@ -46,7 +47,7 @@ namespace TokenMap {
         TYPE_DOUBLE,
 
         // tipos de controle
-        
+
         VARIABLE,
         VOID,
         NUMBER,
@@ -98,76 +99,92 @@ namespace TokenMap {
         {ARGUMENT, "arg"},
     };
 
-
-    inline std::string getTokenText(int tokenType) {
+    inline std::string getTokenText(int tokenType)
+    {
         auto it = tokenText.find(tokenType);
-        if (it != tokenText.end()) {
+        if (it != tokenText.end())
+        {
             return it->second;
         }
         throw LexusNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 
-    inline int getTokenType(const std::string& tokenString) {
-        for (const auto& pair : tokenText) {
-            if (pair.second == tokenString) {
+    inline int getTokenType(const std::string &tokenString)
+    {
+        for (const auto &pair : tokenText)
+        {
+            if (pair.second == tokenString)
+            {
                 return pair.first;
             }
         }
         throw LexusNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 
-    inline  bool isNumber(int type) {
-        switch (type) {
-            case TokenMap::TYPE_DOUBLE:
-            case TokenMap::TYPE_FLOAT:
-            case TokenMap::TYPE_INT:
-            case TokenMap::NUMBER:
-                return true;
-            default:
-                return false;
+    inline bool isNumber(int type)
+    {
+        switch (type)
+        {
+        case TokenMap::TYPE_DOUBLE:
+        case TokenMap::TYPE_FLOAT:
+        case TokenMap::TYPE_INT:
+        case TokenMap::NUMBER:
+            return true;
+        default:
+            return false;
         }
     }
 
-    inline  bool isRealNumber(int type) {
-        switch (type) {
-            case TokenMap::TYPE_DOUBLE:
-            case TokenMap::TYPE_FLOAT:
-                return true;
-            default:
-                return false;
+    inline bool isRealNumber(int type)
+    {
+        switch (type)
+        {
+        case TokenMap::TYPE_DOUBLE:
+        case TokenMap::TYPE_FLOAT:
+            return true;
+        default:
+            return false;
         }
     }
 
-    inline int determineType(const std::string& input) {
+    inline int determineType(const std::string &input)
+    {
         // Definição das expressões regulares com base nas regras fornecidas
         static const std::regex realNumberRegex(R"(^-?\d+\.\d+([eE][+-]?\d+)?[FD]?$)");
         static const std::regex intNumberRegex(R"(^-?\d+$)");
         static const std::regex booleanValueRegex(R"(^true|false$)");
         static const std::regex stringLiteralRegex(R"(^"[^"\r\n]*"$)");
 
-        if (std::regex_match(input, realNumberRegex)) {
+        if (std::regex_match(input, realNumberRegex))
+        {
             return TokenMap::REAL_NUMBER;
         }
-        if (std::regex_match(input, intNumberRegex)) {
+        if (std::regex_match(input, intNumberRegex))
+        {
             return TokenMap::TYPE_INT;
         }
-        if (std::regex_match(input, booleanValueRegex)) {
+        if (std::regex_match(input, booleanValueRegex))
+        {
             return TokenMap::TYPE_BOOLEAN;
         }
-        if (std::regex_match(input, stringLiteralRegex)) {
+        if (std::regex_match(input, stringLiteralRegex))
+        {
             return TokenMap::TYPE_STRING;
         }
 
         throw SemanticException("Isn't impossivel determine the type of " + input);
     }
 
-    inline bool isValidFloatChar(char c) {
+    inline bool isValidFloatChar(char c)
+    {
         return std::isdigit(c) || c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-';
     }
 
     // Função para determinar o tipo de um literal de ponto flutuante com validação
-    inline int determineFloatType(const std::string& literal) {
-        if (literal.empty()) {
+    inline int determineFloatType(const std::string &literal)
+    {
+        if (literal.empty())
+        {
             throw std::invalid_argument("Literal vazio");
         }
 
@@ -175,59 +192,69 @@ namespace TokenMap {
         char lastChar = literal.back();
         int type = TokenMap::TYPE_FLOAT; // Tipo padrão
 
-        if (lastChar == 'd' || lastChar == 'D') {
+        if (lastChar == 'd' || lastChar == 'D')
+        {
             type = TokenMap::TYPE_DOUBLE;
         }
 
         // Se o último caractere é um sufixo, remova-o para validar o restante do literal
-        std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'd' || lastChar == 'D') 
-                                ? literal.substr(0, literal.size() - 1) 
-                                : literal;
+        std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'd' || lastChar == 'D')
+                                      ? literal.substr(0, literal.size() - 1)
+                                      : literal;
 
         // Verifica se todos os caracteres na parte numérica são válidos
-        for (char c : numericPart) {
-            if (!isValidFloatChar(c)) {
+        for (char c : numericPart)
+        {
+            if (!isValidFloatChar(c))
+            {
                 throw std::invalid_argument("Literal contém caracteres inválidos: " + std::string(1, c));
             }
         }
 
         // (Opcional) Verifica se a parte numérica pode ser convertida para um tipo de ponto flutuante
-        try {
+        try
+        {
             std::stod(numericPart); // Tenta converter para double
-        } catch (const std::exception&) {
+        }
+        catch (const std::exception &)
+        {
             throw std::invalid_argument("Literal numérico inválido: " + numericPart);
         }
 
         return type;
     }
 
-    inline int getTypePrecedence(int dataType) {
-    // Defina a precedência de tipos conforme sua implementação em TokenMap
-        switch(dataType) {
-            case TokenMap::TYPE_INT:
-                return 1;
-            case TokenMap::TYPE_FLOAT:
-                return 2;
-            case TokenMap::TYPE_DOUBLE:
-                return 3;
-            default:
-                throw std::runtime_error("TokenMap Error: Invalid type");
+    inline int getTypePrecedence(int dataType)
+    {
+        // Defina a precedência de tipos conforme sua implementação em TokenMap
+        switch (dataType)
+        {
+        case TokenMap::TYPE_INT:
+            return 1;
+        case TokenMap::TYPE_FLOAT:
+            return 2;
+        case TokenMap::TYPE_DOUBLE:
+            return 3;
+        default:
+            throw std::runtime_error("TokenMap Error: Invalid type");
         }
     }
 
-    inline int getHigherPrecedenceType(int type1, int type2) {
+    inline int getHigherPrecedenceType(int type1, int type2)
+    {
         int precedence1 = getTypePrecedence(type1);
         int precedence2 = getTypePrecedence(type2);
-        
-        if (precedence1 >= precedence2) {
+
+        if (precedence1 >= precedence2)
+        {
             return type1;
-        } else {
+        }
+        else
+        {
             return type2;
         }
     }
 
 }
-
-
 
 #endif // TOKEN_MAP_H
