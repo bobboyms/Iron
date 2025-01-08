@@ -17,7 +17,7 @@ SRC = src/main.cpp
 TEST_TARGET = test_program
 TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp tests/test_hlir.cpp
 
-ANTLR_CPP = src/LLVMIR.cpp src/WriterCodeHLIR.cpp src/Colors.cpp src/ScopeManager.cpp src/HighLevelIR.cpp src/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp src/parsers/HightLavelIRLexer.cpp src/parsers/HightLavelIRParser.cpp src/parsers/HightLavelIRBaseListener.cpp src/parsers/HightLavelIRListener.cpp
+ANTLR_CPP = src/llvm/LLVMExpr.cpp src/llvm/LLVMTypes.cpp src/llvm/LLVMIR.cpp src/hlir/WriterCodeHLIR.cpp src/utils/Colors.cpp src/utils/ScopeManager.cpp src/hlir/HighLevelIR.cpp src/semantical/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp src/parsers/HightLavelIRLexer.cpp src/parsers/HightLavelIRParser.cpp src/parsers/HightLavelIRBaseListener.cpp src/parsers/HightLavelIRListener.cpp
 
 
 # Alvo padrão: compilar o programa

@@ -28,7 +28,8 @@ public:
     RuleFunctionArgs = 7, RuleFunctionArg = 8, RuleFunctionCall = 9, RuleFunctionCallArgs = 10, 
     RuleFunctionCallArg = 11, RuleOp = 12, RuleOpRight = 13, RuleOpLeft = 14, 
     RuleTypeRight = 15, RuleTypeLeft = 16, RuleCast = 17, RuleMath_op = 18, 
-    RuleExpr = 19, RuleNumber = 20, RuleDataFormat = 21, RuleVarTypes = 22
+    RuleExpr = 19, RuleAssignment = 20, RuleNumber = 21, RuleDataFormat = 22, 
+    RuleVarTypes = 23
   };
 
   explicit HightLavelIRParser(antlr4::TokenStream *input);
@@ -68,6 +69,7 @@ public:
   class CastContext;
   class Math_opContext;
   class ExprContext;
+  class AssignmentContext;
   class NumberContext;
   class DataFormatContext;
   class VarTypesContext; 
@@ -378,19 +380,18 @@ public:
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
     antlr4::Token *varName = nullptr;
-    antlr4::Token *anotherVarName = nullptr;
     ExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LET();
     antlr4::tree::TerminalNode *COLON();
     VarTypesContext *varTypes();
     antlr4::tree::TerminalNode *EQ();
-    std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
-    antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
+    antlr4::tree::TerminalNode *IDENTIFIER();
     Math_opContext *math_op();
     FunctionCallContext *functionCall();
     CastContext *cast();
     NumberContext *number();
+    AssignmentContext *assignment();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -398,6 +399,20 @@ public:
   };
 
   ExprContext* expr();
+
+  class  AssignmentContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *anotherVarName = nullptr;
+    AssignmentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *IDENTIFIER();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  AssignmentContext* assignment();
 
   class  NumberContext : public antlr4::ParserRuleContext {
   public:

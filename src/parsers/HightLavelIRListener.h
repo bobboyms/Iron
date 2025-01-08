@@ -74,6 +74,9 @@ public:
   virtual void enterExpr(HightLavelIRParser::ExprContext *ctx) = 0;
   virtual void exitExpr(HightLavelIRParser::ExprContext *ctx) = 0;
 
+  virtual void enterAssignment(HightLavelIRParser::AssignmentContext *ctx) = 0;
+  virtual void exitAssignment(HightLavelIRParser::AssignmentContext *ctx) = 0;
+
   virtual void enterNumber(HightLavelIRParser::NumberContext *ctx) = 0;
   virtual void exitNumber(HightLavelIRParser::NumberContext *ctx) = 0;
 

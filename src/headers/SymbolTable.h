@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 #include <stack>
+#include <llvm/IR/Instructions.h>
 #include "IronExceptions.h"
 #include "Colors.h"
 
@@ -21,6 +22,7 @@ namespace iron {
         std::shared_ptr<class SymbolTable> scope;
         std::vector<std::pair<std::string, int>> args;
         std::string alias;
+        llvm::AllocaInst* alloca;
     };
     class SymbolTable {
     private:

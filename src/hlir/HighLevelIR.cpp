@@ -1,8 +1,8 @@
-#include "headers/HighLevelIR.h"
-#include "headers/IronExceptions.h"
-#include "headers/Colors.h"
-#include "headers/TokenMap.h"
-#include "headers/Utils.h"
+#include "../headers/HighLevelIR.h"
+#include "../headers/IronExceptions.h"
+#include "../headers/Colors.h"
+#include "../headers/TokenMap.h"
+#include "../headers/Utils.h"
 
 
 #include <iostream>
@@ -20,7 +20,7 @@ namespace iron {
     }
 
     std::string HighLevelIR::generateTempVar() {
-        return "tmp_" + std::to_string(++tempVarCounter);
+        return "var_" + std::to_string(++tempVarCounter);
     }
     
     std::shared_ptr<HightLavelIRParser> HighLevelIR::generateParser() {
