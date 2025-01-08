@@ -20,7 +20,7 @@ namespace iron {
     }
 
     std::string HighLevelIR::generateTempVar() {
-        return "tmp_" + std::to_string(++tempVarCounter);
+        return "var_" + std::to_string(++tempVarCounter);
     }
     
     std::shared_ptr<HightLavelIRParser> HighLevelIR::generateParser() {

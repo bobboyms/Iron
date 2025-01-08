@@ -58,7 +58,8 @@ int main() {
         fn main() {
             let a:int = 12
             let b:float = 15.25
-            let r:int = a + b * 25.00
+            let r:int = (a + b * 25.00)
+            let n:float = r / 1.254D - 22.35
         }
     )";
 
