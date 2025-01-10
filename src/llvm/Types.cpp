@@ -33,6 +33,6 @@ namespace iron
             return llvm::Type::getVoidTy(context);
         }
         // Adicione outros tipos conforme necessário
-        throw LLVMException(format("Unknown data type: {}", type));
+        throw LLVMException(format("Unknown data type: {}", TokenMap::getTokenText(type)));
     }
 }

@@ -33,7 +33,7 @@ namespace iron
                                           std::shared_ptr<SymbolTable> parentScope) = 0;
         virtual void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) = 0;
         virtual void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) = 0;
-        virtual void visitReturn(IronParser::ReturnContext *ctx) = 0;
+        virtual void visitReturn(IronParser::ReturnStatementContext *ctx) = 0;
         // Você pode (opcionalmente) incluir também a função "analyze"
         // como parte do contrato, dependendo do design
         // virtual void analyze() = 0;

@@ -93,7 +93,7 @@ namespace iron
          *
          * @param ctx Pointer to the Math_opContext containing the mathematical operation details.
          */
-        void visitMathOp(HightLavelIRParser::Math_opContext *ctx);
+        void visitMathOp(HightLavelIRParser::MathOpContext *ctx);
 
         /**
          * @brief Visits and processes a function declaration in the HLIR context.
@@ -261,6 +261,8 @@ namespace iron
          * @throws LLVMException If either the source or destination variable is not found.
          */
         void assignment(HightLavelIRParser::ExprContext *ctx, std::string varName, llvm::Type *llvmType);
+
+        llvm::Argument *getArgumentByName(llvm::Function *func, const std::string &argName);
 
     public:
         /**

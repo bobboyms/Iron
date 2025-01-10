@@ -37,21 +37,13 @@ namespace iron
         void visitFunctionArgs(IronParser::FunctionArgsContext *ctx, std::shared_ptr<std::stringstream> sb);
         void visitFunctionArg(IronParser::FunctionArgContext *ctx, bool comma, std::shared_ptr<std::stringstream> sb);
 
-        void visitFunctionCall(IronParser::FunctionCallContext *ctx,
-                               const std::string &actualFunctionName,
-                               std::shared_ptr<SymbolTable> parentScope);
-
-        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx,
-                                   const std::string &actualFunctionName,
-                                   std::shared_ptr<SymbolTable> parentScope);
-
-        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
-                                  const std::string &actualFunctionName,
-                                  std::shared_ptr<SymbolTable> parentScope);
+        void visitFunctionCall(IronParser::FunctionCallContext *ctx, std::shared_ptr<std::stringstream> sb);
+        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<std::stringstream> sb);
+        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<std::stringstream> sb);
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
-        void visitReturn(IronParser::ReturnContext *ctx);
+        void visitReturn(IronParser::ReturnStatementContext *ctx);
 
     public:
         HighLevelIR(std::shared_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);

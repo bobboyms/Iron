@@ -49,6 +49,54 @@ namespace iron
             {
                 visitVarDeclaration(varDeclaration);
             }
+            if (auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(child))
+            {
+
+                const int line = ctx->start->getLine();
+                auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+                std::string functionName = funcCall->functionName->getText();
+
+                auto globalFunctionNameOpt = globalScope->lookup(functionName);
+
+                if (!globalFunctionNameOpt.has_value())
+                {
+                    auto functionCallOpt = scopeManager->currentScope()->lookup(functionName);
+                    if (functionCallOpt.has_value())
+                    {
+                        auto symbolInfo = functionCallOpt.value();
+                        if (!(symbolInfo.dataType == TokenMap::FUNCTION))
+                        {
+                            throw FunctionNotFoundException(iron::format(
+                                "The variable {} does not point to any function. Line: {}, Scope: {}",
+                                color::colorText(functionName, color::BOLD_GREEN),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(
+                                    iron::format("{} {}",
+                                                 TokenMap::getTokenText(TokenMap::FUNCTION),
+                                                 scopeManager->currentScope()->getName()),
+                                    color::BOLD_YELLOW)));
+                        }
+
+                        visitFunctionCall(funcCall, symbolInfo.alias, scopeManager->currentScope());
+                    }
+                    else
+                    {
+                        throw FunctionNotFoundException(iron::format(
+                            "The variable {} does not point to any function. Line: {}, Scope: {}",
+                            color::colorText(functionName, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(
+                                iron::format("{} {}",
+                                             TokenMap::getTokenText(TokenMap::FUNCTION),
+                                             scopeManager->currentScope()->getName()),
+                                color::BOLD_YELLOW)));
+                    }
+                }
+                else
+                {
+                    visitFunctionCall(funcCall, functionName, scopeManager->currentScope());
+                }
+            }
             if (auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext *>(child))
             {
                 visitVarAssignment(varAssignment);
@@ -57,7 +105,7 @@ namespace iron
             {
                 visitExpr(expression);
             }
-            if (auto returnctx = dynamic_cast<IronParser::ReturnContext *>(child))
+            if (auto returnctx = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(returnctx);
             }
@@ -103,6 +151,7 @@ namespace iron
                 if (isCurrentNumber != isPreviousNumber)
                 {
                     std::string errorMessage;
+                    iron::printf("currentSymbolType: {}, {}", currentIdentifier, TokenMap::getTokenText(currentDataType));
                     if (currentSymbolType == TokenMap::FUNCTION)
                     {
                         errorMessage = "Return type of function '{}' is incompatible with variable '{}'. Line: {}, Scope: {}";
@@ -620,8 +669,22 @@ namespace iron
         auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
         auto globalFunctionSymbalInfo = globalScope->lookup(ctx->functionName->getText());
 
-        SymbolInfo functionSymbolInfo = globalScope->lookup(actualFunctionName).value();
+        // std::cout << parentScope->getName() << actualFunctionName << std::endl;
+
+        // parentScope->lookup()
+
+        auto functionSymbolInfoOpt = globalScope->lookup(actualFunctionName);
+        if (!functionSymbolInfoOpt.has_value())
+        {
+            throw FunctionNotFoundException(iron::format(
+                "Function 'fn {}' not found. Line: {}",
+                color::colorText(actualFunctionName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW)));
+        }
+
+        auto functionSymbolInfo = functionSymbolInfoOpt.value();
         auto globalArgsSize = functionSymbolInfo.args.size();
+
         // Se a call tem argumentos
         if (ctx->functionCallArgs())
         {
@@ -973,7 +1036,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitReturn(IronParser::ReturnContext *ctx)
+    void SemanticalAnalysis::visitReturn(IronParser::ReturnStatementContext *ctx)
     {
         if (ctx->expr())
         {

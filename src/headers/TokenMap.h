@@ -33,6 +33,7 @@ namespace TokenMap
 
         // Palavras reservadas
         FUNCTION,
+
         LET,
         PUBLIC,
         IMPORT,
@@ -47,7 +48,7 @@ namespace TokenMap
         TYPE_DOUBLE,
 
         // tipos de controle
-
+        FUNCTION_PTR,
         VARIABLE,
         VOID,
         NUMBER,
@@ -97,6 +98,8 @@ namespace TokenMap
         {REAL_NUMBER, "real_number"},
         {PRIVATE, "private"},
         {ARGUMENT, "arg"},
+        {FUNCTION_PTR, "fptr"},
+
     };
 
     inline std::string getTokenText(int tokenType)

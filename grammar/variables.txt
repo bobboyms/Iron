@@ -1,8 +1,6 @@
-fn soma(n:float): int {
-            let block:fn = (a:int, b:float):int -> {
-                let block:fn = (a:int, b:float):int -> {
-                    let block:fn = (a:int, b:float):int -> {}
-                    let result:float =  block(a:12, b:12.26)
-                }
-            }
+public fn sub(a:int, b:int) {
+            a * 2 + b
+        }
+        public fn main() {)
+            sub(a:1, b:2)
         }

@@ -118,110 +118,158 @@ namespace iron
     }
 
     // Cria operações matemáticas
-    void LLVMIR::mathematicalOperations(HightLavelIRParser::ExprContext *ctx, llvm::AllocaInst *allocaVariable, int varType, std::string varName, llvm::Type *llvmType)
+    void LLVMIR::mathematicalOperations(HightLavelIRParser::ExprContext *ctx,
+                                        llvm::AllocaInst *allocaVariable,
+                                        int varType,
+                                        std::string varName,
+                                        llvm::Type *llvmType)
     {
-        auto left = ctx->math_op()->opLeft();
-        auto right = ctx->math_op()->opRight();
+        auto left = ctx->mathOp()->opLeft();
+        auto right = ctx->mathOp()->opRight();
 
         std::string leftVarName = left->op()->varName->getText();
         std::string rightVarName = right->op()->varName->getText();
+        std::string currentFunctionName = scopeManager->currentScopeName();
 
+        // 1. Verifica se a variável 'leftVarName' está no escopo atual.
+        //    Se não estiver, verifica se é um argumento da função atual.
         auto leftSymbolInfo = scopeManager->currentScope()->lookup(leftVarName);
+        llvm::Value *leftValue = nullptr;
+
         if (!leftSymbolInfo.has_value())
         {
-            throw LLVMException("Left variable not found");
+            // Tenta buscar a função pelo nome atual do escopo
+            llvm::Function *currentFunction = module->getFunction(currentFunctionName);
+            if (!currentFunction)
+            {
+                throw LLVMException(
+                    iron::format("Function {} not found", currentFunctionName));
+            }
+
+            // Verifica se existe um argumento da função com esse nome
+            llvm::Argument *argLeft = getArgumentByName(currentFunction, leftVarName);
+            if (!argLeft)
+            {
+                // Nem variável local nem argumento de função -> erro
+                throw LLVMException(
+                    iron::format("Variable or argument '{}' not found in function '{}'",
+                                 leftVarName, currentFunctionName));
+            }
+            // Se for argumento, usamos diretamente o argLeft como 'leftValue'
+            leftValue = argLeft;
+        }
+        else
+        {
+            // Se encontrou a variável no escopo, carregamos a partir do alloca
+            leftValue = builder.CreateLoad(
+                llvmType,
+                leftSymbolInfo->alloca,
+                iron::format("load_{}", leftVarName));
         }
 
+        // 2. Verifica se a variável 'rightVarName' está no escopo atual.
+        //    Se não estiver, verifica se é um argumento da função atual.
         auto rightSymbolInfo = scopeManager->currentScope()->lookup(rightVarName);
+        llvm::Value *rightValue = nullptr;
 
         if (!rightSymbolInfo.has_value())
         {
-            throw LLVMException("Right variable not found");
+            // Tenta buscar a função pelo nome atual do escopo
+            llvm::Function *currentFunction = module->getFunction(currentFunctionName);
+            if (!currentFunction)
+            {
+                throw LLVMException(
+                    iron::format("Function {} not found", currentFunctionName));
+            }
+
+            // Verifica se existe um argumento da função com esse nome
+            llvm::Argument *argRight = getArgumentByName(currentFunction, rightVarName);
+            if (!argRight)
+            {
+                // Nem variável local nem argumento de função -> erro
+                throw LLVMException(
+                    iron::format("Variable or argument '{}' not found in function '{}'",
+                                 rightVarName, currentFunctionName));
+            }
+            // Se for argumento, usamos diretamente o argRight como 'rightValue'
+            rightValue = argRight;
+        }
+        else
+        {
+            // Se encontrou a variável no escopo, carregamos a partir do alloca
+            rightValue = builder.CreateLoad(
+                llvmType,
+                rightSymbolInfo->alloca,
+                iron::format("load_{}", rightVarName));
         }
 
-        llvm::Value *leftValue = builder.CreateLoad(llvmType, leftSymbolInfo->alloca, iron::format("load_{}", leftVarName));
-        llvm::Value *rigthValue = builder.CreateLoad(llvmType, rightSymbolInfo->alloca, iron::format("load_{}", rightVarName));
+        // 3. A partir daqui, leftValue e rightValue estão resolvidos (variável local ou argumento).
+        //    Realiza as operações matemáticas de acordo com o token de operação.
 
-        if (ctx->math_op()->PLUS())
+        // Soma (PLUS)
+        if (ctx->mathOp()->PLUS())
         {
             if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
             {
-                llvm::Value *result = builder.CreateFAdd(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateFAdd(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
-                llvm::Value *result = builder.CreateAdd(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateAdd(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
 
-        if (ctx->math_op()->MINUS())
+        // Subtração (MINUS)
+        if (ctx->mathOp()->MINUS())
         {
             if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
             {
-                llvm::Value *result = builder.CreateFSub(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateFSub(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
-                llvm::Value *result = builder.CreateSub(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateSub(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
 
-        if (ctx->math_op()->MINUS())
+        // Multiplicação (MULT)
+        if (ctx->mathOp()->MULT())
         {
             if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
             {
-                llvm::Value *result = builder.CreateFSub(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateFMul(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
-                llvm::Value *result = builder.CreateSub(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateMul(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
 
-        if (ctx->math_op()->MULT())
+        // Divisão (DIV)
+        if (ctx->mathOp()->DIV())
         {
             if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
             {
-                llvm::Value *result = builder.CreateFMul(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateFDiv(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
-                llvm::Value *result = builder.CreateMul(leftValue, rigthValue, iron::format("tmp_{}", varName));
-                builder.CreateStore(result, allocaVariable);
-            }
-        }
-
-        if (ctx->math_op()->MULT())
-        {
-            if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
-            {
-                llvm::Value *result = builder.CreateFMul(leftValue, rigthValue, iron::format("tmp_{}", varName));
-                builder.CreateStore(result, allocaVariable);
-            }
-            else
-            {
-                llvm::Value *result = builder.CreateMul(leftValue, rigthValue, iron::format("tmp_{}", varName));
-                builder.CreateStore(result, allocaVariable);
-            }
-        }
-
-        if (ctx->math_op()->DIV())
-        {
-            if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
-            {
-                llvm::Value *result = builder.CreateFDiv(leftValue, rigthValue, iron::format("tmp_{}", varName));
-                builder.CreateStore(result, allocaVariable);
-            }
-            else
-            {
-                llvm::Value *result = builder.CreateSDiv(leftValue, rigthValue, iron::format("tmp_{}", varName));
+                llvm::Value *result = builder.CreateSDiv(
+                    leftValue, rightValue, iron::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }

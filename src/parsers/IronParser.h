@@ -23,7 +23,7 @@ public:
 
   enum {
     RuleProgram = 0, RuleImportStatement = 1, RuleQualifiedName = 2, RuleEntryPoint = 3, 
-    RuleStatementList = 4, RuleReturn = 5, RuleFunctionDeclaration = 6, 
+    RuleStatementList = 4, RuleReturnStatement = 5, RuleFunctionDeclaration = 6, 
     RuleArrowFunctionInline = 7, RuleArrowFunctionBlock = 8, RuleFunctionSignature = 9, 
     RuleFunctionReturnType = 10, RuleFunctionArgs = 11, RuleFunctionArg = 12, 
     RuleFunctionCall = 13, RuleFunctionCallArgs = 14, RuleFunctionCallArg = 15, 
@@ -53,7 +53,7 @@ public:
   class QualifiedNameContext;
   class EntryPointContext;
   class StatementListContext;
-  class ReturnContext;
+  class ReturnStatementContext;
   class FunctionDeclarationContext;
   class ArrowFunctionInlineContext;
   class ArrowFunctionBlockContext;
@@ -148,14 +148,14 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
+    std::vector<FunctionCallContext *> functionCall();
+    FunctionCallContext* functionCall(size_t i);
     std::vector<VarAssignmentContext *> varAssignment();
     VarAssignmentContext* varAssignment(size_t i);
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
-    std::vector<FunctionCallContext *> functionCall();
-    FunctionCallContext* functionCall(size_t i);
-    std::vector<ReturnContext *> return_();
-    ReturnContext* return_(size_t i);
+    std::vector<ReturnStatementContext *> returnStatement();
+    ReturnStatementContext* returnStatement(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -164,9 +164,9 @@ public:
 
   StatementListContext* statementList();
 
-  class  ReturnContext : public antlr4::ParserRuleContext {
+  class  ReturnStatementContext : public antlr4::ParserRuleContext {
   public:
-    ReturnContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    ReturnStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RETURN();
     ExprContext *expr();
@@ -177,7 +177,7 @@ public:
    
   };
 
-  ReturnContext* return_();
+  ReturnStatementContext* returnStatement();
 
   class  FunctionDeclarationContext : public antlr4::ParserRuleContext {
   public:

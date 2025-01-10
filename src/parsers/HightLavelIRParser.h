@@ -12,14 +12,14 @@
 class  HightLavelIRParser : public antlr4::Parser {
 public:
   enum {
-    COLON = 1, COMMA = 2, EQ = 3, SEMICOLON = 4, DOT = 5, STAR = 6, L_CURLY = 7, 
-    R_CURLY = 8, L_PAREN = 9, R_PAREN = 10, MULT = 11, PLUS = 12, MINUS = 13, 
-    DIV = 14, L_BRACKET = 15, R_BRACKET = 16, AT = 17, ARROW = 18, UNDERSCORE = 19, 
-    FUNCTION = 20, LET = 21, PUBLIC = 22, PRIVATE = 23, IMPORT = 24, RETURN = 25, 
-    TO = 26, TYPE_INT = 27, TYPE_CHAR = 28, TYPE_FLOAT = 29, TYPE_STRING = 30, 
-    TYPE_BOOLEAN = 31, TYPE_DOUBLE = 32, VOID = 33, CAST = 34, REAL_NUMBER = 35, 
-    INT_NUMBER = 36, BOOLEAN_VALUE = 37, STRING_LITERAL = 38, IDENTIFIER = 39, 
-    NEWLINE = 40, WS = 41
+    T__0 = 1, COLON = 2, COMMA = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
+    L_CURLY = 8, R_CURLY = 9, L_PAREN = 10, R_PAREN = 11, MULT = 12, PLUS = 13, 
+    MINUS = 14, DIV = 15, L_BRACKET = 16, R_BRACKET = 17, AT = 18, ARROW = 19, 
+    UNDERSCORE = 20, FUNCTION = 21, LET = 22, PUBLIC = 23, PRIVATE = 24, 
+    IMPORT = 25, RETURN = 26, TO = 27, TYPE_INT = 28, TYPE_CHAR = 29, TYPE_FLOAT = 30, 
+    TYPE_STRING = 31, TYPE_BOOLEAN = 32, TYPE_DOUBLE = 33, VOID = 34, CAST = 35, 
+    CALL = 36, REAL_NUMBER = 37, INT_NUMBER = 38, BOOLEAN_VALUE = 39, STRING_LITERAL = 40, 
+    IDENTIFIER = 41, NEWLINE = 42, WS = 43
   };
 
   enum {
@@ -27,9 +27,9 @@ public:
     RuleFunctionDeclaration = 4, RuleFunctionSignature = 5, RuleFunctionReturnType = 6, 
     RuleFunctionArgs = 7, RuleFunctionArg = 8, RuleFunctionCall = 9, RuleFunctionCallArgs = 10, 
     RuleFunctionCallArg = 11, RuleOp = 12, RuleOpRight = 13, RuleOpLeft = 14, 
-    RuleTypeRight = 15, RuleTypeLeft = 16, RuleCast = 17, RuleMath_op = 18, 
-    RuleExpr = 19, RuleAssignment = 20, RuleNumber = 21, RuleDataFormat = 22, 
-    RuleVarTypes = 23
+    RuleTypeRight = 15, RuleTypeLeft = 16, RuleCast = 17, RuleMathOp = 18, 
+    RuleExpr = 19, RuleAssignment = 20, RuleFunctionPtr = 21, RuleNumber = 22, 
+    RuleDataFormat = 23, RuleVarTypes = 24
   };
 
   explicit HightLavelIRParser(antlr4::TokenStream *input);
@@ -67,9 +67,10 @@ public:
   class TypeRightContext;
   class TypeLeftContext;
   class CastContext;
-  class Math_opContext;
+  class MathOpContext;
   class ExprContext;
   class AssignmentContext;
+  class FunctionPtrContext;
   class NumberContext;
   class DataFormatContext;
   class VarTypesContext; 
@@ -129,6 +130,8 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
+    std::vector<FunctionCallContext *> functionCall();
+    FunctionCallContext* functionCall(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -227,6 +230,8 @@ public:
     antlr4::Token *functionName = nullptr;
     FunctionCallContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *CALL();
+    VarTypesContext *varTypes();
     antlr4::tree::TerminalNode *L_PAREN();
     antlr4::tree::TerminalNode *R_PAREN();
     antlr4::tree::TerminalNode *IDENTIFIER();
@@ -358,9 +363,9 @@ public:
 
   CastContext* cast();
 
-  class  Math_opContext : public antlr4::ParserRuleContext {
+  class  MathOpContext : public antlr4::ParserRuleContext {
   public:
-    Math_opContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    MathOpContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     OpLeftContext *opLeft();
     antlr4::tree::TerminalNode *COMMA();
@@ -375,7 +380,7 @@ public:
    
   };
 
-  Math_opContext* math_op();
+  MathOpContext* mathOp();
 
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
@@ -387,10 +392,11 @@ public:
     VarTypesContext *varTypes();
     antlr4::tree::TerminalNode *EQ();
     antlr4::tree::TerminalNode *IDENTIFIER();
-    Math_opContext *math_op();
+    MathOpContext *mathOp();
     FunctionCallContext *functionCall();
     CastContext *cast();
     NumberContext *number();
+    FunctionPtrContext *functionPtr();
     AssignmentContext *assignment();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -413,6 +419,20 @@ public:
   };
 
   AssignmentContext* assignment();
+
+  class  FunctionPtrContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *functionName = nullptr;
+    FunctionPtrContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *IDENTIFIER();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  FunctionPtrContext* functionPtr();
 
   class  NumberContext : public antlr4::ParserRuleContext {
   public:
@@ -455,6 +475,7 @@ public:
     antlr4::tree::TerminalNode *TYPE_INT();
     antlr4::tree::TerminalNode *TYPE_STRING();
     antlr4::tree::TerminalNode *FUNCTION();
+    antlr4::tree::TerminalNode *VOID();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
