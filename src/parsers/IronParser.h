@@ -12,18 +12,19 @@
 class  IronParser : public antlr4::Parser {
 public:
   enum {
-    T__0 = 1, COMMA = 2, COLON = 3, EQ = 4, SEMICOLON = 5, DOT = 6, STAR = 7, 
-    L_CURLY = 8, R_CURLY = 9, L_PAREN = 10, R_PAREN = 11, PLUS = 12, MINUS = 13, 
-    DIV = 14, L_BRACKET = 15, R_BRACKET = 16, ARROW = 17, FUNCTION = 18, 
-    LET = 19, PUBLIC = 20, IMPORT = 21, RETURN = 22, TYPE_INT = 23, TYPE_CHAR = 24, 
-    TYPE_FLOAT = 25, TYPE_STRING = 26, TYPE_BOOLEAN = 27, TYPE_DOUBLE = 28, 
-    REAL_NUMBER = 29, INT_NUMBER = 30, BOOLEAN_VALUE = 31, STRING_LITERAL = 32, 
-    IDENTIFIER = 33, NEWLINE = 34, WS = 35
+    T__0 = 1, LINE_COMMENT = 2, BLOCK_COMMENT = 3, COMMA = 4, COLON = 5, 
+    EQ = 6, SEMICOLON = 7, DOT = 8, STAR = 9, L_CURLY = 10, R_CURLY = 11, 
+    L_PAREN = 12, R_PAREN = 13, PLUS = 14, MINUS = 15, DIV = 16, L_BRACKET = 17, 
+    R_BRACKET = 18, ARROW = 19, FUNCTION = 20, LET = 21, PUBLIC = 22, IMPORT = 23, 
+    RETURN = 24, TYPE_INT = 25, TYPE_CHAR = 26, TYPE_FLOAT = 27, TYPE_STRING = 28, 
+    TYPE_BOOLEAN = 29, TYPE_DOUBLE = 30, REAL_NUMBER = 31, INT_NUMBER = 32, 
+    BOOLEAN_VALUE = 33, STRING_LITERAL = 34, IDENTIFIER = 35, NEWLINE = 36, 
+    WS = 37
   };
 
   enum {
     RuleProgram = 0, RuleImportStatement = 1, RuleQualifiedName = 2, RuleEntryPoint = 3, 
-    RuleStatementList = 4, RuleReturn = 5, RuleFunctionDeclaration = 6, 
+    RuleStatementList = 4, RuleReturnStatement = 5, RuleFunctionDeclaration = 6, 
     RuleArrowFunctionInline = 7, RuleArrowFunctionBlock = 8, RuleFunctionSignature = 9, 
     RuleFunctionReturnType = 10, RuleFunctionArgs = 11, RuleFunctionArg = 12, 
     RuleFunctionCall = 13, RuleFunctionCallArgs = 14, RuleFunctionCallArg = 15, 
@@ -53,7 +54,7 @@ public:
   class QualifiedNameContext;
   class EntryPointContext;
   class StatementListContext;
-  class ReturnContext;
+  class ReturnStatementContext;
   class FunctionDeclarationContext;
   class ArrowFunctionInlineContext;
   class ArrowFunctionBlockContext;
@@ -148,14 +149,14 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
+    std::vector<FunctionCallContext *> functionCall();
+    FunctionCallContext* functionCall(size_t i);
     std::vector<VarAssignmentContext *> varAssignment();
     VarAssignmentContext* varAssignment(size_t i);
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
-    std::vector<FunctionCallContext *> functionCall();
-    FunctionCallContext* functionCall(size_t i);
-    std::vector<ReturnContext *> return_();
-    ReturnContext* return_(size_t i);
+    std::vector<ReturnStatementContext *> returnStatement();
+    ReturnStatementContext* returnStatement(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -164,9 +165,9 @@ public:
 
   StatementListContext* statementList();
 
-  class  ReturnContext : public antlr4::ParserRuleContext {
+  class  ReturnStatementContext : public antlr4::ParserRuleContext {
   public:
-    ReturnContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    ReturnStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RETURN();
     ExprContext *expr();
@@ -177,7 +178,7 @@ public:
    
   };
 
-  ReturnContext* return_();
+  ReturnStatementContext* returnStatement();
 
   class  FunctionDeclarationContext : public antlr4::ParserRuleContext {
   public:

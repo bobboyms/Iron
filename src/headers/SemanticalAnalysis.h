@@ -12,7 +12,7 @@ namespace iron
     class SemanticalAnalysis : public Visitors
     {
     private:
-        std::shared_ptr<IronParser> parser; // Correção: Use std::shared_ptr em vez de std::make_shared
+        std::shared_ptr<IronParser> parser;
         std::unique_ptr<ScopeManager> scopeManager;
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) override;
@@ -41,7 +41,7 @@ namespace iron
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) override;
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) override;
-        void visitReturn(IronParser::ReturnContext *ctx) override;
+        void visitReturn(IronParser::ReturnStatementContext *ctx) override;
 
     public:
         SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);

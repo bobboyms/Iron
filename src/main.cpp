@@ -30,10 +30,10 @@ int runAnalysis(const std::string &input)
         iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
         const auto hlirCode = hightLevelCodeGenerator.generateCode();
 
-        // std::cout << hlir << std::endl;
+        std::cout << hlirCode << std::endl;
 
         iron::LLVMIR llvmir(hlirCode, std::move(std::make_unique<iron::ScopeManager>()));
-        std::cout << llvmir.generateCode() << std::endl;
+        // std::cout << llvmir.generateCode() << std::endl;
 
         // std::cout << "Análise semântica concluída com sucesso." << std::endl;
         return 0; // Sucesso
@@ -63,16 +63,14 @@ int runAnalysis(const std::string &input)
 int main()
 {
     std::string input = R"(
-
-        fn sub(a:int, b:int) {
-           
+        
+        public fn sub(a:int, b:int) {
+             a * 2 + b
         }
 
-        fn main() {
-            let a:int = 12
-            let b:float = 15.25
-            let r:int = (a + b * 25.00)
-            r / 1.254D - 22.35
+        public fn main() {
+            // let x: int = 22
+            sub(a:2, b:2)
         }
     )";
 

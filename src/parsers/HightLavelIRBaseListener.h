@@ -70,14 +70,17 @@ public:
   virtual void enterCast(HightLavelIRParser::CastContext * /*ctx*/) override { }
   virtual void exitCast(HightLavelIRParser::CastContext * /*ctx*/) override { }
 
-  virtual void enterMath_op(HightLavelIRParser::Math_opContext * /*ctx*/) override { }
-  virtual void exitMath_op(HightLavelIRParser::Math_opContext * /*ctx*/) override { }
+  virtual void enterMathOp(HightLavelIRParser::MathOpContext * /*ctx*/) override { }
+  virtual void exitMathOp(HightLavelIRParser::MathOpContext * /*ctx*/) override { }
 
   virtual void enterExpr(HightLavelIRParser::ExprContext * /*ctx*/) override { }
   virtual void exitExpr(HightLavelIRParser::ExprContext * /*ctx*/) override { }
 
   virtual void enterAssignment(HightLavelIRParser::AssignmentContext * /*ctx*/) override { }
   virtual void exitAssignment(HightLavelIRParser::AssignmentContext * /*ctx*/) override { }
+
+  virtual void enterFunctionPtr(HightLavelIRParser::FunctionPtrContext * /*ctx*/) override { }
+  virtual void exitFunctionPtr(HightLavelIRParser::FunctionPtrContext * /*ctx*/) override { }
 
   virtual void enterNumber(HightLavelIRParser::NumberContext * /*ctx*/) override { }
   virtual void exitNumber(HightLavelIRParser::NumberContext * /*ctx*/) override { }

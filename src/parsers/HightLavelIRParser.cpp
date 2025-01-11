@@ -55,83 +55,86 @@ void hightlavelirParserInitialize() {
       "program", "importStatement", "qualifiedName", "statementList", "functionDeclaration", 
       "functionSignature", "functionReturnType", "functionArgs", "functionArg", 
       "functionCall", "functionCallArgs", "functionCallArg", "op", "opRight", 
-      "opLeft", "typeRight", "typeLeft", "cast", "math_op", "expr", "assignment", 
-      "number", "dataFormat", "varTypes"
+      "opLeft", "typeRight", "typeLeft", "cast", "mathOp", "expr", "assignment", 
+      "functionPtr", "number", "dataFormat", "varTypes"
     },
     std::vector<std::string>{
-      "", "':'", "','", "'='", "';'", "'.'", "'*'", "'{'", "'}'", "'('", 
-      "')'", "'MULT'", "'PLUS'", "'MINUS'", "'DIV'", "'['", "']'", "'@'", 
-      "'->'", "'_'", "'fn'", "'let'", "'public'", "'private'", "'import'", 
+      "", "'fptr'", "':'", "','", "'='", "';'", "'.'", "'*'", "'{'", "'}'", 
+      "'('", "')'", "'MULT'", "'PLUS'", "'MINUS'", "'DIV'", "'['", "']'", 
+      "'@'", "'->'", "'_'", "'fn'", "'let'", "'public'", "'private'", "'import'", 
       "'return'", "'to'", "'int'", "'char'", "'float'", "'string'", "'boolean'", 
-      "'double'", "'void'", "'cast'"
+      "'double'", "'void'", "'cast'", "'call'"
     },
     std::vector<std::string>{
-      "", "COLON", "COMMA", "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", 
+      "", "", "COLON", "COMMA", "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", 
       "R_CURLY", "L_PAREN", "R_PAREN", "MULT", "PLUS", "MINUS", "DIV", "L_BRACKET", 
       "R_BRACKET", "AT", "ARROW", "UNDERSCORE", "FUNCTION", "LET", "PUBLIC", 
       "PRIVATE", "IMPORT", "RETURN", "TO", "TYPE_INT", "TYPE_CHAR", "TYPE_FLOAT", 
-      "TYPE_STRING", "TYPE_BOOLEAN", "TYPE_DOUBLE", "VOID", "CAST", "REAL_NUMBER", 
-      "INT_NUMBER", "BOOLEAN_VALUE", "STRING_LITERAL", "IDENTIFIER", "NEWLINE", 
-      "WS"
+      "TYPE_STRING", "TYPE_BOOLEAN", "TYPE_DOUBLE", "VOID", "CAST", "CALL", 
+      "REAL_NUMBER", "INT_NUMBER", "BOOLEAN_VALUE", "STRING_LITERAL", "IDENTIFIER", 
+      "NEWLINE", "WS"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,41,185,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,43,194,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
-  	21,2,22,7,22,2,23,7,23,1,0,5,0,50,8,0,10,0,12,0,53,9,0,1,0,5,0,56,8,0,
-  	10,0,12,0,59,9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,67,8,1,1,2,1,2,1,2,5,2,72,
-  	8,2,10,2,12,2,75,9,2,1,3,5,3,78,8,3,10,3,12,3,81,9,3,1,4,3,4,84,8,4,1,
-  	4,1,4,1,4,1,4,1,4,1,4,1,4,1,5,1,5,3,5,95,8,5,1,5,1,5,3,5,99,8,5,1,6,1,
-  	6,1,6,3,6,104,8,6,1,7,1,7,1,7,5,7,109,8,7,10,7,12,7,112,9,7,1,8,1,8,1,
-  	8,1,8,3,8,118,8,8,1,9,1,9,1,9,3,9,123,8,9,1,9,1,9,1,10,1,10,1,10,5,10,
-  	130,8,10,10,10,12,10,133,9,10,1,11,1,11,1,11,1,11,1,11,1,11,3,11,141,
-  	8,11,1,12,1,12,3,12,145,8,12,1,13,1,13,1,14,1,14,1,15,1,15,1,16,1,16,
-  	1,17,1,17,1,17,1,17,1,17,1,18,1,18,1,18,1,18,1,18,1,19,1,19,1,19,1,19,
-  	1,19,1,19,1,19,1,19,1,19,1,19,3,19,175,8,19,1,20,1,20,1,21,1,21,1,22,
-  	1,22,1,23,1,23,1,23,0,0,24,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,
-  	32,34,36,38,40,42,44,46,0,5,1,0,22,23,1,0,11,14,1,0,35,36,1,0,35,38,2,
-  	0,20,20,27,32,179,0,51,1,0,0,0,2,62,1,0,0,0,4,68,1,0,0,0,6,79,1,0,0,0,
-  	8,83,1,0,0,0,10,92,1,0,0,0,12,100,1,0,0,0,14,105,1,0,0,0,16,113,1,0,0,
-  	0,18,119,1,0,0,0,20,126,1,0,0,0,22,134,1,0,0,0,24,144,1,0,0,0,26,146,
-  	1,0,0,0,28,148,1,0,0,0,30,150,1,0,0,0,32,152,1,0,0,0,34,154,1,0,0,0,36,
-  	159,1,0,0,0,38,164,1,0,0,0,40,176,1,0,0,0,42,178,1,0,0,0,44,180,1,0,0,
-  	0,46,182,1,0,0,0,48,50,3,2,1,0,49,48,1,0,0,0,50,53,1,0,0,0,51,49,1,0,
-  	0,0,51,52,1,0,0,0,52,57,1,0,0,0,53,51,1,0,0,0,54,56,3,8,4,0,55,54,1,0,
-  	0,0,56,59,1,0,0,0,57,55,1,0,0,0,57,58,1,0,0,0,58,60,1,0,0,0,59,57,1,0,
-  	0,0,60,61,5,0,0,1,61,1,1,0,0,0,62,63,5,24,0,0,63,66,3,4,2,0,64,65,5,5,
-  	0,0,65,67,5,6,0,0,66,64,1,0,0,0,66,67,1,0,0,0,67,3,1,0,0,0,68,73,5,39,
-  	0,0,69,70,5,5,0,0,70,72,5,39,0,0,71,69,1,0,0,0,72,75,1,0,0,0,73,71,1,
-  	0,0,0,73,74,1,0,0,0,74,5,1,0,0,0,75,73,1,0,0,0,76,78,3,38,19,0,77,76,
-  	1,0,0,0,78,81,1,0,0,0,79,77,1,0,0,0,79,80,1,0,0,0,80,7,1,0,0,0,81,79,
-  	1,0,0,0,82,84,7,0,0,0,83,82,1,0,0,0,83,84,1,0,0,0,84,85,1,0,0,0,85,86,
-  	5,20,0,0,86,87,5,39,0,0,87,88,3,10,5,0,88,89,5,7,0,0,89,90,3,6,3,0,90,
-  	91,5,8,0,0,91,9,1,0,0,0,92,94,5,9,0,0,93,95,3,14,7,0,94,93,1,0,0,0,94,
-  	95,1,0,0,0,95,96,1,0,0,0,96,98,5,10,0,0,97,99,3,12,6,0,98,97,1,0,0,0,
-  	98,99,1,0,0,0,99,11,1,0,0,0,100,103,5,1,0,0,101,104,3,46,23,0,102,104,
-  	5,33,0,0,103,101,1,0,0,0,103,102,1,0,0,0,104,13,1,0,0,0,105,110,3,16,
-  	8,0,106,107,5,2,0,0,107,109,3,16,8,0,108,106,1,0,0,0,109,112,1,0,0,0,
-  	110,108,1,0,0,0,110,111,1,0,0,0,111,15,1,0,0,0,112,110,1,0,0,0,113,114,
-  	5,39,0,0,114,117,5,1,0,0,115,118,3,46,23,0,116,118,3,10,5,0,117,115,1,
-  	0,0,0,117,116,1,0,0,0,118,17,1,0,0,0,119,120,5,39,0,0,120,122,5,9,0,0,
-  	121,123,3,20,10,0,122,121,1,0,0,0,122,123,1,0,0,0,123,124,1,0,0,0,124,
-  	125,5,10,0,0,125,19,1,0,0,0,126,131,3,22,11,0,127,128,5,2,0,0,128,130,
-  	3,22,11,0,129,127,1,0,0,0,130,133,1,0,0,0,131,129,1,0,0,0,131,132,1,0,
-  	0,0,132,21,1,0,0,0,133,131,1,0,0,0,134,135,5,39,0,0,135,140,5,1,0,0,136,
-  	141,3,44,22,0,137,138,3,18,9,0,138,139,5,39,0,0,139,141,1,0,0,0,140,136,
-  	1,0,0,0,140,137,1,0,0,0,141,23,1,0,0,0,142,145,5,39,0,0,143,145,3,42,
-  	21,0,144,142,1,0,0,0,144,143,1,0,0,0,145,25,1,0,0,0,146,147,3,24,12,0,
-  	147,27,1,0,0,0,148,149,3,24,12,0,149,29,1,0,0,0,150,151,3,46,23,0,151,
-  	31,1,0,0,0,152,153,3,46,23,0,153,33,1,0,0,0,154,155,5,39,0,0,155,156,
-  	3,32,16,0,156,157,5,26,0,0,157,158,3,30,15,0,158,35,1,0,0,0,159,160,7,
-  	1,0,0,160,161,3,28,14,0,161,162,5,2,0,0,162,163,3,26,13,0,163,37,1,0,
-  	0,0,164,165,5,21,0,0,165,166,5,39,0,0,166,167,5,1,0,0,167,168,3,46,23,
-  	0,168,174,5,3,0,0,169,175,3,36,18,0,170,175,3,18,9,0,171,175,3,34,17,
-  	0,172,175,3,42,21,0,173,175,3,40,20,0,174,169,1,0,0,0,174,170,1,0,0,0,
-  	174,171,1,0,0,0,174,172,1,0,0,0,174,173,1,0,0,0,175,39,1,0,0,0,176,177,
-  	5,39,0,0,177,41,1,0,0,0,178,179,7,2,0,0,179,43,1,0,0,0,180,181,7,3,0,
-  	0,181,45,1,0,0,0,182,183,7,4,0,0,183,47,1,0,0,0,16,51,57,66,73,79,83,
-  	94,98,103,110,117,122,131,140,144,174
+  	21,2,22,7,22,2,23,7,23,2,24,7,24,1,0,5,0,52,8,0,10,0,12,0,55,9,0,1,0,
+  	5,0,58,8,0,10,0,12,0,61,9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,69,8,1,1,2,1,
+  	2,1,2,5,2,74,8,2,10,2,12,2,77,9,2,1,3,1,3,5,3,81,8,3,10,3,12,3,84,9,3,
+  	1,4,3,4,87,8,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,5,1,5,3,5,98,8,5,1,5,1,5,
+  	3,5,102,8,5,1,6,1,6,1,6,3,6,107,8,6,1,7,1,7,1,7,5,7,112,8,7,10,7,12,7,
+  	115,9,7,1,8,1,8,1,8,1,8,3,8,121,8,8,1,9,1,9,1,9,1,9,1,9,3,9,128,8,9,1,
+  	9,1,9,1,10,1,10,1,10,5,10,135,8,10,10,10,12,10,138,9,10,1,11,1,11,1,11,
+  	1,11,1,11,1,11,3,11,146,8,11,1,12,1,12,3,12,150,8,12,1,13,1,13,1,14,1,
+  	14,1,15,1,15,1,16,1,16,1,17,1,17,1,17,1,17,1,17,1,18,1,18,1,18,1,18,1,
+  	18,1,19,1,19,1,19,1,19,1,19,1,19,1,19,1,19,1,19,1,19,1,19,3,19,181,8,
+  	19,1,20,1,20,1,21,1,21,1,21,1,22,1,22,1,23,1,23,1,24,1,24,1,24,0,0,25,
+  	0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,
+  	0,5,1,0,23,24,1,0,12,15,1,0,37,38,1,0,37,40,2,0,21,21,28,34,190,0,53,
+  	1,0,0,0,2,64,1,0,0,0,4,70,1,0,0,0,6,82,1,0,0,0,8,86,1,0,0,0,10,95,1,0,
+  	0,0,12,103,1,0,0,0,14,108,1,0,0,0,16,116,1,0,0,0,18,122,1,0,0,0,20,131,
+  	1,0,0,0,22,139,1,0,0,0,24,149,1,0,0,0,26,151,1,0,0,0,28,153,1,0,0,0,30,
+  	155,1,0,0,0,32,157,1,0,0,0,34,159,1,0,0,0,36,164,1,0,0,0,38,169,1,0,0,
+  	0,40,182,1,0,0,0,42,184,1,0,0,0,44,187,1,0,0,0,46,189,1,0,0,0,48,191,
+  	1,0,0,0,50,52,3,2,1,0,51,50,1,0,0,0,52,55,1,0,0,0,53,51,1,0,0,0,53,54,
+  	1,0,0,0,54,59,1,0,0,0,55,53,1,0,0,0,56,58,3,8,4,0,57,56,1,0,0,0,58,61,
+  	1,0,0,0,59,57,1,0,0,0,59,60,1,0,0,0,60,62,1,0,0,0,61,59,1,0,0,0,62,63,
+  	5,0,0,1,63,1,1,0,0,0,64,65,5,25,0,0,65,68,3,4,2,0,66,67,5,6,0,0,67,69,
+  	5,7,0,0,68,66,1,0,0,0,68,69,1,0,0,0,69,3,1,0,0,0,70,75,5,41,0,0,71,72,
+  	5,6,0,0,72,74,5,41,0,0,73,71,1,0,0,0,74,77,1,0,0,0,75,73,1,0,0,0,75,76,
+  	1,0,0,0,76,5,1,0,0,0,77,75,1,0,0,0,78,81,3,38,19,0,79,81,3,18,9,0,80,
+  	78,1,0,0,0,80,79,1,0,0,0,81,84,1,0,0,0,82,80,1,0,0,0,82,83,1,0,0,0,83,
+  	7,1,0,0,0,84,82,1,0,0,0,85,87,7,0,0,0,86,85,1,0,0,0,86,87,1,0,0,0,87,
+  	88,1,0,0,0,88,89,5,21,0,0,89,90,5,41,0,0,90,91,3,10,5,0,91,92,5,8,0,0,
+  	92,93,3,6,3,0,93,94,5,9,0,0,94,9,1,0,0,0,95,97,5,10,0,0,96,98,3,14,7,
+  	0,97,96,1,0,0,0,97,98,1,0,0,0,98,99,1,0,0,0,99,101,5,11,0,0,100,102,3,
+  	12,6,0,101,100,1,0,0,0,101,102,1,0,0,0,102,11,1,0,0,0,103,106,5,2,0,0,
+  	104,107,3,48,24,0,105,107,5,34,0,0,106,104,1,0,0,0,106,105,1,0,0,0,107,
+  	13,1,0,0,0,108,113,3,16,8,0,109,110,5,3,0,0,110,112,3,16,8,0,111,109,
+  	1,0,0,0,112,115,1,0,0,0,113,111,1,0,0,0,113,114,1,0,0,0,114,15,1,0,0,
+  	0,115,113,1,0,0,0,116,117,5,41,0,0,117,120,5,2,0,0,118,121,3,48,24,0,
+  	119,121,3,10,5,0,120,118,1,0,0,0,120,119,1,0,0,0,121,17,1,0,0,0,122,123,
+  	5,36,0,0,123,124,3,48,24,0,124,125,5,41,0,0,125,127,5,10,0,0,126,128,
+  	3,20,10,0,127,126,1,0,0,0,127,128,1,0,0,0,128,129,1,0,0,0,129,130,5,11,
+  	0,0,130,19,1,0,0,0,131,136,3,22,11,0,132,133,5,3,0,0,133,135,3,22,11,
+  	0,134,132,1,0,0,0,135,138,1,0,0,0,136,134,1,0,0,0,136,137,1,0,0,0,137,
+  	21,1,0,0,0,138,136,1,0,0,0,139,140,5,41,0,0,140,141,5,2,0,0,141,145,3,
+  	48,24,0,142,146,3,46,23,0,143,146,3,18,9,0,144,146,5,41,0,0,145,142,1,
+  	0,0,0,145,143,1,0,0,0,145,144,1,0,0,0,146,23,1,0,0,0,147,150,5,41,0,0,
+  	148,150,3,44,22,0,149,147,1,0,0,0,149,148,1,0,0,0,150,25,1,0,0,0,151,
+  	152,3,24,12,0,152,27,1,0,0,0,153,154,3,24,12,0,154,29,1,0,0,0,155,156,
+  	3,48,24,0,156,31,1,0,0,0,157,158,3,48,24,0,158,33,1,0,0,0,159,160,5,41,
+  	0,0,160,161,3,32,16,0,161,162,5,27,0,0,162,163,3,30,15,0,163,35,1,0,0,
+  	0,164,165,7,1,0,0,165,166,3,28,14,0,166,167,5,3,0,0,167,168,3,26,13,0,
+  	168,37,1,0,0,0,169,170,5,22,0,0,170,171,5,41,0,0,171,172,5,2,0,0,172,
+  	173,3,48,24,0,173,180,5,4,0,0,174,181,3,36,18,0,175,181,3,18,9,0,176,
+  	181,3,34,17,0,177,181,3,44,22,0,178,181,3,42,21,0,179,181,3,40,20,0,180,
+  	174,1,0,0,0,180,175,1,0,0,0,180,176,1,0,0,0,180,177,1,0,0,0,180,178,1,
+  	0,0,0,180,179,1,0,0,0,181,39,1,0,0,0,182,183,5,41,0,0,183,41,1,0,0,0,
+  	184,185,5,1,0,0,185,186,5,41,0,0,186,43,1,0,0,0,187,188,7,2,0,0,188,45,
+  	1,0,0,0,189,190,7,3,0,0,190,47,1,0,0,0,191,192,7,4,0,0,192,49,1,0,0,0,
+  	17,53,59,68,75,80,82,86,97,101,106,113,120,127,136,145,149,180
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -237,28 +240,28 @@ HightLavelIRParser::ProgramContext* HightLavelIRParser::program() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(51);
+    setState(53);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == HightLavelIRParser::IMPORT) {
-      setState(48);
+      setState(50);
       importStatement();
-      setState(53);
+      setState(55);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(57);
+    setState(59);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 13631488) != 0)) {
-      setState(54);
+      ((1ULL << _la) & 27262976) != 0)) {
+      setState(56);
       functionDeclaration();
-      setState(59);
+      setState(61);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(60);
+    setState(62);
     match(HightLavelIRParser::EOF);
    
   }
@@ -324,18 +327,18 @@ HightLavelIRParser::ImportStatementContext* HightLavelIRParser::importStatement(
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(62);
+    setState(64);
     match(HightLavelIRParser::IMPORT);
-    setState(63);
+    setState(65);
     qualifiedName();
-    setState(66);
+    setState(68);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == HightLavelIRParser::DOT) {
-      setState(64);
+      setState(66);
       match(HightLavelIRParser::DOT);
-      setState(65);
+      setState(67);
       match(HightLavelIRParser::STAR);
     }
    
@@ -402,19 +405,19 @@ HightLavelIRParser::QualifiedNameContext* HightLavelIRParser::qualifiedName() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(68);
+    setState(70);
     match(HightLavelIRParser::IDENTIFIER);
-    setState(73);
+    setState(75);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 3, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
       if (alt == 1) {
-        setState(69);
+        setState(71);
         match(HightLavelIRParser::DOT);
-        setState(70);
+        setState(72);
         match(HightLavelIRParser::IDENTIFIER); 
       }
-      setState(75);
+      setState(77);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 3, _ctx);
     }
@@ -441,6 +444,14 @@ std::vector<HightLavelIRParser::ExprContext *> HightLavelIRParser::StatementList
 
 HightLavelIRParser::ExprContext* HightLavelIRParser::StatementListContext::expr(size_t i) {
   return getRuleContext<HightLavelIRParser::ExprContext>(i);
+}
+
+std::vector<HightLavelIRParser::FunctionCallContext *> HightLavelIRParser::StatementListContext::functionCall() {
+  return getRuleContexts<HightLavelIRParser::FunctionCallContext>();
+}
+
+HightLavelIRParser::FunctionCallContext* HightLavelIRParser::StatementListContext::functionCall(size_t i) {
+  return getRuleContext<HightLavelIRParser::FunctionCallContext>(i);
 }
 
 
@@ -474,13 +485,31 @@ HightLavelIRParser::StatementListContext* HightLavelIRParser::statementList() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(79);
+    setState(82);
     _errHandler->sync(this);
     _la = _input->LA(1);
-    while (_la == HightLavelIRParser::LET) {
-      setState(76);
-      expr();
-      setState(81);
+    while (_la == HightLavelIRParser::LET
+
+    || _la == HightLavelIRParser::CALL) {
+      setState(80);
+      _errHandler->sync(this);
+      switch (_input->LA(1)) {
+        case HightLavelIRParser::LET: {
+          setState(78);
+          expr();
+          break;
+        }
+
+        case HightLavelIRParser::CALL: {
+          setState(79);
+          functionCall();
+          break;
+        }
+
+      default:
+        throw NoViableAltException(this);
+      }
+      setState(84);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -564,14 +593,14 @@ HightLavelIRParser::FunctionDeclarationContext* HightLavelIRParser::functionDecl
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(83);
+    setState(86);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == HightLavelIRParser::PUBLIC
 
     || _la == HightLavelIRParser::PRIVATE) {
-      setState(82);
+      setState(85);
       _la = _input->LA(1);
       if (!(_la == HightLavelIRParser::PUBLIC
 
@@ -583,17 +612,17 @@ HightLavelIRParser::FunctionDeclarationContext* HightLavelIRParser::functionDecl
         consume();
       }
     }
-    setState(85);
-    match(HightLavelIRParser::FUNCTION);
-    setState(86);
-    antlrcpp::downCast<FunctionDeclarationContext *>(_localctx)->functionName = match(HightLavelIRParser::IDENTIFIER);
-    setState(87);
-    functionSignature();
     setState(88);
-    match(HightLavelIRParser::L_CURLY);
+    match(HightLavelIRParser::FUNCTION);
     setState(89);
-    statementList();
+    antlrcpp::downCast<FunctionDeclarationContext *>(_localctx)->functionName = match(HightLavelIRParser::IDENTIFIER);
     setState(90);
+    functionSignature();
+    setState(91);
+    match(HightLavelIRParser::L_CURLY);
+    setState(92);
+    statementList();
+    setState(93);
     match(HightLavelIRParser::R_CURLY);
    
   }
@@ -659,24 +688,24 @@ HightLavelIRParser::FunctionSignatureContext* HightLavelIRParser::functionSignat
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(92);
+    setState(95);
     match(HightLavelIRParser::L_PAREN);
-    setState(94);
+    setState(97);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == HightLavelIRParser::IDENTIFIER) {
-      setState(93);
+      setState(96);
       functionArgs();
     }
-    setState(96);
+    setState(99);
     match(HightLavelIRParser::R_PAREN);
-    setState(98);
+    setState(101);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == HightLavelIRParser::COLON) {
-      setState(97);
+      setState(100);
       functionReturnType();
     }
    
@@ -738,31 +767,25 @@ HightLavelIRParser::FunctionReturnTypeContext* HightLavelIRParser::functionRetur
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(100);
-    match(HightLavelIRParser::COLON);
     setState(103);
+    match(HightLavelIRParser::COLON);
+    setState(106);
     _errHandler->sync(this);
-    switch (_input->LA(1)) {
-      case HightLavelIRParser::FUNCTION:
-      case HightLavelIRParser::TYPE_INT:
-      case HightLavelIRParser::TYPE_CHAR:
-      case HightLavelIRParser::TYPE_FLOAT:
-      case HightLavelIRParser::TYPE_STRING:
-      case HightLavelIRParser::TYPE_BOOLEAN:
-      case HightLavelIRParser::TYPE_DOUBLE: {
-        setState(101);
-        varTypes();
-        break;
-      }
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx)) {
+    case 1: {
+      setState(104);
+      varTypes();
+      break;
+    }
 
-      case HightLavelIRParser::VOID: {
-        setState(102);
-        match(HightLavelIRParser::VOID);
-        break;
-      }
+    case 2: {
+      setState(105);
+      match(HightLavelIRParser::VOID);
+      break;
+    }
 
     default:
-      throw NoViableAltException(this);
+      break;
     }
    
   }
@@ -828,17 +851,17 @@ HightLavelIRParser::FunctionArgsContext* HightLavelIRParser::functionArgs() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(105);
+    setState(108);
     functionArg();
-    setState(110);
+    setState(113);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == HightLavelIRParser::COMMA) {
-      setState(106);
+      setState(109);
       match(HightLavelIRParser::COMMA);
-      setState(107);
+      setState(110);
       functionArg();
-      setState(112);
+      setState(115);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -905,11 +928,11 @@ HightLavelIRParser::FunctionArgContext* HightLavelIRParser::functionArg() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(113);
+    setState(116);
     antlrcpp::downCast<FunctionArgContext *>(_localctx)->varName = match(HightLavelIRParser::IDENTIFIER);
-    setState(114);
-    match(HightLavelIRParser::COLON);
     setState(117);
+    match(HightLavelIRParser::COLON);
+    setState(120);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case HightLavelIRParser::FUNCTION:
@@ -918,14 +941,15 @@ HightLavelIRParser::FunctionArgContext* HightLavelIRParser::functionArg() {
       case HightLavelIRParser::TYPE_FLOAT:
       case HightLavelIRParser::TYPE_STRING:
       case HightLavelIRParser::TYPE_BOOLEAN:
-      case HightLavelIRParser::TYPE_DOUBLE: {
-        setState(115);
+      case HightLavelIRParser::TYPE_DOUBLE:
+      case HightLavelIRParser::VOID: {
+        setState(118);
         varTypes();
         break;
       }
 
       case HightLavelIRParser::L_PAREN: {
-        setState(116);
+        setState(119);
         functionSignature();
         break;
       }
@@ -948,6 +972,14 @@ HightLavelIRParser::FunctionArgContext* HightLavelIRParser::functionArg() {
 
 HightLavelIRParser::FunctionCallContext::FunctionCallContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* HightLavelIRParser::FunctionCallContext::CALL() {
+  return getToken(HightLavelIRParser::CALL, 0);
+}
+
+HightLavelIRParser::VarTypesContext* HightLavelIRParser::FunctionCallContext::varTypes() {
+  return getRuleContext<HightLavelIRParser::VarTypesContext>(0);
 }
 
 tree::TerminalNode* HightLavelIRParser::FunctionCallContext::L_PAREN() {
@@ -997,19 +1029,23 @@ HightLavelIRParser::FunctionCallContext* HightLavelIRParser::functionCall() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(119);
-    antlrcpp::downCast<FunctionCallContext *>(_localctx)->functionName = match(HightLavelIRParser::IDENTIFIER);
-    setState(120);
-    match(HightLavelIRParser::L_PAREN);
     setState(122);
+    match(HightLavelIRParser::CALL);
+    setState(123);
+    varTypes();
+    setState(124);
+    antlrcpp::downCast<FunctionCallContext *>(_localctx)->functionName = match(HightLavelIRParser::IDENTIFIER);
+    setState(125);
+    match(HightLavelIRParser::L_PAREN);
+    setState(127);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == HightLavelIRParser::IDENTIFIER) {
-      setState(121);
+      setState(126);
       functionCallArgs();
     }
-    setState(124);
+    setState(129);
     match(HightLavelIRParser::R_PAREN);
    
   }
@@ -1075,17 +1111,17 @@ HightLavelIRParser::FunctionCallArgsContext* HightLavelIRParser::functionCallArg
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(126);
-    functionCallArg();
     setState(131);
+    functionCallArg();
+    setState(136);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == HightLavelIRParser::COMMA) {
-      setState(127);
+      setState(132);
       match(HightLavelIRParser::COMMA);
-      setState(128);
-      functionCallArg();
       setState(133);
+      functionCallArg();
+      setState(138);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1108,6 +1144,10 @@ HightLavelIRParser::FunctionCallArgContext::FunctionCallArgContext(ParserRuleCon
 
 tree::TerminalNode* HightLavelIRParser::FunctionCallArgContext::COLON() {
   return getToken(HightLavelIRParser::COLON, 0);
+}
+
+HightLavelIRParser::VarTypesContext* HightLavelIRParser::FunctionCallArgContext::varTypes() {
+  return getRuleContext<HightLavelIRParser::VarTypesContext>(0);
 }
 
 std::vector<tree::TerminalNode *> HightLavelIRParser::FunctionCallArgContext::IDENTIFIER() {
@@ -1156,26 +1196,32 @@ HightLavelIRParser::FunctionCallArgContext* HightLavelIRParser::functionCallArg(
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(134);
+    setState(139);
     antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->varName = match(HightLavelIRParser::IDENTIFIER);
-    setState(135);
-    match(HightLavelIRParser::COLON);
     setState(140);
+    match(HightLavelIRParser::COLON);
+    setState(141);
+    varTypes();
+    setState(145);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case HightLavelIRParser::REAL_NUMBER:
       case HightLavelIRParser::INT_NUMBER:
       case HightLavelIRParser::BOOLEAN_VALUE:
       case HightLavelIRParser::STRING_LITERAL: {
-        setState(136);
+        setState(142);
         dataFormat();
         break;
       }
 
-      case HightLavelIRParser::IDENTIFIER: {
-        setState(137);
+      case HightLavelIRParser::CALL: {
+        setState(143);
         functionCall();
-        setState(138);
+        break;
+      }
+
+      case HightLavelIRParser::IDENTIFIER: {
+        setState(144);
         antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->anotherVarName = match(HightLavelIRParser::IDENTIFIER);
         break;
       }
@@ -1238,18 +1284,18 @@ HightLavelIRParser::OpContext* HightLavelIRParser::op() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(144);
+    setState(149);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case HightLavelIRParser::IDENTIFIER: {
-        setState(142);
+        setState(147);
         antlrcpp::downCast<OpContext *>(_localctx)->varName = match(HightLavelIRParser::IDENTIFIER);
         break;
       }
 
       case HightLavelIRParser::REAL_NUMBER:
       case HightLavelIRParser::INT_NUMBER: {
-        setState(143);
+        setState(148);
         number();
         break;
       }
@@ -1308,7 +1354,7 @@ HightLavelIRParser::OpRightContext* HightLavelIRParser::opRight() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(146);
+    setState(151);
     op();
    
   }
@@ -1361,7 +1407,7 @@ HightLavelIRParser::OpLeftContext* HightLavelIRParser::opLeft() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(148);
+    setState(153);
     op();
    
   }
@@ -1414,7 +1460,7 @@ HightLavelIRParser::TypeRightContext* HightLavelIRParser::typeRight() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(150);
+    setState(155);
     varTypes();
    
   }
@@ -1467,7 +1513,7 @@ HightLavelIRParser::TypeLeftContext* HightLavelIRParser::typeLeft() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(152);
+    setState(157);
     varTypes();
    
   }
@@ -1532,13 +1578,13 @@ HightLavelIRParser::CastContext* HightLavelIRParser::cast() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(154);
+    setState(159);
     antlrcpp::downCast<CastContext *>(_localctx)->anotherVarName = match(HightLavelIRParser::IDENTIFIER);
-    setState(155);
+    setState(160);
     typeLeft();
-    setState(156);
+    setState(161);
     match(HightLavelIRParser::TO);
-    setState(157);
+    setState(162);
     typeRight();
    
   }
@@ -1551,60 +1597,60 @@ HightLavelIRParser::CastContext* HightLavelIRParser::cast() {
   return _localctx;
 }
 
-//----------------- Math_opContext ------------------------------------------------------------------
+//----------------- MathOpContext ------------------------------------------------------------------
 
-HightLavelIRParser::Math_opContext::Math_opContext(ParserRuleContext *parent, size_t invokingState)
+HightLavelIRParser::MathOpContext::MathOpContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
-HightLavelIRParser::OpLeftContext* HightLavelIRParser::Math_opContext::opLeft() {
+HightLavelIRParser::OpLeftContext* HightLavelIRParser::MathOpContext::opLeft() {
   return getRuleContext<HightLavelIRParser::OpLeftContext>(0);
 }
 
-tree::TerminalNode* HightLavelIRParser::Math_opContext::COMMA() {
+tree::TerminalNode* HightLavelIRParser::MathOpContext::COMMA() {
   return getToken(HightLavelIRParser::COMMA, 0);
 }
 
-HightLavelIRParser::OpRightContext* HightLavelIRParser::Math_opContext::opRight() {
+HightLavelIRParser::OpRightContext* HightLavelIRParser::MathOpContext::opRight() {
   return getRuleContext<HightLavelIRParser::OpRightContext>(0);
 }
 
-tree::TerminalNode* HightLavelIRParser::Math_opContext::MULT() {
+tree::TerminalNode* HightLavelIRParser::MathOpContext::MULT() {
   return getToken(HightLavelIRParser::MULT, 0);
 }
 
-tree::TerminalNode* HightLavelIRParser::Math_opContext::DIV() {
+tree::TerminalNode* HightLavelIRParser::MathOpContext::DIV() {
   return getToken(HightLavelIRParser::DIV, 0);
 }
 
-tree::TerminalNode* HightLavelIRParser::Math_opContext::PLUS() {
+tree::TerminalNode* HightLavelIRParser::MathOpContext::PLUS() {
   return getToken(HightLavelIRParser::PLUS, 0);
 }
 
-tree::TerminalNode* HightLavelIRParser::Math_opContext::MINUS() {
+tree::TerminalNode* HightLavelIRParser::MathOpContext::MINUS() {
   return getToken(HightLavelIRParser::MINUS, 0);
 }
 
 
-size_t HightLavelIRParser::Math_opContext::getRuleIndex() const {
-  return HightLavelIRParser::RuleMath_op;
+size_t HightLavelIRParser::MathOpContext::getRuleIndex() const {
+  return HightLavelIRParser::RuleMathOp;
 }
 
-void HightLavelIRParser::Math_opContext::enterRule(tree::ParseTreeListener *listener) {
+void HightLavelIRParser::MathOpContext::enterRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<HightLavelIRListener *>(listener);
   if (parserListener != nullptr)
-    parserListener->enterMath_op(this);
+    parserListener->enterMathOp(this);
 }
 
-void HightLavelIRParser::Math_opContext::exitRule(tree::ParseTreeListener *listener) {
+void HightLavelIRParser::MathOpContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<HightLavelIRListener *>(listener);
   if (parserListener != nullptr)
-    parserListener->exitMath_op(this);
+    parserListener->exitMathOp(this);
 }
 
-HightLavelIRParser::Math_opContext* HightLavelIRParser::math_op() {
-  Math_opContext *_localctx = _tracker.createInstance<Math_opContext>(_ctx, getState());
-  enterRule(_localctx, 36, HightLavelIRParser::RuleMath_op);
+HightLavelIRParser::MathOpContext* HightLavelIRParser::mathOp() {
+  MathOpContext *_localctx = _tracker.createInstance<MathOpContext>(_ctx, getState());
+  enterRule(_localctx, 36, HightLavelIRParser::RuleMathOp);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1616,21 +1662,21 @@ HightLavelIRParser::Math_opContext* HightLavelIRParser::math_op() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(159);
+    setState(164);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 30720) != 0))) {
+      ((1ULL << _la) & 61440) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(160);
+    setState(165);
     opLeft();
-    setState(161);
+    setState(166);
     match(HightLavelIRParser::COMMA);
-    setState(162);
+    setState(167);
     opRight();
    
   }
@@ -1669,8 +1715,8 @@ tree::TerminalNode* HightLavelIRParser::ExprContext::IDENTIFIER() {
   return getToken(HightLavelIRParser::IDENTIFIER, 0);
 }
 
-HightLavelIRParser::Math_opContext* HightLavelIRParser::ExprContext::math_op() {
-  return getRuleContext<HightLavelIRParser::Math_opContext>(0);
+HightLavelIRParser::MathOpContext* HightLavelIRParser::ExprContext::mathOp() {
+  return getRuleContext<HightLavelIRParser::MathOpContext>(0);
 }
 
 HightLavelIRParser::FunctionCallContext* HightLavelIRParser::ExprContext::functionCall() {
@@ -1683,6 +1729,10 @@ HightLavelIRParser::CastContext* HightLavelIRParser::ExprContext::cast() {
 
 HightLavelIRParser::NumberContext* HightLavelIRParser::ExprContext::number() {
   return getRuleContext<HightLavelIRParser::NumberContext>(0);
+}
+
+HightLavelIRParser::FunctionPtrContext* HightLavelIRParser::ExprContext::functionPtr() {
+  return getRuleContext<HightLavelIRParser::FunctionPtrContext>(0);
 }
 
 HightLavelIRParser::AssignmentContext* HightLavelIRParser::ExprContext::assignment() {
@@ -1719,45 +1769,51 @@ HightLavelIRParser::ExprContext* HightLavelIRParser::expr() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(164);
+    setState(169);
     match(HightLavelIRParser::LET);
-    setState(165);
+    setState(170);
     antlrcpp::downCast<ExprContext *>(_localctx)->varName = match(HightLavelIRParser::IDENTIFIER);
-    setState(166);
+    setState(171);
     match(HightLavelIRParser::COLON);
-    setState(167);
+    setState(172);
     varTypes();
-    setState(168);
+    setState(173);
     match(HightLavelIRParser::EQ);
-    setState(174);
+    setState(180);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 16, _ctx)) {
     case 1: {
-      setState(169);
-      math_op();
+      setState(174);
+      mathOp();
       break;
     }
 
     case 2: {
-      setState(170);
+      setState(175);
       functionCall();
       break;
     }
 
     case 3: {
-      setState(171);
+      setState(176);
       cast();
       break;
     }
 
     case 4: {
-      setState(172);
+      setState(177);
       number();
       break;
     }
 
     case 5: {
-      setState(173);
+      setState(178);
+      functionPtr();
+      break;
+    }
+
+    case 6: {
+      setState(179);
       assignment();
       break;
     }
@@ -1816,8 +1872,63 @@ HightLavelIRParser::AssignmentContext* HightLavelIRParser::assignment() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(176);
+    setState(182);
     antlrcpp::downCast<AssignmentContext *>(_localctx)->anotherVarName = match(HightLavelIRParser::IDENTIFIER);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- FunctionPtrContext ------------------------------------------------------------------
+
+HightLavelIRParser::FunctionPtrContext::FunctionPtrContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* HightLavelIRParser::FunctionPtrContext::IDENTIFIER() {
+  return getToken(HightLavelIRParser::IDENTIFIER, 0);
+}
+
+
+size_t HightLavelIRParser::FunctionPtrContext::getRuleIndex() const {
+  return HightLavelIRParser::RuleFunctionPtr;
+}
+
+void HightLavelIRParser::FunctionPtrContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<HightLavelIRListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterFunctionPtr(this);
+}
+
+void HightLavelIRParser::FunctionPtrContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<HightLavelIRListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitFunctionPtr(this);
+}
+
+HightLavelIRParser::FunctionPtrContext* HightLavelIRParser::functionPtr() {
+  FunctionPtrContext *_localctx = _tracker.createInstance<FunctionPtrContext>(_ctx, getState());
+  enterRule(_localctx, 42, HightLavelIRParser::RuleFunctionPtr);
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(184);
+    match(HightLavelIRParser::T__0);
+    setState(185);
+    antlrcpp::downCast<FunctionPtrContext *>(_localctx)->functionName = match(HightLavelIRParser::IDENTIFIER);
    
   }
   catch (RecognitionException &e) {
@@ -1862,7 +1973,7 @@ void HightLavelIRParser::NumberContext::exitRule(tree::ParseTreeListener *listen
 
 HightLavelIRParser::NumberContext* HightLavelIRParser::number() {
   NumberContext *_localctx = _tracker.createInstance<NumberContext>(_ctx, getState());
-  enterRule(_localctx, 42, HightLavelIRParser::RuleNumber);
+  enterRule(_localctx, 44, HightLavelIRParser::RuleNumber);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1874,7 +1985,7 @@ HightLavelIRParser::NumberContext* HightLavelIRParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(178);
+    setState(187);
     _la = _input->LA(1);
     if (!(_la == HightLavelIRParser::REAL_NUMBER
 
@@ -1937,7 +2048,7 @@ void HightLavelIRParser::DataFormatContext::exitRule(tree::ParseTreeListener *li
 
 HightLavelIRParser::DataFormatContext* HightLavelIRParser::dataFormat() {
   DataFormatContext *_localctx = _tracker.createInstance<DataFormatContext>(_ctx, getState());
-  enterRule(_localctx, 44, HightLavelIRParser::RuleDataFormat);
+  enterRule(_localctx, 46, HightLavelIRParser::RuleDataFormat);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1949,10 +2060,10 @@ HightLavelIRParser::DataFormatContext* HightLavelIRParser::dataFormat() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(180);
+    setState(189);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 515396075520) != 0))) {
+      ((1ULL << _la) & 2061584302080) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -2004,6 +2115,10 @@ tree::TerminalNode* HightLavelIRParser::VarTypesContext::FUNCTION() {
   return getToken(HightLavelIRParser::FUNCTION, 0);
 }
 
+tree::TerminalNode* HightLavelIRParser::VarTypesContext::VOID() {
+  return getToken(HightLavelIRParser::VOID, 0);
+}
+
 
 size_t HightLavelIRParser::VarTypesContext::getRuleIndex() const {
   return HightLavelIRParser::RuleVarTypes;
@@ -2023,7 +2138,7 @@ void HightLavelIRParser::VarTypesContext::exitRule(tree::ParseTreeListener *list
 
 HightLavelIRParser::VarTypesContext* HightLavelIRParser::varTypes() {
   VarTypesContext *_localctx = _tracker.createInstance<VarTypesContext>(_ctx, getState());
-  enterRule(_localctx, 46, HightLavelIRParser::RuleVarTypes);
+  enterRule(_localctx, 48, HightLavelIRParser::RuleVarTypes);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2035,10 +2150,10 @@ HightLavelIRParser::VarTypesContext* HightLavelIRParser::varTypes() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(182);
+    setState(191);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 8456765440) != 0))) {
+      ((1ULL << _la) & 34093400064) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {

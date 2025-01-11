@@ -24,6 +24,8 @@ namespace iron
         std::vector<std::pair<std::string, int>> args;
         std::string alias;
         llvm::AllocaInst *alloca;
+        llvm::Type *llvmType;
+        llvm::FunctionType *llvmFuncType;
     };
     class SymbolTable
     {

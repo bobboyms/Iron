@@ -68,14 +68,17 @@ public:
   virtual void enterCast(HightLavelIRParser::CastContext *ctx) = 0;
   virtual void exitCast(HightLavelIRParser::CastContext *ctx) = 0;
 
-  virtual void enterMath_op(HightLavelIRParser::Math_opContext *ctx) = 0;
-  virtual void exitMath_op(HightLavelIRParser::Math_opContext *ctx) = 0;
+  virtual void enterMathOp(HightLavelIRParser::MathOpContext *ctx) = 0;
+  virtual void exitMathOp(HightLavelIRParser::MathOpContext *ctx) = 0;
 
   virtual void enterExpr(HightLavelIRParser::ExprContext *ctx) = 0;
   virtual void exitExpr(HightLavelIRParser::ExprContext *ctx) = 0;
 
   virtual void enterAssignment(HightLavelIRParser::AssignmentContext *ctx) = 0;
   virtual void exitAssignment(HightLavelIRParser::AssignmentContext *ctx) = 0;
+
+  virtual void enterFunctionPtr(HightLavelIRParser::FunctionPtrContext *ctx) = 0;
+  virtual void exitFunctionPtr(HightLavelIRParser::FunctionPtrContext *ctx) = 0;
 
   virtual void enterNumber(HightLavelIRParser::NumberContext *ctx) = 0;
   virtual void exitNumber(HightLavelIRParser::NumberContext *ctx) = 0;

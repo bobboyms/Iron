@@ -60,10 +60,17 @@ namespace iron
 
     void LLVMIR::visitStatementList(HightLavelIRParser::StatementListContext *ctx)
     {
-        int i = 0;
-        for (auto exp : ctx->expr())
+        for (auto child : ctx->children)
         {
-            visitExpr(exp);
+            if (auto exp = dynamic_cast<HightLavelIRParser::ExprContext *>(child))
+            {
+                visitExpr(exp);
+            }
+
+            if (auto funcCall = dynamic_cast<HightLavelIRParser::FunctionCallContext *>(child))
+            {
+                visitFunctionCall(funcCall);
+            }
         }
     }
 
@@ -73,36 +80,68 @@ namespace iron
         const auto varType = TokenMap::getTokenType(ctx->varTypes()->getText());
         auto currentScope = scopeManager->currentScope();
 
-        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
-        llvm::BasicBlock &entryBlock = currentFunction->getEntryBlock();
-        llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
+        iron::printf("varName {}, varType {}", varName, ctx->varTypes()->getText());
 
-        llvm::Type *llvmType = mapType(varType);
-        llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, varName);
-        currentScope->addSymbol(varName, {TokenMap::VARIABLE, varType, nullptr, {}, "", allocaVariable});
-
-        if (ctx->number())
+        if (varType == TokenMap::FUNCTION)
         {
 
-            // **Step 2: Create the constant value**
-            const std::string literalValue = ctx->number()->getText();
-            literalToRealNumber(varType, literalValue, allocaVariable);
-        }
-        else if (ctx->math_op())
-        {
-            mathematicalOperations(ctx, allocaVariable, varType, varName, llvmType);
-        }
-        else if (ctx->assignment())
-        {
-            assignment(ctx, varName, llvmType);
-        }
-        else if (ctx->cast())
-        {
-            numberCasting(ctx, allocaVariable);
+            if (!ctx->functionPtr())
+            {
+                throw LLVMException(format("The variable: {} is not function ptr", varName));
+            }
+
+            std::string functionName = ctx->functionPtr()->functionName->getText();
+            llvm::Function *func = module->getFunction(functionName);
+
+            llvm::Type *funcPtrType = func->getType();
+            llvm::FunctionType *functionType = func->getFunctionType();
+
+            llvm::PointerType *gfnPtrPtrType = llvm::PointerType::getUnqual(funcPtrType);
+            llvm::AllocaInst *functionPtrVar = builder.CreateAlloca(funcPtrType, nullptr, varName);
+
+            llvm::Constant *gfnPtr = llvm::ConstantExpr::getBitCast(func, funcPtrType);
+
+            // Armazena o ponteiro da função
+            builder.CreateStore(gfnPtr, functionPtrVar);
+            currentScope->addSymbol(varName, {TokenMap::FUNCTION, TokenMap::FUNCTION_PTR, nullptr, {}, "", functionPtrVar, funcPtrType, functionType});
         }
         else
         {
-            throw LLVMException("Unsupported expression in visitExpr.");
+            llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+            llvm::BasicBlock &entryBlock = currentFunction->getEntryBlock();
+            llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
+
+            llvm::Type *llvmType = mapType(varType);
+            llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, varName);
+            currentScope->addSymbol(varName, {TokenMap::VARIABLE, varType, nullptr, {}, "", allocaVariable});
+
+            if (ctx->number())
+            {
+                // **Step 2: Create the constant value**
+                const std::string literalValue = ctx->number()->getText();
+                literalToRealNumber(varType, literalValue, allocaVariable);
+            }
+
+            else if (ctx->mathOp())
+            {
+                mathematicalOperations(ctx, allocaVariable, varType, varName, llvmType);
+            }
+            else if (ctx->functionCall())
+            {
+                printf("functionCall", "");
+            }
+            else if (ctx->cast())
+            {
+                numberCasting(ctx, allocaVariable);
+            }
+            else if (ctx->functionCall())
+            {
+                std::string functionName = ctx->functionCall()->functionName->getText();
+            }
+            else
+            {
+                throw LLVMException("Unsupported expression in visitExpr.");
+            }
         }
     }
 
@@ -116,7 +155,7 @@ namespace iron
         // Implementação do método
     }
 
-    void LLVMIR::visitMathOp(HightLavelIRParser::Math_opContext *ctx)
+    void LLVMIR::visitMathOp(HightLavelIRParser::MathOpContext *ctx)
     {
         // Implementação do método
     }
@@ -265,16 +304,89 @@ namespace iron
 
     void LLVMIR::visitFunctionCall(HightLavelIRParser::FunctionCallContext *ctx)
     {
-        // Implementação do método
+        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+        auto currentScope = scopeManager->currentScope();
+        const std::string functionName = ctx->functionName->getText();
+
+        auto functionOpt = currentScope->lookup(functionName);
+        if (functionOpt.has_value())
+        {
+            auto function = functionOpt.value();
+
+            if (function.type == TokenMap::FUNCTION)
+            {
+
+                llvm::Value *loadedFuncPtr = builder.CreateLoad(function.llvmType, function.alloca, iron::format("loaded_{}", functionName));
+
+                // llvm::Value *arg1 = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 10);
+                std::vector<llvm::Value *> args = {};
+
+                if (ctx->functionCallArgs())
+                {
+                    visitFunctionCallArgs(ctx->functionCallArgs(), args);
+                }
+
+                llvm::FunctionCallee callee = llvm::FunctionCallee(function.llvmFuncType, loadedFuncPtr);
+
+                if (function.llvmFuncType->getReturnType()->isVoidTy())
+                {
+                    // Se a função retorna void, não atribua um nome à chamada
+                    builder.CreateCall(callee, args);
+                }
+                else
+                {
+                    // llvm::Value *callResult = builder.CreateCall(callee, args, iron::format("call_inline_{}", functionName));
+
+                    // builder.CreateCall(callee, args, iron::format("call_inline_{}", functionName));
+
+                    // Opcional: Armazena o resultado em uma variável (Alloca)
+                    // llvm::AllocaInst *resultVar = builder.CreateAlloca(function.llvmFuncType->getReturnType(), nullptr, "result");
+                    // builder.CreateStore(callResult, resultVar);
+                }
+
+                // quando tem retorno
+            }
+        }
+        else
+        {
+            llvm::Function *function = module->getFunction(functionName);
+            if (!function)
+            {
+                throw LLVMException(iron::format("Function {} not found", functionName));
+            }
+
+            builder.CreateCall(function, llvm::ArrayRef<llvm::Value *>());
+        }
     }
 
-    void LLVMIR::visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext *ctx)
+    void LLVMIR::visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext *ctx, std::vector<llvm::Value *> args)
     {
-        // Implementação do método
+        for (auto child : ctx->children)
+        {
+            if (auto arg = dynamic_cast<HightLavelIRParser::FunctionCallArgContext *>(child))
+            {
+                visitFunctionCallArg(arg, args);
+            }
+        }
     }
 
-    void LLVMIR::visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx)
+    void LLVMIR::visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx, std::vector<llvm::Value *> args)
     {
-        // Implementação do método
+        // llvm::Value *arg1 = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 10);
+
+        std::string argName = ctx->varName->getText();
+        if (ctx->dataFormat())
+        {
+            std::string valueStr = ctx->dataFormat()->getText();
+            int type = TokenMap::getTokenType(valueStr);
+
+            if (type == TokenMap::REAL_NUMBER)
+            {
+                int dataType = TokenMap::determineFloatType(valueStr);
+
+                llvm::Type *type = mapType(dataType);
+                llvm::Value *arg = llvm::ConstantInt::get(type, 10);
+            }
+        }
     }
 }

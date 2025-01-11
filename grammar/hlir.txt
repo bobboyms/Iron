@@ -1,7 +1,9 @@
-public fn main (name:string): int { 
-            let a:float = 10.00F
-            let b:float = 10.00F
+private fn gfn_main_block(a:int):void {
+    let var_1:int = 2
+    let var_2:int = PLUS a, var_1
+}
 
-            let tmp_1: float = PLUS a, b
-            let r:int = tmp_1
-        } 
+public fn main (): void { 
+    let block:fn = fptr gfn_main_block
+    call void block(a:int 12)
+} 

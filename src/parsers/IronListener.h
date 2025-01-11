@@ -29,8 +29,8 @@ public:
   virtual void enterStatementList(IronParser::StatementListContext *ctx) = 0;
   virtual void exitStatementList(IronParser::StatementListContext *ctx) = 0;
 
-  virtual void enterReturn(IronParser::ReturnContext *ctx) = 0;
-  virtual void exitReturn(IronParser::ReturnContext *ctx) = 0;
+  virtual void enterReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
+  virtual void exitReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
 
   virtual void enterFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) = 0;
   virtual void exitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) = 0;
