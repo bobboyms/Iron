@@ -1,47 +1,109 @@
-# Caminho do compilador e flags
-CXX = /opt/homebrew/opt/llvm/bin/clang++
-CXXFLAGS = -g -std=c++17  -I/opt/homebrew/opt/llvm/include -O1 -L/opt/homebrew/opt/llvm/lib -lLLVM-19
+#################################
+# COMPILADOR E FLAGS
+#################################
+CXX        = /opt/homebrew/opt/llvm/bin/clang++
+CXXFLAGS   = -g -std=c++17 -I/opt/homebrew/opt/llvm/include -O1
+LDFLAGS    = -L/opt/homebrew/opt/llvm/lib -lLLVM-19
 
+# Ativa compilação em paralelo com até 6 tarefas
 MAKEFLAGS += -j6
-# -fsanitize=address,undefined -fno-omit-frame-pointer
-# 
-ANTLR_INCLUDES = -I/usr/local/include/antlr4-runtime  # Headers do runtime ANTLR
-ANTLR_LIBS = /usr/local/lib/libantlr4-runtime.a       # Biblioteca estática do runtime ANTLR
 
-# Caminhos do Google Test instalados via Homebrew
+#################################
+# INCLUDES E BIBLIOTECAS EXTERNAS
+#################################
+ANTLR_INCLUDES = -I/usr/local/include/antlr4-runtime
+ANTLR_LIBS     = /usr/local/lib/libantlr4-runtime.a
+
 GTEST_INCLUDES = -I/opt/homebrew/include
-GTEST_LIBS = -L/opt/homebrew/lib -lgtest -lgtest_main
+GTEST_LIBS     = -L/opt/homebrew/lib -lgtest -lgtest_main
 
-# Nome do executável e arquivo fonte
-TARGET = program 
-SRC = src/main.cpp
+#################################
+# FONTES E ALVOS
+#################################
+TARGET      = program
 TEST_TARGET = test_program
-TEST_SRC = tests/test_semantical_analysis.cpp tests/test_lexer.cpp tests/test_hlir.cpp
 
-ANTLR_CPP = src/llvm/Utils.cpp src/llvm/Expr.cpp src/llvm/Types.cpp src/llvm/LLVMIR.cpp src/hlir/WriterCodeHLIR.cpp src/utils/Colors.cpp src/utils/ScopeManager.cpp src/hlir/HighLevelIR.cpp src/semantical/SemanticalAnalysis.cpp src/parsers/IronLexer.cpp src/parsers/IronParser.cpp src/parsers/IronBaseListener.cpp src/parsers/IronListener.cpp src/parsers/HightLavelIRLexer.cpp src/parsers/HightLavelIRParser.cpp src/parsers/HightLavelIRBaseListener.cpp src/parsers/HightLavelIRListener.cpp
+# Fontes do programa principal
+SRC_MAIN    = src/main.cpp
 
+# Fontes compartilhadas (antlr, hlir, llvm, etc.)
+SRC_COMMON  = src/hlir/Type.cpp \
+			  src/hlir/FunctionArgs.cpp \
+                    src/hlir/Function.cpp \
+                    src/hlir/Variable.cpp \
+                    src/hlir/Operations.cpp \
+              src/llvm/Utils.cpp \
+              src/llvm/Expr.cpp \
+              src/llvm/Types.cpp \
+              src/llvm/LLVMIR.cpp \
+              src/hlir/WriterCodeHLIR.cpp \
+              src/utils/Colors.cpp \
+              src/utils/ScopeManager.cpp \
+              src/hlir/HighLevelIR.cpp \
+              src/semantical/SemanticalAnalysis.cpp \
+              src/parsers/IronLexer.cpp \
+              src/parsers/IronParser.cpp \
+              src/parsers/IronBaseListener.cpp \
+              src/parsers/IronListener.cpp \
+              src/parsers/HightLavelIRLexer.cpp \
+              src/parsers/HightLavelIRParser.cpp \
+              src/parsers/HightLavelIRBaseListener.cpp \
+              src/parsers/HightLavelIRListener.cpp
 
-# Alvo padrão: compilar o programa
+# Fontes de teste
+TEST_SRC    = tests/test_semantical_analysis.cpp \
+              tests/test_lexer.cpp \
+              tests/test_hlir_types.cpp \
+			  tests/test_hlir_function.cpp \
+                    tests/test_hlir_variable.cpp \
+                    tests/test_hlir_operation.cpp
+
+#################################
+# Geração de listas de objetos
+#################################
+OBJ_MAIN    = $(SRC_MAIN:.cpp=.o)
+OBJ_COMMON  = $(SRC_COMMON:.cpp=.o)
+OBJ_TEST    = $(TEST_SRC:.cpp=.o)
+
+#################################
+# REGRA PADRÃO: COMPILA TUDO
+#################################
 all: $(TARGET) $(TEST_TARGET)
 
-# Regra para compilar o programa principal com linkagem estática do ANTLR
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) $(ANTLR_INCLUDES) $(ANTLR_LIBS) $(SRC) $(ANTLR_CPP) -o $(TARGET)
+#################################
+# LINK DO PROGRAMA PRINCIPAL
+#################################
+$(TARGET): $(OBJ_MAIN) $(OBJ_COMMON)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(ANTLR_INCLUDES) $(ANTLR_LIBS) $^ -o $@
 
-# Regra para compilar o programa de testes
-$(TEST_TARGET): $(TEST_SRC)
-	$(CXX) $(CXXFLAGS) $(ANTLR_INCLUDES) $(ANTLR_LIBS) $(GTEST_INCLUDES) $(GTEST_LIBS) $(TEST_SRC) $(ANTLR_CPP) -o $(TEST_TARGET)
+#################################
+# LINK DO PROGRAMA DE TESTE
+#################################
+$(TEST_TARGET): $(OBJ_TEST) $(OBJ_COMMON)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(ANTLR_INCLUDES) $(ANTLR_LIBS) \
+	       $(GTEST_INCLUDES) $(GTEST_LIBS) $^ -o $@
 
-# Regra para executar o programa
+#################################
+# REGRA GERAL PARA COMPILAR .cpp -> .o
+#################################
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(ANTLR_INCLUDES) $(GTEST_INCLUDES) -c $< -o $@
+
+#################################
+# RODAR PROGRAMA
+#################################
 run: $(TARGET)
 	./$(TARGET)
-#	rm -f $(TARGET) 
 
-# Regra para executar os testes
+#################################
+# RODAR TESTES
+#################################
 test: $(TEST_TARGET)
 	./$(TEST_TARGET)
-	rm -f $(TEST_TARGET)
 
-# Limpeza dos arquivos gerados
+#################################
+# LIMPEZA
+#################################
 clean:
-	rm -f $(TARGET) $(TEST_TARGET)
+	rm -f $(TARGET) $(TEST_TARGET) \
+	      $(OBJ_MAIN) $(OBJ_COMMON) $(OBJ_TEST)
