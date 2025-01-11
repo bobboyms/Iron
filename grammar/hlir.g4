@@ -2,8 +2,6 @@ grammar hlir;
 
 // --------------------------------- Regras do Lexer (Tokens) ---------------------------------
 
-// --------------------------------- Regras do Lexer (Tokens) ---------------------------------
-
 // Símbolos
 COLON: ':';
 COMMA: ',';
@@ -99,9 +97,10 @@ functionCallArgs: functionCallArg (',' functionCallArg)*;
 
 // Argumento da chamada de função
 functionCallArg:
-	varName = IDENTIFIER COLON (
+	varName = IDENTIFIER COLON varTypes (
 		dataFormat
-		| functionCall anotherVarName = IDENTIFIER
+		| functionCall
+		| anotherVarName = IDENTIFIER
 	);
 
 op: (varName = IDENTIFIER | number);

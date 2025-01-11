@@ -13,10 +13,11 @@ Este guia irá ajudá-lo a configurar seu ambiente de desenvolvimento no macOS p
 
 1. Abra o Terminal.
 2. Instale o LLVM via Homebrew:
+
    ```bash
    brew install llvm
    ```
-   
+
    Isso instalará o LLVM e o clang++ em `/opt/homebrew/opt/llvm`.
 
 3. Para que o sistema encontre o clang++ instalado pelo LLVM (ao invés do clang padrão do macOS), adicione as ferramentas ao seu PATH. No caso do shell Zsh (padrão no macOS atuais):
@@ -26,17 +27,19 @@ Este guia irá ajudá-lo a configurar seu ambiente de desenvolvimento no macOS p
    export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
    export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
    ```
-   
+
    Em seguida, recarregue o arquivo de configuração do seu shell:
+
    ```bash
    source ~/.zshrc
    ```
 
 4. Teste se o LLVM foi instalado corretamente:
+
    ```bash
    llvm-config --version
    ```
-   
+
    Você deve ver a versão do LLVM instalada.
 
 ---
@@ -52,8 +55,8 @@ O ANTLR é uma ferramenta para geração de analisadores léxicos e sintáticos 
    cd /usr/local/lib
    sudo curl -O https://www.antlr.org/download/antlr-4.13.2-complete.jar
    ```
-   
 2. Instale a ferramenta do ANTLR4 (Python):
+
    ```bash
    echo 'export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"' >> ~/.zshrc
    echo 'alias antlr4="java -Xmx500M -cp \"/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH\" org.antlr.v4.Tool"' >> ~/.zshrc
@@ -61,28 +64,29 @@ O ANTLR é uma ferramenta para geração de analisadores léxicos e sintáticos 
    ```
 
    Em seguida, recarregue o arquivo de configuração do seu shell:
+
    ```bash
    source ~/.zshrc
    ```
 
 3. Testar a instalação
 
-  ```bash
-      antlr4 Expr.g4
-      javac Expr*.java
-   ```
+```bash
+    antlr4 Expr.g4
+    javac Expr*.java
+```
 
-   ```bash
-      grun Expr expr -gui < input.txt
-   ```
+```bash
+   grun Expr expr -gui < input.txt
+```
 
-   ```bash
-      grun Expr expr -tree < input.txt
-   ```
+```bash
+   grun Expr expr -tree < input.txt
+```
 
-   ```bash
-      grun Expr expr -tokens < input.txt
-   ```
+```bash
+   grun Expr expr -tokens < input.txt
+```
 
 ### 2.2 Instalar a Runtime C++ do ANTLR
 
@@ -90,33 +94,33 @@ O ANTLR é uma ferramenta para geração de analisadores léxicos e sintáticos 
    ```bash
    git clone https://github.com/antlr/antlr4.git
    ```
-   
 2. Vá para o diretório da runtime C++:
    ```bash
    cd antlr4/runtime/Cpp
    ```
-   
 3. Crie um diretório de build (opcional, mas organizado):
+
    ```bash
    mkdir build && cd build
    cmake .. -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DCMAKE_INSTALL_PREFIX=/usr/local
    ```
-   
+
    **O que este comando faz?**
+
    - `-DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++` garante que a compilação use o clang++ do LLVM instalado.
    - `-DCMAKE_INSTALL_PREFIX=/usr/local` definirá onde a runtime será instalada.
-   
+
 4. Compile e instale:
    ```bash
    make
    sudo make install
    ```
-   
 5. Verifique a instalação da runtime:
+
    ```bash
    ls /usr/local/include/antlr4-runtime
    ```
-   
+
    Se aparecerem arquivos header do ANTLR4, a instalação foi bem-sucedida.
 
 ---
@@ -153,42 +157,40 @@ Crie ou edite o arquivo `.vscode/c_cpp_properties.json` no seu projeto. Esse arq
 
 ```json
 {
-    "configurations": [
-      {
-        "name": "Mac",
-        "includePath": [
-          "${workspaceFolder}/**",
-          "/usr/local/include/antlr4-runtime",
-          "/opt/homebrew/opt/llvm/include"
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/usr/local/include/antlr4-runtime",
+        "/opt/homebrew/opt/llvm/include"
+      ],
+      "defines": [
+        "__STDC_CONSTANT_MACROS",
+        "__STDC_FORMAT_MACROS",
+        "__STDC_LIMIT_MACROS"
+      ],
+      "macFrameworkPath": ["/System/Library/Frameworks", "/Library/Frameworks"],
+      "compilerPath": "/opt/homebrew/opt/llvm/bin/clang++",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "macos-clang-x64",
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "/opt/homebrew/opt/llvm/include",
+          "/usr/local/include/antlr4-runtime"
         ],
-        "defines": [
-          "__STDC_CONSTANT_MACROS",
-          "__STDC_FORMAT_MACROS",
-          "__STDC_LIMIT_MACROS"
-        ],
-        "macFrameworkPath": [
-          "/System/Library/Frameworks",
-          "/Library/Frameworks"
-        ],
-        "compilerPath": "/opt/homebrew/opt/llvm/bin/clang++",
-        "cStandard": "c17",
-        "cppStandard": "c++17",
-        "intelliSenseMode": "macos-clang-x64",
-        "browse": {
-          "path": [
-            "${workspaceFolder}",
-            "/opt/homebrew/opt/llvm/include",
-            "/usr/local/include/antlr4-runtime"
-          ],
-          "limitSymbolsToIncludedHeaders": true
-        }
+        "limitSymbolsToIncludedHeaders": true
       }
-    ],
-    "version": 4
+    }
+  ],
+  "version": 4
 }
 ```
 
-**O que este arquivo faz?**  
+**O que este arquivo faz?**
+
 - Define quais diretórios serão usados pelo IntelliSense para encontrar cabeçalhos (headers) do LLVM e do ANTLR.
 - Especifica qual compilador será usado para análise (clang++ do LLVM).
 - Ajusta o padrão de C/C++ (c17, c++17).
@@ -201,32 +203,33 @@ Crie ou edite `.vscode/launch.json`:
 
 ```json
 {
-    "version": "0.2.0",
-    "configurations": [
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Depuração: clang++",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,
+      "MIMode": "lldb",
+      "setupCommands": [
         {
-            "name": "Depuração: clang++",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "MIMode": "lldb",
-            "setupCommands": [
-                {
-                    "description": "Habilita formatação de valores no depurador",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+          "description": "Habilita formatação de valores no depurador",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
 
-**O que este arquivo faz?**  
+**O que este arquivo faz?**
+
 - Configura o uso do LLDB (depurador nativo do macOS).
 - Determina qual executável será rodado e onde.
 - Habilita a formatação amigável de variáveis no depurador.
@@ -239,39 +242,40 @@ Crie ou edite `.vscode/tasks.json`:
 
 ```json
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "type": "cppbuild",
-            "label": "C/C++: clang++ (LLVM)",
-            "command": "/opt/homebrew/opt/llvm/bin/clang++",
-            "args": [
-                "-fcolor-diagnostics",
-                "-fansi-escape-codes",
-                "-g",                             // Ativa informações de depuração
-                "${file}",                        // Arquivo sendo editado atualmente
-                "-o",                             // Saída do executável
-                "${fileDirname}/${fileBasenameNoExtension}",
-                "-I/opt/homebrew/opt/llvm/include",   // Inclui headers do LLVM
-                "-I/usr/local/include/antlr4-runtime", // Inclui headers do ANTLR runtime
-                "-L/opt/homebrew/opt/llvm/lib",       // Biblioteca do LLVM
-                "-lLLVM-19"                           // Ajuste conforme a versão do LLVM instalada
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": ["$gcc"],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": "Compilação com Clang++ e LLVM"
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "C/C++: clang++ (LLVM)",
+      "command": "/opt/homebrew/opt/llvm/bin/clang++",
+      "args": [
+        "-fcolor-diagnostics",
+        "-fansi-escape-codes",
+        "-g", // Ativa informações de depuração
+        "${file}", // Arquivo sendo editado atualmente
+        "-o", // Saída do executável
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-I/opt/homebrew/opt/llvm/include", // Inclui headers do LLVM
+        "-I/usr/local/include/antlr4-runtime", // Inclui headers do ANTLR runtime
+        "-L/opt/homebrew/opt/llvm/lib", // Biblioteca do LLVM
+        "-lLLVM-19" // Ajuste conforme a versão do LLVM instalada
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Compilação com Clang++ e LLVM"
+    }
+  ]
 }
 ```
 
-**O que este arquivo faz?**  
+**O que este arquivo faz?**
+
 - Usa o clang++ do LLVM para compilar.
 - Inclui caminhos para os headers do LLVM e do ANTLR.
 - Linka com a biblioteca principal do LLVM (verifique o nome da lib com `llvm-config --libs` se necessário).
@@ -286,18 +290,13 @@ Crie ou edite `.vscode/tasks.json`:
   llvm-config --libs
   ```
   Ajuste o `tasks.json` de acordo.
-  
 - Para atualizar as variáveis de ambiente no futuro, lembre-se de editar o `~/.zshrc` e executar `source ~/.zshrc`.
 
 - Se usar outro shell (bash, fish), ajuste o procedimento de acordo com o shell.
 
 Com esses passos, você deve ter um ambiente de desenvolvimento funcional no macOS, pronto para trabalhar com C++, LLVM, Clang++ e ANTLR no VSCode.
 
-
 echo 'export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"' >> ~/.zshrc
-
 
 alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
 alias grun='java -Xmx500M -cp "/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH" org.antlr.v4.gui.TestRig'
-
-

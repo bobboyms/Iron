@@ -2,7 +2,14 @@ grammar Iron;
 
 // --------------------------------- Regras do Lexer (Tokens) ---------------------------------
 
+// Comentário de linha: "//" seguido de qualquer coisa até a quebra de linha ou EOF
+LINE_COMMENT: '//' ~[\r\n]* -> skip;
+
+// Comentário de bloco: "/*" seguido de qualquer conteúdo até "*/"
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+
 // Símbolos
+COMMA: ',';
 COLON: ':';
 EQ: '=';
 SEMICOLON: ';'; // Mantido caso seja necessário no futuro
@@ -69,10 +76,10 @@ statementList: (
 		| functionCall
 		| varAssignment
 		| expr
-		| return
+		| returnStatement
 	)*;
 
-return: RETURN (expr | functionCall);
+returnStatement: RETURN (expr | functionCall)?;
 
 // Declaração de função
 functionDeclaration:
@@ -91,7 +98,7 @@ functionSignature:
 functionReturnType: COLON varTypes;
 
 // Argumentos da função
-functionArgs: functionArg (',' functionArg)*;
+functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
@@ -102,7 +109,7 @@ functionCall:
 	functionName = IDENTIFIER L_PAREN functionCallArgs? R_PAREN;
 
 // Argumentos da chamada de função
-functionCallArgs: functionCallArg (',' functionCallArg)*;
+functionCallArgs: functionCallArg (COMMA functionCallArg)*;
 
 // Argumento da chamada de função
 functionCallArg:
@@ -137,12 +144,12 @@ varAssignment:
 
 // Expressão matemática com precedência adequada
 expr:
-	expr ('*' | '/') expr
-	| expr ('+' | '-') expr
+	left = expr (mult = '*' | div = '/') right = expr
+	| left = expr (plus = '+' | minus = '-') right = expr
 	| number
 	| functionCall
 	| varName = IDENTIFIER
-	| '(' expr ')';
+	| L_PAREN expr R_PAREN;
 
 number: REAL_NUMBER | INT_NUMBER;
 

@@ -2,6 +2,12 @@ grammar Iron;
 
 // --------------------------------- Regras do Lexer (Tokens) ---------------------------------
 
+// Comentário de linha: "//" seguido de qualquer coisa até a quebra de linha ou EOF
+LINE_COMMENT: '//' ~[\r\n]* -> skip;
+
+// Comentário de bloco: "/*" seguido de qualquer conteúdo até "*/"
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+
 // Símbolos
 COMMA: ',';
 COLON: ':';

@@ -39,7 +39,7 @@ namespace iron
 
         void visitFunctionCall(IronParser::FunctionCallContext *ctx, std::shared_ptr<std::stringstream> sb);
         void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<std::stringstream> sb);
-        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<std::stringstream> sb);
+        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma, std::shared_ptr<std::stringstream> sb);
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);

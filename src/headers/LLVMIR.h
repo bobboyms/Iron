@@ -167,7 +167,7 @@ namespace iron
          *
          * @param ctx Pointer to the FunctionCallArgsContext containing the list of call arguments.
          */
-        void visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext *ctx);
+        void visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext *ctx, std::vector<llvm::Value *> args);
 
         /**
          * @brief Visits and processes a single argument in a function call within the HLIR context.
@@ -176,7 +176,7 @@ namespace iron
          *
          * @param ctx Pointer to the FunctionCallArgContext containing the call argument details.
          */
-        void visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx);
+        void visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx, std::vector<llvm::Value *> args);
 
         /**
          * @brief Visits and processes the return type of a function in the HLIR context.

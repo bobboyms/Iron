@@ -484,7 +484,14 @@ namespace iron
         {
 
             int dataType = functionSymbolInfo.value().dataType;
-            *sb << iron::format("call {} {}()\n", TokenMap::getTokenText(dataType), functionName);
+            *sb << iron::format("call {} {}(", TokenMap::getTokenText(dataType), functionName);
+
+            if (ctx->functionCallArgs())
+            {
+                visitFunctionCallArgs(ctx->functionCallArgs(), sb);
+            }
+
+            *sb << iron::format("{}\n", ")");
         }
         else
         {
@@ -506,10 +513,88 @@ namespace iron
 
     void HighLevelIR::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<std::stringstream> sb)
     {
+        int commaCount = ctx->COMMA().size();
+        int argIndex = 0;
+        for (auto *child : ctx->children)
+        {
+            if (auto *arg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
+            {
+                bool hasComma = (argIndex < commaCount);
+                visitFunctionCallArg(arg, hasComma, sb);
+                argIndex++;
+            }
+        }
     }
 
-    void HighLevelIR::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<std::stringstream> sb)
+    void HighLevelIR::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma, std::shared_ptr<std::stringstream> sb)
     {
+
+        auto currentScope = scopeManager->currentScope();
+        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+
+        auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent);
+        std::string functionName = funcCall->functionName->getText();
+
+        iron::printf("functionName: {}", functionName);
+
+        *sb << iron::format("{}:", ctx->varName->getText());
+
+        auto functionOpt = currentScope->lookup(functionName);
+        if (functionOpt.has_value())
+        {
+            iron::printf("Ponteiro para função", "");
+        }
+
+        auto gBfunctionOpt = globalScope->lookup(functionName);
+        if (gBfunctionOpt.has_value())
+        {
+            iron::printf("Função Global", "");
+        }
+
+        if (ctx->anotherVarName)
+        {
+            if (hasComma)
+            {
+                *sb << iron::format("{}, ", ctx->anotherVarName->getText());
+            }
+            else
+            {
+                *sb << iron::format("{} ", ctx->anotherVarName->getText());
+            }
+        }
+
+        if (ctx->dataFormat())
+        {
+            std::string value = ctx->dataFormat()->getText();
+
+            if (hasComma)
+            {
+                *sb << iron::format("{}, ", value);
+            }
+            else
+            {
+                *sb << iron::format("{} ", value);
+            }
+        }
+
+        if (ctx->functionCall())
+        {
+            std::string functionName = ctx->functionCall()->functionName->getText();
+            *sb << iron::format("{}(", functionName);
+            if (ctx->functionCall()->functionCallArgs())
+            {
+                visitFunctionCallArgs(ctx->functionCall()->functionCallArgs(), sb);
+            }
+
+            if (hasComma)
+            {
+                *sb << iron::format("),", functionName);
+            }
+            else
+            {
+                *sb << iron::format(")", functionName);
+            }
+        }
     }
 
     void HighLevelIR::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx)

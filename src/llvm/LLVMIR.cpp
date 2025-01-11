@@ -323,7 +323,7 @@ namespace iron
 
                 if (ctx->functionCallArgs())
                 {
-                    visitFunctionCallArgs(ctx->functionCallArgs());
+                    visitFunctionCallArgs(ctx->functionCallArgs(), args);
                 }
 
                 llvm::FunctionCallee callee = llvm::FunctionCallee(function.llvmFuncType, loadedFuncPtr);
@@ -359,13 +359,34 @@ namespace iron
         }
     }
 
-    void LLVMIR::visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext *ctx)
+    void LLVMIR::visitFunctionCallArgs(HightLavelIRParser::FunctionCallArgsContext *ctx, std::vector<llvm::Value *> args)
     {
-        // Implementação do método
+        for (auto child : ctx->children)
+        {
+            if (auto arg = dynamic_cast<HightLavelIRParser::FunctionCallArgContext *>(child))
+            {
+                visitFunctionCallArg(arg, args);
+            }
+        }
     }
 
-    void LLVMIR::visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx)
+    void LLVMIR::visitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx, std::vector<llvm::Value *> args)
     {
-        // Implementação do método
+        // llvm::Value *arg1 = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 10);
+
+        std::string argName = ctx->varName->getText();
+        if (ctx->dataFormat())
+        {
+            std::string valueStr = ctx->dataFormat()->getText();
+            int type = TokenMap::getTokenType(valueStr);
+
+            if (type == TokenMap::REAL_NUMBER)
+            {
+                int dataType = TokenMap::determineFloatType(valueStr);
+
+                llvm::Type *type = mapType(dataType);
+                llvm::Value *arg = llvm::ConstantInt::get(type, 10);
+            }
+        }
     }
 }
