@@ -14,7 +14,7 @@ namespace hlir
 
     enum Token
     {
-        GLOBAL = 1,
+        GLOBAL,
         COLON,
         EQ,
         SEMICOLON,

@@ -19,6 +19,9 @@ namespace hlir
 
     std::string FunctionArgs::getText()
     {
+        sb.str("");
+        sb.clear();
+
         int commaCount = args.size();
         int argIndex = 1;
         for (auto arg : args)

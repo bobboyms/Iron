@@ -14,8 +14,16 @@ namespace hlir
         return functionName;
     }
 
+    std::shared_ptr<Type> Function::getFunctionReturnType()
+    {
+        return functionReturnType;
+    }
+
     std::string Function::getText()
     {
+        sb.str("");
+        sb.clear();
+
         sb << util::format("fn {}({}):{}", functionName, functionArgs->getText(), functionReturnType->getText());
         return sb.str();
     }
@@ -23,7 +31,7 @@ namespace hlir
     // Function Call
 
     FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs)
-        : callArgs(std::move(callArgs))
+        : callArgs(callArgs)
     {
     }
 
@@ -39,6 +47,9 @@ namespace hlir
 
     std::string FunctionCallArgs::getText()
     {
+
+        sb.str("");
+        sb.clear();
 
         int commaCount = callArgs.size();
         int argIndex = 1;
@@ -60,6 +71,24 @@ namespace hlir
     void FunctionCallArgs::addCallArg(std::shared_ptr<FunctionCallArg> callArg)
     {
         callArgs.push_back(callArg);
+    }
+
+    // Function Call
+    FunctionCall::FunctionCall(std::shared_ptr<Function> function, std::shared_ptr<FunctionCallArgs> callArgs)
+        : function(function), callArgs(callArgs)
+    {
+    }
+
+    FunctionCall::~FunctionCall()
+    {
+    }
+
+    std::string FunctionCall::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("call {} {}({})", function->getFunctionReturnType()->getText(), function->getFunctionName(), callArgs->getText());
+        return sb.str();
     }
 
 }

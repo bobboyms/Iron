@@ -7,8 +7,12 @@ namespace hlir
     // Value (permanece igual, se ainda for útil em outro contexto)
     // ----------------------------------------------------------------
     Value::Value(Data value, std::shared_ptr<Type> valueType)
-        : value(std::move(value)), valueType(std::move(valueType))
+        : value(value), valueType(valueType)
     {
+        if (valueType->getType() == VOID)
+        {
+            throw HLIRException("The value can't be -> void");
+        }
     }
 
     Value::~Value() {}
@@ -18,11 +22,8 @@ namespace hlir
         return value;
     }
 
-    // Exemplo simples: getText() retorna a string correspondente
-    // do valor guardado. Você pode usar std::visit:
     std::string Value::getText()
     {
-        // reseta o stringstream
         sb.str("");
         sb.clear();
 
@@ -62,8 +63,12 @@ namespace hlir
     }
 
     Variable::Variable(const std::string &varName, std::shared_ptr<Type> varType)
-        : varName(varName), varType(std::move(varType))
+        : varName(varName), varType(varType)
     {
+        if (varType->getType() == VOID)
+        {
+            throw HLIRException("The variable can't be -> void");
+        }
     }
 
     Variable::~Variable() {}
@@ -80,8 +85,8 @@ namespace hlir
 
     std::string Variable::getText()
     {
-        // Exemplo de formatação: "let idade: int"
-        // Ajuste conforme sua necessidade
+        sb.str("");
+        sb.clear();
         sb << util::format("let {}:{}", varName, varType->getText());
         return sb.str();
     }

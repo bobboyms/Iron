@@ -16,6 +16,9 @@ namespace hlir
 
     std::string Assign::getText()
     {
+        sb.str("");
+        sb.clear();
+
         sb << util::format("let {}:{} = {}\n", variable->getVarName(), variable->getVarType()->getText(), value->getText());
 
         return sb.str();

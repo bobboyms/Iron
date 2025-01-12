@@ -4,20 +4,27 @@
 
 int main()
 {
+    // Return type double
+    auto typeDouble = std::make_shared<hlir::Type>(hlir::TYPE_DOUBLE);
+    // Args (n:int)
+    auto argN = std::make_shared<hlir::Arg>("n", std::make_shared<hlir::Type>(hlir::TYPE_INT));
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(std::vector<std::shared_ptr<hlir::Arg>>{argN});
+    auto func = std::make_shared<hlir::Function>("sqrtCalc", funcArgs, typeDouble);
 
-    auto varTypeBool = std::make_shared<hlir::Type>(hlir::TYPE_BOOLEAN);
-    auto variable = std::make_shared<hlir::Variable>("flag", varTypeBool);
+    // CallArg "n:25"
+    auto val25 = std::make_shared<hlir::Value>("25", std::make_shared<hlir::Type>(hlir::TYPE_INT));
+    auto callArgN = std::make_shared<hlir::FunctionCallArg>("n", std::make_shared<hlir::Type>(hlir::TYPE_INT), val25);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgN});
 
-    auto val = std::make_shared<hlir::Value>("false", varTypeBool);
+    // "call double sqrtCalc(n:25)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
 
-    hlir::Assign assign(variable, val);
+    // Check repeated calls
+    std::string first = functionCall->getText();
+    std::string second = functionCall->getText();
 
-    // Checa se várias chamadas a getText retornam o mesmo valor
-    std::string first = assign.getText();
-    std::string second = assign.getText();
-
-    // Esperado: "let flag:boolean = true"
-    std::cout << first << "\n";
+    std::cout << first << std::endl;
+    std::cout << second << std::endl;
 
     return 0;
 }

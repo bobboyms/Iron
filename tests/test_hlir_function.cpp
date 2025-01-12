@@ -308,3 +308,138 @@ TEST_F(HlIrTest, FunctionCallArgs_RepeatedCalls)
     // Esperamos que retorne o mesmo valor nas duas vezes
     runAnalysis(first, "letra:A");
 }
+
+// -------------------------------------------------------------------
+// TESTS FOR THE CLASS "FunctionCall"
+// -------------------------------------------------------------------
+
+TEST_F(HlIrTest, FunctionCall_SingleArg_IntReturn)
+{
+    // 1) Create an Arg "a:int"
+    auto typeInt = std::make_shared<hlir::Type>(hlir::TYPE_INT);
+    auto argA = std::make_shared<hlir::Arg>("a", typeInt);
+
+    // Put that arg into FunctionArgs
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argA});
+
+    // Return type is int
+    auto returnInt = std::make_shared<hlir::Type>(hlir::TYPE_INT);
+
+    // Create a Function "fn foo(a:int):int"
+    auto func = std::make_shared<hlir::Function>("foo", funcArgs, returnInt);
+
+    // 2) Create a FunctionCallArg "a" => "12"
+    auto val12 = std::make_shared<hlir::Value>("12", typeInt);
+    auto callArg = std::make_shared<hlir::FunctionCallArg>("a", typeInt, val12);
+
+    // Put that callArg into FunctionCallArgs
+    std::vector<std::shared_ptr<hlir::FunctionCallArg>> callArgVec = {callArg};
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(callArgVec);
+
+    // 3) Create the FunctionCall: "call int foo(a:12)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Expect: "call int foo(a:12)"
+    // Or whatever the actual format from getText() is: "call {returnType} {functionName}({argName:argValue})"
+    runAnalysis(functionCall->getText(), "call int foo(a:12)");
+}
+
+TEST_F(HlIrTest, FunctionCall_MultipleArgs_FloatReturn)
+{
+    // Function args: (x:int, y:float)
+    auto typeInt = std::make_shared<hlir::Type>(hlir::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(hlir::TYPE_FLOAT);
+
+    auto argX = std::make_shared<hlir::Arg>("x", typeInt);
+    auto argY = std::make_shared<hlir::Arg>("y", typeFloat);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argX, argY});
+
+    // Return type is float
+    auto returnFloat = std::make_shared<hlir::Type>(hlir::TYPE_FLOAT);
+
+    // Create the Function "fn sum(x:int,y:float):float"
+    auto func = std::make_shared<hlir::Function>("sum", funcArgs, returnFloat);
+
+    // Now the call arguments: "x:10", "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>("10", typeInt);
+    auto val3_14 = std::make_shared<hlir::Value>("3.14", typeFloat);
+
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+    runAnalysis(functionCall->getText(), "call float sum(x:10,y:3.14)");
+}
+
+TEST_F(HlIrTest, FunctionCall_NoArgs_VoidReturn)
+{
+    // If you have a TYPE_VOID or something similar
+    auto typeVoid = std::make_shared<hlir::Type>(hlir::VOID);
+
+    // Function with no arguments
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>();
+    auto func = std::make_shared<hlir::Function>("doSomething", funcArgs, typeVoid);
+
+    // The callArgs is also empty
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>();
+
+    // "call void doSomething()"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+    runAnalysis(functionCall->getText(), "call void doSomething()");
+}
+
+TEST_F(HlIrTest, FunctionCall_BooleanReturn)
+{
+    // Return type is boolean
+    auto typeBool = std::make_shared<hlir::Type>(hlir::TYPE_BOOLEAN);
+    // Single param "flag:boolean"
+    auto argFlag = std::make_shared<hlir::Arg>("flag", typeBool);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argFlag});
+
+    auto func = std::make_shared<hlir::Function>("checkFlag", funcArgs, typeBool);
+
+    // CallArg "flag:true"
+    auto valTrue = std::make_shared<hlir::Value>("true", typeBool);
+    auto callArgFlag = std::make_shared<hlir::FunctionCallArg>("flag", typeBool, valTrue);
+
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgFlag});
+
+    // "call boolean checkFlag(flag:true)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+    runAnalysis(functionCall->getText(), "call boolean checkFlag(flag:true)");
+}
+
+TEST_F(HlIrTest, FunctionCall_RepeatedCallsToGetText)
+{
+    // Return type double
+    auto typeDouble = std::make_shared<hlir::Type>(hlir::TYPE_DOUBLE);
+    // Args (n:int)
+    auto argN = std::make_shared<hlir::Arg>("n", std::make_shared<hlir::Type>(hlir::TYPE_INT));
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(std::vector<std::shared_ptr<hlir::Arg>>{argN});
+    auto func = std::make_shared<hlir::Function>("sqrtCalc", funcArgs, typeDouble);
+
+    // CallArg "n:25"
+    auto val25 = std::make_shared<hlir::Value>("25", std::make_shared<hlir::Type>(hlir::TYPE_INT));
+    auto callArgN = std::make_shared<hlir::FunctionCallArg>("n", std::make_shared<hlir::Type>(hlir::TYPE_INT), val25);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgN});
+
+    // "call double sqrtCalc(n:25)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Check repeated calls
+    std::string first = functionCall->getText();
+    std::string second = functionCall->getText();
+
+    // If your internal stringstream accumulates, second might differ
+    // We expect them both to be the same
+    runAnalysis(first, "call double sqrtCalc(n:25)");
+    runAnalysis(second, "call double sqrtCalc(n:25)");
+}

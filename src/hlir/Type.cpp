@@ -16,6 +16,7 @@ namespace hlir
         case TYPE_DOUBLE:
         case FUNCTION:
         case FUNCTION_PTR:
+        case VOID:
             this->type = type; // se for um dos permitidos, atribui
             break;
 
@@ -35,6 +36,9 @@ namespace hlir
 
     std::string Type::getText()
     {
+        sb.str("");
+        sb.clear();
+
         sb << getTokenText(type);
         return sb.str();
     }
