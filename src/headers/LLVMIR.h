@@ -16,7 +16,9 @@
 #include "../parsers/HightLavelIRParser.h"
 #include "../parsers/HightLavelIRLexer.h"
 #include "ScopeManager.h"
-#include "Visitors.h"
+#include "Exceptions.h"
+#include "Utils.h"
+#include "TokenMap.h"
 #include <memory>
 #include <stack>
 

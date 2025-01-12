@@ -1,11 +1,13 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef HLIR_UTILS_H
+#define HLIR_UTILS_H
 
+#include "TokenMap.h"
+#include "SymbolTable.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 
-namespace iron
+namespace util
 {
 
     // Função auxiliar recursiva que substitui o primeiro placeholder "{}" pelo argumento atual
@@ -39,6 +41,10 @@ namespace iron
         std::cout << result << "\n";
     }
 
+} // namespace iron
+
+namespace iron
+{
     inline std::optional<std::pair<std::string, int>> getArgumentByName(const SymbolInfo &info, const std::string &argName)
     {
         for (const auto &arg : info.args)
@@ -55,20 +61,19 @@ namespace iron
     {
         if (!valor.empty() && valor.back() == 'F')
         {
-            return TokenMap::TYPE_FLOAT;
+            return tokenMap::TYPE_FLOAT;
         }
         else if (!valor.empty() && valor.back() == 'D')
         {
-            return TokenMap::TYPE_DOUBLE;
+            return tokenMap::TYPE_DOUBLE;
         }
-        return TokenMap::NO_REAL_NUMBER;
+        return tokenMap::NO_REAL_NUMBER;
     }
 
     inline std::string createFunctionName(std::string currentScopeName, std::string functionName)
     {
-        return format("gfn_{}_{}", currentScopeName, functionName);
+        return util::format("gfn_{}_{}", currentScopeName, functionName);
     }
-
 } // namespace iron
 
 #endif // UTILS_H

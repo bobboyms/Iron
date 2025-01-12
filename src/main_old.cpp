@@ -4,11 +4,11 @@
 #include "parsers/IronParser.h"
 #include "headers/SemanticalAnalysis.h"
 #include "headers/ScopeManager.h"
-#include "headers/IronExceptions.h"
+#include "headers/Exceptions.h"
 #include "headers/HighLevelIR.h"
 #include "headers/LLVMIR.h"
 #include "headers/Colors.h"
-#include "hlir/Hlir.h"
+#include "headers/Hlir.h"
 
 int runAnalysis(const std::string &input)
 {
@@ -40,7 +40,7 @@ int runAnalysis(const std::string &input)
         // std::cout << "Análise semântica concluída com sucesso." << std::endl;
         return 0; // Sucesso
     }
-    catch (const SemanticException &e)
+    catch (const iron::SemanticException &e)
     {
         std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
         return 1; // Erro semântico específico

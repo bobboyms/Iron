@@ -1,20 +1,20 @@
-#ifndef TOKEN_MAP_H
-#define TOKEN_MAP_H
+#ifndef TOKEN_MAP_HLIR_H
+#define TOKEN_MAP_HLIR_H
 
-#include "Colors.h"
-#include "IronExceptions.h"
+#include "../headers/Colors.h"
+#include "Exceptions.h"
 #include <string>
 #include <unordered_map>
 #include <regex>
 
-namespace TokenMap
+namespace tokenMap
 {
 
     const auto MAIN_TYPE = "MAIN_TYPE_EXPR";
 
     enum Token
     {
-        GLOBAL = 1,
+        GLOBAL,
         COLON,
         EQ,
         SEMICOLON,
@@ -48,6 +48,7 @@ namespace TokenMap
         TYPE_DOUBLE,
 
         // tipos de controle
+        PTR,
         FUNCTION_PTR,
         VARIABLE,
         VOID,
@@ -99,6 +100,7 @@ namespace TokenMap
         {PRIVATE, "private"},
         {ARGUMENT, "arg"},
         {FUNCTION_PTR, "fptr"},
+        {PTR, "ptr"},
 
     };
 
@@ -109,7 +111,7 @@ namespace TokenMap
         {
             return it->second;
         }
-        throw LexusNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
+        throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 
     inline int getTokenType(const std::string &tokenString)
@@ -121,17 +123,17 @@ namespace TokenMap
                 return pair.first;
             }
         }
-        throw LexusNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
+        throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 
     inline bool isNumber(int type)
     {
         switch (type)
         {
-        case TokenMap::TYPE_DOUBLE:
-        case TokenMap::TYPE_FLOAT:
-        case TokenMap::TYPE_INT:
-        case TokenMap::NUMBER:
+        case tokenMap::TYPE_DOUBLE:
+        case tokenMap::TYPE_FLOAT:
+        case tokenMap::TYPE_INT:
+        case tokenMap::NUMBER:
             return true;
         default:
             return false;
@@ -142,8 +144,8 @@ namespace TokenMap
     {
         switch (type)
         {
-        case TokenMap::TYPE_DOUBLE:
-        case TokenMap::TYPE_FLOAT:
+        case tokenMap::TYPE_DOUBLE:
+        case tokenMap::TYPE_FLOAT:
             return true;
         default:
             return false;
@@ -160,22 +162,22 @@ namespace TokenMap
 
         if (std::regex_match(input, realNumberRegex))
         {
-            return TokenMap::REAL_NUMBER;
+            return tokenMap::REAL_NUMBER;
         }
         if (std::regex_match(input, intNumberRegex))
         {
-            return TokenMap::TYPE_INT;
+            return tokenMap::TYPE_INT;
         }
         if (std::regex_match(input, booleanValueRegex))
         {
-            return TokenMap::TYPE_BOOLEAN;
+            return tokenMap::TYPE_BOOLEAN;
         }
         if (std::regex_match(input, stringLiteralRegex))
         {
-            return TokenMap::TYPE_STRING;
+            return tokenMap::TYPE_STRING;
         }
 
-        throw SemanticException("Isn't impossivel determine the type of " + input);
+        throw TokenException("Isn't impossivel determine the type of " + input);
     }
 
     inline bool isValidFloatChar(char c)
@@ -193,11 +195,11 @@ namespace TokenMap
 
         // Verifica se o último caractere é um sufixo
         char lastChar = literal.back();
-        int type = TokenMap::TYPE_FLOAT; // Tipo padrão
+        int type = tokenMap::TYPE_FLOAT; // Tipo padrão
 
         if (lastChar == 'd' || lastChar == 'D')
         {
-            type = TokenMap::TYPE_DOUBLE;
+            type = tokenMap::TYPE_DOUBLE;
         }
 
         // Se o último caractere é um sufixo, remova-o para validar o restante do literal
@@ -232,11 +234,11 @@ namespace TokenMap
         // Defina a precedência de tipos conforme sua implementação em TokenMap
         switch (dataType)
         {
-        case TokenMap::TYPE_INT:
+        case tokenMap::TYPE_INT:
             return 1;
-        case TokenMap::TYPE_FLOAT:
+        case tokenMap::TYPE_FLOAT:
             return 2;
-        case TokenMap::TYPE_DOUBLE:
+        case tokenMap::TYPE_DOUBLE:
             return 3;
         default:
             throw std::runtime_error("TokenMap Error: Invalid type");

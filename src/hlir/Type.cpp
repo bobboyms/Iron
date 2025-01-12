@@ -1,4 +1,4 @@
-#include "Hlir.h"
+#include "../headers/Hlir.h"
 
 namespace hlir
 {
@@ -8,20 +8,20 @@ namespace hlir
         switch (type)
         {
 
-        case TYPE_INT:
-        case TYPE_FLOAT:
-        case TYPE_CHAR:
-        case TYPE_STRING:
-        case TYPE_BOOLEAN:
-        case TYPE_DOUBLE:
-        case FUNCTION:
-        case FUNCTION_PTR:
-        case VOID:
+        case tokenMap::TYPE_INT:
+        case tokenMap::TYPE_FLOAT:
+        case tokenMap::TYPE_CHAR:
+        case tokenMap::TYPE_STRING:
+        case tokenMap::TYPE_BOOLEAN:
+        case tokenMap::TYPE_DOUBLE:
+        case tokenMap::FUNCTION:
+        case tokenMap::FUNCTION_PTR:
+        case tokenMap::VOID:
             this->type = type; // se for um dos permitidos, atribui
             break;
 
         default:
-            throw HLIRException(util::format("DataType error: type not allowed -> {}", getTokenText(type)));
+            throw HLIRException(util::format("DataType error: type not allowed -> {}", tokenMap::getTokenText(type)));
         }
     }
 
@@ -39,7 +39,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << getTokenText(type);
+        sb << tokenMap::getTokenText(type);
         return sb.str();
     }
 

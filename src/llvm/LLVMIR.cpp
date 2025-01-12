@@ -1,5 +1,5 @@
 #include "../headers/LLVMIR.h"
-#include "../headers/IronExceptions.h"
+#include "../headers/Exceptions.h"
 #include "../headers/TokenMap.h"
 #include "../headers/Utils.h"
 
@@ -28,7 +28,7 @@ namespace iron
         HightLavelIRLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_shared<HightLavelIRParser>(&tokens);
-        scopeManager->enterScope(TokenMap::getTokenText(TokenMap::GLOBAL));
+        scopeManager->enterScope(tokenMap::getTokenText(tokenMap::GLOBAL));
 
         HightLavelIRParser::ProgramContext *programContext = parser->program();
 
@@ -40,14 +40,14 @@ namespace iron
             }
         }
 
-        scopeManager->exitScope(TokenMap::getTokenText(TokenMap::GLOBAL));
+        scopeManager->exitScope(tokenMap::getTokenText(tokenMap::GLOBAL));
         // Verifica a validade do módulo e captura mensagens de erro
         std::string errorStr;
         llvm::raw_string_ostream errorStream(errorStr);
 
         if (llvm::verifyModule(*module, &errorStream))
         {
-            throw LLVMException(iron::format("{} {}", color::colorText(iron::format("Invalid LLVM module:", ""), color::BOLD_RED),
+            throw LLVMException(util::format("{} {}", color::colorText(util::format("Invalid LLVM module:", ""), color::BOLD_RED),
                                              errorStream.str()));
         }
 
@@ -77,17 +77,17 @@ namespace iron
     void LLVMIR::visitExpr(HightLavelIRParser::ExprContext *ctx)
     {
         const std::string varName = ctx->varName->getText();
-        const auto varType = TokenMap::getTokenType(ctx->varTypes()->getText());
+        const auto varType = tokenMap::getTokenType(ctx->varTypes()->getText());
         auto currentScope = scopeManager->currentScope();
 
-        iron::printf("varName {}, varType {}", varName, ctx->varTypes()->getText());
+        util::printf("varName {}, varType {}", varName, ctx->varTypes()->getText());
 
-        if (varType == TokenMap::FUNCTION)
+        if (varType == tokenMap::FUNCTION)
         {
 
             if (!ctx->functionPtr())
             {
-                throw LLVMException(format("The variable: {} is not function ptr", varName));
+                throw LLVMException(util::format("The variable: {} is not function ptr", varName));
             }
 
             std::string functionName = ctx->functionPtr()->functionName->getText();
@@ -103,7 +103,7 @@ namespace iron
 
             // Armazena o ponteiro da função
             builder.CreateStore(gfnPtr, functionPtrVar);
-            currentScope->addSymbol(varName, {TokenMap::FUNCTION, TokenMap::FUNCTION_PTR, nullptr, {}, "", functionPtrVar, funcPtrType, functionType});
+            currentScope->addSymbol(varName, {tokenMap::FUNCTION, tokenMap::FUNCTION_PTR, nullptr, {}, "", functionPtrVar, funcPtrType, functionType});
         }
         else
         {
@@ -113,7 +113,7 @@ namespace iron
 
             llvm::Type *llvmType = mapType(varType);
             llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, varName);
-            currentScope->addSymbol(varName, {TokenMap::VARIABLE, varType, nullptr, {}, "", allocaVariable});
+            currentScope->addSymbol(varName, {tokenMap::VARIABLE, varType, nullptr, {}, "", allocaVariable});
 
             if (ctx->number())
             {
@@ -164,11 +164,11 @@ namespace iron
     {
         if (ctx->VOID())
         {
-            functionReturnType = mapType(TokenMap::VOID);
+            functionReturnType = mapType(tokenMap::VOID);
         }
         else
         {
-            functionReturnType = mapType(TokenMap::getTokenType(ctx->varTypes()->getText()));
+            functionReturnType = mapType(tokenMap::getTokenType(ctx->varTypes()->getText()));
         }
     }
 
@@ -298,13 +298,13 @@ namespace iron
         std::string argTypeStr = ctx->varTypes()->getText();
         std::string argName = ctx->varName->getText();
         // Mapear o tipo para LLVM
-        argTypes.push_back(mapType(TokenMap::getTokenType(argTypeStr)));
+        argTypes.push_back(mapType(tokenMap::getTokenType(argTypeStr)));
         argNames.push_back(argName);
     }
 
     void LLVMIR::visitFunctionCall(HightLavelIRParser::FunctionCallContext *ctx)
     {
-        auto globalScope = scopeManager->getScopeByName(TokenMap::getTokenText(TokenMap::GLOBAL));
+        auto globalScope = scopeManager->getScopeByName(tokenMap::getTokenText(tokenMap::GLOBAL));
         auto currentScope = scopeManager->currentScope();
         const std::string functionName = ctx->functionName->getText();
 
@@ -313,10 +313,10 @@ namespace iron
         {
             auto function = functionOpt.value();
 
-            if (function.type == TokenMap::FUNCTION)
+            if (function.type == tokenMap::FUNCTION)
             {
 
-                llvm::Value *loadedFuncPtr = builder.CreateLoad(function.llvmType, function.alloca, iron::format("loaded_{}", functionName));
+                llvm::Value *loadedFuncPtr = builder.CreateLoad(function.llvmType, function.alloca, util::format("loaded_{}", functionName));
 
                 // llvm::Value *arg1 = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 10);
                 std::vector<llvm::Value *> args = {};
@@ -335,9 +335,9 @@ namespace iron
                 }
                 else
                 {
-                    // llvm::Value *callResult = builder.CreateCall(callee, args, iron::format("call_inline_{}", functionName));
+                    // llvm::Value *callResult = builder.CreateCall(callee, args, util::format("call_inline_{}", functionName));
 
-                    // builder.CreateCall(callee, args, iron::format("call_inline_{}", functionName));
+                    // builder.CreateCall(callee, args, util::format("call_inline_{}", functionName));
 
                     // Opcional: Armazena o resultado em uma variável (Alloca)
                     // llvm::AllocaInst *resultVar = builder.CreateAlloca(function.llvmFuncType->getReturnType(), nullptr, "result");
@@ -352,7 +352,7 @@ namespace iron
             llvm::Function *function = module->getFunction(functionName);
             if (!function)
             {
-                throw LLVMException(iron::format("Function {} not found", functionName));
+                throw LLVMException(util::format("Function {} not found", functionName));
             }
 
             builder.CreateCall(function, llvm::ArrayRef<llvm::Value *>());
@@ -378,11 +378,11 @@ namespace iron
         if (ctx->dataFormat())
         {
             std::string valueStr = ctx->dataFormat()->getText();
-            int type = TokenMap::getTokenType(valueStr);
+            int type = tokenMap::getTokenType(valueStr);
 
-            if (type == TokenMap::REAL_NUMBER)
+            if (type == tokenMap::REAL_NUMBER)
             {
-                int dataType = TokenMap::determineFloatType(valueStr);
+                int dataType = tokenMap::determineFloatType(valueStr);
 
                 llvm::Type *type = mapType(dataType);
                 llvm::Value *arg = llvm::ConstantInt::get(type, 10);

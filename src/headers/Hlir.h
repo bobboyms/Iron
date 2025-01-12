@@ -457,16 +457,321 @@ namespace hlir
         ~FunctionCallArgs();
     };
 
+    /**
+     * @class FunctionCall
+     * @brief Represents a function call in the HLIR.
+     *
+     * The FunctionCall class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the function call.
+     */
     class FunctionCall : public Basic
     {
     private:
-        std::shared_ptr<Function> function;
-        std::shared_ptr<FunctionCallArgs> callArgs;
+        std::shared_ptr<Function> function;         ///< Shared pointer to the function being called.
+        std::shared_ptr<FunctionCallArgs> callArgs; ///< Shared pointer to the arguments of the function call.
 
     public:
-        std::string getText() override;
+        /**
+         * @brief Constructs a FunctionCall with the specified function and arguments.
+         * @param function Shared pointer to the function to be called.
+         * @param callArgs Shared pointer to the arguments of the function call.
+         *
+         * @throws HLIRException If `function` or `callArgs` is nullptr.
+         */
         FunctionCall(std::shared_ptr<Function> function, std::shared_ptr<FunctionCallArgs> callArgs);
+
+        /**
+         * @brief Destructor for FunctionCall.
+         */
         ~FunctionCall();
+
+        /**
+         * @brief Generates a textual representation of the function call.
+         * @return A string representing the function call, e.g., "call foo(arg1, arg2)".
+         *
+         * @throws HLIRException If `function` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @class Plus
+     * @brief Represents an addition operation between two variables in the HLIR.
+     *
+     * The Plus class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the addition operation.
+     */
+    class Plus : public Basic
+    {
+    private:
+        std::shared_ptr<Variable> varLeft;  ///< Shared pointer to the left-hand side variable.
+        std::shared_ptr<Variable> varRight; ///< Shared pointer to the right-hand side variable.
+
+    public:
+        /**
+         * @brief Constructs a Plus operation with two variables.
+         * @param varLeft Shared pointer to the left-hand side variable.
+         * @param varRight Shared pointer to the right-hand side variable.
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        Plus(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight);
+
+        /**
+         * @brief Destructor for Plus.
+         */
+        ~Plus();
+
+        /**
+         * @brief Generates a textual representation of the addition operation.
+         * @return A string representing the addition, e.g., "PLUS a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @class Minus
+     * @brief Represents a subtraction operation between two variables in the HLIR.
+     *
+     * The Minus class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the subtraction operation.
+     */
+    class Minus : public Basic
+    {
+    private:
+        std::shared_ptr<Variable> varLeft;  ///< Shared pointer to the left-hand side variable.
+        std::shared_ptr<Variable> varRight; ///< Shared pointer to the right-hand side variable.
+
+    public:
+        /**
+         * @brief Constructs a Minus operation with two variables.
+         * @param varLeft Shared pointer to the left-hand side variable.
+         * @param varRight Shared pointer to the right-hand side variable.
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        Minus(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight);
+
+        /**
+         * @brief Destructor for Minus.
+         */
+        ~Minus();
+
+        /**
+         * @brief Generates a textual representation of the subtraction operation.
+         * @return A string representing the subtraction, e.g., "MINUS a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @class Mult
+     * @brief Represents a multiplication operation between two variables in the HLIR.
+     *
+     * The Mult class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the multiplication operation.
+     */
+    class Mult : public Basic
+    {
+    private:
+        std::shared_ptr<Variable> varLeft;  ///< Shared pointer to the left-hand side variable.
+        std::shared_ptr<Variable> varRight; ///< Shared pointer to the right-hand side variable.
+
+    public:
+        /**
+         * @brief Constructs a Mult operation with two variables.
+         * @param varLeft Shared pointer to the left-hand side variable.
+         * @param varRight Shared pointer to the right-hand side variable.
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        Mult(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight);
+
+        /**
+         * @brief Destructor for Mult.
+         */
+        ~Mult();
+
+        /**
+         * @brief Generates a textual representation of the multiplication operation.
+         * @return A string representing the multiplication, e.g., "MULT a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @class Div
+     * @brief Represents a division operation between two variables in the HLIR.
+     *
+     * The Div class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the division operation.
+     */
+    class Div : public Basic
+    {
+    private:
+        std::shared_ptr<Variable> varLeft;  ///< Shared pointer to the left-hand side variable.
+        std::shared_ptr<Variable> varRight; ///< Shared pointer to the right-hand side variable.
+
+    public:
+        /**
+         * @brief Constructs a Div operation with two variables.
+         * @param varLeft Shared pointer to the left-hand side variable.
+         * @param varRight Shared pointer to the right-hand side variable.
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        Div(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight);
+
+        /**
+         * @brief Destructor for Div.
+         */
+        ~Div();
+
+        /**
+         * @brief Generates a textual representation of the division operation.
+         * @return A string representing the division, e.g., "DIV a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @class Cast
+     * @brief Represents a type casting operation for a variable in the HLIR.
+     *
+     * The Cast class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the casting operation.
+     */
+    class Cast : public Basic
+    {
+    private:
+        std::shared_ptr<Variable> variable; ///< Shared pointer to the variable to be casted.
+        std::shared_ptr<Type> type;         ///< Shared pointer to the target type of the casting.
+
+    public:
+        /**
+         * @brief Constructs a Cast operation for a specific variable and target type.
+         * @param variable Shared pointer to the variable to be casted.
+         * @param type Shared pointer to the target type for casting.
+         *
+         * @throws HLIRException If `variable` or `type` is nullptr.
+         */
+        Cast(std::shared_ptr<Variable> variable, std::shared_ptr<Type> type);
+
+        /**
+         * @brief Destructor for Cast.
+         */
+        ~Cast();
+
+        /**
+         * @brief Generates a textual representation of the casting operation.
+         * @return A string representing the casting, e.g., "cast a:int to float".
+         *
+         * @throws HLIRException If `variable` or `type` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @class FunctionPtr
+     * @brief Represents a pointer to a function within the HLIR.
+     *
+     * The FunctionPtr class inherits from Basic and implements the getText() method to provide
+     * a textual representation of the function pointer.
+     */
+    class FunctionPtr : public Basic
+    {
+    private:
+        std::shared_ptr<Function> function; ///< Shared pointer to the referenced function.
+
+    public:
+        /**
+         * @brief Constructs a FunctionPtr pointing to a specific function.
+         * @param function Shared pointer to the function.
+         *
+         * @throws HLIRException If `function` is nullptr.
+         */
+        FunctionPtr(std::shared_ptr<Function> function);
+
+        /**
+         * @brief Destructor for FunctionPtr.
+         */
+        ~FunctionPtr();
+
+        /**
+         * @brief Generates a textual representation of the function pointer.
+         * @return A string representing the function pointer, e.g., "fptr foo".
+         *
+         * @throws HLIRException If `function` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    /**
+     * @typedef ValidExpr
+     * @brief Alias for a variant type that can hold any valid expression.
+     *
+     * The ValidExpr type can hold any of the following shared pointers to classes derived from Basic:
+     * - Div
+     * - Mult
+     * - Minus
+     * - Plus
+     * - FunctionCall
+     * - Variable
+     * - Cast
+     * - FunctionPtr
+     */
+    using ValidExpr = std::variant<
+        std::shared_ptr<Div>,
+        std::shared_ptr<Mult>,
+        std::shared_ptr<Minus>,
+        std::shared_ptr<Plus>,
+        std::shared_ptr<FunctionCall>,
+        std::shared_ptr<Variable>,
+        std::shared_ptr<Cast>,
+        std::shared_ptr<FunctionPtr>>;
+
+    /**
+     * @class Expr
+     * @brief Represents a generic expression in the HLIR.
+     *
+     * The Expr class inherits from Basic and encapsulates a valid expression (ValidExpr) associated with a variable.
+     */
+    class Expr : public Basic
+    {
+    private:
+        ValidExpr validExpr;                ///< The encapsulated valid expression.
+        std::shared_ptr<Variable> variable; ///< Shared pointer to the variable associated with the expression.
+
+    public:
+        /**
+         * @brief Constructs a generic expression with a variable and a valid expression.
+         * @param variable Shared pointer to the associated variable.
+         * @param validExpr The valid expression encapsulated.
+         *
+         * @throws HLIRException If `variable` is nullptr or if `validExpr` is invalid.
+         */
+        Expr(std::shared_ptr<Variable> variable, ValidExpr validExpr);
+
+        /**
+         * @brief Destructor for Expr.
+         */
+        ~Expr();
+
+        /**
+         * @brief Generates a textual representation of the generic expression.
+         * @return A string representing the expression, e.g., "let a:int = PLUS a, b".
+         *
+         * @throws HLIRException If `variable` is nullptr or if `validExpr` is invalid.
+         */
+        std::string getText() override;
     };
 
 }

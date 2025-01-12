@@ -8,7 +8,7 @@
 #include <optional>
 #include <stack>
 #include <llvm/IR/Instructions.h>
-#include "IronExceptions.h"
+#include "Exceptions.h"
 #include "Colors.h"
 
 namespace iron

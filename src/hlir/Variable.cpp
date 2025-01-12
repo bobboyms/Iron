@@ -1,4 +1,4 @@
-#include "Hlir.h"
+#include "../headers/Hlir.h"
 
 namespace hlir
 {
@@ -9,7 +9,7 @@ namespace hlir
     Value::Value(Data value, std::shared_ptr<Type> valueType)
         : value(value), valueType(valueType)
     {
-        if (valueType->getType() == VOID)
+        if (valueType->getType() == tokenMap::VOID)
         {
             throw HLIRException("The value can't be -> void");
         }
@@ -65,9 +65,14 @@ namespace hlir
     Variable::Variable(const std::string &varName, std::shared_ptr<Type> varType)
         : varName(varName), varType(varType)
     {
-        if (varType->getType() == VOID)
+        if (varType->getType() == tokenMap::VOID)
         {
             throw HLIRException("The variable can't be -> void");
+        }
+
+        if (varName.empty())
+        {
+            throw HLIRException("The variable name can't be empty");
         }
     }
 
