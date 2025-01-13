@@ -128,7 +128,6 @@ namespace iron
             }
             else if (ctx->functionCall())
             {
-                printf("functionCall", "");
             }
             else if (ctx->cast())
             {
