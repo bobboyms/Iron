@@ -34,8 +34,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-
-        if (statement->getStatements().size() > 0)
+        if (statement && statement->getStatements().size() > 0)
         {
             sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(), functionReturnType->getText(), statement->getText());
         }

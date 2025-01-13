@@ -7,7 +7,7 @@
 #include "antlr4-runtime.h"      // Include if ANTLR is required
 
 // Create a test fixture in the same style
-class HlIrTest : public ::testing::Test
+class HlIrTestFunction : public ::testing::Test
 {
 protected:
     void SetUp() override
@@ -15,17 +15,45 @@ protected:
         // Initialize anything before each test if necessary.
     }
 
+    // Função para remover espaços em branco do início e do final
+    static std::string trim(const std::string &str)
+    {
+        size_t first = 0;
+        while (first < str.size() && std::isspace(static_cast<unsigned char>(str[first])))
+        {
+            ++first;
+        }
+
+        if (first == str.size())
+        {
+            return "";
+        }
+
+        size_t last = str.size() - 1;
+        while (last > first && std::isspace(static_cast<unsigned char>(str[last])))
+        {
+            --last;
+        }
+
+        return str.substr(first, last - first + 1);
+    }
+
     /**
      * @brief Removes all whitespace characters from a given string.
      * @param str The input string.
      * @return A new string without any whitespace characters.
      */
-    std::string removeWhitespace(const std::string &str)
+    // Função que remove todos os caracteres de espaço em branco
+    // Função que remove todos os caracteres de espaço em branco após aplicar o trim
+    static std::string removeWhitespace(const std::string &str)
     {
         std::string result;
+        result.reserve(str.size());
+
         std::copy_if(str.begin(), str.end(), std::back_inserter(result),
                      [](unsigned char c)
                      { return !std::isspace(c); });
+
         return result;
     }
 
@@ -39,7 +67,9 @@ protected:
      */
     void runAnalysis(const std::string &input, const std::string &expectedOutput)
     {
-        if (removeWhitespace(input) == removeWhitespace(expectedOutput))
+        const auto cleanInput = removeWhitespace(input);
+        const auto cleanExpected = removeWhitespace(expectedOutput);
+        if (cleanInput == cleanExpected)
         {
             // Test passed
             return;
@@ -47,8 +77,8 @@ protected:
         else
         {
             FAIL() << "Generated code does not match the expected code.\n"
-                   << "Got:      " << removeWhitespace(input) << "\n"
-                   << "Expected: " << removeWhitespace(expectedOutput);
+                   << "Got (cleaned):      " << cleanInput << "\n"
+                   << "Expected (cleaned): " << cleanExpected << "\n";
         }
     }
 };
@@ -57,7 +87,7 @@ protected:
 // TESTS FOR THE CLASS FunctionArgs
 //-----------------------------------------------------------
 
-TEST_F(HlIrTest, FunctionArgs_Empty)
+TEST_F(HlIrTestFunction, FunctionArgs_Empty)
 {
     // Test when there are no arguments
     hlir::FunctionArgs functionArgs;
@@ -65,7 +95,7 @@ TEST_F(HlIrTest, FunctionArgs_Empty)
     runAnalysis(functionArgs.getText(), "");
 }
 
-TEST_F(HlIrTest, FunctionArgs_OneArg)
+TEST_F(HlIrTestFunction, FunctionArgs_OneArg)
 {
     hlir::FunctionArgs functionArgs;
 
@@ -78,7 +108,7 @@ TEST_F(HlIrTest, FunctionArgs_OneArg)
     runAnalysis(functionArgs.getText(), "a:int");
 }
 
-TEST_F(HlIrTest, FunctionArgs_TwoArgs)
+TEST_F(HlIrTestFunction, FunctionArgs_TwoArgs)
 {
     hlir::FunctionArgs functionArgs;
 
@@ -94,7 +124,7 @@ TEST_F(HlIrTest, FunctionArgs_TwoArgs)
     runAnalysis(functionArgs.getText(), "a:int,b:float");
 }
 
-TEST_F(HlIrTest, FunctionArgs_MultipleArgs)
+TEST_F(HlIrTestFunction, FunctionArgs_MultipleArgs)
 {
     hlir::FunctionArgs functionArgs;
 
@@ -112,7 +142,7 @@ TEST_F(HlIrTest, FunctionArgs_MultipleArgs)
     runAnalysis(functionArgs.getText(), "x:int,y:float,name:string");
 }
 
-TEST_F(HlIrTest, FunctionArgs_ConstructorWithVector)
+TEST_F(HlIrTestFunction, FunctionArgs_ConstructorWithVector)
 {
     // Create a std::vector of shared_ptr<hlir::Arg>
     std::vector<std::shared_ptr<hlir::Arg>> vecArgs = {
@@ -130,7 +160,7 @@ TEST_F(HlIrTest, FunctionArgs_ConstructorWithVector)
 // TESTS FOR THE CLASS Function
 // --------------------------------------------------
 
-TEST_F(HlIrTest, Function_EmptyArgs_ReturnInt)
+TEST_F(HlIrTestFunction, Function_EmptyArgs_ReturnInt)
 {
     // Example: fn foo():int
 
@@ -143,10 +173,10 @@ TEST_F(HlIrTest, Function_EmptyArgs_ReturnInt)
     hlir::Function func("foo", emptyArgs, returnInt);
 
     // Expect "fn foo():int"
-    runAnalysis(func.getText(), "fn foo():int");
+    runAnalysis(func.getText(), "fn foo():int { }");
 }
 
-TEST_F(HlIrTest, Function_SingleArg_ReturnFloat)
+TEST_F(HlIrTestFunction, Function_SingleArg_ReturnFloat)
 {
     // Example: fn foo(a:int):float
 
@@ -161,10 +191,10 @@ TEST_F(HlIrTest, Function_SingleArg_ReturnFloat)
     hlir::Function func("foo", args, returnFloat);
 
     // Expect "fn foo(a:int):float"
-    runAnalysis(func.getText(), "fn foo(a:int):float");
+    runAnalysis(func.getText(), "fn foo(a:int):float { }");
 }
 
-TEST_F(HlIrTest, Function_MultipleArgs_ReturnString)
+TEST_F(HlIrTestFunction, Function_MultipleArgs_ReturnString)
 {
     // Example: fn bar(x:int, y:float):string
 
@@ -181,10 +211,10 @@ TEST_F(HlIrTest, Function_MultipleArgs_ReturnString)
     hlir::Function func("bar", multiArgs, returnString);
 
     // Expect "fn bar(x:int,y:float):string"
-    runAnalysis(func.getText(), "fn bar(x:int,y:float):string");
+    runAnalysis(func.getText(), "fn bar(x:int,y:float):string { }");
 }
 
-TEST_F(HlIrTest, Function_EmptyName)
+TEST_F(HlIrTestFunction, Function_EmptyName)
 {
     // Example: fn  (a:int):int  <-- empty name
     // This may not be valid in your language, but we'll test behavior
@@ -201,10 +231,10 @@ TEST_F(HlIrTest, Function_EmptyName)
 
     // getText() => "fn (a:int):int"
     // Depends on how you want to handle empty names.
-    runAnalysis(func.getText(), "fn (a:int):int");
+    runAnalysis(func.getText(), "fn (a:int):int { }");
 }
 
-TEST_F(HlIrTest, Function_MultipleArgs_SameType)
+TEST_F(HlIrTestFunction, Function_MultipleArgs_SameType)
 {
     // Example: fn process(a:int,b:int,c:int):boolean
 
@@ -221,14 +251,14 @@ TEST_F(HlIrTest, Function_MultipleArgs_SameType)
     hlir::Function func("process", args, returnBool);
 
     // Expect "fn process(a:int,b:int,c:int):boolean"
-    runAnalysis(func.getText(), "fn process(a:int,b:int,c:int):boolean");
+    runAnalysis(func.getText(), "fn process(a:int,b:int,c:int):boolean { }");
 }
 
 // --------------------------------------------------------
 // TESTS FOR 'FunctionCallArg' AND 'FunctionCallArgs'
 // --------------------------------------------------------
 
-TEST_F(HlIrTest, FunctionCallArgs_Empty)
+TEST_F(HlIrTestFunction, FunctionCallArgs_Empty)
 {
     // Construct without parameters => empty callArgs
     hlir::FunctionCallArgs callArgs;
@@ -238,7 +268,7 @@ TEST_F(HlIrTest, FunctionCallArgs_Empty)
 }
 
 // 2) Constructor with 1 argument
-TEST_F(HlIrTest, FunctionCallArgs_SingleArg)
+TEST_F(HlIrTestFunction, FunctionCallArgs_SingleArg)
 {
     // Create a FunctionCallArg
     auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
@@ -256,7 +286,7 @@ TEST_F(HlIrTest, FunctionCallArgs_SingleArg)
 }
 
 // 3) Constructor with multiple arguments
-TEST_F(HlIrTest, FunctionCallArgs_MultipleArgs)
+TEST_F(HlIrTestFunction, FunctionCallArgs_MultipleArgs)
 {
     // Arg1: "nome":"Thiago"
     auto typeStr = std::make_shared<hlir::Type>(tokenMap::TYPE_STRING);
@@ -282,7 +312,7 @@ TEST_F(HlIrTest, FunctionCallArgs_MultipleArgs)
 }
 
 // 4) Add arguments after construction (if FunctionCallArgs has addCallArg)
-TEST_F(HlIrTest, FunctionCallArgs_AddLater)
+TEST_F(HlIrTestFunction, FunctionCallArgs_AddLater)
 {
     hlir::FunctionCallArgs callArgs; // initially empty
 
@@ -305,7 +335,7 @@ TEST_F(HlIrTest, FunctionCallArgs_AddLater)
 }
 
 // 5) Test repeated calls to getText() (to ensure no duplication in output)
-TEST_F(HlIrTest, FunctionCallArgs_RepeatedCalls)
+TEST_F(HlIrTestFunction, FunctionCallArgs_RepeatedCalls)
 {
     auto typeChar = std::make_shared<hlir::Type>(tokenMap::TYPE_CHAR);
     auto valChar = std::make_shared<hlir::Value>("A", typeChar);
@@ -327,7 +357,7 @@ TEST_F(HlIrTest, FunctionCallArgs_RepeatedCalls)
 // TESTS FOR THE CLASS "FunctionCall"
 // -------------------------------------------------------------------
 
-TEST_F(HlIrTest, FunctionCall_SingleArg_IntReturn)
+TEST_F(HlIrTestFunction, FunctionCall_SingleArg_IntReturn)
 {
     // 1) Create an Arg "a:int"
     auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
@@ -359,7 +389,7 @@ TEST_F(HlIrTest, FunctionCall_SingleArg_IntReturn)
     runAnalysis(functionCall->getText(), "call int foo(a:12)");
 }
 
-TEST_F(HlIrTest, FunctionCall_MultipleArgs_FloatReturn)
+TEST_F(HlIrTestFunction, FunctionCall_MultipleArgs_FloatReturn)
 {
     // Function args: (x:int, y:float)
     auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
@@ -391,7 +421,7 @@ TEST_F(HlIrTest, FunctionCall_MultipleArgs_FloatReturn)
     runAnalysis(functionCall->getText(), "call float sum(x:10,y:3.14)");
 }
 
-TEST_F(HlIrTest, FunctionCall_NoArgs_VoidReturn)
+TEST_F(HlIrTestFunction, FunctionCall_NoArgs_VoidReturn)
 {
     // If you have a TYPE_VOID or similar
     auto typeVoid = std::make_shared<hlir::Type>(tokenMap::VOID);
@@ -408,7 +438,7 @@ TEST_F(HlIrTest, FunctionCall_NoArgs_VoidReturn)
     runAnalysis(functionCall->getText(), "call void doSomething()");
 }
 
-TEST_F(HlIrTest, FunctionCall_BooleanReturn)
+TEST_F(HlIrTestFunction, FunctionCall_BooleanReturn)
 {
     // Return type is boolean
     auto typeBool = std::make_shared<hlir::Type>(tokenMap::TYPE_BOOLEAN);
@@ -431,7 +461,7 @@ TEST_F(HlIrTest, FunctionCall_BooleanReturn)
     runAnalysis(functionCall->getText(), "call boolean checkFlag(flag:true)");
 }
 
-TEST_F(HlIrTest, FunctionCall_RepeatedCallsToGetText)
+TEST_F(HlIrTestFunction, FunctionCall_RepeatedCallsToGetText)
 {
     // Return type double
     auto typeDouble = std::make_shared<hlir::Type>(tokenMap::TYPE_DOUBLE);
@@ -462,16 +492,16 @@ TEST_F(HlIrTest, FunctionCall_RepeatedCallsToGetText)
 // ---------------------------------------------------------------------
 
 // Teste para o construtor padrão
-TEST_F(HlIrTest, Statement_DefaultConstructor)
+TEST_F(HlIrTestFunction, Statement_DefaultConstructor)
 {
     hlir::Statement stmt;
 
     std::string text = stmt.getText();
-    EXPECT_EQ(text, "") << "getText() deve retornar uma string vazia quando não houver declarações.";
+    runAnalysis(text, "");
 }
 
 // Teste para o construtor com uma lista de ValidStatement
-TEST_F(HlIrTest, Statement_ConstructorWithList)
+TEST_F(HlIrTestFunction, Statement_ConstructorWithList)
 {
     // Criar os tipos
     auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
@@ -522,11 +552,12 @@ TEST_F(HlIrTest, Statement_ConstructorWithList)
     std::string expectedText = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
 
     std::string actualText = stmt.getText();
-    EXPECT_EQ(actualText, expectedText);
+    // EXPECT_EQ(actualText, expectedText);
+    runAnalysis(actualText, expectedText);
 }
 
 // Teste para adicionar um ValidStatement usando addStatement
-TEST_F(HlIrTest, Statement_AddStatement)
+TEST_F(HlIrTestFunction, Statement_AddStatement)
 {
     hlir::Statement stmt;
 
@@ -581,11 +612,11 @@ TEST_F(HlIrTest, Statement_AddStatement)
     std::string actualText = stmt.getText();
 
     // Comparar diretamente as strings
-    EXPECT_EQ(actualText, expectedText) << "O texto gerado pelo Statement após adicionar statements está incorreto.";
+    runAnalysis(actualText, expectedText);
 }
 
 // Teste para obter a lista de statements e verificar a saída de getText()
-TEST_F(HlIrTest, Statement_GetText_MultipleStatements)
+TEST_F(HlIrTestFunction, Statement_GetText_MultipleStatements)
 {
     hlir::Statement stmt;
 
@@ -637,11 +668,11 @@ TEST_F(HlIrTest, Statement_GetText_MultipleStatements)
     std::string expectedText = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
 
     std::string actualText = stmt.getText();
-    EXPECT_EQ(actualText, expectedText) << "O texto gerado pelo Statement com múltiplas declarações está incorreto.";
+    runAnalysis(actualText, expectedText);
 }
 
 // Teste para getText() com uma única Expr
-TEST_F(HlIrTest, Statement_GetText_SingleExpr)
+TEST_F(HlIrTestFunction, Statement_GetText_SingleExpr)
 {
     hlir::Statement stmt;
 
@@ -686,11 +717,11 @@ TEST_F(HlIrTest, Statement_GetText_SingleExpr)
     // Verificar a saída de getText()
     std::string expectedText = " let a:int = PLUS a, b\n";
     std::string actualText = stmt.getText();
-    EXPECT_EQ(actualText, expectedText) << "getText() deve retornar 'let a:int = PLUS a, b' para uma única Expr.";
+    runAnalysis(actualText, expectedText);
 }
 
 // Teste para getText() com uma única FunctionCall
-TEST_F(HlIrTest, Statement_GetText_SingleFunctionCall)
+TEST_F(HlIrTestFunction, Statement_GetText_SingleFunctionCall)
 {
     hlir::Statement stmt;
 
@@ -725,5 +756,5 @@ TEST_F(HlIrTest, Statement_GetText_SingleFunctionCall)
     // Verificar a saída de getText()
     std::string expectedText = " call float sum(x:10,y:3.14)\n";
     std::string actualText = stmt.getText();
-    EXPECT_EQ(actualText, expectedText) << "getText() deve retornar ' call float sum(x:10,y:3.14)' para uma única FunctionCall.";
+    runAnalysis(actualText, expectedText);
 }

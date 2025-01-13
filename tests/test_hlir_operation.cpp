@@ -36,8 +36,8 @@ protected:
         }
         else
         {
-            FAIL() << "Got:      " << got
-                   << "\nExpected: " << expected;
+            FAIL() << "Got:      " << removeWhitespace(got)
+                   << "\nExpected: " << removeWhitespace(expected);
         }
     }
 };
