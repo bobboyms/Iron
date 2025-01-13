@@ -47,8 +47,8 @@ protected:
         else
         {
             FAIL() << "Generated code does not match the expected code.\n"
-                   << "Got:      " << input << "\n"
-                   << "Expected: " << expectedOutput;
+                   << "Got:      " << removeWhitespace(input) << "\n"
+                   << "Expected: " << removeWhitespace(expectedOutput);
         }
     }
 };
@@ -456,4 +456,274 @@ TEST_F(HlIrTest, FunctionCall_RepeatedCallsToGetText)
     // We expect them both to be the same
     runAnalysis(first, "call double sqrtCalc(n:25)");
     runAnalysis(second, "call double sqrtCalc(n:25)");
+}
+// ---------------------------------------------------------------------
+// TESTES PARA A CLASSE "hlir::Statement"
+// ---------------------------------------------------------------------
+
+// Teste para o construtor padrão
+TEST_F(HlIrTest, Statement_DefaultConstructor)
+{
+    hlir::Statement stmt;
+
+    std::string text = stmt.getText();
+    EXPECT_EQ(text, "") << "getText() deve retornar uma string vazia quando não houver declarações.";
+}
+
+// Teste para o construtor com uma lista de ValidStatement
+TEST_F(HlIrTest, Statement_ConstructorWithList)
+{
+    // Criar os tipos
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+
+    // Criar os argumentos da função
+    auto argX = std::make_shared<hlir::Arg>("x", typeInt);
+    auto argY = std::make_shared<hlir::Arg>("y", typeFloat);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argX, argY});
+
+    // Criar a função "fn sum(x:int,y:float):float"
+    auto returnFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+    auto func = std::make_shared<hlir::Function>("sum", funcArgs, returnFloat);
+
+    // Criar os call arguments "x:10" e "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>("10", typeInt);
+    auto val3_14 = std::make_shared<hlir::Value>("3.14", typeFloat);
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // Criar a FunctionCall "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Criar as variáveis 'a:int' e 'b:int'
+    auto varA = std::make_shared<hlir::Variable>("a", typeInt);
+    auto varB = std::make_shared<hlir::Variable>("b", typeInt);
+
+    // Criar o operador Plus
+    auto plusOp = std::make_shared<hlir::Plus>(varA, varB);
+
+    // Criar a expressão Expr para "let a:int = PLUS a, b"
+    auto expr1 = std::make_shared<hlir::Expr>(varA, plusOp);
+
+    // Criar a expressão Expr para "let res:int = call float sum(x:10,y:3.14)"
+    auto varRes = std::make_shared<hlir::Variable>("res", typeInt);
+    auto expr2 = std::make_shared<hlir::Expr>(varRes, functionCall);
+
+    // Criar a lista de ValidStatement
+    std::vector<hlir::ValidStatement> stmtList = {expr1, functionCall, expr2};
+
+    // Criar o Statement com a lista
+    hlir::Statement stmt(stmtList);
+
+    // Verificar a saída de getText()
+    std::string expectedText = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
+
+    std::string actualText = stmt.getText();
+    EXPECT_EQ(actualText, expectedText);
+}
+
+// Teste para adicionar um ValidStatement usando addStatement
+TEST_F(HlIrTest, Statement_AddStatement)
+{
+    hlir::Statement stmt;
+
+    // Criar os tipos
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+
+    // Criar os argumentos da função
+    auto argX = std::make_shared<hlir::Arg>("x", typeInt);
+    auto argY = std::make_shared<hlir::Arg>("y", typeFloat);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argX, argY});
+
+    // Criar a função "fn sum(x:int,y:float):float"
+    auto returnFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+    auto func = std::make_shared<hlir::Function>("sum", funcArgs, returnFloat);
+
+    // Criar os call arguments "x:10" e "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>("10", typeInt);
+    auto val3_14 = std::make_shared<hlir::Value>("3.14", typeFloat);
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // Criar a FunctionCall "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Criar as variáveis 'a:int' e 'b:int'
+    auto varA = std::make_shared<hlir::Variable>("a", typeInt);
+    auto varB = std::make_shared<hlir::Variable>("b", typeInt);
+
+    // Criar o operador Plus
+    auto plusOp = std::make_shared<hlir::Plus>(varA, varB);
+
+    // Criar a expressão Expr para "let a:int = PLUS a, b"
+    auto expr1 = std::make_shared<hlir::Expr>(varA, plusOp);
+
+    // Criar a expressão Expr para "let res:int = call float sum(x:10,y:3.14)"
+    auto varRes = std::make_shared<hlir::Variable>("res", typeInt);
+    auto expr2 = std::make_shared<hlir::Expr>(varRes, functionCall);
+
+    // Adicionar declarações ao Statement
+    stmt.addStatement(expr1);
+    stmt.addStatement(functionCall);
+    stmt.addStatement(expr2);
+
+    // Definir a string esperada sem quebra de linha inicial e sem indentação
+    std::string expectedText = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
+
+    // Obter a saída real do getText()
+    std::string actualText = stmt.getText();
+
+    // Comparar diretamente as strings
+    EXPECT_EQ(actualText, expectedText) << "O texto gerado pelo Statement após adicionar statements está incorreto.";
+}
+
+// Teste para obter a lista de statements e verificar a saída de getText()
+TEST_F(HlIrTest, Statement_GetText_MultipleStatements)
+{
+    hlir::Statement stmt;
+
+    // Criar os tipos
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+
+    // Criar os argumentos da função
+    auto argX = std::make_shared<hlir::Arg>("x", typeInt);
+    auto argY = std::make_shared<hlir::Arg>("y", typeFloat);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argX, argY});
+
+    // Criar a função "fn sum(x:int,y:float):float"
+    auto returnFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+    auto func = std::make_shared<hlir::Function>("sum", funcArgs, returnFloat);
+
+    // Criar os call arguments "x:10" e "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>("10", typeInt);
+    auto val3_14 = std::make_shared<hlir::Value>("3.14", typeFloat);
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // Criar a FunctionCall "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Criar as variáveis 'a:int' e 'b:int'
+    auto varA = std::make_shared<hlir::Variable>("a", typeInt);
+    auto varB = std::make_shared<hlir::Variable>("b", typeInt);
+
+    // Criar o operador Plus
+    auto plusOp = std::make_shared<hlir::Plus>(varA, varB);
+
+    // Criar a expressão Expr para "let a:int = PLUS a, b"
+    auto expr1 = std::make_shared<hlir::Expr>(varA, plusOp);
+
+    // Criar a expressão Expr para "let res:int = call float sum(x:10,y:3.14)"
+    auto varRes = std::make_shared<hlir::Variable>("res", typeInt);
+    auto expr2 = std::make_shared<hlir::Expr>(varRes, functionCall);
+
+    // Adicionar declarações ao Statement
+    stmt.addStatement(expr1);
+    stmt.addStatement(functionCall);
+    stmt.addStatement(expr2);
+
+    // Verificar a saída de getText()
+    std::string expectedText = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
+
+    std::string actualText = stmt.getText();
+    EXPECT_EQ(actualText, expectedText) << "O texto gerado pelo Statement com múltiplas declarações está incorreto.";
+}
+
+// Teste para getText() com uma única Expr
+TEST_F(HlIrTest, Statement_GetText_SingleExpr)
+{
+    hlir::Statement stmt;
+
+    // Criar os tipos
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+
+    // Criar os argumentos da função
+    auto argX = std::make_shared<hlir::Arg>("x", typeInt);
+    auto argY = std::make_shared<hlir::Arg>("y", typeFloat);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argX, argY});
+
+    // Criar a função "fn sum(x:int,y:float):float"
+    auto returnFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+    auto func = std::make_shared<hlir::Function>("sum", funcArgs, returnFloat);
+
+    // Criar os call arguments "x:10" e "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>("10", typeInt);
+    auto val3_14 = std::make_shared<hlir::Value>("3.14", typeFloat);
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // Criar a FunctionCall "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Criar as variáveis 'a:int' e 'b:int'
+    auto varA = std::make_shared<hlir::Variable>("a", typeInt);
+    auto varB = std::make_shared<hlir::Variable>("b", typeInt);
+
+    // Criar o operador Plus
+    auto plusOp = std::make_shared<hlir::Plus>(varA, varB);
+
+    // Criar a expressão Expr para "let a:int = PLUS a, b"
+    auto expr1 = std::make_shared<hlir::Expr>(varA, plusOp);
+
+    // Adicionar apenas a expressão ao Statement
+    stmt.addStatement(expr1);
+
+    // Verificar a saída de getText()
+    std::string expectedText = " let a:int = PLUS a, b\n";
+    std::string actualText = stmt.getText();
+    EXPECT_EQ(actualText, expectedText) << "getText() deve retornar 'let a:int = PLUS a, b' para uma única Expr.";
+}
+
+// Teste para getText() com uma única FunctionCall
+TEST_F(HlIrTest, Statement_GetText_SingleFunctionCall)
+{
+    hlir::Statement stmt;
+
+    // Criar os tipos
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+
+    // Criar os argumentos da função
+    auto argX = std::make_shared<hlir::Arg>("x", typeInt);
+    auto argY = std::make_shared<hlir::Arg>("y", typeFloat);
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>(
+        std::vector<std::shared_ptr<hlir::Arg>>{argX, argY});
+
+    // Criar a função "fn sum(x:int,y:float):float"
+    auto returnFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+    auto func = std::make_shared<hlir::Function>("sum", funcArgs, returnFloat);
+
+    // Criar os call arguments "x:10" e "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>("10", typeInt);
+    auto val3_14 = std::make_shared<hlir::Value>("3.14", typeFloat);
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(
+        std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // Criar a FunctionCall "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>(func, callArgs);
+
+    // Adicionar apenas a FunctionCall ao Statement
+    stmt.addStatement(functionCall);
+
+    // Verificar a saída de getText()
+    std::string expectedText = " call float sum(x:10,y:3.14)\n";
+    std::string actualText = stmt.getText();
+    EXPECT_EQ(actualText, expectedText) << "getText() deve retornar ' call float sum(x:10,y:3.14)' para uma única FunctionCall.";
 }

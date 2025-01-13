@@ -46,7 +46,7 @@ namespace iron
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 
     public:
-        HighLevelIR(std::shared_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);
+        HighLevelIR(std::shared_ptr<IronParser> parser, std::shared_ptr<IronParser> hlirGen, std::unique_ptr<ScopeManager> scopeManager);
         ~HighLevelIR();
         std::string generateCode();
         std::shared_ptr<HightLavelIRParser> generateParser();

@@ -15,6 +15,13 @@
  */
 namespace hlir
 {
+    /**
+     * @class Function
+     * @brief Forward declaration da classe Function para evitar erros de compilação.
+     */
+    class Function;
+
+    class Statement;
 
     /**
      * @class Context
@@ -174,59 +181,6 @@ namespace hlir
          * @brief Destructor for FunctionArgs.
          */
         ~FunctionArgs();
-    };
-
-    /**
-     * @class Function
-     * @brief Represents a function, including its name, parameters, and return type.
-     *
-     * Inherits from Basic to provide a text output like "fn name(args):returnType".
-     */
-    class Function : public Basic
-    {
-    private:
-        /**
-         * @brief Name of the function.
-         */
-        std::string functionName;
-
-        /**
-         * @brief Pointer to the function's argument list.
-         */
-        std::shared_ptr<FunctionArgs> functionArgs;
-
-        /**
-         * @brief Pointer to the function's return Type.
-         */
-        std::shared_ptr<Type> functionReturnType;
-
-    public:
-        /**
-         * @brief Retrieves the function's name.
-         * @return A string containing the function name.
-         */
-        std::string getFunctionName();
-
-        std::shared_ptr<Type> getFunctionReturnType();
-
-        /**
-         * @brief Produces a textual representation: "fn functionName(args):returnType".
-         * @return A string with the function definition.
-         */
-        std::string getText() override;
-
-        /**
-         * @brief Constructs a Function object.
-         * @param functionName The function's name.
-         * @param functionArgs Shared pointer to FunctionArgs.
-         * @param functionReturnType Shared pointer to the return Type.
-         */
-        Function(std::string functionName, std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType);
-
-        /**
-         * @brief Destructor for Function.
-         */
-        ~Function();
     };
 
     /**
@@ -772,6 +726,94 @@ namespace hlir
          * @throws HLIRException If `variable` is nullptr or if `validExpr` is invalid.
          */
         std::string getText() override;
+    };
+
+    // statementList: (expr | functionCall)*;
+
+    using ValidStatement = std::variant<
+        std::shared_ptr<Expr>,
+        std::shared_ptr<FunctionCall>>;
+
+    class Statement : public Basic
+    {
+    private:
+        std::vector<ValidStatement> statementList;
+
+    public:
+        Statement();
+        Statement(std::vector<ValidStatement> statementList);
+        ~Statement();
+        void addStatement(ValidStatement statement);
+        std::vector<ValidStatement> getStatements();
+        std::string getText() override;
+    };
+
+    /**
+     * @class Function
+     * @brief Represents a function, including its name, parameters, and return type.
+     *
+     * Inherits from Basic to provide a text output like "fn name(args):returnType".
+     */
+    class Function : public Basic
+    {
+    private:
+        /**
+         * @brief Name of the function.
+         */
+        std::string functionName;
+
+        /**
+         * @brief Pointer to the function's argument list.
+         */
+        std::shared_ptr<FunctionArgs> functionArgs;
+
+        /**
+         * @brief Pointer to the function's return Type.
+         */
+        std::shared_ptr<Type> functionReturnType;
+
+    protected:
+        /**
+         * @brief Pointer to the function's body (optional).
+         */
+        std::shared_ptr<Statement> statement;
+
+    public:
+        /**
+         * @brief Retrieves the function's name.
+         * @return A string containing the function name.
+         */
+        std::string getFunctionName();
+
+        std::shared_ptr<Type> getFunctionReturnType();
+
+        /**
+         * @brief Produces a textual representation: "fn functionName(args):returnType".
+         * @return A string with the function definition.
+         */
+        std::string getText() override;
+
+        /**
+         * @brief Constructs a Function object.
+         * @param functionName The function's name.
+         * @param functionArgs Shared pointer to FunctionArgs.
+         * @param functionReturnType Shared pointer to the return Type.
+         */
+        Function(std::string functionName, std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType);
+
+        /**
+         * @brief Constructs a Function object with a statement (function body).
+         * @param functionName The function's name.
+         * @param functionArgs Shared pointer to FunctionArgs.
+         * @param functionReturnType Shared pointer to the return Type.
+         * @param statement Shared pointer to the Statement (function body).
+         */
+        Function(std::string functionName, std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType, std::shared_ptr<Statement> statement);
+
+        /**
+         * @brief Destructor for Function.
+         */
+        ~Function();
     };
 
 }

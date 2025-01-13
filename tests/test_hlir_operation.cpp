@@ -325,7 +325,7 @@ TEST_F(HlIrTest, Expr_Variable)
     auto expr = std::make_shared<hlir::Expr>(varName, exprVariant);
 
     // Verifica o texto gerado
-    runAnalysis(expr->getText(), "let name:string = name");
+    EXPECT_THROW({ expr->getText(); }, hlir::HLIRException);
 }
 
 // Teste para Expr com múltiplas chamadas a getText()

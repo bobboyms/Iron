@@ -19,7 +19,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("let {}:{} = {}\n", variable->getVarName(), variable->getVarType()->getText(), value->getText());
+        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), value->getText());
 
         return sb.str();
     }
@@ -154,7 +154,7 @@ namespace hlir
             {
                 if (exprPtr)
                 {
-                    sb << util::format("let {}:{} = {}\n", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getText());
+                    sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getText());
                 }
                 else
                 {
@@ -164,7 +164,11 @@ namespace hlir
             else
             if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
             {
-                sb << util::format("let {}:{} = {}\n", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getVarName());
+                if (variable->getVarName() == exprPtr->getVarName()) {
+                    throw HLIRException("The variables can't be the same name.");
+                }
+
+                sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getVarName());
             } else {
                 throw HLIRException("Unsupported expression type.");
             } }, validExpr);
