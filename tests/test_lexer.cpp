@@ -5,7 +5,8 @@
 #include "../src/parsers/IronLexer.h"
 
 // Função auxiliar para testar tokens individuais
-void testToken(const std::string& input, int expectedTokenType, const std::string& expectedText) {
+void testToken(const std::string &input, int expectedTokenType, const std::string &expectedText)
+{
     antlr4::ANTLRInputStream inputStream(input);
     IronLexer lexer(&inputStream);
     antlr4::CommonTokenStream tokens(&lexer);
@@ -20,7 +21,8 @@ void testToken(const std::string& input, int expectedTokenType, const std::strin
 }
 
 // Testes para os tokens de símbolos
-TEST(IronLexerTests, Symbols) {
+TEST(IronLexerTests, Symbols)
+{
     testToken(":", IronLexer::COLON, ":");
     testToken("=", IronLexer::EQ, "=");
     testToken(";", IronLexer::SEMICOLON, ";");
@@ -35,7 +37,8 @@ TEST(IronLexerTests, Symbols) {
 }
 
 // Testes para as palavras reservadas
-TEST(IronLexerTests, ReservedWords) {
+TEST(IronLexerTests, ReservedWords)
+{
     testToken("fn", IronLexer::FUNCTION, "fn");
     testToken("let", IronLexer::LET, "let");
     testToken("public", IronLexer::PUBLIC, "public");
@@ -43,7 +46,8 @@ TEST(IronLexerTests, ReservedWords) {
 }
 
 // Testes para os tipos de dados
-TEST(IronLexerTests, DataTypes) {
+TEST(IronLexerTests, DataTypes)
+{
     testToken("int", IronLexer::TYPE_INT, "int");
     testToken("char", IronLexer::TYPE_CHAR, "char");
     testToken("float", IronLexer::TYPE_FLOAT, "float");
@@ -53,7 +57,8 @@ TEST(IronLexerTests, DataTypes) {
 }
 
 // Testes para literais
-TEST(IronLexerTests, Literals) {
+TEST(IronLexerTests, Literals)
+{
     testToken("3.14", IronLexer::REAL_NUMBER, "3.14");
     testToken("-42", IronLexer::INT_NUMBER, "-42");
     testToken("true", IronLexer::BOOLEAN_VALUE, "true");
@@ -62,7 +67,8 @@ TEST(IronLexerTests, Literals) {
 }
 
 // Testes para identificadores
-TEST(IronLexerTests, Identifiers) {
+TEST(IronLexerTests, Identifiers)
+{
     testToken("myVariable", IronLexer::IDENTIFIER, "myVariable");
     testToken("_var123", IronLexer::IDENTIFIER, "_var123");
 }

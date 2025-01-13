@@ -1,12 +1,17 @@
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
+#include <algorithm>
+
+// Ajuste os includes conforme a organização do seu projeto
 #include "../src/headers/SemanticalAnalysis.h"
 #include "../src/headers/ScopeManager.h"
-#include "../src/headers/IronExceptions.h"
+#include "../src/headers/Exceptions.h"
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
-#include "antlr4-runtime.h"
+#include "antlr4-runtime.h" // Removida a barra '/'
 
+// Fixture de teste
 class SemanticalAnalysisTest : public ::testing::Test
 {
 protected:
@@ -85,7 +90,7 @@ TEST_F(SemanticalAnalysisTest, DuplicateFunctionDeclaration)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), FunctionRedefinitionException);
+    EXPECT_THROW(runAnalysis(input), iron::FunctionRedefinitionException);
 }
 
 TEST_F(SemanticalAnalysisTest, DuplicateVariableInSameScope)
@@ -97,7 +102,7 @@ TEST_F(SemanticalAnalysisTest, DuplicateVariableInSameScope)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableRedefinitionException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
 }
 
 TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope)
@@ -109,7 +114,7 @@ TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableRedefinitionException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
 }
 
 TEST_F(SemanticalAnalysisTest, DuplicateVariableWithDifferentType)
@@ -121,7 +126,7 @@ TEST_F(SemanticalAnalysisTest, DuplicateVariableWithDifferentType)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableRedefinitionException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
 }
 
 TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression)
@@ -132,7 +137,7 @@ TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, VariableNotFoundInAssignment)
@@ -143,7 +148,7 @@ TEST_F(SemanticalAnalysisTest, VariableNotFoundInAssignment)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, VariableNotExpression)
@@ -154,7 +159,7 @@ TEST_F(SemanticalAnalysisTest, VariableNotExpression)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, ValidVariableAndExpression)
@@ -193,7 +198,7 @@ TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression2)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVare)
@@ -209,7 +214,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVare)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarb)
@@ -225,7 +230,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarb)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarc)
@@ -241,7 +246,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarc)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, TypeMismatchException_VariableWithDifferentType)
@@ -254,7 +259,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchException_VariableWithDifferentType)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, TypeMismatchException_NumberWithString)
@@ -267,7 +272,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchException_NumberWithString)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ValidExpression_NoException)
@@ -293,7 +298,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchException_OperationBetweenNumberAndSt
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ValidNestedExpression)
@@ -321,7 +326,7 @@ TEST_F(SemanticalAnalysisTest, TypeMismatchException_NestedExpression)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, IncompatibleTypesStringAndInt)
@@ -337,7 +342,7 @@ TEST_F(SemanticalAnalysisTest, IncompatibleTypesStringAndInt)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration)
@@ -352,7 +357,7 @@ TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), FunctionNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, CompatibleTypesWithFunctionCalls)
@@ -399,7 +404,7 @@ TEST_F(SemanticalAnalysisTest, UndeclaredVariableInFunction)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, TypeMismatchIntAndFloatLiteral)
@@ -424,7 +429,7 @@ TEST_F(SemanticalAnalysisTest, FunctionArgNotFound)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), FunctionArgNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::FunctionArgNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, FunctionArgFound)
@@ -452,7 +457,7 @@ TEST_F(SemanticalAnalysisTest, SubIntFloat_IntLiteralInFloatParam_ShouldFail)
 
     // Esperamos que esse caso gere incompatibilidade de tipos
     // e lance TypeMismatchException (ajuste se usa outro tipo de exceção)
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, SubIntFloat_DoubleLiteralInFloatParam_ShouldFail)
@@ -465,7 +470,7 @@ TEST_F(SemanticalAnalysisTest, SubIntFloat_DoubleLiteralInFloatParam_ShouldFail)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, SubDoubleFloat_CompatibleRealNumbers_ShouldPass)
@@ -491,7 +496,7 @@ TEST_F(SemanticalAnalysisTest, SubIntFloatLNotiteral_ShouldFail)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCall)
@@ -533,7 +538,7 @@ TEST_F(SemanticalAnalysisTest, VarNotFoundInFunctionCall)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch)
@@ -547,7 +552,7 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch2)
@@ -561,7 +566,7 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch2)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch)
@@ -600,45 +605,45 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch3)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch4)
 {
     std::string input = R"(
-        fn mult(n:int, p:float):float {}
+        fn mult(n:int, p:float): float {}
 
-        fn sub(ax:int, bx:float):int {}
+        fn sub(ax:int, bx:float): int {}
 
         fn soma(): int {
             32.25 * sub(ax: 1, bx: mult(n:22, p:22.25D))
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch5)
 {
     std::string input = R"(
-        fn mult(n:int, p:float):float {}
+        fn mult(n:int, p:float): float {}
 
-        fn sub(ax:int, bx:float):int {}
+        fn sub(ax:int, bx:float): int {}
 
         fn soma(): int {
             32.25 * sub(ax: 1, bx: mult(n:22, p:25))
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch2)
 {
     std::string input = R"(
-        fn mult(n:int, p:float):float {}
+        fn mult(n:int, p:float): float {}
 
-        fn sub(ax:int, bx:float):int {}
+        fn sub(ax:int, bx:float): int {}
 
         fn soma(): int {
             let x: float = 25.00
@@ -652,47 +657,47 @@ TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallNotTypeMismatch2)
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch6)
 {
     std::string input = R"(
-        fn mult(n:int, p:float):double {}
+        fn mult(n:int, p:float): double {}
 
-        fn sub(ax:int, bx:float):int {}
+        fn sub(ax:int, bx:float): int {}
 
         fn soma(): int {
             32.25 * sub(ax: 1, bx: mult(n:22, p:25))
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch7)
 {
     std::string input = R"(
-        fn mult(n:int, p:float):int {}
+        fn mult(n:int, p:float): int {}
 
-        fn sub(ax:int, bx:float):int {}
+        fn sub(ax:int, bx:float): int {}
 
         fn soma(): int {
             32.25 * sub(ax: 1, bx: mult(n:22, p:25))
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, VarFoundInFunctionCallTypeMismatch8)
 {
     std::string input = R"(
-        fn div():int {}
-        fn mult(n:int, p:float):boolean {}
+        fn div(): int {}
+        fn mult(n:int, p:float): boolean {}
 
-        fn sub(ax:int, bx:float):int {}
+        fn sub(ax:int, bx:float): int {}
 
         fn soma(): int {
-            32.25 * sub(ax: div(), bx: mult(n:22, p:25))
+            32.25 * sub(ax: 1, bx: mult(n:22, p:25))
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, InlineFunctionDeclaration)
@@ -723,7 +728,7 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionDeclarationWhithCallAndLocalVariabl
     std::string input = R"(
         fn main() {
             let xb: int = 36
-            let inline: fn = (a: int, b: int):int -> (xb + b) * a
+            let inline: fn = (a: int, b: int): int -> (xb + b) * a
             inline(a:12, b:14)
         }
     )";
@@ -741,7 +746,7 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionTypeMismatchException)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException)
@@ -749,7 +754,7 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException)
     std::string input = R"(
         fn main() {
             let xb: int = 36
-            let inline: fn = (a: int, b: int):int -> (xb + b) * a
+            let inline: fn = (a: int, b: int): int -> (xb + b) * a
             inline(a:12, b:14) + 5.22
         }
     )";
@@ -775,7 +780,7 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException2)
 TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException3)
 {
     std::string input = R"(
-        fn xptc():int {
+        fn xptc(): int {
         }
 
         fn main() {
@@ -793,7 +798,7 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException3)
 TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException4)
 {
     std::string input = R"(
-        fn xptc(z:int):int {
+        fn xptc(z:int): int {
         }
 
         fn main() {
@@ -811,8 +816,8 @@ TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException4)
 TEST_F(SemanticalAnalysisTest, InlineFunctionNoTypeMismatchException5)
 {
     std::string input = R"(
-        fn mult(pp:float):float {}
-        fn xptc(z:float):int {}
+        fn mult(pp:float): float {}
+        fn xptc(z:float): int {}
 
         fn main() {
             let xb: int = 36
@@ -832,7 +837,7 @@ TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithInteger)
         fn main(x:boolean = 21) {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloat)
@@ -841,7 +846,7 @@ TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloat)
         fn main(x:boolean = 21.36) {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithString)
@@ -850,7 +855,7 @@ TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithString)
         fn main(x:boolean = "olá mundo") {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 //
@@ -861,7 +866,7 @@ TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithFloat)
         fn main(x:int = 21.2) {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithString)
@@ -870,7 +875,7 @@ TEST_F(SemanticalAnalysisTest, IntegerArgumentTypeMismatchWithString)
         fn main(x:int = "olá mundo") {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 //
@@ -881,7 +886,7 @@ TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithInteger)
         fn main(x:float = 12) {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInteger)
@@ -890,7 +895,7 @@ TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInteger)
         fn main(x:double = 15) {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithString)
@@ -899,7 +904,7 @@ TEST_F(SemanticalAnalysisTest, FloatArgumentTypeMismatchWithString)
         fn main(x:float = "22.37") {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInvalidString)
@@ -908,10 +913,11 @@ TEST_F(SemanticalAnalysisTest, DoubleArgumentTypeMismatchWithInvalidString)
         fn main(x:double = "15. + olá") {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-//***** */
+//*****
+
 TEST_F(SemanticalAnalysisTest, DoubleArgumentValidAssignmentWithTrue)
 {
     std::string input = R"(
@@ -972,7 +978,7 @@ TEST_F(SemanticalAnalysisTest, BooleanArgumentTypeMismatchWithFloatValue)
         fn main(x:double = 32.2541250, n:int, z:float, bb:string = "olá mundo", pp:boolean = 2.36) {}
     )";
 
-    EXPECT_THROW(runAnalysis(input), TypeMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, UninitializedVariableWithFloatAssignment)
@@ -984,7 +990,7 @@ TEST_F(SemanticalAnalysisTest, UninitializedVariableWithFloatAssignment)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), UninitializedVariableException);
+    EXPECT_THROW(runAnalysis(input), iron::UninitializedVariableException);
 }
 
 TEST_F(SemanticalAnalysisTest, UninitializedVariableWithStringAssignment)
@@ -996,10 +1002,10 @@ TEST_F(SemanticalAnalysisTest, UninitializedVariableWithStringAssignment)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), UninitializedVariableException);
+    EXPECT_THROW(runAnalysis(input), iron::UninitializedVariableException);
 }
 
-//**** */
+//*****
 
 TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_InlineFunctionMissingParameter)
 {
@@ -1010,7 +1016,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_InlineFunctionMissingParame
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_InlineFunctionAndSubMissingParameter)
@@ -1025,7 +1031,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_InlineFunctionAndSubMissing
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_SubCallAndInlineDeclaration)
@@ -1040,7 +1046,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentCountMismatch_SubCallAndInlineDeclaration
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, FunctionCallWithMissingArguments)
@@ -1055,7 +1061,7 @@ TEST_F(SemanticalAnalysisTest, FunctionCallWithMissingArguments)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentCountMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException)
@@ -1070,7 +1076,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_InlineFunction)
@@ -1082,7 +1088,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_InlineFunction)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_NestedFunction)
@@ -1095,7 +1101,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_NestedFunction)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_MixedVariablesAndFunctions)
@@ -1110,7 +1116,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_MixedVariablesAndF
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_FunctionReturn)
@@ -1127,7 +1133,7 @@ TEST_F(SemanticalAnalysisTest, ArgumentOrderMismatchException_FunctionReturn)
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), ArgumentOrderMismatchException);
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
 TEST_F(SemanticalAnalysisTest, ArrowFunctionBlockNoError)
@@ -1180,7 +1186,7 @@ TEST_F(SemanticalAnalysisTest, UndefinedVariableUsage_ThrowsVariableNotFoundExce
         }
     )";
 
-    EXPECT_THROW(runAnalysis(input), VariableNotFoundException);
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
 // Teste 3: Declarações de funções aninhadas com chamadas de funções

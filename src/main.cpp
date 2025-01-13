@@ -1,78 +1,41 @@
 #include <iostream>
 #include <memory>
-#include "parsers/IronLexer.h"
-#include "parsers/IronParser.h"
-#include "headers/SemanticalAnalysis.h"
-#include "headers/ScopeManager.h"
-#include "headers/IronExceptions.h"
-#include "headers/HighLevelIR.h"
-#include "headers/LLVMIR.h"
-#include "headers/Colors.h"
+#include "headers/Hlir.h"
 
-int runAnalysis(const std::string &input)
+#include <iostream>
+#include <string>
+#include <cctype>
+
+// Função que remove todos os caracteres de espaço em branco
+std::string removeWhitespace(const std::string &str)
 {
-    try
+    std::string result;
+    for (char c : str)
     {
-        // Inicializa os componentes do ANTLR
-        antlr4::ANTLRInputStream inputStream(input);
-        IronLexer lexer(&inputStream);
-        antlr4::CommonTokenStream tokens(&lexer);
-        auto parser = std::make_shared<IronParser>(&tokens);
-
-        // Executa a análise semântica
-        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<iron::ScopeManager>()));
-        analysis.analyze();
-
-        // Rewind
-        tokens.seek(0);
-        parser->reset();
-
-        iron::HighLevelIR hightLevelCodeGenerator(parser, std::move(std::make_unique<iron::ScopeManager>()));
-        const auto hlirCode = hightLevelCodeGenerator.generateCode();
-
-        std::cout << hlirCode << std::endl;
-
-        iron::LLVMIR llvmir(hlirCode, std::move(std::make_unique<iron::ScopeManager>()));
-        // std::cout << llvmir.generateCode() << std::endl;
-
-        // std::cout << "Análise semântica concluída com sucesso." << std::endl;
-        return 0; // Sucesso
+        // Verifica se o caractere não é um espaço em branco (incluindo \n, \t, etc.)
+        if (!std::isspace(static_cast<unsigned char>(c)))
+        {
+            result += c;
+        }
     }
-    catch (const SemanticException &e)
-    {
-        std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
-        return 1; // Erro semântico específico
-    }
-    catch (const LLVMException e)
-    {
-        std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
-        return 1; // Erro semântico específico
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << color::colorText("Unexpected error: ", color::RED) << e.what() << std::endl;
-        return 2; // Outros erros padrão
-    }
-    catch (...)
-    {
-        std::cerr << color::colorText("I panicked, I need a psychoanalyst: ", color::BOLD_RED) << std::endl;
-        return 3; // Exceções não esperadas
-    }
+    return result;
 }
 
 int main()
 {
-    std::string input = R"(
-        
-        public fn sub(a:int, b:int) {
-             a * 2 + b
-        }
+    // Exemplos de strings grandes (corrigidas para que sejam iguais ao remover espaços)
+    std::string largeString1 = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
+    std::string largeString2 = "\n let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
 
-        public fn main() {
-            // let x: int = 22
-            sub(a:2, b:2)
-        }
-    )";
+    // Comparação ignorando todos os espaços e quebras de linha
+    if (removeWhitespace(largeString1) == removeWhitespace(largeString2))
+    {
+        std::cout << "As strings são iguais." << std::endl;
+    }
+    else
+    {
+        std::cout << "As strings são diferentes." << std::endl;
+    }
 
-    return runAnalysis(input);
+    return 0;
 }

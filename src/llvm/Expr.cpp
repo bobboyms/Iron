@@ -1,7 +1,4 @@
 #include "../headers/LLVMIR.h"
-#include "../headers/IronExceptions.h"
-#include "../headers/TokenMap.h"
-#include "../headers/Utils.h"
 
 namespace iron
 {
@@ -14,11 +11,11 @@ namespace iron
 
         if (!anotherVarNameOpt.has_value())
         {
-            throw LLVMException(iron::format("Variable: {} not found", anotherVarName));
+            throw LLVMException(util::format("Variable: {} not found", anotherVarName));
         }
 
-        const auto typeLeft = TokenMap::getTokenType(ctx->cast()->typeLeft()->varTypes()->getText());
-        const auto typeRight = TokenMap::getTokenType(ctx->cast()->typeRight()->varTypes()->getText());
+        const auto typeLeft = tokenMap::getTokenType(ctx->cast()->typeLeft()->varTypes()->getText());
+        const auto typeRight = tokenMap::getTokenType(ctx->cast()->typeRight()->varTypes()->getText());
 
         llvm::Type *desiredType = mapType(typeRight);
         llvm::Type *currentType = mapType(typeLeft);
@@ -26,36 +23,36 @@ namespace iron
         llvm::Value *loadedVar = builder.CreateLoad(
             currentType,
             anotherVarNameOpt->alloca,
-            iron::format("load_{}", anotherVarName));
+            util::format("load_{}", anotherVarName));
 
         llvm::Value *value;
 
         // Converter float
-        if (typeLeft == TokenMap::TYPE_FLOAT && typeRight == TokenMap::TYPE_INT)
+        if (typeLeft == tokenMap::TYPE_FLOAT && typeRight == tokenMap::TYPE_INT)
         {
-            value = builder.CreateFPToSI(loadedVar, desiredType, iron::format("cast_{}", anotherVarName));
+            value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", anotherVarName));
         }
-        else if (typeLeft == TokenMap::TYPE_FLOAT && typeRight == TokenMap::TYPE_DOUBLE)
+        else if (typeLeft == tokenMap::TYPE_FLOAT && typeRight == tokenMap::TYPE_DOUBLE)
         {
-            value = builder.CreateFPExt(loadedVar, desiredType, iron::format("cast_{}", anotherVarName));
+            value = builder.CreateFPExt(loadedVar, desiredType, util::format("cast_{}", anotherVarName));
         }
         // Converter int
-        else if (typeLeft == TokenMap::TYPE_INT && typeRight == TokenMap::TYPE_FLOAT)
+        else if (typeLeft == tokenMap::TYPE_INT && typeRight == tokenMap::TYPE_FLOAT)
         {
-            value = builder.CreateSIToFP(loadedVar, desiredType, iron::format("cast_{}", anotherVarName));
+            value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", anotherVarName));
         }
-        else if (typeLeft == TokenMap::TYPE_INT && typeRight == TokenMap::TYPE_DOUBLE)
+        else if (typeLeft == tokenMap::TYPE_INT && typeRight == tokenMap::TYPE_DOUBLE)
         {
-            value = builder.CreateSIToFP(loadedVar, desiredType, iron::format("cast_{}", anotherVarName));
+            value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", anotherVarName));
         }
         // Converter double
-        else if (typeLeft == TokenMap::TYPE_DOUBLE && typeRight == TokenMap::TYPE_FLOAT)
+        else if (typeLeft == tokenMap::TYPE_DOUBLE && typeRight == tokenMap::TYPE_FLOAT)
         {
-            value = builder.CreateFPTrunc(loadedVar, desiredType, iron::format("cast_{}", anotherVarName));
+            value = builder.CreateFPTrunc(loadedVar, desiredType, util::format("cast_{}", anotherVarName));
         }
-        else if (typeLeft == TokenMap::TYPE_DOUBLE && typeRight == TokenMap::TYPE_INT)
+        else if (typeLeft == tokenMap::TYPE_DOUBLE && typeRight == tokenMap::TYPE_INT)
         {
-            value = builder.CreateFPToSI(loadedVar, desiredType, iron::format("cast_{}", anotherVarName));
+            value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", anotherVarName));
         }
         // Caso não definido
         else
@@ -73,7 +70,7 @@ namespace iron
 
         switch (varType)
         {
-        case TokenMap::TYPE_INT:
+        case tokenMap::TYPE_INT:
         {
             // Convert string to int
             int num = std::stoi(literalValue);
@@ -88,7 +85,7 @@ namespace iron
             break;
         }
 
-        case TokenMap::TYPE_FLOAT:
+        case tokenMap::TYPE_FLOAT:
         {
             // Convert string to float
             float num = std::stof(literalValue);
@@ -98,7 +95,7 @@ namespace iron
             break;
         }
 
-        case TokenMap::TYPE_DOUBLE:
+        case tokenMap::TYPE_DOUBLE:
         {
             // Convert string to double
             double num = std::stod(literalValue);
@@ -110,7 +107,7 @@ namespace iron
 
         default:
         {
-            throw LLVMException(iron::format("Unsupported type for number literal: {}", literalValue));
+            throw iron::LLVMException(util::format("Unsupported type for number literal: {}", literalValue));
         }
         }
 
@@ -143,7 +140,7 @@ namespace iron
             if (!currentFunction)
             {
                 throw LLVMException(
-                    iron::format("Function {} not found", currentFunctionName));
+                    util::format("Function {} not found", currentFunctionName));
             }
 
             // Verifica se existe um argumento da função com esse nome
@@ -152,7 +149,7 @@ namespace iron
             {
                 // Nem variável local nem argumento de função -> erro
                 throw LLVMException(
-                    iron::format("Variable or argument '{}' not found in function '{}'",
+                    util::format("Variable or argument '{}' not found in function '{}'",
                                  leftVarName, currentFunctionName));
             }
             // Se for argumento, usamos diretamente o argLeft como 'leftValue'
@@ -164,7 +161,7 @@ namespace iron
             leftValue = builder.CreateLoad(
                 llvmType,
                 leftSymbolInfo->alloca,
-                iron::format("load_{}", leftVarName));
+                util::format("load_{}", leftVarName));
         }
 
         // 2. Verifica se a variável 'rightVarName' está no escopo atual.
@@ -179,7 +176,7 @@ namespace iron
             if (!currentFunction)
             {
                 throw LLVMException(
-                    iron::format("Function {} not found", currentFunctionName));
+                    util::format("Function {} not found", currentFunctionName));
             }
 
             // Verifica se existe um argumento da função com esse nome
@@ -188,7 +185,7 @@ namespace iron
             {
                 // Nem variável local nem argumento de função -> erro
                 throw LLVMException(
-                    iron::format("Variable or argument '{}' not found in function '{}'",
+                    util::format("Variable or argument '{}' not found in function '{}'",
                                  rightVarName, currentFunctionName));
             }
             // Se for argumento, usamos diretamente o argRight como 'rightValue'
@@ -200,7 +197,7 @@ namespace iron
             rightValue = builder.CreateLoad(
                 llvmType,
                 rightSymbolInfo->alloca,
-                iron::format("load_{}", rightVarName));
+                util::format("load_{}", rightVarName));
         }
 
         // 3. A partir daqui, leftValue e rightValue estão resolvidos (variável local ou argumento).
@@ -209,16 +206,16 @@ namespace iron
         // Soma (PLUS)
         if (ctx->mathOp()->PLUS())
         {
-            if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
+            if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
             {
                 llvm::Value *result = builder.CreateFAdd(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
                 llvm::Value *result = builder.CreateAdd(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
@@ -226,16 +223,16 @@ namespace iron
         // Subtração (MINUS)
         if (ctx->mathOp()->MINUS())
         {
-            if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
+            if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
             {
                 llvm::Value *result = builder.CreateFSub(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
                 llvm::Value *result = builder.CreateSub(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
@@ -243,16 +240,16 @@ namespace iron
         // Multiplicação (MULT)
         if (ctx->mathOp()->MULT())
         {
-            if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
+            if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
             {
                 llvm::Value *result = builder.CreateFMul(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
                 llvm::Value *result = builder.CreateMul(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
@@ -260,16 +257,16 @@ namespace iron
         // Divisão (DIV)
         if (ctx->mathOp()->DIV())
         {
-            if (varType == TokenMap::TYPE_FLOAT || varType == TokenMap::TYPE_DOUBLE)
+            if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
             {
                 llvm::Value *result = builder.CreateFDiv(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
             else
             {
                 llvm::Value *result = builder.CreateSDiv(
-                    leftValue, rightValue, iron::format("tmp_{}", varName));
+                    leftValue, rightValue, util::format("tmp_{}", varName));
                 builder.CreateStore(result, allocaVariable);
             }
         }
@@ -283,18 +280,18 @@ namespace iron
 
         if (!anotherVarNameOpt.has_value())
         {
-            throw LLVMException(iron::format("Variable: {} not found", anotherVarName));
+            throw LLVMException(util::format("Variable: {} not found", anotherVarName));
         }
 
         auto varNameOpt = scopeManager->currentScope()->lookup(varName);
 
         if (!varNameOpt.has_value())
         {
-            throw LLVMException(iron::format("Variable: {} not found", varName));
+            throw LLVMException(util::format("Variable: {} not found", varName));
         }
 
         // Carregar o valor da variável fonte
-        llvm::Value *loadedValue = builder.CreateLoad(llvmType, anotherVarNameOpt->alloca, iron::format("load_{}", anotherVarName));
+        llvm::Value *loadedValue = builder.CreateLoad(llvmType, anotherVarNameOpt->alloca, util::format("load_{}", anotherVarName));
 
         // Armazenar o valor carregado na variável de destino
         builder.CreateStore(loadedValue, varNameOpt->alloca);
