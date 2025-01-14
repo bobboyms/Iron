@@ -2,40 +2,35 @@
 #include <memory>
 #include "headers/Hlir.h"
 
-#include <iostream>
-#include <string>
-#include <cctype>
-
-// Função que remove todos os caracteres de espaço em branco
-std::string removeWhitespace(const std::string &str)
-{
-    std::string result;
-    for (char c : str)
-    {
-        // Verifica se o caractere não é um espaço em branco (incluindo \n, \t, etc.)
-        if (!std::isspace(static_cast<unsigned char>(c)))
-        {
-            result += c;
-        }
-    }
-    return result;
-}
-
 int main()
 {
-    // Exemplos de strings grandes (corrigidas para que sejam iguais ao remover espaços)
-    std::string largeString1 = " let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
-    std::string largeString2 = "\n let a:int = PLUS a, b\n call float sum(x:10,y:3.14)\n let res:int = call float sum(x:10,y:3.14)\n";
 
-    // Comparação ignorando todos os espaços e quebras de linha
-    if (removeWhitespace(largeString1) == removeWhitespace(largeString2))
-    {
-        std::cout << "As strings são iguais." << std::endl;
-    }
-    else
-    {
-        std::cout << "As strings são diferentes." << std::endl;
-    }
+    // Cria o tipo int
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
 
-    return 0;
+    // Cria o argumento 'a:int'
+    auto argA = std::make_shared<hlir::Arg>();
+    argA->set("a", typeInt);
+
+    // Cria FunctionArgs com um argumento
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>();
+    funcArgs->addArg(argA);
+
+    std::cout << "1" << std::endl;
+
+    // Cria a função 'foo' retornando int
+    auto func = std::make_shared<hlir::Function>();
+    func->set("foo", funcArgs, typeInt);
+
+    std::cout << "2" << std::endl;
+
+    // Cria o FunctionPtr para a função 'foo'
+    auto funcPtrert = std::make_shared<hlir::FunctionPtr>();
+    funcPtrert->set(func);
+
+    std::cout << "3" << std::endl;
+
+    // Esperamos que getText() retorne "fptr foo"
+
+    std::cout << funcPtrert->getText() << std::endl;
 }

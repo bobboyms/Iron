@@ -10,7 +10,7 @@
 #include "antlr4-runtime.h"          // se necessário para seu projeto
 
 // Fixture de teste
-class HlIrTest : public ::testing::Test
+class HlIrTypeTest : public ::testing::Test
 {
 protected:
     void SetUp() override
@@ -60,56 +60,56 @@ protected:
 // TESTES PARA A CLASSE "Type"
 // ---------------------------------------------------------------------
 
-TEST_F(HlIrTest, ValidIntType)
+TEST_F(HlIrTypeTest, ValidIntType)
 {
     auto type = hlir::Type(tokenMap::TYPE_INT);
     // Checa se o método getText() gera "int"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "int"));
 }
 
-TEST_F(HlIrTest, ValidCharType)
+TEST_F(HlIrTypeTest, ValidCharType)
 {
     auto type = hlir::Type(tokenMap::TYPE_CHAR);
     // Esperamos "char"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "char"));
 }
 
-TEST_F(HlIrTest, ValidFloatType)
+TEST_F(HlIrTypeTest, ValidFloatType)
 {
     auto type = hlir::Type(tokenMap::TYPE_FLOAT);
     // Esperamos "float"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "float"));
 }
 
-TEST_F(HlIrTest, ValidStringType)
+TEST_F(HlIrTypeTest, ValidStringType)
 {
     auto type = hlir::Type(tokenMap::TYPE_STRING);
     // Esperamos "string"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "string"));
 }
 
-TEST_F(HlIrTest, ValidBooleanType)
+TEST_F(HlIrTypeTest, ValidBooleanType)
 {
     auto type = hlir::Type(tokenMap::TYPE_BOOLEAN);
     // Esperamos "boolean"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "boolean"));
 }
 
-TEST_F(HlIrTest, ValidDoubleType)
+TEST_F(HlIrTypeTest, ValidDoubleType)
 {
     auto type = hlir::Type(tokenMap::TYPE_DOUBLE);
     // Esperamos "double"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "double"));
 }
 
-TEST_F(HlIrTest, ValidFunctionType)
+TEST_F(HlIrTypeTest, ValidFunctionType)
 {
     auto type = hlir::Type(tokenMap::FUNCTION);
     // Esperamos "fn"
     EXPECT_NO_THROW(runAnalysis(type.getText(), "fn"));
 }
 
-TEST_F(HlIrTest, ValidPtrFunctionType)
+TEST_F(HlIrTypeTest, ValidPtrFunctionType)
 {
     auto type = hlir::Type(tokenMap::FUNCTION_PTR);
     // Esperamos "fptr"
@@ -117,7 +117,7 @@ TEST_F(HlIrTest, ValidPtrFunctionType)
 }
 
 // Teste para Type com tipo inválido (espera-se exceção)
-TEST_F(HlIrTest, Type_InvalidType_ThrowsException)
+TEST_F(HlIrTypeTest, Type_InvalidType_ThrowsException)
 {
     int invalidType = 9999; // Supondo que 9999 não está definido no enum tokenMap::DataType
 

@@ -2,14 +2,46 @@
 
 namespace hlir
 {
-    Assign::Assign(std::shared_ptr<Variable> variable, std::shared_ptr<Value> value)
-        : variable(variable), value(value)
+    std::shared_ptr<Assign> Assign::set(std::shared_ptr<Variable> newVariable, std::shared_ptr<Value> newValue)
     {
-
-        if (variable->getVarType()->getType() != value->getValueType()->getType())
+        if (!newVariable)
         {
-            throw HLIRException("The variable type is incompatible with the value.");
+            throw HLIRException("Assign::set failed: newVariable is null.");
         }
+
+        if (!newValue)
+        {
+            throw HLIRException("Assign::set failed: newValue is null.");
+        }
+
+        if (newVariable->getVarType()->getType() != newValue->getValueType()->getType())
+        {
+            throw HLIRException("Assign::set failed: Variable type is incompatible with the value type.");
+        }
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("Assign::set failed: shared_from_this() returned null.");
+        }
+        variable = newVariable;
+        value = newValue;
+
+        variable->setParent(parentPtr);
+        value->setParent(parentPtr);
+
+        // Realiza o cast para std::shared_ptr<Assign>
+        auto assignPtr = std::dynamic_pointer_cast<Assign>(parentPtr);
+        if (!assignPtr)
+        {
+            throw HLIRException("Assign::set failed: Unable to cast Parent to Assign.");
+        }
+
+        return assignPtr;
+    }
+
+    Assign::Assign()
+    {
     }
 
     Assign::~Assign() {}
@@ -28,14 +60,8 @@ namespace hlir
      *
      */
 
-    Plus::Plus(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight)
-        : varLeft(varLeft), varRight(varRight)
+    Plus::Plus()
     {
-
-        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
-        {
-            throw HLIRException("The variables need be the same type.");
-        }
     }
 
     Plus::~Plus() {}
@@ -49,19 +75,68 @@ namespace hlir
 
         return sb.str();
     }
+    /*** Binary
+     *  ***/
+
+    BinaryOperation::BinaryOperation() {}
+    BinaryOperation::~BinaryOperation() {}
+
+    /**
+     * @brief Constructs a Minus operation with two variables.
+     * @param varLeft Shared pointer to the left-hand side variable.
+     * @param varRight Shared pointer to the right-hand side variable.
+     *
+     * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+     */
+    std::shared_ptr<BinaryOperation> BinaryOperation::set(std::shared_ptr<Variable> newVarLeft, std::shared_ptr<Variable> newVarRight)
+    {
+        if (!newVarLeft)
+        {
+            throw HLIRException("Minus::set failed: newVarLeft is null.");
+        }
+
+        if (!newVarRight)
+        {
+            throw HLIRException("Minus::set failed: newVarRight is null.");
+        }
+
+        if (newVarLeft->getVarType()->getType() != newVarRight->getVarType()->getType())
+        {
+            throw HLIRException("Minus::set failed: The variables must be of the same type.");
+        }
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("Minus::set failed: shared_from_this() returned null.");
+        }
+
+        newVarLeft->setParent(parentPtr);
+        newVarRight->setParent(parentPtr);
+
+        varLeft = newVarLeft;
+        varRight = newVarRight;
+
+        // Realiza o cast para std::shared_ptr<Minus>
+        auto assignPtr = std::dynamic_pointer_cast<BinaryOperation>(parentPtr);
+        if (!assignPtr)
+        {
+            throw HLIRException("Minus::set failed: Unable to cast Parent to Minus.");
+        }
+
+        return assignPtr;
+    }
 
     /**
      *
      */
 
-    Minus::Minus(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight)
-        : varLeft(varLeft), varRight(varRight)
-    {
+    // std::shared_ptr<Minus> Minus::set(std::shared_ptr<Variable> newVarLeft, std::shared_ptr<Variable> newVarRight)
+    // {
+    // }
 
-        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
-        {
-            throw HLIRException("The variables need be the same type.");
-        }
+    Minus::Minus()
+    {
     }
 
     Minus::~Minus() {}
@@ -70,24 +145,14 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        // mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
+
         sb << util::format("MINUS {}, {}", varLeft->getVarName(), varRight->getVarName());
 
         return sb.str();
     }
 
-    /**
-     *
-     */
-
-    Mult::Mult(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight)
-        : varLeft(varLeft), varRight(varRight)
+    Mult::Mult()
     {
-
-        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
-        {
-            throw HLIRException("The variables need be the same type.");
-        }
     }
 
     Mult::~Mult() {}
@@ -102,17 +167,8 @@ namespace hlir
         return sb.str();
     }
 
-    /***
-     *
-     */
-    Div::Div(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight)
-        : varLeft(varLeft), varRight(varRight)
+    Div::Div()
     {
-
-        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
-        {
-            throw HLIRException("The variables need be the same type.");
-        }
     }
 
     Div::~Div() {}
@@ -126,8 +182,60 @@ namespace hlir
         return sb.str();
     }
 
-    Expr::Expr(std::shared_ptr<Variable> variable, ValidExpr validExpr)
-        : validExpr(validExpr), variable(variable)
+    std::shared_ptr<Expr> Expr::set(std::shared_ptr<Variable> newVariable, ValidExpr newValidExpr)
+    {
+        if (!newVariable)
+        {
+            throw HLIRException("Expr::set failed: newVariable is null.");
+        }
+
+        variable = newVariable;
+        validExpr = newValidExpr;
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("Expr::set failed: shared_from_this() returned null.");
+        }
+
+        variable->setParent(parentPtr);
+        std::visit([parentPtr](auto &&arg)
+                   {
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, std::shared_ptr<Div>> ||
+                          std::is_same_v<T, std::shared_ptr<Mult>> ||
+                          std::is_same_v<T, std::shared_ptr<Minus>> ||
+                          std::is_same_v<T, std::shared_ptr<Plus>> ||
+                          std::is_same_v<T, std::shared_ptr<FunctionCall>> ||
+                          std::is_same_v<T, std::shared_ptr<Variable>> ||
+                          std::is_same_v<T, std::shared_ptr<Cast>> ||
+                          std::is_same_v<T, std::shared_ptr<FunctionPtr>>)
+            {
+                if (arg)
+                {
+                    arg->setParent(parentPtr);
+                }
+                else
+                {
+                    throw HLIRException("Expr::set failed: Expression argument is null.");
+                }
+            }
+            else
+            {
+                throw HLIRException("Expr::set failed: Unsupported expression type.");
+            } }, validExpr);
+
+        auto exprPtr = std::dynamic_pointer_cast<Expr>(parentPtr);
+        if (!exprPtr)
+        {
+            throw HLIRException("Expr::set failed: Unable to cast Parent to Expr.");
+        }
+
+        return exprPtr;
+    }
+
+    Expr::Expr()
     {
     }
 
@@ -158,36 +266,76 @@ namespace hlir
                 }
                 else
                 {
-                    throw HLIRException("Expression pointer is null.");
+                    throw HLIRException("Expr::getText failed: Expression pointer is null.");
                 }
             }
             else
             if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
             {
+                if (!exprPtr)
+                {
+                    throw HLIRException("Expr::getText failed: Variable expression pointer is null.");
+                }
+
                 if (variable->getVarName() == exprPtr->getVarName()) {
-                    throw HLIRException("The variables can't be the same name.");
+                    throw HLIRException("Expr::getText failed: The variables cannot have the same name.");
                 }
 
                 sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getVarName());
-            } else {
-                throw HLIRException("Unsupported expression type.");
+            }
+            else {
+                throw HLIRException("Expr::getText failed: Unsupported expression type.");
             } }, validExpr);
 
         return sb.str();
     }
 
-    Cast::Cast(std::shared_ptr<Variable> variable, std::shared_ptr<Type> type)
-        : variable(variable), type(type)
+    std::shared_ptr<Cast> Cast::apply(std::shared_ptr<Variable> newVariable, std::shared_ptr<Type> newType)
     {
-        if (!this->variable)
+        if (!newVariable)
         {
-            throw HLIRException("Variable pointer is null in Cast constructor.");
+            throw HLIRException("Cast::apply failed: newVariable is null.");
         }
 
-        if (!this->type)
+        if (!newType)
         {
-            throw HLIRException("Type pointer is null in Cast constructor.");
+            throw HLIRException("Cast::apply failed: newType is null.");
         }
+
+        if (!newVariable->getVarType())
+        {
+            throw HLIRException("Cast::apply failed: newVariable's type is null.");
+        }
+
+        if (!newType->getType())
+        {
+            throw HLIRException("Cast::apply failed: newType's type is null.");
+        }
+
+        variable = newVariable;
+        type = newType;
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("Cast::apply failed: shared_from_this() returned null.");
+        }
+
+        variable->setParent(parentPtr);
+        type->setParent(parentPtr);
+
+        // Realiza o cast para std::shared_ptr<Cast>
+        auto assignPtr = std::dynamic_pointer_cast<Cast>(parentPtr);
+        if (!assignPtr)
+        {
+            throw HLIRException("Cast::apply failed: Unable to cast Parent to Cast.");
+        }
+
+        return assignPtr;
+    }
+
+    Cast::Cast()
+    {
     }
 
     Cast::~Cast()
@@ -207,13 +355,33 @@ namespace hlir
         return sb.str();
     }
 
-    FunctionPtr::FunctionPtr(std::shared_ptr<Function> function)
-        : function(function)
+    std::shared_ptr<FunctionPtr> FunctionPtr::set(std::shared_ptr<Function> newFunction)
     {
-        if (!this->function)
+        if (!newFunction)
         {
-            throw HLIRException("Function pointer is null in FunctionPtr constructor.");
+            throw HLIRException("FunctionPtr::set failed: newFunction is null.");
         }
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("FunctionPtr::set failed: shared_from_this() returned null.");
+        }
+
+        function = newFunction;
+        function->setParent(parentPtr);
+
+        auto assignPtr = std::dynamic_pointer_cast<FunctionPtr>(parentPtr);
+        if (!assignPtr)
+        {
+            throw HLIRException("FunctionPtr::set failed: Unable to cast Parent to FunctionPtr.");
+        }
+
+        return assignPtr;
+    }
+
+    FunctionPtr::FunctionPtr()
+    {
     }
 
     FunctionPtr::~FunctionPtr()

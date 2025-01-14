@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------
 // 2) Fixture de teste (padrão Google Test)
 // ---------------------------------------------------------------------
-class HlIrTest : public ::testing::Test
+class HlIrVariableTest : public ::testing::Test
 {
 protected:
     void SetUp() override
@@ -61,51 +61,51 @@ protected:
 // TESTES PARA A CLASSE 'Value'
 // ---------------------------------------------------------------------
 
-TEST_F(HlIrTest, Value_BasicInt)
+TEST_F(HlIrVariableTest, Value_BasicInt)
 {
     // Exemplo: Value("25", tokenMap::TYPE_INT)
     auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
-    hlir::Value val("25", typeInt);
+    auto val = std::make_shared<hlir::Value>()->set("25", typeInt);
 
     // Checa se o método getText() gera "25"
-    runAnalysis(val.getText(), "25");
+    runAnalysis(val->getText(), "25");
 
     // Checa se getValueType() retorna o tipo correto
-    EXPECT_EQ(typeInt, val.getValueType())
+    EXPECT_EQ(typeInt, val->getValueType())
         << "Value type should match the one passed in the constructor.";
 }
 
-TEST_F(HlIrTest, Value_EmptyString)
+TEST_F(HlIrVariableTest, Value_EmptyString)
 {
     // Value com string vazia
     auto typeString = std::make_shared<hlir::Type>(tokenMap::TYPE_STRING);
-    hlir::Value val("", typeString);
+    auto val = std::make_shared<hlir::Value>()->set("", typeString);
 
     // getText() deve ser ""
-    runAnalysis(val.getText(), "");
+    runAnalysis(val->getText(), "");
 
     // Verifica se o type é tokenMap::TYPE_STRING
-    EXPECT_EQ(typeString, val.getValueType());
+    EXPECT_EQ(typeString, val->getValueType());
 }
 
-TEST_F(HlIrTest, Value_DifferentType)
+TEST_F(HlIrVariableTest, Value_DifferentType)
 {
     // Testando com tokenMap::TYPE_FLOAT
     auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
-    hlir::Value val("3.14", typeFloat);
+    auto val = std::make_shared<hlir::Value>()->set("3.14", typeFloat);
 
-    runAnalysis(val.getText(), "3.14");
-    EXPECT_EQ(typeFloat, val.getValueType());
+    runAnalysis(val->getText(), "3.14");
+    EXPECT_EQ(typeFloat, val->getValueType());
 }
 
-TEST_F(HlIrTest, Value_RepeatedCallsGetText)
+TEST_F(HlIrVariableTest, Value_RepeatedCallsGetText)
 {
     // Verifica se múltiplas chamadas a getText() retornam o mesmo valor
     auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
-    hlir::Value val("100", typeInt);
+    auto val = std::make_shared<hlir::Value>()->set("100", typeInt);
 
-    std::string first = val.getText();
-    std::string second = val.getText();
+    std::string first = val->getText();
+    std::string second = val->getText();
 
     // Verifica se ambas as chamadas retornam "100"
     runAnalysis(first, "100");
@@ -116,30 +116,31 @@ TEST_F(HlIrTest, Value_RepeatedCallsGetText)
 // TESTES PARA A CLASSE 'Variable'
 // ---------------------------------------------------------------------
 
-TEST_F(HlIrTest, Variable_BasicInt)
+TEST_F(HlIrVariableTest, Variable_BasicInt)
 {
     // Exemplo: Variable("idade", tokenMap::TYPE_INT)
     auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
-    hlir::Variable var("idade", typeInt);
+
+    auto var = std::make_shared<hlir::Variable>()->set("idade", typeInt);
 
     // Esperamos "let idade:int" (conforme implementação)
-    runAnalysis(var.getText(), "let idade:int");
+    runAnalysis(var->getText(), "let idade:int");
 }
 
-TEST_F(HlIrTest, Variable_EmptyName)
+TEST_F(HlIrVariableTest, Variable_EmptyName)
 {
     // Nome vazio, mas tokenMap::TYPE_FLOAT
     auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
 
     // Tenta criar uma variável com nome vazio e espera exceção
-    EXPECT_THROW({ hlir::Variable var("", typeFloat); }, hlir::HLIRException);
+    EXPECT_THROW({ std::make_shared<hlir::Variable>()->set("", typeFloat); }, hlir::HLIRException);
 }
 
-TEST_F(HlIrTest, Variable_DifferentTypeString)
+TEST_F(HlIrVariableTest, Variable_DifferentTypeString)
 {
     // Variable com tokenMap::TYPE_STRING
     auto typeString = std::make_shared<hlir::Type>(tokenMap::TYPE_STRING);
-    hlir::Variable var("nome", typeString);
+    auto var = std::make_shared<hlir::Variable>()->set("nome", typeString);
 
-    runAnalysis(var.getText(), "let nome:string");
+    runAnalysis(var->getText(), "let nome:string");
 }

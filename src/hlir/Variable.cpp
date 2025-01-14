@@ -3,23 +3,126 @@
 namespace hlir
 {
 
-    // ----------------------------------------------------------------
-    // Value (permanece igual, se ainda for útil em outro contexto)
-    // ----------------------------------------------------------------
-    Value::Value(Data value, std::shared_ptr<Type> valueType)
-        : value(value), valueType(valueType)
+    std::shared_ptr<Value> Value::set(Data newValue, std::shared_ptr<Type> newValueType)
     {
-        if (valueType->getType() == tokenMap::VOID)
+        if (!newValueType)
         {
-            throw HLIRException("The value can't be -> void");
+            throw HLIRException("Value::set failed: newValueType is null.");
         }
+
+        if (newValueType->getType() == tokenMap::VOID)
+        {
+            throw HLIRException("Value::set failed: The value type cannot be void.");
+        }
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("Value::set failed: shared_from_this() returned null.");
+        }
+
+        newValueType->setParent(parentPtr);
+
+        if (!newValueType->getType())
+        {
+            throw HLIRException("Value::set failed: newValueType's type is null.");
+        }
+
+        valueType = newValueType;
+        value = newValue;
+
+        // Verifica se value contém uma Function e estabelece seu pai
+        if (std::holds_alternative<std::shared_ptr<Function>>(newValue))
+        {
+            auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
+            if (!funcPtr)
+            {
+                throw HLIRException("Value::set failed: Function pointer in value is null.");
+            }
+            funcPtr->setParent(parentPtr);
+        }
+
+        // Realiza o cast para std::shared_ptr<Value>
+        auto assignPtr = std::dynamic_pointer_cast<Value>(parentPtr);
+        if (!assignPtr)
+        {
+            throw HLIRException("Value::set failed: Unable to cast Parent to Value.");
+        }
+
+        return assignPtr;
     }
+
+    Value::Value() {}
 
     Value::~Value() {}
 
     Data Value::getValue()
     {
         return value;
+    }
+
+    std::shared_ptr<Type> Value::getValueType()
+    {
+        return valueType;
+    }
+
+    std::shared_ptr<Variable> Variable::set(const std::string &newVarName, std::shared_ptr<Type> newVarType)
+    {
+        if (!newVarType)
+        {
+            throw HLIRException("Variable::set failed: newVarType is null.");
+        }
+
+        if (newVarType->getType() == tokenMap::VOID)
+        {
+            throw HLIRException("Variable::set failed: The variable type cannot be void.");
+        }
+
+        if (newVarName.empty())
+        {
+            throw HLIRException("Variable::set failed: The variable name cannot be empty.");
+        }
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        if (!parentPtr)
+        {
+            throw HLIRException("Variable::set failed: shared_from_this() returned null.");
+        }
+
+        varName = newVarName;
+        varType = newVarType;
+        varType->setParent(parentPtr);
+
+        // Realiza o cast para std::shared_ptr<Variable>
+        auto assignPtr = std::dynamic_pointer_cast<Variable>(parentPtr);
+        if (!assignPtr)
+        {
+            throw HLIRException("Variable::set failed: Unable to cast Parent to Variable.");
+        }
+
+        return assignPtr;
+    }
+
+    Variable::Variable() {}
+
+    Variable::~Variable() {}
+
+    std::string Variable::getVarName()
+    {
+        return varName;
+    }
+
+    std::shared_ptr<Type> Variable::getVarType()
+    {
+        return varType;
+    }
+
+    std::string Variable::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("let {}:{}", varName, varType->getText());
+        return sb.str();
     }
 
     std::string Value::getText()
@@ -51,48 +154,9 @@ namespace hlir
             sb << (arg ? "true" : "false");
         }
         else {
-            throw HLIRException("Type undefined");
+            throw HLIRException("Value::getText failed: Unsupported type in value.");
         } }, value);
 
-        return sb.str();
-    }
-
-    std::shared_ptr<Type> Value::getValueType()
-    {
-        return valueType;
-    }
-
-    Variable::Variable(const std::string &varName, std::shared_ptr<Type> varType)
-        : varName(varName), varType(varType)
-    {
-        if (varType->getType() == tokenMap::VOID)
-        {
-            throw HLIRException("The variable can't be -> void");
-        }
-
-        if (varName.empty())
-        {
-            throw HLIRException("The variable name can't be empty");
-        }
-    }
-
-    Variable::~Variable() {}
-
-    std::string Variable::getVarName()
-    {
-        return varName;
-    }
-
-    std::shared_ptr<Type> Variable::getVarType()
-    {
-        return varType;
-    }
-
-    std::string Variable::getText()
-    {
-        sb.str("");
-        sb.clear();
-        sb << util::format("let {}:{}", varName, varType->getText());
         return sb.str();
     }
 
