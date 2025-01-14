@@ -168,7 +168,6 @@ namespace hlir
             std::shared_ptr<Parent> parentPtr = shared_from_this();
             newType->setParent(parentPtr);
 
-            // Realiza o cast para std::shared_ptr<Assign>
             auto assignPtr = std::dynamic_pointer_cast<Arg>(parentPtr);
             if (!assignPtr)
             {
@@ -718,7 +717,7 @@ namespace hlir
      * The FunctionPtr class inherits from Basic and implements the getText() method to provide
      * a textual representation of the function pointer.
      */
-    class FunctionPtr : public Basic, Parent
+    class FunctionPtr : public Basic, public Parent
     {
     private:
         std::shared_ptr<Function> function; ///< Shared pointer to the referenced function.
@@ -928,5 +927,6 @@ namespace hlir
          */
         ~Function();
     };
+
 }
 #endif

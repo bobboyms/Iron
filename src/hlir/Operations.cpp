@@ -2,6 +2,11 @@
 
 namespace hlir
 {
+
+    /**
+     * Assign
+     */
+
     std::shared_ptr<Assign> Assign::set(std::shared_ptr<Variable> newVariable, std::shared_ptr<Value> newValue)
     {
         if (!newVariable)
