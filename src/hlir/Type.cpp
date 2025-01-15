@@ -2,9 +2,8 @@
 
 namespace hlir
 {
-    Type::Type(int type) : type(type)
+    bool verifyType(int type)
     {
-
         switch (type)
         {
 
@@ -17,11 +16,29 @@ namespace hlir
         case tokenMap::FUNCTION:
         case tokenMap::FUNCTION_PTR:
         case tokenMap::VOID:
-            this->type = type; // se for um dos permitidos, atribui
+            return true;
             break;
 
         default:
             throw HLIRException(util::format("DataType error: type not allowed -> {}", tokenMap::getTokenText(type)));
+        }
+    }
+
+    Type::Type() {}
+
+    Type::Type(int type) : type(type)
+    {
+        if (verifyType(type))
+        {
+            this->type = type;
+        }
+    }
+
+    void Type::set(int type)
+    {
+        if (verifyType(type))
+        {
+            this->type = type;
         }
     }
 

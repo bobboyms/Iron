@@ -1,36 +1,79 @@
 #include <iostream>
 #include <memory>
 #include "headers/Hlir.h"
+#include "headers/SemanticalAnalysis.h"
+#include "headers/HLIRGenerator.h"
+#include "parsers/IronLexer.h"
+#include <antlr4-runtime.h>
+
+int runAnalysis(const std::string &input)
+{
+    try
+    {
+
+        // Inicializa os componentes do ANTLR
+        antlr4::ANTLRInputStream inputStream(input);
+        IronLexer lexer(&inputStream);
+        antlr4::CommonTokenStream tokens(&lexer);
+        auto parser = std::make_shared<IronParser>(&tokens);
+
+        // Executa a análise semântica
+        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<iron::ScopeManager>()));
+        analysis.analyze();
+
+        // Rewind
+        tokens.seek(0);
+        parser->reset();
+
+        auto context = std::make_shared<hlir::Context>();
+        hlir::HLIRGenerator hightLevelCodeGenerator(parser, context);
+        const auto hlirCode = hightLevelCodeGenerator.generateCode();
+        std::cout << hlirCode << std::endl;
+
+        // iron::LLVMIR llvmir(hlirCode, std::move(std::make_unique<iron::ScopeManager>()));
+        //  std::cout << llvmir.generateCode() << std::endl;
+
+        // std::cout << "Análise semântica concluída com sucesso." << std::endl;
+        return 0; // Sucesso
+    }
+    catch (const iron::SemanticException &e)
+    {
+        std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
+        return 1; // Erro semântico específico
+    }
+    catch (const hlir::HLIRException e)
+    {
+        std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
+        return 1; // Erro semântico específico
+    }
+    catch (const iron::LLVMException e)
+    {
+        std::cerr << color::colorText("HLIRE error: ", color::RED) << e.what() << std::endl;
+        return 1; // Erro semântico específico
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << color::colorText("Unexpected error: ", color::RED) << e.what() << std::endl;
+        return 2; // Outros erros padrão
+    }
+    catch (...)
+    {
+        std::cerr << color::colorText("I panicked, I need a psychoanalyst: ", color::BOLD_RED) << std::endl;
+        return 3; // Exceções não esperadas
+    }
+}
 
 int main()
 {
+    std::string input = R"(
+        
+        public fn main() {
+            let a:int = 2
+            let b:int = 3
 
-    // Cria o tipo int
-    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+            let r:int = a * b
+        }
+    )";
 
-    // Cria o argumento 'a:int'
-    auto argA = std::make_shared<hlir::Arg>();
-    argA->set("a", typeInt);
-
-    // Cria FunctionArgs com um argumento
-    auto funcArgs = std::make_shared<hlir::FunctionArgs>();
-    funcArgs->addArg(argA);
-
-    std::cout << "1" << std::endl;
-
-    // Cria a função 'foo' retornando int
-    auto func = std::make_shared<hlir::Function>();
-    func->set("foo", funcArgs, typeInt);
-
-    std::cout << "2" << std::endl;
-
-    // Cria o FunctionPtr para a função 'foo'
-    auto funcPtrert = std::make_shared<hlir::FunctionPtr>();
-    funcPtrert->set(func);
-
-    std::cout << "3" << std::endl;
-
-    // Esperamos que getText() retorne "fptr foo"
-
-    std::cout << funcPtrert->getText() << std::endl;
+    return runAnalysis(input);
 }

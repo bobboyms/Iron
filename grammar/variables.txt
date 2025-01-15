@@ -1,6 +1,6 @@
-public fn sub(a:int, b:int) {
-            a * 2 + b
-        }
-        public fn main() {)
-            sub(a:1, b:2)
+public fn main() {
+            let a:int = 20
+            let b:int = 30
+
+            let x:int = a * b
         }

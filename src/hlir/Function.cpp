@@ -223,6 +223,13 @@ namespace hlir
         std::visit([parentPtr](auto &&arg)
                    {
         using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, std::shared_ptr<Assign>>)
+        {
+            if (arg)
+            {
+                arg->setParent(parentPtr);
+            }
+        }
         if constexpr (std::is_same_v<T, std::shared_ptr<Expr>>)
         {
             if (arg)
@@ -290,8 +297,10 @@ namespace hlir
             std::visit([this](const auto &stmtPtr)
                        {
                        using T = std::decay_t<decltype(*stmtPtr)>;
-
-                       if constexpr (std::is_same_v<T, Expr>)
+                        if constexpr (std::is_same_v<T, Assign>)
+                       {
+                           sb << util::format(" {}\n", stmtPtr->getText());
+                       }else if constexpr (std::is_same_v<T, Expr>)
                        {
                            sb << util::format(" {}\n", stmtPtr->getText());
                        }
@@ -303,5 +312,38 @@ namespace hlir
         }
 
         return sb.str();
+    }
+
+    std::shared_ptr<Variable> Statement::findVarByName(std::string varName)
+    {
+
+        std::shared_ptr<Variable> variable = nullptr;
+        for (auto stmt : statementList)
+        {
+            std::visit([this, varName, &variable](const auto &stmtPtr)
+                       {
+                       using T = std::decay_t<decltype(*stmtPtr)>;
+                        if constexpr (std::is_same_v<T, Assign>)
+                       {
+
+                        if (stmtPtr->getVariable()->getVarName() == varName) {
+                            variable = stmtPtr->getVariable();
+                        }
+
+                       }else if constexpr (std::is_same_v<T, Expr>)
+                       {
+                        if (stmtPtr->getVariable()->getVarName() == varName) {
+                            variable = stmtPtr->getVariable();
+                        }
+                       } },
+                       stmt);
+
+            if (variable != nullptr)
+            {
+                return variable;
+            }
+        }
+
+        return nullptr;
     }
 }
