@@ -834,6 +834,7 @@ namespace hlir
         std::vector<ValidStatement> statementList;
 
     public:
+        bool logged = true;
         std::shared_ptr<Statement> set(ValidStatement statementList);
         Statement();
         ~Statement();

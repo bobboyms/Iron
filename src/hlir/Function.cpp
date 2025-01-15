@@ -278,6 +278,11 @@ namespace hlir
         } }, statement);
 
         statementList.emplace_back(statement);
+
+        if (logged)
+        {
+            util::printf("{}", getText());
+        }
     }
 
     std::vector<ValidStatement> Statement::getStatements()

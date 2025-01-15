@@ -43,12 +43,12 @@ int runAnalysis(const std::string &input)
     }
     catch (const hlir::HLIRException e)
     {
-        std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
+        std::cerr << color::colorText("HLIRE error: ", color::RED) << e.what() << std::endl;
         return 1; // Erro semântico específico
     }
     catch (const iron::LLVMException e)
     {
-        std::cerr << color::colorText("HLIRE error: ", color::RED) << e.what() << std::endl;
+        std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
         return 1; // Erro semântico específico
     }
     catch (const std::exception &e)
@@ -68,10 +68,7 @@ int main()
     std::string input = R"(
         
         public fn main() {
-            let a:int = 2
-            let b:int = 3
-
-            let r:int = a * b
+            let inline: fn = (a:int, b:float):int -> a * b
         }
     )";
 

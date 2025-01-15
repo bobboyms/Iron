@@ -133,8 +133,6 @@ namespace hlir
         {
             throw HLIRException("Minus::set failed: Unable to cast Parent to Minus.");
         }
-
-        util::printf("Passou aqui?", "");
         return assignPtr;
     }
 

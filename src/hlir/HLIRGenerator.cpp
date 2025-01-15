@@ -153,6 +153,7 @@ namespace hlir
 
             if (leftVar->getVarType()->getType() != higherType)
             {
+
                 std::string tempVarStr = statement->getNewVarName();
 
                 auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
@@ -189,19 +190,19 @@ namespace hlir
             }
             else if (ctx->div)
             {
-                auto operation = std::make_shared<Div>()->set(leftVar, rightVar);
+                auto operation = std::make_shared<Div>()->set(newLeftVar, newRightVar);
                 auto expr = std::make_shared<Expr>()->set(tempVar, operation);
                 statement->addStatement(expr);
             }
             else if (ctx->plus)
             {
-                auto operation = std::make_shared<Plus>()->set(leftVar, rightVar);
+                auto operation = std::make_shared<Plus>()->set(newLeftVar, newRightVar);
                 auto expr = std::make_shared<Expr>()->set(tempVar, operation);
                 statement->addStatement(expr);
             }
             else if (ctx->minus)
             {
-                auto operation = std::make_shared<Minus>()->set(leftVar, rightVar);
+                auto operation = std::make_shared<Minus>()->set(newLeftVar, newRightVar);
                 auto expr = std::make_shared<Expr>()->set(tempVar, operation);
                 statement->addStatement(expr);
             }
@@ -228,6 +229,9 @@ namespace hlir
             auto type = std::make_shared<Type>(dataType);
             auto tempVar = std::make_shared<Variable>()->set(tempVarStr, type);
             auto value = std::make_shared<Value>()->set(numberLiteral, type);
+            auto assign = std::make_shared<Assign>()->set(tempVar, value);
+
+            statement->addStatement(assign);
 
             return tempVarStr;
         }
@@ -256,14 +260,17 @@ namespace hlir
             // Caso 2: a atribuição está sendo feita a uma variável declarada
             if (auto varDecl = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
             {
-
                 std::string varName = varDecl->varName->getText();
                 std::string varType = varDecl->varTypes()->getText();
                 std::string literalValue = ctx->dataFormat()->getText();
-                int literalType = tokenMap::determineType(literalValue);
+                // int literalType = tokenMap::determineType(literalValue);
 
-                auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(literalType));
-                auto value = std::make_shared<Value>()->set(literalValue, std::make_shared<Type>(literalType));
+                // if (literalType == tokenMap::REAL_NUMBER) {
+                //     tokenMap::determineFloatType(literalValue);
+                // }
+
+                auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
+                auto value = std::make_shared<Value>()->set(literalValue, std::make_shared<Type>(tokenMap::getTokenType(varType)));
                 auto assign = std::make_shared<Assign>()->set(variable, value);
 
                 statement->addStatement(assign);
@@ -297,8 +304,7 @@ namespace hlir
                     auto cast = std::make_shared<Cast>()->apply(rightVar, std::make_shared<Type>(leftDataTypeType));
                     auto tempVariable = std::make_shared<Variable>()->set(strTempVar, std::make_shared<Type>(leftDataTypeType));
 
-                    auto expr = std::shared_ptr<Expr>()->set(tempVariable, cast);
-
+                    auto expr = std::make_shared<Expr>()->set(tempVariable, cast);
                     statement->addStatement(expr);
 
                     auto value = std::make_shared<Value>()->set(tempVariable, tempVariable->getVarType());
@@ -313,6 +319,11 @@ namespace hlir
                     statement->addStatement(assign);
                 }
             }
+        }
+
+        if (ctx->arrowFunctionBlock())
+        {
+            visitArrowFunctionBlock(ctx->arrowFunctionBlock(), statement);
         }
     }
 
@@ -357,7 +368,7 @@ namespace hlir
     void HLIRGenerator::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma) {}
 
     void HLIRGenerator::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) {}
-    void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) {}
+    void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx, std::shared_ptr<Statement> statement) {}
     void HLIRGenerator::visitReturn(IronParser::ReturnStatementContext *ctx) {}
 
     std::string HLIRGenerator::generateCode()

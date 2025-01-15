@@ -20,7 +20,7 @@ namespace hlir
             break;
 
         default:
-            throw HLIRException(util::format("DataType error: type not allowed -> {}", tokenMap::getTokenText(type)));
+            throw HLIRException(util::format("Type::verifyType: DataType error: type not allowed -> {}", tokenMap::getTokenText(type)));
         }
     }
 

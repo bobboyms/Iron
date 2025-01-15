@@ -28,7 +28,7 @@ namespace hlir
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma);
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
-        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
+        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx, std::shared_ptr<Statement> statement);
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 
     public:
