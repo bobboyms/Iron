@@ -67,9 +67,28 @@ int main()
 {
     std::string input = R"(
         
-        public fn main() {
-            let inline: fn = (a:int, b:float):int -> a * b
+        fn soma(n:float, j:int): int {
+
+            let block:fn = ():int -> {
+                let x:int = 25
+               let block:fn = ():int -> {
+                    let r:int = 2 * j * x
+                    let x:float = 25.25
+                    let block:fn = (n:double):int -> {
+                        let r:int = 2 * j * x
+                    }
+
+                    block(n:14524.25D)
+                }
+
+                block()
+               
+            }
+
+            block()
+            
         }
+
     )";
 
     return runAnalysis(input);

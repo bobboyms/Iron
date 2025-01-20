@@ -110,6 +110,16 @@ namespace hlir
 
     // Variable
 
+    void Variable::changeToAnotherScope()
+    {
+        anotherScope = true;
+    }
+
+    bool Variable::isAnotherScope()
+    {
+        return anotherScope;
+    }
+
     std::shared_ptr<Variable> Variable::set(const std::string &newVarName, std::shared_ptr<Type> newVarType)
     {
         if (!newVarType)

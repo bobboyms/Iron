@@ -20,6 +20,23 @@ namespace hlir
         args.push_back(arg);
     }
 
+    std::shared_ptr<Arg> FunctionArgs::findArgByName(std::string argName)
+    {
+        for (auto arg : args)
+        {
+            if (arg->name == argName)
+            {
+                return arg;
+            }
+        }
+
+        return nullptr;
+    }
+    std::vector<std::shared_ptr<Arg>> FunctionArgs::getArgs()
+    {
+        return args;
+    }
+
     std::string FunctionArgs::getText()
     {
         sb.str("");

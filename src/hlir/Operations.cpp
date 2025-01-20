@@ -363,8 +363,15 @@ namespace hlir
             throw HLIRException("Context::addFunction failed: function is null.");
         }
 
+        if (!functions.empty() && function->getInline())
+        {
+            std::shared_ptr<Function> lastFunction = functions.back();
+            function->setParentFunction(lastFunction);
+        }
+
         functions.push_back(function);
     }
+
     std::shared_ptr<Function> Context::getFunctionByName(std::string functionName)
     {
         for (auto function : functions)

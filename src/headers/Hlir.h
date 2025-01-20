@@ -195,6 +195,10 @@ namespace hlir
          */
         std::string getText() override;
 
+        std::shared_ptr<Arg> findArgByName(std::string argName);
+
+        std::vector<std::shared_ptr<Arg>> getArgs();
+
         /**
          * @brief Default constructor creating an empty FunctionArgs.
          */
@@ -230,6 +234,8 @@ namespace hlir
          */
         std::shared_ptr<Type> varType;
 
+        bool anotherScope = false;
+
     public:
         /**
          * @brief Retrieves the variable's name.
@@ -255,6 +261,9 @@ namespace hlir
          * @param varType A shared pointer to a Type.
          */
         std::shared_ptr<Variable> set(const std::string &varName, std::shared_ptr<Type> varType);
+
+        void changeToAnotherScope();
+        bool isAnotherScope();
 
         Variable();
 
@@ -479,6 +488,8 @@ namespace hlir
          */
         void addCallArg(std::shared_ptr<FunctionCallArg> callArg);
 
+        std::vector<std::shared_ptr<FunctionCallArg>> getCallArgs();
+
         /**
          * @brief Destructor for FunctionCallArgs.
          */
@@ -512,6 +523,8 @@ namespace hlir
          * @throws HLIRException If `function` or `callArgs` is nullptr.
          */
         std::shared_ptr<FunctionCall> set(std::shared_ptr<Function> function, std::shared_ptr<FunctionCallArgs> callArgs);
+
+        std::shared_ptr<Function> getFunction();
 
         FunctionCall();
 
@@ -834,7 +847,7 @@ namespace hlir
         std::vector<ValidStatement> statementList;
 
     public:
-        bool logged = true;
+        bool logged = false;
         std::shared_ptr<Statement> set(ValidStatement statementList);
         Statement();
         ~Statement();
@@ -865,11 +878,6 @@ namespace hlir
         std::string functionName;
 
         /**
-         * @brief Pointer to the function's argument list.
-         */
-        std::shared_ptr<FunctionArgs> functionArgs;
-
-        /**
          * @brief Pointer to the function's return Type.
          */
         std::shared_ptr<Type> functionReturnType;
@@ -880,6 +888,15 @@ namespace hlir
          */
         std::shared_ptr<Statement> statement;
 
+        std::shared_ptr<Function> parentFunction;
+
+        /**
+         * @brief Pointer to the function's argument list.
+         */
+        std::shared_ptr<FunctionArgs> functionArgs;
+
+        bool inlineFunction = false;
+
     public:
         /**
          * @brief Retrieves the function's name.
@@ -888,6 +905,14 @@ namespace hlir
         std::string getFunctionName();
 
         std::shared_ptr<Type> getFunctionReturnType();
+
+        std::shared_ptr<FunctionArgs> getFunctionArgs();
+
+        std::shared_ptr<Function> getParentFunction();
+
+        void setParentFunction(std::shared_ptr<Function> function);
+
+        std::shared_ptr<Statement> getStatement();
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -907,6 +932,9 @@ namespace hlir
          * @param functionReturnType Shared pointer to the return Type.
          */
         std::shared_ptr<Function> set(std::string functionName, std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType);
+
+        void enableInline();
+        bool getInline();
 
         /**
          * @brief set a Function object with a statement (function body).

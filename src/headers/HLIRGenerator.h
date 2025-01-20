@@ -23,11 +23,11 @@ namespace hlir
         void visitFunctionArgs(IronParser::FunctionArgsContext *ctx, std::shared_ptr<FunctionArgs> functionArgs);
         void visitFunctionArg(IronParser::FunctionArgContext *ctx, std::shared_ptr<FunctionArgs> functionArgs);
 
-        void visitFunctionCall(IronParser::FunctionCallContext *ctx, std::shared_ptr<Statement> statement);
-        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx);
-        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma);
+        std::shared_ptr<FunctionCall> visitFunctionCall(IronParser::FunctionCallContext *ctx, std::shared_ptr<Statement> statement);
+        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs);
+        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs);
 
-        void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
+        void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx, std::shared_ptr<Statement> statement);
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx, std::shared_ptr<Statement> statement);
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 

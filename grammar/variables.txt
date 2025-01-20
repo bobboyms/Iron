@@ -1,3 +1,5 @@
-public fn main() {
-            let inline: fn = (a:int, b:float):int -> a * b
+fn soma(n:float): int {
+            // let x: float = 25.32
+
+            let block:fn = (a:int, b:float):int -> {}
         }

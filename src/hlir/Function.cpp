@@ -5,6 +5,26 @@ namespace hlir
     Function::Function() {}
     Function::~Function() {}
 
+    void Function::enableInline()
+    {
+        inlineFunction = true;
+    }
+
+    bool Function::getInline()
+    {
+        return inlineFunction;
+    }
+
+    void Function::setParentFunction(std::shared_ptr<Function> function)
+    {
+        parentFunction = function;
+    }
+
+    std::shared_ptr<Statement> Function::getStatement()
+    {
+        return statement;
+    }
+
     std::shared_ptr<Function> Function::set(std::string newFunctionName, std::shared_ptr<FunctionArgs> newFunctionArgs, std::shared_ptr<Type> newFunctionReturnType)
     {
         functionName = newFunctionName;
@@ -32,6 +52,16 @@ namespace hlir
         }
 
         return assignPtr;
+    }
+
+    std::shared_ptr<FunctionArgs> Function::getFunctionArgs()
+    {
+        return functionArgs;
+    }
+
+    std::shared_ptr<Function> Function::getParentFunction()
+    {
+        return parentFunction;
     }
 
     std::shared_ptr<Function> Function::set(const std::string newFunctionName,
@@ -105,14 +135,13 @@ namespace hlir
 
     // Function Call
 
-    FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs)
-        : callArgs(callArgs)
+    std::vector<std::shared_ptr<FunctionCallArg>> FunctionCallArgs::getCallArgs()
     {
+        return callArgs;
     }
 
     FunctionCallArgs::FunctionCallArgs()
     {
-        // pode estar vazio, mas precisa existir
     }
 
     FunctionCallArgs::~FunctionCallArgs()
@@ -152,6 +181,11 @@ namespace hlir
         std::shared_ptr<Parent> parentPtr = shared_from_this();
         callArg->setParent(parentPtr);
         callArgs.push_back(callArg);
+    }
+
+    std::shared_ptr<Function> FunctionCall::getFunction()
+    {
+        return function;
     }
 
     std::shared_ptr<FunctionCall> FunctionCall::set(std::shared_ptr<Function> newFunction, std::shared_ptr<FunctionCallArgs> newCallArgs)
