@@ -73,26 +73,13 @@ namespace hlir
     };
 
     /**
-     * @class Context
-     * @brief Holds contextual resources like a shared stringstream.
+     * @class Expression
+     * @brief Interface (classe base) para todas as expressões.
      */
-    class Context : public Basic
+    class Expression : public Basic, public Parent
     {
-    private:
-    protected:
-        std::vector<std::shared_ptr<Function>> functions;
-
     public:
-        /**
-         * @brief Constructs a Context instance.
-         */
-        Context(std::vector<std::shared_ptr<Function>> functions);
-        Context();
-
-        /**
-         * @brief Destroys the Context instance.
-         */
-        ~Context();
+        virtual ~Expression() = default;
     };
 
     /**
@@ -128,7 +115,9 @@ namespace hlir
          * @param type The integer code (e.g., TYPE_INT).
          */
         Type(int type);
+        Type();
 
+        void set(int type);
         /**
          * @brief Destructor for Type.
          */
@@ -206,6 +195,10 @@ namespace hlir
          */
         std::string getText() override;
 
+        std::shared_ptr<Arg> findArgByName(std::string argName);
+
+        std::vector<std::shared_ptr<Arg>> getArgs();
+
         /**
          * @brief Default constructor creating an empty FunctionArgs.
          */
@@ -228,7 +221,7 @@ namespace hlir
      *
      * Inherits from Basic to provide text in the form "let varName: varType".
      */
-    class Variable : public Basic, public Parent
+    class Variable : public Expression
     {
     private:
         /**
@@ -240,6 +233,8 @@ namespace hlir
          * @brief A shared pointer to the variable's Type.
          */
         std::shared_ptr<Type> varType;
+
+        bool anotherScope = false;
 
     public:
         /**
@@ -267,6 +262,9 @@ namespace hlir
          */
         std::shared_ptr<Variable> set(const std::string &varName, std::shared_ptr<Type> varType);
 
+        void changeToAnotherScope();
+        bool isAnotherScope();
+
         Variable();
 
         /**
@@ -286,6 +284,7 @@ namespace hlir
      */
     using Data = std::variant<
         std::shared_ptr<Function>,
+        std::shared_ptr<Variable>,
         std::string,
         int,
         float,
@@ -358,6 +357,17 @@ namespace hlir
      */
     class Assign : public Basic, public Parent
     {
+    protected:
+        /**
+         * @brief The Variable being assigned to.
+         */
+        std::shared_ptr<Variable> variable;
+
+        /**
+         * @brief The Value being assigned.
+         */
+        std::shared_ptr<Value> value;
+
     public:
         /**
          * @brief setAssign an Assign between a Variable and a Value.
@@ -379,21 +389,12 @@ namespace hlir
          */
         std::string getText() override;
 
+        std::shared_ptr<Variable> getVariable();
+
         void setParent(std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
         }
-
-    private:
-        /**
-         * @brief The Variable being assigned to.
-         */
-        std::shared_ptr<Variable> variable;
-
-        /**
-         * @brief The Value being assigned.
-         */
-        std::shared_ptr<Value> value;
     };
 
     /**
@@ -487,6 +488,8 @@ namespace hlir
          */
         void addCallArg(std::shared_ptr<FunctionCallArg> callArg);
 
+        std::vector<std::shared_ptr<FunctionCallArg>> getCallArgs();
+
         /**
          * @brief Destructor for FunctionCallArgs.
          */
@@ -505,7 +508,7 @@ namespace hlir
      * The FunctionCall class inherits from Basic and implements the getText() method to provide
      * a textual representation of the function call.
      */
-    class FunctionCall : public Basic, public Parent
+    class FunctionCall : public Expression
     {
     private:
         std::shared_ptr<Function> function;         ///< Shared pointer to the function being called.
@@ -520,6 +523,8 @@ namespace hlir
          * @throws HLIRException If `function` or `callArgs` is nullptr.
          */
         std::shared_ptr<FunctionCall> set(std::shared_ptr<Function> function, std::shared_ptr<FunctionCallArgs> callArgs);
+
+        std::shared_ptr<Function> getFunction();
 
         FunctionCall();
 
@@ -542,16 +547,18 @@ namespace hlir
         }
     };
 
-    class BinaryOperation : public Parent
+    class BinaryOperation : public Expression
     {
     protected:
-        std::shared_ptr<Variable> varLeft;  ///< Shared pointer to the left-hand side variable.
-        std::shared_ptr<Variable> varRight; ///< Shared pointer to the right-hand side variable.
-    public:
-        BinaryOperation(/* args */);
-        ~BinaryOperation();
+        std::shared_ptr<Variable> varLeft;
+        std::shared_ptr<Variable> varRight;
 
+    public:
+        BinaryOperation();
+        ~BinaryOperation();
         std::shared_ptr<BinaryOperation> set(std::shared_ptr<Variable> varLeft, std::shared_ptr<Variable> varRight);
+
+        virtual std::string getText() override = 0;
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -566,7 +573,7 @@ namespace hlir
      * The Plus class inherits from Basic and implements the getText() method to provide
      * a textual representation of the addition operation.
      */
-    class Plus : public BinaryOperation, public Basic
+    class Plus : public BinaryOperation
     {
 
     public:
@@ -593,7 +600,7 @@ namespace hlir
      * The Minus class inherits from Basic and implements the getText() method to provide
      * a textual representation of the subtraction operation.
      */
-    class Minus : public BinaryOperation, public Basic
+    class Minus : public BinaryOperation
     {
     public:
         Minus();
@@ -619,7 +626,7 @@ namespace hlir
      * The Mult class inherits from Basic and implements the getText() method to provide
      * a textual representation of the multiplication operation.
      */
-    class Mult : public BinaryOperation, public Basic
+    class Mult : public BinaryOperation
     {
 
     public:
@@ -646,7 +653,7 @@ namespace hlir
      * The Div class inherits from Basic and implements the getText() method to provide
      * a textual representation of the division operation.
      */
-    class Div : public BinaryOperation, public Basic
+    class Div : public BinaryOperation
     {
 
     public:
@@ -673,7 +680,7 @@ namespace hlir
      * The Cast class inherits from Basic and implements the getText() method to provide
      * a textual representation of the casting operation.
      */
-    class Cast : public Basic, public Parent
+    class Cast : public Expression
     {
     private:
         std::shared_ptr<Variable> variable; ///< Shared pointer to the variable to be casted.
@@ -765,16 +772,15 @@ namespace hlir
      * - Cast
      * - FunctionPtr
      */
-    using ValidExpr = std::variant<
-        std::shared_ptr<Parent>,
-        std::shared_ptr<Div>,
-        std::shared_ptr<Mult>,
-        std::shared_ptr<Minus>,
-        std::shared_ptr<Plus>,
-        std::shared_ptr<FunctionCall>,
-        std::shared_ptr<Variable>,
-        std::shared_ptr<Cast>,
-        std::shared_ptr<FunctionPtr>>;
+    // using ValidExpr = std::variant<
+    //     std::shared_ptr<Div>,
+    //     std::shared_ptr<Mult>,
+    //     std::shared_ptr<Minus>,
+    //     std::shared_ptr<Plus>,
+    //     std::shared_ptr<FunctionCall>,
+    //     std::shared_ptr<Variable>,
+    //     std::shared_ptr<Cast>,
+    //     std::shared_ptr<FunctionPtr>>;
 
     /**
      * @class Expr
@@ -785,8 +791,8 @@ namespace hlir
     class Expr : public Basic, public Parent
     {
     private:
-        ValidExpr validExpr;                ///< The encapsulated valid expression.
-        std::shared_ptr<Variable> variable; ///< Shared pointer to the variable associated with the expression.
+        std::shared_ptr<Expression> validExpr; ///< The encapsulated valid expression.
+        std::shared_ptr<Variable> variable;    ///< Shared pointer to the variable associated with the expression.
 
     public:
         /**
@@ -796,7 +802,7 @@ namespace hlir
          *
          * @throws HLIRException If `variable` is nullptr or if `validExpr` is invalid.
          */
-        std::shared_ptr<Expr> set(std::shared_ptr<Variable> variable, ValidExpr validExpr);
+        std::shared_ptr<Expr> set(std::shared_ptr<Variable> variable, std::shared_ptr<Expression> validExpr);
 
         Expr();
 
@@ -813,6 +819,8 @@ namespace hlir
          */
         std::string getText() override;
 
+        std::shared_ptr<Variable> getVariable();
+
         void setParent(std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -822,6 +830,7 @@ namespace hlir
     // statementList: (expr | functionCall)*;
 
     using ValidStatement = std::variant<
+        std::shared_ptr<Assign>,
         std::shared_ptr<Expr>,
         std::shared_ptr<FunctionCall>>;
 
@@ -837,16 +846,16 @@ namespace hlir
         int varId = 0;
         std::vector<ValidStatement> statementList;
 
-    protected:
-        std::string getNewVarName();
-
     public:
+        bool logged = false;
         std::shared_ptr<Statement> set(ValidStatement statementList);
         Statement();
         ~Statement();
         void addStatement(ValidStatement statement);
         std::vector<ValidStatement> getStatements();
         std::string getText() override;
+        std::string getNewVarName();
+        std::shared_ptr<Variable> findVarByName(std::string varName);
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -869,11 +878,6 @@ namespace hlir
         std::string functionName;
 
         /**
-         * @brief Pointer to the function's argument list.
-         */
-        std::shared_ptr<FunctionArgs> functionArgs;
-
-        /**
          * @brief Pointer to the function's return Type.
          */
         std::shared_ptr<Type> functionReturnType;
@@ -884,6 +888,15 @@ namespace hlir
          */
         std::shared_ptr<Statement> statement;
 
+        std::shared_ptr<Function> parentFunction;
+
+        /**
+         * @brief Pointer to the function's argument list.
+         */
+        std::shared_ptr<FunctionArgs> functionArgs;
+
+        bool inlineFunction = false;
+
     public:
         /**
          * @brief Retrieves the function's name.
@@ -892,6 +905,14 @@ namespace hlir
         std::string getFunctionName();
 
         std::shared_ptr<Type> getFunctionReturnType();
+
+        std::shared_ptr<FunctionArgs> getFunctionArgs();
+
+        std::shared_ptr<Function> getParentFunction();
+
+        void setParentFunction(std::shared_ptr<Function> function);
+
+        std::shared_ptr<Statement> getStatement();
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -912,6 +933,9 @@ namespace hlir
          */
         std::shared_ptr<Function> set(std::string functionName, std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType);
 
+        void enableInline();
+        bool getInline();
+
         /**
          * @brief set a Function object with a statement (function body).
          * @param functionName The function's name.
@@ -926,6 +950,33 @@ namespace hlir
          * @brief Destructor for Function.
          */
         ~Function();
+    };
+
+    /**
+     * @class Context
+     * @brief Holds contextual resources like a shared stringstream.
+     */
+    class Context : public Basic
+    {
+    private:
+    protected:
+        std::vector<std::shared_ptr<Function>> functions;
+
+    public:
+        Context();
+        /**
+         * @brief Destroys the Context instance.
+         */
+        ~Context();
+        void addFunction(std::shared_ptr<Function> function);
+
+        std::shared_ptr<Function> getFunctionByName(std::string funcName);
+
+        /**
+         * @brief Produces a textual representation: "fn functionName(args):returnType".
+         * @return A string with the function definition.
+         */
+        std::string getText() override;
     };
 
 }

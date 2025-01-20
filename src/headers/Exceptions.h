@@ -3,6 +3,24 @@
 
 #include <exception>
 #include <string>
+namespace hlir
+{
+    class HLIRException : public std::exception
+    {
+    private:
+        std::string message; // Mensagem de erro
+
+    public:
+        explicit HLIRException(const std::string &msg) : message(msg) {}
+
+        // Retorna a mensagem de erro
+        const char *what() const noexcept override
+        {
+            return message.c_str();
+        }
+    };
+
+} // namespace hlir
 
 namespace iron
 {
@@ -121,25 +139,6 @@ namespace iron
         }
     };
 }
-
-namespace hlir
-{
-    class HLIRException : public std::exception
-    {
-    private:
-        std::string message; // Mensagem de erro
-
-    public:
-        explicit HLIRException(const std::string &msg) : message(msg) {}
-
-        // Retorna a mensagem de erro
-        const char *what() const noexcept override
-        {
-            return message.c_str();
-        }
-    };
-
-} // namespace hlir
 
 namespace tokenMap
 {

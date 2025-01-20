@@ -51,6 +51,11 @@ namespace hlir
 
     Assign::~Assign() {}
 
+    std::shared_ptr<Variable> Assign::getVariable()
+    {
+        return variable;
+    }
+
     std::string Assign::getText()
     {
         sb.str("");
@@ -128,7 +133,6 @@ namespace hlir
         {
             throw HLIRException("Minus::set failed: Unable to cast Parent to Minus.");
         }
-
         return assignPtr;
     }
 
@@ -187,7 +191,12 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<Expr> Expr::set(std::shared_ptr<Variable> newVariable, ValidExpr newValidExpr)
+    std::shared_ptr<Variable> Expr::getVariable()
+    {
+        return variable;
+    }
+
+    std::shared_ptr<Expr> Expr::set(std::shared_ptr<Variable> newVariable, std::shared_ptr<Expression> newValidExpr)
     {
         if (!newVariable)
         {
@@ -204,36 +213,12 @@ namespace hlir
         }
 
         variable->setParent(parentPtr);
-        std::visit([parentPtr](auto &&arg)
-                   {
-            using T = std::decay_t<decltype(arg)>;
-
-            if constexpr (std::is_same_v<T, std::shared_ptr<Div>> ||
-                          std::is_same_v<T, std::shared_ptr<Mult>> ||
-                          std::is_same_v<T, std::shared_ptr<Minus>> ||
-                          std::is_same_v<T, std::shared_ptr<Plus>> ||
-                          std::is_same_v<T, std::shared_ptr<FunctionCall>> ||
-                          std::is_same_v<T, std::shared_ptr<Variable>> ||
-                          std::is_same_v<T, std::shared_ptr<Cast>> ||
-                          std::is_same_v<T, std::shared_ptr<FunctionPtr>>)
-            {
-                if (arg)
-                {
-                    arg->setParent(parentPtr);
-                }
-                else
-                {
-                    throw HLIRException("Expr::set failed: Expression argument is null.");
-                }
-            }
-            else
-            {
-                throw HLIRException("Expr::set failed: Unsupported expression type.");
-            } }, validExpr);
+        validExpr->setParent(parentPtr);
 
         auto exprPtr = std::dynamic_pointer_cast<Expr>(parentPtr);
         if (!exprPtr)
         {
+
             throw HLIRException("Expr::set failed: Unable to cast Parent to Expr.");
         }
 
@@ -254,43 +239,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        // Usa std::visit para lidar com cada tipo de expressão armazenada em validExpr
-        std::visit([this](auto &&exprPtr)
-                   {
-            using T = std::decay_t<decltype(exprPtr)>;
-            if constexpr (std::is_same_v<T, std::shared_ptr<Div>> ||
-                          std::is_same_v<T, std::shared_ptr<Mult>> ||
-                          std::is_same_v<T, std::shared_ptr<Minus>> ||
-                          std::is_same_v<T, std::shared_ptr<Plus>> ||
-                          std::is_same_v<T, std::shared_ptr<FunctionCall>> ||
-                          std::is_same_v<T, std::shared_ptr<Cast>>)
-            {
-                if (exprPtr)
-                {
-                    sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getText());
-                }
-                else
-                {
-                    throw HLIRException("Expr::getText failed: Expression pointer is null.");
-                }
-            }
-            else
-            if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
-            {
-                if (!exprPtr)
-                {
-                    throw HLIRException("Expr::getText failed: Variable expression pointer is null.");
-                }
-
-                if (variable->getVarName() == exprPtr->getVarName()) {
-                    throw HLIRException("Expr::getText failed: The variables cannot have the same name.");
-                }
-
-                sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), exprPtr->getVarName());
-            }
-            else {
-                throw HLIRException("Expr::getText failed: Unsupported expression type.");
-            } }, validExpr);
+        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), validExpr->getText());
 
         return sb.str();
     }
@@ -399,6 +348,52 @@ namespace hlir
         sb.clear();
 
         sb << util::format("fptr {}", function->getFunctionName());
+
+        return sb.str();
+    }
+
+    Context::Context() {}
+
+    Context::~Context() {}
+
+    void Context::addFunction(std::shared_ptr<Function> function)
+    {
+        if (!function)
+        {
+            throw HLIRException("Context::addFunction failed: function is null.");
+        }
+
+        if (!functions.empty() && function->getInline())
+        {
+            std::shared_ptr<Function> lastFunction = functions.back();
+            function->setParentFunction(lastFunction);
+        }
+
+        functions.push_back(function);
+    }
+
+    std::shared_ptr<Function> Context::getFunctionByName(std::string functionName)
+    {
+        for (auto function : functions)
+        {
+            if (function->getFunctionName() == functionName)
+            {
+                return function;
+            }
+        }
+
+        return nullptr;
+    }
+
+    std::string Context::getText()
+    {
+        sb.str("");
+        sb.clear();
+
+        for (auto function : functions)
+        {
+            sb << util::format("{}\n", function->getText());
+        }
 
         return sb.str();
     }

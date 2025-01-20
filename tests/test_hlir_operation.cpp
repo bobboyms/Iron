@@ -224,12 +224,9 @@ TEST_F(HlIrOperationTest, Expr_PlusOperator)
     auto plusOp = std::make_shared<hlir::Plus>();
     plusOp->set(varA, varB);
 
-    // Cria a expressão válida como Plus
-    hlir::ValidExpr exprVariant = plusOp;
-
     // Cria a expressão Expr
     auto expr = std::make_shared<hlir::Expr>();
-    expr->set(varA, exprVariant);
+    expr->set(varA, plusOp);
 
     // Verifica o texto gerado
     runAnalysis(expr->getText(), "let a:int = PLUS a, b");
@@ -252,12 +249,9 @@ TEST_F(HlIrOperationTest, Expr_MinusOperator)
     auto minusOp = std::make_shared<hlir::Minus>();
     minusOp->set(varX, varY);
 
-    // Cria a expressão válida como Minus
-    hlir::ValidExpr exprVariant = minusOp;
-
     // Cria a expressão Expr
     auto expr = std::make_shared<hlir::Expr>();
-    expr->set(varX, exprVariant);
+    expr->set(varX, minusOp);
 
     // Verifica o texto gerado
     runAnalysis(expr->getText(), "let x:float = MINUS x, y");
@@ -280,12 +274,9 @@ TEST_F(HlIrOperationTest, Expr_MultOperator)
     auto multOp = std::make_shared<hlir::Mult>();
     multOp->set(varM, varN);
 
-    // Cria a expressão válida como Mult
-    hlir::ValidExpr exprVariant = multOp;
-
     // Cria a expressão Expr
     auto expr = std::make_shared<hlir::Expr>();
-    expr->set(varM, exprVariant);
+    expr->set(varM, multOp);
 
     // Verifica o texto gerado
     runAnalysis(expr->getText(), "let m:double = MULT m, n");
@@ -308,12 +299,9 @@ TEST_F(HlIrOperationTest, Expr_DivOperator)
     auto divOp = std::make_shared<hlir::Div>();
     divOp->set(varFlag1, varFlag2);
 
-    // Cria a expressão válida como Div
-    hlir::ValidExpr exprVariant = divOp;
-
     // Cria a expressão Expr
     auto expr = std::make_shared<hlir::Expr>();
-    expr->set(varFlag1, exprVariant);
+    expr->set(varFlag1, divOp);
 
     // Verifica o texto gerado
     runAnalysis(expr->getText(), "let flag1:boolean = DIV flag1, flag2");
@@ -356,36 +344,12 @@ TEST_F(HlIrOperationTest, Expr_FunctionCall)
     auto variable = std::make_shared<hlir::Variable>();
     variable->set("result", typeInt);
 
-    // Cria a expressão válida como FunctionCall
-    hlir::ValidExpr exprVariant = functionCall;
-
     // Cria a expressão Expr
     auto expr = std::make_shared<hlir::Expr>();
-    expr->set(variable, exprVariant);
+    expr->set(variable, functionCall);
 
     // Verifica o texto gerado
     runAnalysis(expr->getText(), "let result:int = call int foo(a:12)");
-}
-
-// Teste para Expr com Variable (espera exceção)
-TEST_F(HlIrOperationTest, Expr_Variable)
-{
-    // Cria o tipo string
-    auto typeString = std::make_shared<hlir::Type>(tokenMap::TYPE_STRING);
-
-    // Cria a variável 'name:string'
-    auto varName = std::make_shared<hlir::Variable>();
-    varName->set("name", typeString);
-
-    // Cria a expressão válida como Variable
-    hlir::ValidExpr exprVariant = varName;
-
-    // Cria a expressão Expr
-    auto expr = std::make_shared<hlir::Expr>();
-    expr->set(varName, exprVariant);
-
-    // Verifica se getText() lança uma exceção
-    EXPECT_THROW({ expr->getText(); }, hlir::HLIRException);
 }
 
 // Teste para Expr com múltiplas chamadas a getText()
@@ -405,12 +369,9 @@ TEST_F(HlIrOperationTest, Expr_RepeatedCallsGetText)
     auto plusOp = std::make_shared<hlir::Plus>();
     plusOp->set(varA, varB);
 
-    // Cria a expressão válida como Plus
-    hlir::ValidExpr exprVariant = plusOp;
-
     // Cria a expressão Expr
     auto expr = std::make_shared<hlir::Expr>();
-    expr->set(varA, exprVariant);
+    expr->set(varA, plusOp);
 
     // Chama getText() duas vezes
     std::string first = expr->getText();

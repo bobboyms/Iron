@@ -32,6 +32,7 @@ SRC_COMMON  = src/hlir/Type.cpp \
                     src/hlir/Function.cpp \
                     src/hlir/Variable.cpp \
                     src/hlir/Operations.cpp \
+                    src/hlir/HLIRGenerator.cpp \
               src/llvm/Utils.cpp \
               src/llvm/Expr.cpp \
               src/llvm/Types.cpp \

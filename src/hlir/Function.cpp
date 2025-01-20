@@ -5,6 +5,26 @@ namespace hlir
     Function::Function() {}
     Function::~Function() {}
 
+    void Function::enableInline()
+    {
+        inlineFunction = true;
+    }
+
+    bool Function::getInline()
+    {
+        return inlineFunction;
+    }
+
+    void Function::setParentFunction(std::shared_ptr<Function> function)
+    {
+        parentFunction = function;
+    }
+
+    std::shared_ptr<Statement> Function::getStatement()
+    {
+        return statement;
+    }
+
     std::shared_ptr<Function> Function::set(std::string newFunctionName, std::shared_ptr<FunctionArgs> newFunctionArgs, std::shared_ptr<Type> newFunctionReturnType)
     {
         functionName = newFunctionName;
@@ -32,6 +52,16 @@ namespace hlir
         }
 
         return assignPtr;
+    }
+
+    std::shared_ptr<FunctionArgs> Function::getFunctionArgs()
+    {
+        return functionArgs;
+    }
+
+    std::shared_ptr<Function> Function::getParentFunction()
+    {
+        return parentFunction;
     }
 
     std::shared_ptr<Function> Function::set(const std::string newFunctionName,
@@ -105,14 +135,13 @@ namespace hlir
 
     // Function Call
 
-    FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs)
-        : callArgs(callArgs)
+    std::vector<std::shared_ptr<FunctionCallArg>> FunctionCallArgs::getCallArgs()
     {
+        return callArgs;
     }
 
     FunctionCallArgs::FunctionCallArgs()
     {
-        // pode estar vazio, mas precisa existir
     }
 
     FunctionCallArgs::~FunctionCallArgs()
@@ -152,6 +181,11 @@ namespace hlir
         std::shared_ptr<Parent> parentPtr = shared_from_this();
         callArg->setParent(parentPtr);
         callArgs.push_back(callArg);
+    }
+
+    std::shared_ptr<Function> FunctionCall::getFunction()
+    {
+        return function;
     }
 
     std::shared_ptr<FunctionCall> FunctionCall::set(std::shared_ptr<Function> newFunction, std::shared_ptr<FunctionCallArgs> newCallArgs)
@@ -223,6 +257,13 @@ namespace hlir
         std::visit([parentPtr](auto &&arg)
                    {
         using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, std::shared_ptr<Assign>>)
+        {
+            if (arg)
+            {
+                arg->setParent(parentPtr);
+            }
+        }
         if constexpr (std::is_same_v<T, std::shared_ptr<Expr>>)
         {
             if (arg)
@@ -271,6 +312,11 @@ namespace hlir
         } }, statement);
 
         statementList.emplace_back(statement);
+
+        if (logged)
+        {
+            util::printf("{}", getText());
+        }
     }
 
     std::vector<ValidStatement> Statement::getStatements()
@@ -290,8 +336,10 @@ namespace hlir
             std::visit([this](const auto &stmtPtr)
                        {
                        using T = std::decay_t<decltype(*stmtPtr)>;
-
-                       if constexpr (std::is_same_v<T, Expr>)
+                        if constexpr (std::is_same_v<T, Assign>)
+                       {
+                           sb << util::format(" {}\n", stmtPtr->getText());
+                       }else if constexpr (std::is_same_v<T, Expr>)
                        {
                            sb << util::format(" {}\n", stmtPtr->getText());
                        }
@@ -303,5 +351,38 @@ namespace hlir
         }
 
         return sb.str();
+    }
+
+    std::shared_ptr<Variable> Statement::findVarByName(std::string varName)
+    {
+
+        std::shared_ptr<Variable> variable = nullptr;
+        for (auto stmt : statementList)
+        {
+            std::visit([this, varName, &variable](const auto &stmtPtr)
+                       {
+                       using T = std::decay_t<decltype(*stmtPtr)>;
+                        if constexpr (std::is_same_v<T, Assign>)
+                       {
+
+                        if (stmtPtr->getVariable()->getVarName() == varName) {
+                            variable = stmtPtr->getVariable();
+                        }
+
+                       }else if constexpr (std::is_same_v<T, Expr>)
+                       {
+                        if (stmtPtr->getVariable()->getVarName() == varName) {
+                            variable = stmtPtr->getVariable();
+                        }
+                       } },
+                       stmt);
+
+            if (variable != nullptr)
+            {
+                return variable;
+            }
+        }
+
+        return nullptr;
     }
 }

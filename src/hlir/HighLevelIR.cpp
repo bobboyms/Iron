@@ -89,11 +89,6 @@ namespace iron
     {
         auto currentScope = scopeManager->currentScope();
 
-        // Verifica se a expressão é parte de uma declaração de variável
-        // if (auto declaration = dynamic_cast<IronParser::VarDeclarationContext*>(ctx->parent->parent)) {
-        // currentScope->addSymbol(tokenMap::MAIN_TYPE, {tokenMap::VARIABLE, tokenMap::getTokenType(declaration->varTypes()->getText()), nullptr});
-        //}
-
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
             for (auto child : ctx->children)

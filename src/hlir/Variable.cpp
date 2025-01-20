@@ -66,6 +66,60 @@ namespace hlir
         return valueType;
     }
 
+    std::string Value::getText()
+    {
+        sb.str("");
+        sb.clear();
+
+        // Usa std::visit p/ converter "value" num std::string
+        std::visit([this](auto &&arg)
+                   {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, std::shared_ptr<Function>>) {
+            // Se Function tiver um método getText():
+            if (valueType->getType() == tokenMap::FUNCTION_PTR) {
+                sb << util::format("{} {}", tokenMap::getTokenText(tokenMap::FUNCTION_PTR), arg->getFunctionName());
+            } else {
+                sb << arg->getFunctionName();
+            }
+        } else
+        if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>) {
+            sb << util::format("{}", arg->getVarName());
+        }
+        else if constexpr (std::is_same_v<T, std::string>) {
+            sb << arg;
+        }
+        else if constexpr (std::is_same_v<T, int>) {
+            sb << arg; // int -> "123"
+        }
+        else if constexpr (std::is_same_v<T, float>) {
+            sb << arg; // float -> "1.230000"
+        }
+        else if constexpr (std::is_same_v<T, double>) {
+            sb << arg; // double -> "3.140000"
+        }
+        else if constexpr (std::is_same_v<T, bool>) {
+            sb << (arg ? "true" : "false");
+        }
+        else {
+            throw HLIRException("Value::getText failed: Unsupported type in value.");
+        } }, value);
+
+        return sb.str();
+    }
+
+    // Variable
+
+    void Variable::changeToAnotherScope()
+    {
+        anotherScope = true;
+    }
+
+    bool Variable::isAnotherScope()
+    {
+        return anotherScope;
+    }
+
     std::shared_ptr<Variable> Variable::set(const std::string &newVarName, std::shared_ptr<Type> newVarType)
     {
         if (!newVarType)
@@ -122,41 +176,6 @@ namespace hlir
         sb.str("");
         sb.clear();
         sb << util::format("let {}:{}", varName, varType->getText());
-        return sb.str();
-    }
-
-    std::string Value::getText()
-    {
-        sb.str("");
-        sb.clear();
-
-        // Usa std::visit p/ converter "value" num std::string
-        std::visit([this](auto &&arg)
-                   {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, std::shared_ptr<Function>>) {
-            // Se Function tiver um método getText():
-            sb << arg->getFunctionName();
-        }
-        else if constexpr (std::is_same_v<T, std::string>) {
-            sb << arg;
-        }
-        else if constexpr (std::is_same_v<T, int>) {
-            sb << arg; // int -> "123"
-        }
-        else if constexpr (std::is_same_v<T, float>) {
-            sb << arg; // float -> "1.230000"
-        }
-        else if constexpr (std::is_same_v<T, double>) {
-            sb << arg; // double -> "3.140000"
-        }
-        else if constexpr (std::is_same_v<T, bool>) {
-            sb << (arg ? "true" : "false");
-        }
-        else {
-            throw HLIRException("Value::getText failed: Unsupported type in value.");
-        } }, value);
-
         return sb.str();
     }
 
