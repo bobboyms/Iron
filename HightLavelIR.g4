@@ -97,10 +97,10 @@ functionCallArgs: functionCallArg (',' functionCallArg)*;
 
 // Argumento da chamada de função
 functionCallArg:
-	varName = IDENTIFIER COLON varTypes (
-		dataFormat
+	varName = IDENTIFIER COLON (
+		anotherVarName = IDENTIFIER
+		| dataFormat
 		| functionCall
-		| anotherVarName = IDENTIFIER
 	);
 
 op: (varName = IDENTIFIER | number);

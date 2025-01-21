@@ -566,7 +566,7 @@ namespace hlir
 
             if (ctx->functionCallArgs())
             {
-                visitFunctionCallArgs(ctx->functionCallArgs(), callArgs);
+                visitFunctionCallArgs(ctx->functionCallArgs(), callArgs, statement);
             }
 
             return call;
@@ -594,7 +594,7 @@ namespace hlir
                 //     callArgs->addCallArg(std::make_shared<FunctionCallArg>()->set(funcArg->name, funcArg->type));
                 // }
 
-                visitFunctionCallArgs(ctx->functionCallArgs(), callArgs);
+                visitFunctionCallArgs(ctx->functionCallArgs(), callArgs, statement);
             }
 
             auto funcArgSize = inlineFunction->getFunctionArgs()->getArgs().size();
@@ -624,19 +624,19 @@ namespace hlir
         }
     }
 
-    void HLIRGenerator::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs)
+    void HLIRGenerator::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs, std::shared_ptr<Statement> statement)
     {
 
         for (auto child : ctx->children)
         {
             if (auto *arg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
             {
-                visitFunctionCallArg(arg, callArgs);
+                visitFunctionCallArg(arg, callArgs, statement);
             }
         }
     }
 
-    void HLIRGenerator::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs)
+    void HLIRGenerator::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs, std::shared_ptr<Statement> statement)
     {
         auto argName = ctx->varName->getText();
         auto callFunction = std::dynamic_pointer_cast<FunctionCall>(callArgs->getParent());
@@ -667,12 +667,15 @@ namespace hlir
 
         if (ctx->anotherVarName)
         {
+            // util::printf("ctx->anotherVarName {}", ctx->anotherVarName->getText());
 
             if (auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
             {
 
                 std::string anotherVar = ctx->anotherVarName->getText();
                 std::string inlineFunctionName = callFunction->getFunction()->getFunctionName();
+
+                // util::printf("inlineFunctionName {}", inlineFunctionName);
 
                 auto function = context->getFunctionByName(inlineFunctionName);
                 if (!function)
@@ -690,6 +693,45 @@ namespace hlir
                 auto value = std::make_shared<Value>()->set(anotherVar, std::make_shared<Type>(arg->type->getType()));
                 callArgs->addCallArg(std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(arg->type->getType()), value));
             }
+        }
+
+        if (ctx->functionCall())
+        {
+
+            auto functionName = ctx->functionCall()->functionName->getText();
+            auto function = context->getFunctionByName(functionName);
+
+            // util::printf("functionName {}", callFunction->getFunction()->getFunctionName());
+
+            if (!function)
+            {
+
+                auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
+                auto inlineFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), functionName);
+
+                function = context->getFunctionByName(inlineFunctionName);
+
+                if (!function)
+                {
+                    throw HLIRException("HLIRGenerator::visitFunctionCallArg. Function not found");
+                }
+            }
+
+            auto localCallFunction = visitFunctionCall(ctx->functionCall(), statement);
+
+            auto strAnotherVar = statement->getNewVarName();
+            auto anotherVar = std::make_shared<Variable>()->set(strAnotherVar, function->getFunctionReturnType());
+            auto expr = std::make_shared<Expr>()->set(anotherVar, localCallFunction);
+            statement->addStatement(expr);
+
+            auto arg = callFunction->getFunction()->getFunctionArgs()->findArgByName(argName);
+            if (!arg)
+            {
+                throw HLIRException("HLIRGenerator::visitFunctionCallArg. Arg not found");
+            }
+
+            auto value = std::make_shared<Value>()->set(anotherVar, std::make_shared<Type>(arg->type->getType()));
+            callArgs->addCallArg(std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(arg->type->getType()), value));
         }
     }
 

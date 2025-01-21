@@ -541,6 +541,8 @@ namespace hlir
          */
         std::string getText() override;
 
+        std::shared_ptr<FunctionCallArgs> getCallArgs();
+
         void setParent(std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
