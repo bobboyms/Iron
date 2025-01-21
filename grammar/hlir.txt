@@ -1,9 +1,26 @@
-private fn gfn_main_block(a:int):void {
-    let var_1:int = 2
-    let var_2:int = PLUS a, var_1
+fn soma(n: float, j: int): int { 
+    call int gfn_soma_block(j: j)
 }
 
-public fn main (): void { 
-    let block:fn = fptr gfn_main_block
-    call void block(a:int 12)
-} 
+fn gfn_soma_block(j: int): int { 
+    let x: int = 25
+    call int gfn_gfn_soma_block_block(j: j, x: x)
+}
+
+fn gfn_gfn_soma_block_block(j: int, x: int): int { 
+    let var_1: int = 2
+    let var_2: int = MULT var_1, j
+    let var_3: int = MULT var_2, x
+    let r: int = var_3
+    let x: float = 25.25
+    call int gfn_gfn_gfn_soma_block_block_block(n: 14524.25D, j: j, x: x)
+}
+
+public fn gfn_gfn_gfn_soma_block_block_block(n: double, j: int, x: float): int { 
+    let var_1: int = 2
+    let var_2: int = MULT var_1, j
+    let var_3: float = var_2 int to float
+    let var_4: float = MULT var_3, x
+    let var_5: int = var_4 float to int
+    let r: int = var_5
+}

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
-#include "headers/Hlir.h"
 #include "headers/SemanticalAnalysis.h"
+#include "headers/Hlir.h"
 #include "headers/HLIRGenerator.h"
 #include "parsers/IronLexer.h"
 #include <antlr4-runtime.h>
@@ -67,26 +67,15 @@ int main()
 {
     std::string input = R"(
         
-        fn soma(n:float, j:int): int {
+        fn mult(pp:float): float {}
+        fn xptc(z:float): int {}
 
-            let block:fn = ():int -> {
-                let x:int = 25
-               let block:fn = ():int -> {
-                    let r:int = 2 * j * x
-                    let x:float = 25.25
-                    let block:fn = (n:double):int -> {
-                        let r:int = 2 * j * x
-                    }
+        fn main() {
+            let xb: int = 36
+            let inline:fn = (a: int, b: int):int -> (xb + b) * a
+            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
 
-                    block(n:14524.25D)
-                }
-
-                block()
-               
-            }
-
-            block()
-            
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:mult(pp:12.00F)) / xb
         }
 
     )";

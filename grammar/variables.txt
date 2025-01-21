@@ -1,5 +1,8 @@
-fn soma(n:float): int {
-            // let x: float = 25.32
+fn mult(n:int, p:float): float {}
 
-            let block:fn = (a:int, b:float):int -> {}
+        fn sub(ax:int, bx:float): int {}
+
+        fn soma(): int {
+            let x: float = 25.00
+            32.25 * sub(ax: 1, bx: mult(n:22, p:x))
         }

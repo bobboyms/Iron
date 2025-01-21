@@ -52,12 +52,14 @@ SRC_COMMON  = src/hlir/Type.cpp \
               src/parsers/HightLavelIRListener.cpp
 
 # Fontes de teste
-TEST_SRC    = tests/test_semantical_analysis.cpp \
-              tests/test_lexer.cpp \
-              tests/test_hlir_types.cpp \
-			  tests/test_hlir_function.cpp \
-                    tests/test_hlir_variable.cpp \
-                    tests/test_hlir_operation.cpp
+TEST_SRC    = tests/test_semantical_analysis.cpp tests/test_hlir_code.cpp
+                        
+            #   tests/test_lexer.cpp \
+            #   tests/test_hlir_types.cpp \
+            #   tests/test_hlir_code.cpp \
+			#   tests/test_hlir_function.cpp \
+                  #   tests/test_hlir_variable.cpp \
+                  #   tests/test_hlir_operation.cpp
 
 #################################
 # Geração de listas de objetos

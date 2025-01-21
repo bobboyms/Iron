@@ -148,6 +148,11 @@ namespace hlir
     {
     }
 
+    FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs)
+        : callArgs(callArgs)
+    {
+    }
+
     std::string FunctionCallArgs::getText()
     {
 
@@ -186,6 +191,11 @@ namespace hlir
     std::shared_ptr<Function> FunctionCall::getFunction()
     {
         return function;
+    }
+
+    std::shared_ptr<FunctionCallArgs> FunctionCall::getCallArgs()
+    {
+        return callArgs;
     }
 
     std::shared_ptr<FunctionCall> FunctionCall::set(std::shared_ptr<Function> newFunction, std::shared_ptr<FunctionCallArgs> newCallArgs)
