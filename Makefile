@@ -37,6 +37,8 @@ SRC_COMMON  = src/hlir/Type.cpp \
               src/llvm/Expr.cpp \
               src/llvm/Types.cpp \
               src/llvm/LLVMIR.cpp \
+              src/llvm/LLVM.cpp \
+              src/llvm/Operations.cpp \
               src/hlir/WriterCodeHLIR.cpp \
               src/utils/Colors.cpp \
               src/utils/ScopeManager.cpp \
