@@ -2,6 +2,7 @@
 #include <memory>
 #include "headers/SemanticalAnalysis.h"
 #include "headers/Hlir.h"
+#include "headers/LLVMIR.h"
 #include "headers/HLIRGenerator.h"
 #include "parsers/IronLexer.h"
 #include <antlr4-runtime.h>
@@ -29,6 +30,10 @@ int runAnalysis(const std::string &input)
         hlir::HLIRGenerator hightLevelCodeGenerator(parser, context);
         const auto hlirCode = hightLevelCodeGenerator.generateCode();
         std::cout << hlirCode << std::endl;
+
+        iron::LLVM llvm(context);
+        auto llvmCode = llvm.generateCode();
+        std::cout << llvmCode << std::endl;
 
         // iron::LLVMIR llvmir(hlirCode, std::move(std::make_unique<iron::ScopeManager>()));
         //  std::cout << llvmir.generateCode() << std::endl;
@@ -67,16 +72,32 @@ int main()
 {
     std::string input = R"(
         
-        fn mult(pp:float): float {}
-        fn xptc(z:float): int {}
 
-        fn main() {
-            let xb: int = 36
-            let inline:fn = (a: int, b: int):int -> (xb + b) * a
-            let sum:fn = (x: int, y: int):float -> 2.25 + x + y
-
-            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:mult(pp:12.00F)) / xb
+        fn sub(n:int, j:int): int {   
         }
+
+        fn main(): int {
+            let x:int = 25
+
+            let block:fn = (a:int,b:int):int -> {
+                let n:int = sub(n:a, j:x) * sub(n:5, j:9)
+                let block:fn = (a:int,b:int):int -> {
+                    let g:float = sub(n:n, j:x) * sub(n:5, j:9) * x
+                    let block:fn = (a:float,b:int):int -> {
+                    }
+
+                    let r:int = block(a:g, b:20) * n
+                }
+
+                let v:int = block(a:a, b:20) * n
+            }
+
+            block(a:10, b:20)
+
+            
+        }
+
+        
 
     )";
 

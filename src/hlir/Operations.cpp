@@ -7,6 +7,11 @@ namespace hlir
      * Assign
      */
 
+    std::shared_ptr<Value> Assign::getValue()
+    {
+        return value;
+    }
+
     std::shared_ptr<Assign> Assign::set(std::shared_ptr<Variable> newVariable, std::shared_ptr<Value> newValue)
     {
         if (!newVariable)
@@ -90,6 +95,15 @@ namespace hlir
 
     BinaryOperation::BinaryOperation() {}
     BinaryOperation::~BinaryOperation() {}
+
+    std::shared_ptr<Variable> BinaryOperation::getVarLeft()
+    {
+        return varLeft;
+    }
+    std::shared_ptr<Variable> BinaryOperation::getVarRight()
+    {
+        return varRight;
+    }
 
     /**
      * @brief Constructs a Minus operation with two variables.
@@ -189,6 +203,11 @@ namespace hlir
         sb << util::format("DIV {}, {}", varLeft->getVarName(), varRight->getVarName());
 
         return sb.str();
+    }
+
+    std::shared_ptr<Expression> Expr::getExpr()
+    {
+        return validExpr;
     }
 
     std::shared_ptr<Variable> Expr::getVariable()
@@ -297,6 +316,16 @@ namespace hlir
         // Como usamos shared_ptr, não há necessidade de liberar manualmente os recursos.
     }
 
+    std::shared_ptr<Variable> Cast::getVariable()
+    {
+        return variable;
+    }
+
+    std::shared_ptr<Type> Cast::getType()
+    {
+        return type;
+    }
+
     std::string Cast::getText()
     {
         // Reseta o stringstream da classe base
@@ -355,6 +384,11 @@ namespace hlir
     Context::Context() {}
 
     Context::~Context() {}
+
+    std::vector<std::shared_ptr<Function>> Context::getFunctions()
+    {
+        return functions;
+    }
 
     void Context::addFunction(std::shared_ptr<Function> function)
     {

@@ -390,6 +390,7 @@ namespace hlir
         std::string getText() override;
 
         std::shared_ptr<Variable> getVariable();
+        std::shared_ptr<Value> getValue();
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -562,6 +563,9 @@ namespace hlir
 
         virtual std::string getText() override = 0;
 
+        std::shared_ptr<Variable> getVarLeft();
+        std::shared_ptr<Variable> getVarRight();
+
         void setParent(std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -685,8 +689,8 @@ namespace hlir
     class Cast : public Expression
     {
     private:
-        std::shared_ptr<Variable> variable; ///< Shared pointer to the variable to be casted.
-        std::shared_ptr<Type> type;         ///< Shared pointer to the target type of the casting.
+        std::shared_ptr<Variable> variable;
+        std::shared_ptr<Type> type;
 
     public:
         /**
@@ -712,6 +716,9 @@ namespace hlir
          * @throws HLIRException If `variable` or `type` is nullptr.
          */
         std::string getText() override;
+
+        std::shared_ptr<Variable> getVariable();
+        std::shared_ptr<Type> getType();
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -822,6 +829,8 @@ namespace hlir
         std::string getText() override;
 
         std::shared_ptr<Variable> getVariable();
+
+        std::shared_ptr<Expression> getExpr();
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -979,6 +988,8 @@ namespace hlir
          * @return A string with the function definition.
          */
         std::string getText() override;
+
+        std::vector<std::shared_ptr<Function>> getFunctions();
     };
 
 }

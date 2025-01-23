@@ -16,6 +16,7 @@ namespace hlir
     void ensureVariableCaptured(std::shared_ptr<Function> F,
                                 std::shared_ptr<Variable> var)
     {
+
         if (hasVariableOrArg(F, var->getVarName()))
             return;
 
@@ -196,6 +197,7 @@ namespace hlir
             visitAssignment(ctx->assignment(), statement);
         }
     }
+
     void HLIRGenerator::visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement)
     {
     }
@@ -234,19 +236,19 @@ namespace hlir
             auto rightVar = right.second;
             auto leftVar = left.second;
 
-            if (!leftVar)
+            if (!rightVar)
             {
                 throw hlir::HLIRException(util::format("Undefined right variable: {} in expression", strRightVar));
             }
 
             if (!leftVar)
             {
+
                 throw hlir::HLIRException(util::format("Undefined left variable: {} in expression", strLeftVar));
             }
 
             if (rightVar->isAnotherScope())
             {
-
                 ensureVariableCaptured(currentFunction, rightVar);
             }
 
@@ -406,7 +408,6 @@ namespace hlir
             throw HLIRException("HLIRGenerator::visitAssignment. The current function not found.");
         }
 
-        // Se houver um util::formato de dado literal (ex.: "3.14", "42", etc.)
         if (ctx->dataFormat())
         {
             // Caso 1: a atribuição está sendo feita a um argumento de função
@@ -549,7 +550,6 @@ namespace hlir
     {
 
         auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
-
         if (!currentFunction)
         {
             throw HLIRException("HLIRGenerator::visitFunctionCall. currentFunction is null");
@@ -638,6 +638,8 @@ namespace hlir
 
     void HLIRGenerator::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs, std::shared_ptr<Statement> statement)
     {
+
+        auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
         auto argName = ctx->varName->getText();
         auto callFunction = std::dynamic_pointer_cast<FunctionCall>(callArgs->getParent());
         if (!callFunction)
@@ -672,7 +674,7 @@ namespace hlir
             if (auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
             {
 
-                std::string anotherVar = ctx->anotherVarName->getText();
+                // std::string anotherVar = ctx->anotherVarName->getText();
                 std::string inlineFunctionName = callFunction->getFunction()->getFunctionName();
 
                 // util::printf("inlineFunctionName {}", inlineFunctionName);
@@ -688,6 +690,21 @@ namespace hlir
                 if (!arg)
                 {
                     throw HLIRException("HLIRGenerator::visitFunctionCallArg. Arg not found");
+                }
+
+                auto anotherVar = statement->findVarByName(ctx->anotherVarName->getText());
+                if (!anotherVar)
+                {
+                    auto [_, variable] = findVarByScope(currentFunction, ctx->anotherVarName->getText());
+
+                    if (!variable)
+                    {
+                        throw HLIRException("HLIRGenerator::visitFunctionCallArg. Variable not found");
+                    }
+
+                    ensureVariableCaptured(currentFunction, variable);
+
+                    anotherVar = variable;
                 }
 
                 auto value = std::make_shared<Value>()->set(anotherVar, std::make_shared<Type>(arg->type->getType()));
