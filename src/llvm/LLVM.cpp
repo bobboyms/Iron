@@ -17,6 +17,193 @@ namespace iron
     void LLVM::visitFunction(std::shared_ptr<hlir::Function> hlirFunction)
     {
 
+        llvm::Function *function = module->getFunction(hlirFunction->getFunctionName());
+        if (!function)
+        {
+            throw LLVMException(util::format("LLVM::visitFunctionCall. Function {} not found", hlirFunction->getFunctionName()));
+        }
+
+        llvm::Type *functionReturnType = mapType(hlirFunction->getFunctionReturnType()->getType());
+        llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvmContext, "entry", function);
+        builder.SetInsertPoint(entry);
+
+        visitStatement(hlirFunction->getStatement());
+
+        generateTerminator(functionReturnType);
+    }
+
+    // assignment: anotherVarName = IDENTIFIER;
+
+    void LLVM::visitStatement(std::shared_ptr<hlir::Statement> hlirStatement)
+    {
+
+        for (auto statement : hlirStatement->getStatements())
+        {
+            std::visit(
+                [this](auto &&arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Assign>>)
+                    {
+                        this->visitAssignment(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Expr>>)
+                    {
+                        this->visitExpr(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FunctionCall>>)
+                    {
+                        this->visitFunctionCall(arg);
+                    }
+                },
+                statement);
+        }
+    }
+
+    void printFunctionInfo(llvm::Function *function)
+    {
+        // 1) Obter o nome da função
+        std::string funcName = function->getName().str();
+
+        // 2) Obter o tipo de retorno
+        llvm::Type *returnType = function->getReturnType();
+
+        // 3) Converter o tipo de retorno em string (opcional)
+        // Uma maneira de imprimir o tipo é usando a própria API do LLVM:
+        std::string typeStr;
+        {
+            llvm::raw_string_ostream rso(typeStr);
+            returnType->print(rso); // imprime algo como "i32", "double", "void", etc.
+        }
+
+        // Exibir as informações
+        llvm::outs() << "Function Name: " << funcName << "\n";
+        llvm::outs() << "Return Type: " << typeStr << "\n";
+    }
+
+    llvm::Value *LLVM::visitFunctionCall(std::shared_ptr<hlir::FunctionCall> functionCall)
+    {
+        // Obter o nome da função a ser chamada
+        auto functionName = functionCall->getFunction()->getFunctionName();
+
+        // Buscar a função no módulo LLVM
+        llvm::Function *function = module->getFunction(functionName);
+        if (!function)
+        {
+            throw LLVMException(util::format("LLVM::visitFunctionCall. Function {} not found", functionName));
+        }
+
+        // Vetor para armazenar os argumentos LLVM
+        std::vector<llvm::Value *> args;
+
+        // Iterar sobre os argumentos da chamada
+        for (auto arg : functionCall->getCallArgs()->getCallArgs())
+        {
+            auto var = functionCall->getFunction()->getStatement()->findVarByName(arg->argument);
+            if (var)
+            {
+                throw LLVMException(util::format("LLVM::visitFunctionCall. Variable {} found", arg->argument));
+            }
+
+            auto value = createConstValue(arg->value->getValueType(), arg->value);
+            args.push_back(value);
+        }
+
+        // Verificar se o número de argumentos corresponde à assinatura da função
+        if (function->arg_size() != args.size())
+        {
+            throw LLVMException(util::format("LLVM::visitFunctionCall. Argument count mismatch for function {}.", functionName));
+        }
+
+        // Criar a chamada de função diretamente
+        if (function->getReturnType()->isVoidTy())
+        {
+            builder.CreateCall(function, args);
+            return nullptr;
+        }
+        else
+        {
+            return builder.CreateCall(function, args, "call_" + functionName);
+        }
+    }
+
+    void LLVM::visitAssignment(std::shared_ptr<hlir::Assign> hlirAssignment)
+    {
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+
+        auto alloca = allocaVariable(hlirAssignment->getVariable());
+        auto value = hlirAssignment->getValue()->getValue();
+        std::visit(
+            [this, hlirAssignment, alloca, currentFunction](auto &&arg)
+            {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
+                {
+                }
+                else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
+                {
+                    this->assignVariable(hlirAssignment->getValue(), alloca, currentFunction);
+                }
+                else if constexpr (std::is_same_v<T, std::string>)
+                {
+                    this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);
+                }
+            },
+            value);
+    }
+
+    void LLVM::visitExpr(std::shared_ptr<hlir::Expr> hlirExpr)
+    {
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+
+        auto div = std::dynamic_pointer_cast<hlir::Div>(hlirExpr->getExpr());
+        auto mult = std::dynamic_pointer_cast<hlir::Mult>(hlirExpr->getExpr());
+        auto minus = std::dynamic_pointer_cast<hlir::Minus>(hlirExpr->getExpr());
+        auto plus = std::dynamic_pointer_cast<hlir::Plus>(hlirExpr->getExpr());
+        auto cast = std::dynamic_pointer_cast<hlir::Cast>(hlirExpr->getExpr());
+        auto assign = std::dynamic_pointer_cast<hlir::Assign>(hlirExpr->getExpr());
+        auto funcCall = std::dynamic_pointer_cast<hlir::FunctionCall>(hlirExpr->getExpr());
+
+        auto variable = allocaVariable(hlirExpr->getVariable());
+
+        if (mult)
+        {
+            auto result = executeMult(mult, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+        else if (div)
+        {
+            auto result = executeDiv(div, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+        else if (plus)
+        {
+            auto result = executePlus(plus, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+        else if (minus)
+        {
+            auto result = executeMinus(minus, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+        else if (cast)
+        {
+            auto result = numberCasting(cast->getVariable(), cast->getType(), currentFunction);
+            builder.CreateStore(result, variable);
+        }
+        else if (assign)
+        {
+            visitAssignment(assign);
+        }
+        else if (funcCall)
+        {
+            auto value = visitFunctionCall(funcCall);
+            builder.CreateStore(value, variable);
+        }
+    }
+
+    void LLVM::declareFunction(std::shared_ptr<hlir::Function> hlirFunction)
+    {
         llvm::Type *functionReturnType = mapType(hlirFunction->getFunctionReturnType()->getType());
         std::vector<llvm::Type *> argTypes;
         std::vector<std::string> argNames;
@@ -67,115 +254,16 @@ namespace iron
                 }
             }
         }
-
-        // Criar o bloco básico "entry" e definir o ponto de inserção
-        llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvmContext, "entry", function);
-        builder.SetInsertPoint(entry);
-
-        visitStatement(hlirFunction->getStatement());
-
-        generateTerminator(functionReturnType);
-    }
-
-    // assignment: anotherVarName = IDENTIFIER;
-
-    void LLVM::visitStatement(std::shared_ptr<hlir::Statement> hlirStatement)
-    {
-
-        for (auto statement : hlirStatement->getStatements())
-        {
-            std::visit(
-                [this](auto &&arg)
-                {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Assign>>)
-                    {
-                        this->visitAssignment(arg);
-                    }
-                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Expr>>)
-                    {
-                        this->visitExpr(arg);
-                    }
-                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FunctionCall>>)
-                    {
-                        // arg é um std::shared_ptr<FunctionCall>
-                    }
-                },
-                statement);
-        }
-    }
-
-    void LLVM::visitAssignment(std::shared_ptr<hlir::Assign> hlirAssignment)
-    {
-        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
-
-        auto alloca = allocaVariable(hlirAssignment->getVariable());
-        auto value = hlirAssignment->getValue()->getValue();
-        std::visit(
-            [this, hlirAssignment, alloca, currentFunction](auto &&arg)
-            {
-                using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
-                {
-                }
-                else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
-                {
-                    this->assignVariable(hlirAssignment->getValue(), alloca, currentFunction);
-                }
-                else if constexpr (std::is_same_v<T, std::string>)
-                {
-                    this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);
-                }
-            },
-            value);
-    }
-
-    void LLVM::visitExpr(std::shared_ptr<hlir::Expr> hlirExpr)
-    {
-        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
-
-        auto div = std::dynamic_pointer_cast<hlir::Div>(hlirExpr->getExpr());
-        auto mult = std::dynamic_pointer_cast<hlir::Mult>(hlirExpr->getExpr());
-        auto minus = std::dynamic_pointer_cast<hlir::Minus>(hlirExpr->getExpr());
-        auto plus = std::dynamic_pointer_cast<hlir::Plus>(hlirExpr->getExpr());
-        auto cast = std::dynamic_pointer_cast<hlir::Cast>(hlirExpr->getExpr());
-        auto assign = std::dynamic_pointer_cast<hlir::Assign>(hlirExpr->getExpr());
-
-        auto variable = allocaVariable(hlirExpr->getVariable());
-
-        if (mult)
-        {
-            auto result = executeMult(mult, currentFunction);
-            builder.CreateStore(result, variable);
-        }
-        else if (div)
-        {
-            auto result = executeDiv(div, currentFunction);
-            builder.CreateStore(result, variable);
-        }
-        else if (plus)
-        {
-            auto result = executePlus(plus, currentFunction);
-            builder.CreateStore(result, variable);
-        }
-        else if (minus)
-        {
-            auto result = executeMinus(minus, currentFunction);
-            builder.CreateStore(result, variable);
-        }
-        else if (cast)
-        {
-            auto result = numberCasting(cast->getVariable(), cast->getType(), currentFunction);
-            builder.CreateStore(result, variable);
-        }
-        else if (assign)
-        {
-            visitAssignment(assign);
-        }
     }
 
     std::string LLVM::generateCode()
     {
+
+        for (auto function : hlirContext->getFunctions())
+        {
+            declareFunction(function);
+        }
+
         for (auto function : hlirContext->getFunctions())
         {
             visitFunction(function);

@@ -1,8 +1,7 @@
-fn mult(n:int, p:float): float {}
-
-        fn sub(ax:int, bx:float): int {}
+fn sub(n:int, j:int): int {   
+        }
 
         fn soma(): int {
-            let x: float = 25.00
-            32.25 * sub(ax: 1, bx: mult(n:22, p:x))
+            let x:int = 25
+            sub(n:2, j:x)
         }

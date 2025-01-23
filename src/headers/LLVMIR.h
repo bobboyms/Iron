@@ -65,11 +65,15 @@ namespace iron
         std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *currentFunction);
         llvm::AllocaInst *promoteArgumentToAlloca(llvm::Function *function, llvm::Argument *arg);
         llvm::AllocaInst *getOrPromoteToAlloca(const std::string &varName, std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *function);
+        llvm::Value *createConstValue(std::shared_ptr<hlir::Type> type, std::shared_ptr<hlir::Value> value);
+
+        void declareFunction(std::shared_ptr<hlir::Function> hlirFunction);
 
         void visitFunction(std::shared_ptr<hlir::Function> hlirFunction);
         void visitStatement(std::shared_ptr<hlir::Statement> hlirStatement);
         void visitExpr(std::shared_ptr<hlir::Expr> hlirExpr);
         void visitAssignment(std::shared_ptr<hlir::Assign> hlirAssignment);
+        llvm::Value *visitFunctionCall(std::shared_ptr<hlir::FunctionCall> functionCall);
     };
 
     //********************************** */

@@ -7,18 +7,14 @@ namespace iron
 {
     std::pair<llvm::LoadInst *, llvm::LoadInst *> LLVM::operationLoad(std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *currentFunction)
     {
-        // Obter ou promover para alloca as variáveis esquerda e direita
         llvm::AllocaInst *leftVar = getOrPromoteToAlloca(op->getVarLeft()->getVarName(), op, currentFunction);
         llvm::AllocaInst *rightVar = getOrPromoteToAlloca(op->getVarRight()->getVarName(), op, currentFunction);
 
-        // Determinar o tipo da operação (se necessário para outras lógicas)
         auto varType = op->getVarLeft()->getVarType()->getType();
 
-        // Obter os tipos alocados
         llvm::Type *leftAllocatedType = leftVar->getAllocatedType();
         llvm::Type *rightAllocatedType = rightVar->getAllocatedType();
 
-        // Criar instruções de Load
         llvm::LoadInst *loadLeftVar = builder.CreateLoad(leftAllocatedType, leftVar, util::format("load_{}", op->getVarLeft()->getVarName()));
         llvm::LoadInst *loadRightVar = builder.CreateLoad(rightAllocatedType, rightVar, util::format("load_{}", op->getVarRight()->getVarName()));
 
@@ -33,14 +29,14 @@ namespace iron
         if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
         {
             llvm::Value *result = builder.CreateFDiv(
-                loadLeftVar, loadRightVar, util::format("rdiv", ""));
+                loadLeftVar, loadRightVar, util::format("rmult", ""));
 
             return result;
         }
         else
         {
             llvm::Value *result = builder.CreateSDiv(
-                loadLeftVar, loadRightVar, util::format("rdiv", ""));
+                loadLeftVar, loadRightVar, util::format("rmult", ""));
 
             return result;
         }

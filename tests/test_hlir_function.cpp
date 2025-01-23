@@ -914,3 +914,56 @@ TEST_F(HlIrTestFunction, Statement_GetText_SingleFunctionCall)
     std::string actualText = stmt->getText();
     runAnalysis(actualText, expectedText);
 }
+
+TEST_F(HlIrTestFunction, TX)
+{
+    auto stmt = std::make_shared<hlir::Statement>();
+
+    // Criar os tipos
+    auto typeVar = std::make_shared<hlir::Type>(tokenMap::VARIABLE);
+    auto typeInt = std::make_shared<hlir::Type>(tokenMap::TYPE_INT);
+    auto typeFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+
+    // Criar os argumentos da função
+    auto argX = std::make_shared<hlir::Arg>();
+    argX->set("x", typeInt);
+
+    auto argY = std::make_shared<hlir::Arg>();
+    argY->set("y", typeFloat);
+
+    auto funcArgs = std::make_shared<hlir::FunctionArgs>();
+    funcArgs->addArg(argX);
+    funcArgs->addArg(argY);
+
+    // Criar a função "fn sum(x:int,y:float):float"
+    auto returnFloat = std::make_shared<hlir::Type>(tokenMap::TYPE_FLOAT);
+    auto func = std::make_shared<hlir::Function>();
+    func->set("sum", funcArgs, returnFloat);
+
+    // Criar os call arguments "x:10" e "y:3.14"
+    auto val10 = std::make_shared<hlir::Value>();
+    val10->set(10, typeInt);
+
+    auto var = std::make_shared<hlir::Variable>()->set("a", typeInt);
+
+    auto val3_14 = std::make_shared<hlir::Value>();
+    // val3_14->set(3.14f, typeFloat);
+    val3_14->set(var, typeVar);
+
+    auto callArgX = std::make_shared<hlir::FunctionCallArg>("x", typeInt, val10);
+    auto callArgY = std::make_shared<hlir::FunctionCallArg>("y", typeFloat, val3_14);
+
+    auto callArgs = std::make_shared<hlir::FunctionCallArgs>(std::vector<std::shared_ptr<hlir::FunctionCallArg>>{callArgX, callArgY});
+
+    // Criar a FunctionCall "call float sum(x:10,y:3.14)"
+    auto functionCall = std::make_shared<hlir::FunctionCall>();
+    functionCall->set(func, callArgs);
+
+    // Adicionar apenas a FunctionCall ao Statement
+    stmt->addStatement(functionCall);
+
+    // Verificar a saída de getText()
+    std::string expectedText = " call float sum(x:10,y:3.14)\n";
+    std::string actualText = stmt->getText();
+    runAnalysis(actualText, expectedText);
+}

@@ -71,10 +71,33 @@ int runAnalysis(const std::string &input)
 int main()
 {
     std::string input = R"(
+        
 
-        fn main(b:double, c:int):int {
-            (b * 25.25 - c / 21) + b
+        fn sub(n:int, j:int): int {   
         }
+
+        fn main(): int {
+            let x:int = 25
+
+            let block:fn = (a:int,b:int):int -> {
+                let n:int = sub(n:a, j:x) * sub(n:5, j:9)
+                let block:fn = (a:int,b:int):int -> {
+                    let g:float = sub(n:n, j:x) * sub(n:5, j:9) * x
+                    let block:fn = (a:float,b:int):int -> {
+                    }
+
+                    let r:int = block(a:g, b:20) * n
+                }
+
+                let v:int = block(a:a, b:20) * n
+            }
+
+            block(a:10, b:20)
+
+            
+        }
+
+        
 
     )";
 

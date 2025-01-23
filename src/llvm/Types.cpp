@@ -225,6 +225,90 @@ namespace iron
         return nullptr;
     }
 
+    llvm::Value *LLVM::createConstValue(std::shared_ptr<hlir::Type> hlirType, std::shared_ptr<hlir::Value> value)
+    {
+        llvm::Value *callArg = std::visit([this, hlirType](auto &&argValue) -> llvm::Value *
+                                          {
+            using T = std::decay_t<decltype(argValue)>;
+            if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>) {
+                throw LLVMException("LLVM::createConstValue. Function type arguments not yet implemented.");
+            }
+            else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>) {
+                
+                
+                // std::cout << "Var name: " << argValue->getVarName() << std::endl;
+
+                
+                
+                if (argValue->getVarName().empty()) {
+                    throw std::invalid_argument("Variable name is empty");
+                }
+
+                
+
+                llvm::AllocaInst *allocaVar = getOrPromoteToAlloca(argValue->getVarName(), nullptr, builder.GetInsertBlock()->getParent());
+                
+                llvm::Type *type = allocaVar->getAllocatedType();
+                if (type == nullptr) {
+                    throw std::runtime_error("Failed to retrieve allocated type");
+                }
+
+                
+                // std::cout << "Allocated type: " << allocaVar->getAllocatedType()->getTypeID() << std::endl;
+
+
+                llvm::Value *loadedVar = builder.CreateLoad(allocaVar->getAllocatedType(), allocaVar, util::format("load_{}", argValue->getVarName()));
+
+                return loadedVar;
+            }
+            else if constexpr (std::is_same_v<T, std::string>) {
+                
+                auto argType = hlirType->getType();
+                
+                llvm::Type *type = mapType(argType);
+                if (!type) {
+                    throw LLVMException("LLVM::createConstValue. Unknown type for argument.");
+                }
+
+                if (argType == tokenMap::TYPE_INT)
+                {
+                    return llvm::ConstantInt::get(type, std::stoi(argValue), true);
+                }
+                else if (argType == tokenMap::TYPE_FLOAT)
+                {
+                    float floatVal = std::stof(argValue);
+                    return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(floatVal));
+                }
+                else if (argType == tokenMap::TYPE_DOUBLE)
+                {
+                    double doubleVal = std::stod(argValue);
+                    return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(doubleVal));
+                }
+                else if (argType == tokenMap::TYPE_CHAR)
+                {
+                    if (argValue.empty()) {
+                        throw LLVMException("LLVM::createConstValue. Empty string for char type.");
+                    }
+                    return llvm::ConstantInt::get(type, static_cast<int>(argValue[0]), true);
+                }
+                else if (argType == tokenMap::TYPE_BOOLEAN)
+                {
+                    bool boolVal = (argValue == "true");
+                    return llvm::ConstantInt::get(type, boolVal ? 1 : 0, false);
+                }
+                else
+                {
+                    throw LLVMException("LLVM::createConstValue. Unsupported argument type.");
+                }
+
+            }
+            else {
+                throw LLVMException("LLVM::createConstValue. Unsupported type in value.");
+            } }, value->getValue());
+
+        return callArg;
+    }
+
     llvm::AllocaInst *LLVM::allocaVariable(std::shared_ptr<hlir::Variable> variable)
     {
         llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
