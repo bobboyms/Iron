@@ -78,12 +78,17 @@ int main()
 
         fn main(): int {
             let x:int = 25
+            let p:float = 12.14
 
             let block:fn = (a:int,b:int):int -> {
                 let n:int = sub(n:a, j:x) * sub(n:5, j:9)
                 let block:fn = (a:int,b:int):int -> {
                     let g:float = sub(n:n, j:x) * sub(n:5, j:9) * x
                     let block:fn = (a:float,b:int):int -> {
+                        let block:fn = (a:float,b:int, c:float):int -> {
+                            c * a / b
+                        }
+                        block(a:10.00, b:20, c:30.00) * p
                     }
 
                     let r:int = block(a:g, b:20) * n

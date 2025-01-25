@@ -7,8 +7,8 @@ namespace iron
 {
     std::pair<llvm::LoadInst *, llvm::LoadInst *> LLVM::operationLoad(std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *currentFunction)
     {
-        llvm::AllocaInst *leftVar = getOrPromoteToAlloca(op->getVarLeft()->getVarName(), op, currentFunction);
-        llvm::AllocaInst *rightVar = getOrPromoteToAlloca(op->getVarRight()->getVarName(), op, currentFunction);
+        llvm::AllocaInst *leftVar = getOrPromoteToAlloca(op->getVarLeft()->getVarName(), currentFunction);
+        llvm::AllocaInst *rightVar = getOrPromoteToAlloca(op->getVarRight()->getVarName(), currentFunction);
 
         auto varType = op->getVarLeft()->getVarType()->getType();
 
@@ -28,14 +28,14 @@ namespace iron
 
         if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
         {
-            llvm::Value *result = builder.CreateFDiv(
+            llvm::Value *result = builder.CreateFMul(
                 loadLeftVar, loadRightVar, util::format("rmult", ""));
 
             return result;
         }
         else
         {
-            llvm::Value *result = builder.CreateSDiv(
+            llvm::Value *result = builder.CreateMul(
                 loadLeftVar, loadRightVar, util::format("rmult", ""));
 
             return result;

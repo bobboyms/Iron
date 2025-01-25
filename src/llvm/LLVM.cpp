@@ -17,6 +17,11 @@ namespace iron
     void LLVM::visitFunction(std::shared_ptr<hlir::Function> hlirFunction)
     {
 
+        if (!hlirFunction)
+        {
+            throw LLVMException("LLVM::visitFunction. VisitFunction called with null hlirFunction");
+        }
+
         llvm::Function *function = module->getFunction(hlirFunction->getFunctionName());
         if (!function)
         {
@@ -36,6 +41,11 @@ namespace iron
 
     void LLVM::visitStatement(std::shared_ptr<hlir::Statement> hlirStatement)
     {
+
+        if (!hlirStatement)
+        {
+            throw LLVMException("LLVM::visitStatement. VisitStatement called with null hlirStatement");
+        }
 
         for (auto statement : hlirStatement->getStatements())
         {
@@ -83,6 +93,24 @@ namespace iron
 
     llvm::Value *LLVM::visitFunctionCall(std::shared_ptr<hlir::FunctionCall> functionCall)
     {
+
+        if (!functionCall)
+        {
+            throw LLVMException("visitFunctionCall called with null functionCall");
+        }
+
+        // Checar também functionCall->getFunction()
+        if (!functionCall->getFunction())
+        {
+            throw LLVMException("visitFunctionCall: functionCall->getFunction() is null");
+        }
+
+        if (!functionCall->getCallArgs())
+        {
+            // Se for esperado que getCallArgs() nunca seja nulo, lance exceção
+            throw LLVMException("visitFunctionCall: functionCall->getCallArgs() is null");
+        }
+
         // Obter o nome da função a ser chamada
         auto functionName = functionCall->getFunction()->getFunctionName();
 
@@ -129,7 +157,24 @@ namespace iron
 
     void LLVM::visitAssignment(std::shared_ptr<hlir::Assign> hlirAssignment)
     {
+        if (!hlirAssignment)
+        {
+            throw LLVMException("visitAssignment called with null hlirAssignment");
+        }
+        if (!hlirAssignment->getValue())
+        {
+            throw LLVMException("visitAssignment: hlirAssignment->getValue() is null");
+        }
+        if (!hlirAssignment->getVariable())
+        {
+            throw LLVMException("visitAssignment: hlirAssignment->getVariable() is null");
+        }
+
         llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitAssignment: currentFunction is null");
+        }
 
         auto alloca = allocaVariable(hlirAssignment->getVariable());
         auto value = hlirAssignment->getValue()->getValue();
@@ -154,7 +199,22 @@ namespace iron
 
     void LLVM::visitExpr(std::shared_ptr<hlir::Expr> hlirExpr)
     {
+
+        if (!hlirExpr)
+        {
+            throw LLVMException("visitExpr called with null hlirExpr");
+        }
+
+        if (!hlirExpr->getVariable())
+        {
+            throw LLVMException("visitExpr: hlirExpr->getVariable() is null");
+        }
+
         llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitExpr: currentFunction is null");
+        }
 
         auto div = std::dynamic_pointer_cast<hlir::Div>(hlirExpr->getExpr());
         auto mult = std::dynamic_pointer_cast<hlir::Mult>(hlirExpr->getExpr());
@@ -165,6 +225,10 @@ namespace iron
         auto funcCall = std::dynamic_pointer_cast<hlir::FunctionCall>(hlirExpr->getExpr());
 
         auto variable = allocaVariable(hlirExpr->getVariable());
+        if (!variable)
+        {
+            throw LLVMException("visitExpr: variable is null");
+        }
 
         if (mult)
         {
@@ -261,6 +325,12 @@ namespace iron
 
         for (auto function : hlirContext->getFunctions())
         {
+            if (!function)
+            {
+
+                throw LLVMException("generateCode: function in hlirContext->getFunctions() is null");
+            }
+
             declareFunction(function);
         }
 

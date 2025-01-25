@@ -156,7 +156,7 @@ namespace iron
         if (!function)
         {
             throw LLVMException(
-                util::format("{} Function {} not found", "LLVM::findArgByName"));
+                util::format("{} Function not found", "LLVM::findArgByName"));
         }
 
         for (auto &arg : function->args())
@@ -171,7 +171,7 @@ namespace iron
     }
 
     // Função auxiliar para obter ou promover uma variável para AllocaInst
-    llvm::AllocaInst *LLVM::getOrPromoteToAlloca(const std::string &varName, std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *function)
+    llvm::AllocaInst *LLVM::getOrPromoteToAlloca(const std::string &varName, llvm::Function *function)
     {
         llvm::AllocaInst *var = findAllocaByName(function, varName);
         if (!var)
@@ -236,25 +236,17 @@ namespace iron
             else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>) {
                 
                 
-                // std::cout << "Var name: " << argValue->getVarName() << std::endl;
-
-                
-                
                 if (argValue->getVarName().empty()) {
                     throw std::invalid_argument("Variable name is empty");
                 }
 
                 
-
-                llvm::AllocaInst *allocaVar = getOrPromoteToAlloca(argValue->getVarName(), nullptr, builder.GetInsertBlock()->getParent());
+                llvm::AllocaInst *allocaVar = getOrPromoteToAlloca(argValue->getVarName(), builder.GetInsertBlock()->getParent());
                 
                 llvm::Type *type = allocaVar->getAllocatedType();
                 if (type == nullptr) {
                     throw std::runtime_error("Failed to retrieve allocated type");
                 }
-
-                
-                // std::cout << "Allocated type: " << allocaVar->getAllocatedType()->getTypeID() << std::endl;
 
 
                 llvm::Value *loadedVar = builder.CreateLoad(allocaVar->getAllocatedType(), allocaVar, util::format("load_{}", argValue->getVarName()));
@@ -311,7 +303,20 @@ namespace iron
 
     llvm::AllocaInst *LLVM::allocaVariable(std::shared_ptr<hlir::Variable> variable)
     {
+        if (!variable)
+        {
+            throw LLVMException("allocaVariable: variable is null");
+        }
+        if (!variable->getVarType())
+        {
+            throw LLVMException("allocaVariable: variable->getVarType() is null");
+        }
+
         llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("allocaVariable: currentFunction is null");
+        }
 
         llvm::BasicBlock &entryBlock = currentFunction->getEntryBlock();
         llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
@@ -321,47 +326,108 @@ namespace iron
         return allocaVariable;
     }
 
-    llvm::Value *LLVM::numberCasting(std::shared_ptr<hlir::Variable> variable, std::shared_ptr<hlir::Type> type, llvm::Function *currentFunction)
+    llvm::Value *LLVM::numberCasting(
+        std::shared_ptr<hlir::Variable> variable,
+        std::shared_ptr<hlir::Type> type,
+        llvm::Function *currentFunction)
     {
-        auto castVar = findAllocaByName(currentFunction, variable->getVarName());
+        // Initial check of input pointers
+        if (!variable)
+        {
+            throw LLVMException("LLVM::numberCasting: 'variable' is a null pointer.");
+        }
+
+        if (!type)
+        {
+            throw LLVMException("LLVM::numberCasting: 'type' is a null pointer.");
+        }
+
+        if (!currentFunction)
+        {
+            throw LLVMException("LLVM::numberCasting: 'currentFunction' is a null pointer.");
+        }
+
+        // Check if the variable name is not empty
+        std::string varName = variable->getVarName();
+        if (varName.empty())
+        {
+            throw LLVMException("LLVM::numberCasting: 'variable->getVarName()' is empty.");
+        }
+
+        // Find the corresponding AllocaInst for the variable
+        auto castVar = getOrPromoteToAlloca(varName, currentFunction);
+        if (!castVar)
+        {
+            throw LLVMException(util::format("LLVM::numberCasting: AllocaInst for variable '{}' was not found.", varName));
+        }
+
+        // Get the allocated type and verify it's valid
         llvm::Type *allocatedType = castVar->getAllocatedType();
-        llvm::LoadInst *loadedVar = builder.CreateLoad(allocatedType, castVar, util::format("load_{}", variable->getVarName()));
+        if (!allocatedType)
+        {
+            throw LLVMException(util::format("LLVM::numberCasting: 'getAllocatedType()' returned a null pointer for variable '{}'.", varName));
+        }
 
+        // Create the load instruction and verify it was successful
+        llvm::LoadInst *loadedVar = builder.CreateLoad(allocatedType, castVar, util::format("load_{}", varName));
+        if (!loadedVar)
+        {
+            throw LLVMException(util::format("LLVM::numberCasting: Failed to create LoadInst for variable '{}'.", varName));
+        }
+
+        // Map the desired type and verify it was mapped correctly
         llvm::Type *desiredType = mapType(type->getType());
+        if (!desiredType)
+        {
+            throw LLVMException(util::format("LLVM::numberCasting: 'mapType' returned a null pointer for the type of variable '{}'.", varName));
+        }
 
-        llvm::Value *value;
+        llvm::Value *value = nullptr;
 
-        // Converter float
-        if (variable->getVarType()->getType() == tokenMap::TYPE_FLOAT && type->getType() == tokenMap::TYPE_INT)
+        // Check if the variable type is not null before accessing
+        auto varType = variable->getVarType();
+        if (!varType)
         {
-            value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", variable->getVarName()));
+            throw LLVMException(util::format("LLVM::numberCasting: 'variable->getVarType()' is a null pointer for variable '{}'.", varName));
         }
-        else if (variable->getVarType()->getType() == tokenMap::TYPE_FLOAT && type->getType() == tokenMap::TYPE_DOUBLE)
+
+        int varTypeInt = varType->getType();
+        int desiredTypeInt = type->getType();
+
+        // Perform casting based on types
+        if (varTypeInt == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_INT)
         {
-            value = builder.CreateFPExt(loadedVar, desiredType, util::format("cast_{}", variable->getVarName()));
+            value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        // Converter int
-        else if (variable->getVarType()->getType() == tokenMap::TYPE_INT && type->getType() == tokenMap::TYPE_FLOAT)
+        else if (varTypeInt == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_DOUBLE)
         {
-            value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", variable->getVarName()));
+            value = builder.CreateFPExt(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (variable->getVarType()->getType() == tokenMap::TYPE_INT && type->getType() == tokenMap::TYPE_DOUBLE)
+        else if (varTypeInt == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_FLOAT)
         {
-            value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", variable->getVarName()));
+            value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        // Converter double
-        else if (variable->getVarType()->getType() == tokenMap::TYPE_DOUBLE && type->getType() == tokenMap::TYPE_FLOAT)
+        else if (varTypeInt == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_DOUBLE)
         {
-            value = builder.CreateFPTrunc(loadedVar, desiredType, util::format("cast_{}", variable->getVarName()));
+            value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (variable->getVarType()->getType() == tokenMap::TYPE_DOUBLE && type->getType() == tokenMap::TYPE_INT)
+        else if (varTypeInt == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_FLOAT)
         {
-            value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", variable->getVarName()));
+            value = builder.CreateFPTrunc(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        // Caso não definido
+        else if (varTypeInt == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_INT)
+        {
+            value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", varName));
+        }
         else
         {
-            throw LLVMException("LLVM::numberCasting. Type conversion not defined.");
+            throw LLVMException("LLVM::numberCasting: Type conversion not defined.");
+        }
+
+        // Verify if the cast instruction was created correctly
+        if (!value)
+        {
+            throw LLVMException(util::format("LLVM::numberCasting: Failed to create the cast instruction for variable '{}'.", varName));
         }
 
         return value;
