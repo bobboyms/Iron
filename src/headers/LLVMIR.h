@@ -64,7 +64,7 @@ namespace iron
         llvm::Value *numberCasting(std::shared_ptr<hlir::Variable> variable, std::shared_ptr<hlir::Type> type, llvm::Function *currentFunction);
         std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *currentFunction);
         llvm::AllocaInst *promoteArgumentToAlloca(llvm::Function *function, llvm::Argument *arg);
-        llvm::AllocaInst *getOrPromoteToAlloca(const std::string &varName, std::shared_ptr<hlir::BinaryOperation> op, llvm::Function *function);
+        llvm::AllocaInst *getOrPromoteToAlloca(const std::string &varName, llvm::Function *function);
         llvm::Value *createConstValue(std::shared_ptr<hlir::Type> type, std::shared_ptr<hlir::Value> value);
 
         void declareFunction(std::shared_ptr<hlir::Function> hlirFunction);
