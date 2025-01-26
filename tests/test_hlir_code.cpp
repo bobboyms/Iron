@@ -248,6 +248,7 @@ TEST_F(HlIrTestCode, T5)
     runAnalysis(input, output);
 }
 
+// parei aqui
 TEST_F(HlIrTestCode, T6)
 {
     std::string output = R"(
