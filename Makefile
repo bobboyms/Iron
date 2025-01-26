@@ -33,16 +33,12 @@ SRC_COMMON  = src/hlir/Type.cpp \
                     src/hlir/Variable.cpp \
                     src/hlir/Operations.cpp \
                     src/hlir/HLIRGenerator.cpp \
-              src/llvm/Utils.cpp \
-              src/llvm/Expr.cpp \
+                    src/scope/ScopeManager.cpp \
               src/llvm/Types.cpp \
-              src/llvm/LLVMIR.cpp \
               src/llvm/LLVM.cpp \
               src/llvm/Operations.cpp \
               src/hlir/WriterCodeHLIR.cpp \
               src/utils/Colors.cpp \
-              src/utils/ScopeManager.cpp \
-              src/hlir/HighLevelIR.cpp \
               src/semantical/SemanticalAnalysis.cpp \
               src/parsers/IronLexer.cpp \
               src/parsers/IronParser.cpp \

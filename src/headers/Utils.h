@@ -2,7 +2,6 @@
 #define HLIR_UTILS_H
 
 #include "TokenMap.h"
-#include "SymbolTable.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -45,17 +44,17 @@ namespace util
 
 namespace iron
 {
-    inline std::optional<std::pair<std::string, int>> getArgumentByName(const SymbolInfo &info, const std::string &argName)
-    {
-        for (const auto &arg : info.args)
-        {
-            if (arg.first == argName)
-            {
-                return arg;
-            }
-        }
-        return std::nullopt;
-    }
+    // inline std::optional<std::pair<std::string, int>> getArgumentByName(const SymbolInfo &info, const std::string &argName)
+    // {
+    //     for (const auto &arg : info.args)
+    //     {
+    //         if (arg.first == argName)
+    //         {
+    //             return arg;
+    //         }
+    //     }
+    //     return std::nullopt;
+    // }
 
     inline int typeOfRealNumber(const std::string valor)
     {
