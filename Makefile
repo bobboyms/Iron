@@ -54,7 +54,7 @@ SRC_COMMON  = src/hlir/Type.cpp \
               src/parsers/HightLavelIRListener.cpp
 
 # Fontes de teste
-TEST_SRC    = tests/test_semantical_analysis.cpp tests/test_hlir_code.cpp
+TEST_SRC    = tests/test_semantical_analysis.cpp tests/test_hlir_code.cpp tests/test_llvm_code.cpp
                         
             #   tests/test_lexer.cpp \
             #   tests/test_hlir_types.cpp \

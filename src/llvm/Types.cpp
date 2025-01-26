@@ -17,9 +17,9 @@ namespace iron
                 {
                     if (variable)
                     {
-
+                        auto type = mapType(variable->getVarType()->getType());
                         auto anotherAlloca = this->findAllocaByName(function, variable->getVarName());
-                        llvm::LoadInst *loadInst = builder.CreateLoad(builder.getInt32Ty(), anotherAlloca, util::format("load_{}", variable->getVarName()));
+                        llvm::LoadInst *loadInst = builder.CreateLoad(type, anotherAlloca, util::format("load_{}", variable->getVarName()));
                         builder.CreateStore(loadInst, allocaVariable);
                     }
                 }
@@ -29,6 +29,22 @@ namespace iron
 
     void LLVM::assignValue(std::shared_ptr<hlir::Variable> variable, std::shared_ptr<hlir::Value> value, llvm::AllocaInst *allocaVariable)
     {
+        // Verificações iniciais de validade
+        if (!variable)
+        {
+            throw iron::LLVMException("LLVM::assignValue: 'variable' is a null pointer.");
+        }
+
+        if (!value)
+        {
+            throw iron::LLVMException("LLVM::assignValue: 'value' is a null pointer.");
+        }
+
+        if (!allocaVariable)
+        {
+            throw iron::LLVMException("LLVM::assignValue: 'allocaVariable' is a null pointer.");
+        }
+
         llvm::Value *valueToStore = nullptr;
 
         switch (variable->getVarType()->getType())
@@ -73,6 +89,12 @@ namespace iron
         {
             throw iron::LLVMException(util::format("Unsupported type for number literal: {}", value->getText()));
         }
+        }
+
+        // Verifica a consistência de tipos antes de armazenar
+        if (valueToStore->getType() != allocaVariable->getAllocatedType())
+        {
+            throw iron::LLVMException(util::format("LLVM::assignValue: Type mismatch", ""));
         }
         builder.CreateStore(valueToStore, allocaVariable);
     }
@@ -179,8 +201,9 @@ namespace iron
             llvm::Argument *arg = findArgByName(function, varName);
             if (!arg)
             {
-                throw LLVMException(util::format("LLVM::getOrPromoteToAlloca. Variable %s not found", varName));
+                throw LLVMException(util::format("LLVM::getOrPromoteToAlloca. Variable {} not found", varName));
             }
+
             var = promoteArgumentToAlloca(function, arg);
         }
         return var;
