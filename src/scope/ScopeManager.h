@@ -57,7 +57,6 @@ namespace scope
     class LocalScope : public Parent
     {
     protected:
-        std::string name;
         int type;
 
     public:
@@ -74,7 +73,7 @@ namespace scope
         }
     };
 
-    class Variables : public LocalScope
+    class Statements : public LocalScope
     {
     protected:
         std::vector<std::shared_ptr<Variable>> variables;
@@ -83,18 +82,18 @@ namespace scope
         void addVariable(const std::string &name, int type);
         std::shared_ptr<Variable> getVariable(const std::string &name);
 
-        Variables();
-        ~Variables();
+        Statements();
+        ~Statements();
 
-        std::shared_ptr<Variables> upperScope;
+        std::shared_ptr<Statements> upperScope;
 
-        std::string getScopeName();
         int getScopeType();
     };
 
     class FunctionCall : public LocalScope
     {
     protected:
+        std::string name;
         std::shared_ptr<Function> function;
 
     public:
@@ -117,8 +116,9 @@ namespace scope
     class Function : public GlobalScope
     {
     private:
-        // Armazena ponteiros inteligentes para preservar polimorfismo
-        std::vector<std::shared_ptr<LocalScope>> localScope;
+        std::stack<std::shared_ptr<LocalScope>> scopeStack;
+        // Mapa para acessar escopos pelo nome
+        std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
 
     protected:
         std::vector<std::shared_ptr<FunctionArg>> args;
@@ -135,9 +135,7 @@ namespace scope
         void exitLocalScope();
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string argName);
-
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string varName);
-        std::shared_ptr<FunctionCall> findFuncCallAllScopes(const std::string callName);
         std::vector<std::shared_ptr<FunctionArg>> getArgs();
 
         std::string getScopeName();

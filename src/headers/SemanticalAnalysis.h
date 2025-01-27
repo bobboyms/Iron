@@ -18,13 +18,16 @@ namespace iron
     private:
         std::shared_ptr<IronParser> parser;
         std::unique_ptr<scope::ScopeManager> scopeManager;
+        std::vector<std::string> sourceLines;
+
+        std::pair<std::string, std::string> getCodeLineAndCaretLine(int line, int col, int steps);
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
         void visitStatementList(IronParser::StatementListContext *ctx);
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx);
 
-        void visitExpr(IronParser::ExprContext *ctx);
+        std::pair<std::string, int> visitExpr(IronParser::ExprContext *ctx);
         void visitAssignment(IronParser::AssignmentContext *ctx);
 
         void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx);
@@ -42,7 +45,7 @@ namespace iron
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 
     public:
-        SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<scope::ScopeManager> scopeManager);
+        SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<scope::ScopeManager> scopeManager, std::vector<std::string> sourceLines);
         ~SemanticalAnalysis();
         void analyze();
     };

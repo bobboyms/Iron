@@ -7,6 +7,26 @@
 #include "parsers/IronLexer.h"
 #include <antlr4-runtime.h>
 
+#include <sstream> // std::stringstream
+#include <string>
+#include <vector>
+
+// Recebe todo o código em uma única string e devolve um vetor de strings,
+// onde cada elemento corresponde a uma linha.
+std::vector<std::string> loadStringAsLines(const std::string &code)
+{
+    std::vector<std::string> lines;
+    std::stringstream ss(code);
+
+    std::string line;
+    while (std::getline(ss, line))
+    {
+        lines.push_back(line);
+    }
+
+    return lines;
+}
+
 int runAnalysis(const std::string &input)
 {
     try
@@ -19,7 +39,7 @@ int runAnalysis(const std::string &input)
         auto parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()));
+        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()), loadStringAsLines(input));
         analysis.analyze();
 
         // // Rewind
@@ -68,9 +88,14 @@ int main()
 {
     std::string input = R"(
 
-        fn main() {
+        fn main():int {
+            let x:int = 25
+            let y:double = 25.25D
+            let z:string = "25.00"
+
+            25 / z
         }
-        
+
 
     )";
 

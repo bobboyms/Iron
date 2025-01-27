@@ -5,7 +5,6 @@
 
 // Ajuste os includes conforme a organização do seu projeto
 #include "../src/headers/SemanticalAnalysis.h"
-#include "../src/headers/ScopeManager.h"
 #include "../src/headers/Exceptions.h"
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
@@ -27,140 +26,191 @@ protected:
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_unique<IronParser>(&tokens);
-        semanticalAnalysis = std::make_unique<iron::SemanticalAnalysis>(std::move(parser), std::move(scopeManager));
+        semanticalAnalysis = std::make_unique<iron::SemanticalAnalysis>(std::move(parser), std::move(scopeManager), loadStringAsLines(input));
 
         // Executa a análise semântica
         semanticalAnalysis->analyze();
+    }
+
+    std::vector<std::string> loadStringAsLines(const std::string &code)
+    {
+        std::vector<std::string> lines;
+        std::stringstream ss(code);
+
+        std::string line;
+        while (std::getline(ss, line))
+        {
+            lines.push_back(line);
+        }
+
+        return lines;
     }
 
     std::unique_ptr<scope::ScopeManager> scopeManager;
     std::unique_ptr<iron::SemanticalAnalysis> semanticalAnalysis;
 };
 
-// --- Testes Positivos ---
-// TEST_F(SemanticalAnalysisTest, ValidFunctionDeclaration)
-// {
-//     std::string input = R"(
-//         fn soma(): int {
-//             let x: int = 10
-//         }
+TEST_F(SemanticalAnalysisTest, T1)
+{
+    std::string input = R"(
+        fn main() {
+        }
+    )";
 
-//         fn subtracao(): int {
-//             let y: int = 20
-//         }
-//     )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+TEST_F(SemanticalAnalysisTest, T2)
+{
+    std::string input = R"(
+        fn main():int {
+        }
+    )";
 
-// TEST_F(SemanticalAnalysisTest, ValidNestedScopes)
-// {
-//     std::string input = R"(
-//         fn teste(): int {
-//             let x: int = 10
-//             let y: int = 20
-//         }
-//     )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+TEST_F(SemanticalAnalysisTest, T3)
+{
+    std::string input = R"(
+        fn main():int {
+        }
 
-// TEST_F(SemanticalAnalysisTest, ValidExpr)
-// {
-//     std::string input = R"(
-//         fn test() {
-//             let b:int = 12
-//             let x:int = b
-//         }
-//     )";
+        fn main() {
+        }
+    )";
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+    EXPECT_THROW(runAnalysis(input), iron::FunctionRedefinitionException);
+}
 
-// // --- Testes Negativos ---
-// TEST_F(SemanticalAnalysisTest, DuplicateFunctionDeclaration)
-// {
-//     std::string input = R"(
-//         fn soma(): int {
-//             let x: int = 25
-//         }
+TEST_F(SemanticalAnalysisTest, T4)
+{
+    std::string input = R"(
+        fn main():int {
+            let x:int = 25
+            let b:float = 25.00
+        }
 
-//         fn soma(): int {
-//             let y: int = 30
-//         }
-//     )";
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-//     EXPECT_THROW(runAnalysis(input), iron::FunctionRedefinitionException);
-// }
+TEST_F(SemanticalAnalysisTest, T5)
+{
+    std::string input = R"(
+        fn main():int {
+            let x:int = 25
+            let x:float = 25.00
+        }
 
-// TEST_F(SemanticalAnalysisTest, DuplicateVariableInSameScope)
-// {
-//     std::string input = R"(
-//         fn soma(): int {
-//             let x: int = 10
-//             let x: int = 20
-//         }
-//     )";
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
+}
 
-// TEST_F(SemanticalAnalysisTest, VariableAlreadyDeclaredInNestedScope)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let x: int = 0
-//             let x: float = 0.0
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T6)
+{
+    std::string input = R"(
+        fn main():int {
+            let x:int
+        }
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
-// }
+    )";
 
-// TEST_F(SemanticalAnalysisTest, DuplicateVariableWithDifferentType)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let x: int = 12
-//             let x: fn = (a: int, b: int) -> a * b
-//         }
-//     )";
+    EXPECT_THROW(runAnalysis(input), iron::UninitializedVariableException);
+}
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
-// }
+TEST_F(SemanticalAnalysisTest, T7)
+{
+    std::string input = R"(
+        fn main() {
+            let x:int = 25
+            let y:float = 25.00
+            let z:double = 250.00D
+            let d:string = "Olá mundo doido!"
+        }
 
-// TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             x
-//         }
-//     )";
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
-// }
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-// TEST_F(SemanticalAnalysisTest, VariableNotFoundInAssignment)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             x = 10
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T8)
+{
+    std::string input = R"(
+        fn main() {
+            let x:int = 25.00
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
 
-// TEST_F(SemanticalAnalysisTest, VariableNotExpression)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let x:int = b
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T9)
+{
+    std::string input = R"(
+        fn main() {
+            let y:float = 25
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, T10)
+{
+    std::string input = R"(
+        fn main() {
+            let z:double = 250.00
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, T11)
+{
+    std::string input = R"(
+        fn main() {
+            let d:string = 2
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, T12)
+{
+    std::string input = R"(
+        fn teste() {
+            x
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, T13)
+{
+    std::string input = R"(
+        fn teste() {
+            x = 10
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, T14)
+{
+    std::string input = R"(
+        fn teste() {
+            let x:int = b
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
 
 // TEST_F(SemanticalAnalysisTest, ValidVariableAndExpression)
 // {
