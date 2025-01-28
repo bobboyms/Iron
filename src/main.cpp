@@ -88,12 +88,8 @@ int main()
 {
     std::string input = R"(
 
-        fn main():int {
-            let x:int = 25
-            let y:double = 25.25D
-            let z:string = "25.00"
-
-            25 / z
+        fn soma(x:int, b:int, n:string) {
+            x + b * z
         }
 
 

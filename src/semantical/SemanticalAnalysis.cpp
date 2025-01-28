@@ -168,22 +168,16 @@ namespace iron
 
     std::pair<std::string, int> SemanticalAnalysis::visitExpr(IronParser::ExprContext *ctx)
     {
-        // Implementação da expressão
-        // Esta é uma implementação simplificada e deve ser adaptada conforme a lógica da sua análise semântica
+
         auto line = ctx->getStart()->getLine();
         auto col = ctx->getStart()->getCharPositionInLine();
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
-            for (auto child : ctx->children)
-            {
-                if (auto subExpr = dynamic_cast<IronParser::ExprContext *>(child))
-                {
-                    return visitExpr(subExpr);
-                }
-            }
+            return visitExpr(ctx->expr(0));
         }
+
         else if (ctx->left != nullptr && ctx->right != nullptr)
         {
 
@@ -241,7 +235,32 @@ namespace iron
         {
             std::string number = ctx->number()->getText();
             int type = tokenMap::determineType(number);
+            if (type == tokenMap::REAL_NUMBER)
+            {
+                type = tokenMap::determineFloatType(number);
+            }
+
             return std::pair(number, type);
+        }
+        else if (ctx->functionCall())
+        {
+            auto functionName = ctx->functionCall()->functionName->getText();
+            // auto returnTypeName = ctx->functionCall();
+
+            auto scope = scopeManager->getScopeByName(functionName);
+            if (!scope)
+            {
+                throw ScopeNotFoundException("No current scope found");
+            }
+
+            auto function = std::dynamic_pointer_cast<scope::Function>(scope);
+            if (!function)
+            {
+                throw ScopeNotFoundException("No current function scope found");
+            }
+
+            // visitFunctionCall(ctx->functionCall());
+            return std::pair(functionName, function->getReturnType());
         }
 
         throw std::runtime_error("Invalid expression");
@@ -352,11 +371,6 @@ namespace iron
         auto globalScope = scopeManager->getScopeByName(functionName);
         if (globalScope)
         {
-            // throw FunctionRedefinitionException(util::format(
-            //     "Function {} already declared. Line: {}, Scope: {}",
-            //     color::colorText(functionName, color::BOLD_GREEN),
-            //     color::colorText(std::to_string(line), color::YELLOW),
-            //     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW)));
 
             throw FunctionRedefinitionException(util::format(
                 "Function {} already declared."
@@ -372,15 +386,11 @@ namespace iron
 
         std::vector<std::shared_ptr<scope::FunctionArg>> funcArgs = {};
 
-        int returnType = 0;
+        int returnType = tokenMap::VOID;
         if (ctx->functionSignature()->functionReturnType())
         {
             std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
             returnType = tokenMap::getTokenType(type);
-        }
-        else
-        {
-            returnType = tokenMap::VOID;
         }
 
         auto function = std::make_shared<scope::Function>(functionName, funcArgs, returnType);
@@ -459,6 +469,7 @@ namespace iron
         }
 
         function->getArgs().push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType)));
+        // util::printf("Adicionou arg: {}, Function: {}", argName, function->getFunctionName());
 
         if (ctx->assignment())
         {

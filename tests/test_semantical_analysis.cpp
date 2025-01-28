@@ -212,195 +212,151 @@ TEST_F(SemanticalAnalysisTest, T14)
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-// TEST_F(SemanticalAnalysisTest, ValidVariableAndExpression)
-// {
-//     std::string input = R"(
-//         fn soma() {
-//             let b:int = 12
-//             let x:int = b
-//             b + x * 25
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T15)
+{
+    std::string input = R"(
+        fn soma() {
+            let b:int = 12
+            let x:int = b
+            b + x * 25
+        }
+    )";
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-// TEST_F(SemanticalAnalysisTest, ValidComplexExpression)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let b:int = 12
-//             let x:int = b
-//             25 + x * b * x
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T16)
+{
+    std::string input = R"(
+        fn teste() {
+            let b:int = 12
+            let x:int = b
+            25 + x * b * x
+        }
+    )";
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-// TEST_F(SemanticalAnalysisTest, VariableNotFoundInExpression2)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let b:int = 12
-//             let x:int = b
-//             25 + x * x * c
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T17)
+{
+    std::string input = R"(
+        fn teste() {
+            let b:int = 12
+            let x:int = b
+            25 + x * x * c
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVare)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:int = 32
-//             let c:int = 28
-//             let d:int = 15
-//             let e:string = "olá mundo"
-//             (a + b * (c + d) - e)
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T18)
+{
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:int = 32
+            let c:int = 28
+            let d:int = 15
+            let e:string = "olá mundo"
+            (a + b * (c + d) - e)
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarb)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:string = "32"
-//             let c:int = 28
-//             let d:int = 15
-//             let e:string = "olá mundo"
-//             (a + b * (c + d) - e)
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T19)
+{
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:string = "32"
+            let c:int = 28
+            let d:int = 15
+            let e:string = "olá mundo"
+            (a + b * (c + d) - e)
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchExceptionVarc)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:int = 32
-//             let c:string = "456"
-//             let d:int = 15
-//             let e:string = "olá mundo"
-//             let n:int = (a + b * (c + d) - e)
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T20)
+{
+    std::string input = R"(
+        fn teste() {
+            let a:int = 25
+            let b:double = 32.26D
+            a + 1.25 + b * 2.36 - a
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchException_VariableWithDifferentType)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:string = "32"
-//             25 + 1.25 + a * 2.36 - b
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T21)
+{
+    std::string input = R"(
+        fn teste() {
+            (10 * 1.36 / (250.1254D - 25) + 28)
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchException_NumberWithString)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:string = "32"
-//             25 + 1.25 + b * 2.36 - a
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T22)
+{
+    std::string input = R"(
+        fn sub(): int {
+            return 5
+        }
 
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
+        fn soma(): int {
+            let x: int = 10
+            x + sub()
+        }
+    )";
 
-// TEST_F(SemanticalAnalysisTest, ValidExpression_NoException)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:int = 32
-//             a + 1.25 + b * 2.36 - a
-//         }
-//     )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+TEST_F(SemanticalAnalysisTest, T23)
+{
+    std::string input = R"(
+        fn sub(): int {
+            return 5
+        }
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchException_OperationBetweenNumberAndString)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 25
-//             let b:string = "hello"
-//             a + b
-//         }
-//     )";
+        fn soma(): int {
+            let y: string = "hello"
+            y * sub()
+        }
+    )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
 
-// TEST_F(SemanticalAnalysisTest, ValidNestedExpression)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 10
-//             let b:int = 20
-//             let c:int = 30
-//             (a + b) * c - a
-//         }
-//     )";
+TEST_F(SemanticalAnalysisTest, T24)
+{
+    std::string input = R"(
+        fn soma(x:int, b:int, n:string) {
+            x + b * z
+        }
+    )";
 
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
 
-// TEST_F(SemanticalAnalysisTest, TypeMismatchException_NestedExpression)
-// {
-//     std::string input = R"(
-//         fn teste() {
-//             let a:int = 10
-//             let b:string = "20"
-//             let c:int = 30
-//             (a + b) * c
-//         }
-//     )";
-
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
-
-// TEST_F(SemanticalAnalysisTest, IncompatibleTypesStringAndInt)
-// {
-//     std::string input = R"(
-//         fn sub(): int {
-//             return 5
-//         }
-
-//         fn soma(): int {
-//             let y: string = "hello"
-//             y * sub()
-//         }
-//     )";
-
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
-
-// TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration)
-// {
-//     std::string input = R"(
-//         fn soma(): int {
-//             return sub() + 10
-//         }
+// TODO: Declarar todas as funções antes de analisar a analise semantica igual na geração do LLVM.
+//  TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration)
+//  {
+//      std::string input = R"(
+//          fn soma(): int {
+//              return sub() + 10
+//          }
 
 //         fn sub(): int {
 //             return 5
@@ -408,22 +364,6 @@ TEST_F(SemanticalAnalysisTest, T14)
 //     )";
 
 //     EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
-// }
-
-// TEST_F(SemanticalAnalysisTest, CompatibleTypesWithFunctionCalls)
-// {
-//     std::string input = R"(
-//         fn sub(): int {
-//             return 5
-//         }
-
-//         fn soma(): int {
-//             let x: int = 10
-//             return x + sub()
-//         }
-//     )";
-
-//     EXPECT_NO_THROW(runAnalysis(input));
 // }
 
 // TEST_F(SemanticalAnalysisTest, ChainedFunctionCallsCompatible)
@@ -444,17 +384,6 @@ TEST_F(SemanticalAnalysisTest, T14)
 //     )";
 
 //     EXPECT_NO_THROW(runAnalysis(input));
-// }
-
-// TEST_F(SemanticalAnalysisTest, UndeclaredVariableInFunction)
-// {
-//     std::string input = R"(
-//         fn soma(x:int, b:int, n:string) {
-//             x + b * z
-//         }
-//     )";
-
-//     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 // }
 
 // TEST_F(SemanticalAnalysisTest, TypeMismatchIntAndFloatLiteral)

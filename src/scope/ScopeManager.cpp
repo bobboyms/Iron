@@ -100,12 +100,12 @@ namespace scope
     /* ------------------------------ FUNCTION ---------------------------- */
 
     Function::Function(std::string name,
-                       std::vector<std::shared_ptr<FunctionArg>> callArgs,
+                       std::vector<std::shared_ptr<FunctionArg>> &args,
                        int returnType)
+        : args(args), // inicializa a referência
+          returnType(returnType)
     {
-        this->name = name; // 'name' is inherited from GlobalScope
-        this->args = callArgs;
-        this->returnType = returnType;
+        this->name = name;
     }
 
     Function::~Function()
@@ -167,8 +167,6 @@ namespace scope
             auto currentScope = tempStack.top();
             tempStack.pop();
 
-            // We only store variables in "Statements" (or potentially in other LocalScopes that hold Variables).
-            // So let's try a dynamic_cast to see if we can get variables.
             auto statementsScope = std::dynamic_pointer_cast<Statements>(currentScope);
             if (statementsScope)
             {
@@ -180,20 +178,17 @@ namespace scope
             }
         }
 
-        // 1) Check if it's one of the function's arguments
-        for (auto &arg : args)
+        auto arg = getArgByName(varName);
+        if (arg)
         {
-            if (arg->name == varName)
-            {
-                return std::make_shared<Variable>(arg->name, arg->type);
-            }
+            return std::make_shared<Variable>(arg->name, arg->type);
         }
 
         // Not found
         return nullptr;
     }
 
-    std::vector<std::shared_ptr<FunctionArg>> Function::getArgs()
+    std::vector<std::shared_ptr<FunctionArg>> &Function::getArgs()
     {
         return args;
     }

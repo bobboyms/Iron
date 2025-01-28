@@ -90,11 +90,20 @@ namespace scope
         int getScopeType();
     };
 
+    struct CallArg
+    {
+        std::string name;
+        int type;
+
+        CallArg(const std::string name, int type) : name(name), type(type) {}
+    };
+
     class FunctionCall : public LocalScope
     {
     protected:
         std::string name;
         std::shared_ptr<Function> function;
+        // std::vector<std::shared_ptr<CallArg>> callArgs;
 
     public:
         std::shared_ptr<Function> getFunction();
@@ -121,11 +130,11 @@ namespace scope
         std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
 
     protected:
-        std::vector<std::shared_ptr<FunctionArg>> args;
+        std::vector<std::shared_ptr<FunctionArg>> &args;
         int returnType;
 
     public:
-        Function(std::string name, std::vector<std::shared_ptr<FunctionArg>> callArgs, int returnType);
+        Function(std::string name, std::vector<std::shared_ptr<FunctionArg>> &args, int returnType);
         ~Function();
         std::string getFunctionName();
         int getReturnType();
@@ -136,7 +145,7 @@ namespace scope
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string argName);
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string varName);
-        std::vector<std::shared_ptr<FunctionArg>> getArgs();
+        std::vector<std::shared_ptr<FunctionArg>> &getArgs();
 
         std::string getScopeName();
         int getScopeType();
