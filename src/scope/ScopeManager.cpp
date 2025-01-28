@@ -100,9 +100,9 @@ namespace scope
     /* ------------------------------ FUNCTION ---------------------------- */
 
     Function::Function(std::string name,
-                       std::vector<std::shared_ptr<FunctionArg>> &args,
+                       std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args,
                        int returnType)
-        : args(args), // inicializa a referência
+        : args(args),
           returnType(returnType)
     {
         this->name = name;
@@ -147,7 +147,8 @@ namespace scope
 
     std::shared_ptr<FunctionArg> Function::getArgByName(const std::string argName)
     {
-        for (auto &arg : args)
+
+        for (auto arg : *args)
         {
             if (arg->name == argName)
             {
@@ -188,7 +189,7 @@ namespace scope
         return nullptr;
     }
 
-    std::vector<std::shared_ptr<FunctionArg>> &Function::getArgs()
+    std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> Function::getArgs()
     {
         return args;
     }
@@ -246,7 +247,36 @@ namespace scope
         {
             return it->second;
         }
+
         return nullptr;
+    }
+
+    void ScopeManager::addFunctionDeclaration(std::shared_ptr<Function> function)
+    {
+        functionDeclarations.push_back(function);
+    }
+
+    std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(std::string functionName)
+    {
+        for (auto function : functionDeclarations)
+        {
+            if (function->getFunctionName() == functionName)
+            {
+                return function;
+            }
+        }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<Function> ScopeManager::currentFunctionDeclarationBy()
+    {
+        if (functionDeclarations.empty())
+        {
+            return nullptr;
+        }
+
+        return functionDeclarations.back();
     }
 
 } // namespace scope

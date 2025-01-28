@@ -350,10 +350,88 @@ TEST_F(SemanticalAnalysisTest, T24)
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-// TODO: Declarar todas as funções antes de analisar a analise semantica igual na geração do LLVM.
-//  TEST_F(SemanticalAnalysisTest, UseFunctionBeforeDeclaration)
-//  {
-//      std::string input = R"(
+TEST_F(SemanticalAnalysisTest, T25)
+{
+    std::string input = R"(
+        fn sub(a:int, b:int):int {}
+
+        fn main() {
+            sub(a:10,p:5) * 36
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::FunctionArgNotFoundException);
+}
+
+TEST_F(SemanticalAnalysisTest, T26)
+{
+    std::string input = R"(
+        fn sub(a:int, b:int):int {}
+
+        fn main() {
+            sub(a:10,b:5) * 36.69
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, T27)
+{
+    std::string input = R"(
+        fn sub(a:int, b:int):int {}
+
+        fn main() {
+            sub(a:10,b:5.00) * 36.69
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticalAnalysisTest, T28)
+{
+    std::string input = R"(
+        fn sub(a:int, b:int):int {}
+
+        fn main(x:int) {
+            sub(a:10,b:x) * 36.69
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, T29)
+{
+    std::string input = R"(
+        fn sub(a:float, b:int):int {}
+
+        fn main(x:int) {
+            let a:float = 6.23
+            sub(a:a,b:x) * 36.69
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticalAnalysisTest, T30)
+{
+    std::string input = R"(
+        fn sub(a:int, b:int):int {}
+
+        fn main() {
+            sub(a:10,b:p) * 36.69
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
+
+// TEST_F(SemanticalAnalysisTest, T27)
+// {
+//     std::string input = R"(
 //          fn soma(): int {
 //              return sub() + 10
 //          }
@@ -363,10 +441,10 @@ TEST_F(SemanticalAnalysisTest, T24)
 //         }
 //     )";
 
-//     EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
+//     EXPECT_NO_THROW(runAnalysis(input));
 // }
 
-// TEST_F(SemanticalAnalysisTest, ChainedFunctionCallsCompatible)
+// TEST_F(SemanticalAnalysisTest, T28)
 // {
 //     std::string input = R"(
 //         fn addOne(): int {
@@ -379,7 +457,7 @@ TEST_F(SemanticalAnalysisTest, T24)
 
 //         fn main(): int {
 //             let base: int = 5
-//             return doubleValue(base) + addOne()
+//             return doubleValue(num:base) + addOne()
 //         }
 //     )";
 

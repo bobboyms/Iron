@@ -130,11 +130,11 @@ namespace scope
         std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
 
     protected:
-        std::vector<std::shared_ptr<FunctionArg>> &args;
+        std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args;
         int returnType;
 
     public:
-        Function(std::string name, std::vector<std::shared_ptr<FunctionArg>> &args, int returnType);
+        Function(std::string name, std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args, int returnType);
         ~Function();
         std::string getFunctionName();
         int getReturnType();
@@ -145,7 +145,7 @@ namespace scope
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string argName);
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string varName);
-        std::vector<std::shared_ptr<FunctionArg>> &getArgs();
+        std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> getArgs();
 
         std::string getScopeName();
         int getScopeType();
@@ -154,11 +154,15 @@ namespace scope
     class ScopeManager
     {
     private:
+        std::vector<std::shared_ptr<Function>> functionDeclarations;
         std::stack<std::shared_ptr<GlobalScope>> scopeStack;
         // Mapa para acessar escopos pelo nome
         std::unordered_map<std::string, std::shared_ptr<GlobalScope>> scopeMap;
 
     public:
+        void addFunctionDeclaration(std::shared_ptr<Function> function);
+        std::shared_ptr<Function> getFunctionDeclarationByName(std::string functionName);
+        std::shared_ptr<Function> currentFunctionDeclarationBy();
         void enterScope(std::shared_ptr<GlobalScope> scope);
         void exitScope();
         std::string currentScopeName() const;

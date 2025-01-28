@@ -43,8 +43,8 @@ int runAnalysis(const std::string &input)
         analysis.analyze();
 
         // // Rewind
-        // tokens.seek(0);
-        // parser->reset();
+        tokens.seek(0);
+        parser->reset();
 
         // auto context = std::make_shared<hlir::Context>();
         // hlir::HLIRGenerator hightLevelCodeGenerator(parser, context);
@@ -88,8 +88,10 @@ int main()
 {
     std::string input = R"(
 
-        fn soma(x:int, b:int, n:string) {
-            x + b * z
+        fn sub(a:int, b:int):int {}
+
+        fn main() {
+            sub(a:10,b:p) * 36.69
         }
 
 

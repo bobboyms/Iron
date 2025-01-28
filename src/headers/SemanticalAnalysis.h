@@ -23,6 +23,7 @@ namespace iron
         std::pair<std::string, std::string> getCodeLineAndCaretLine(int line, int col, int steps);
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
+        void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
         void visitStatementList(IronParser::StatementListContext *ctx);
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx);
