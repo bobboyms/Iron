@@ -23,7 +23,7 @@ namespace scope
         // Método para obter o pai
         std::shared_ptr<Parent> getParent() const
         {
-            return parent.lock(); // Retorna um shared_ptr se o pai ainda existir
+            return parent.lock();
         }
     };
 
@@ -50,6 +50,7 @@ namespace scope
     {
         std::string name;
         int type;
+        std::shared_ptr<Function> function;
 
         Variable(const std::string &name, int type) : name(name), type(type) {}
     };
@@ -80,6 +81,7 @@ namespace scope
 
     public:
         void addVariable(const std::string &name, int type);
+        void addFunctionAlias(const std::string varName, std::shared_ptr<Function> function);
         std::shared_ptr<Variable> getVariable(const std::string &name);
 
         Statements();
@@ -130,6 +132,7 @@ namespace scope
         std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
 
     protected:
+        std::shared_ptr<Function> upperFunction;
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args;
         int returnType;
 
@@ -138,12 +141,13 @@ namespace scope
         ~Function();
         std::string getFunctionName();
         int getReturnType();
-
+        void setUpperFunction(std::shared_ptr<Function> function);
         void enterLocalScope(std::shared_ptr<LocalScope> scope);
         std::shared_ptr<LocalScope> getCurrentLocalScope();
         void exitLocalScope();
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string argName);
+        std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string varName);
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string varName);
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> getArgs();
 

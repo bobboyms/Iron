@@ -1,3 +1,8 @@
 fn main() {
-            sub(a:10,b:5) * 36
+            let p:int = 16
+            let inline:fn = (a:int, b:int):int -> a * b / p
+
+            let block:fn = (a:int, b:int):int -> {
+                a * b / p
+            }
         }

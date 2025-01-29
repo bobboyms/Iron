@@ -88,10 +88,32 @@ int main()
 {
     std::string input = R"(
 
-        fn sub(a:int, b:int):int {}
+        fn sub(a:int):int {}
 
         fn main() {
-            sub(a:10,b:p) * 36.69
+            let p:int = 16
+            let inline:fn = (a:int, b:int):int -> a * b / p
+
+            let block2:fn = (a:int, x:int):int -> {
+                    let r:int = a * x - p
+                    let block:fn = (a:int, x:int):int -> {
+                        ((a * x) / r) - p
+                    }
+                }
+
+            let block:fn = (a:int, x:int):int -> {
+                let block:fn = (a:int, x:int):int -> {
+                    let r:int = a * x - p
+                    let block:fn = (a:int, x:int):int -> {
+                        ((a * x) / r) - p
+                    }
+                }
+
+                block(a:10,x:block2(a:25, x:sub(a:12)))
+            }
+
+            block(a:10,x:30) - block2(a:25, x:sub(a:12)) * 2.98
+
         }
 
 

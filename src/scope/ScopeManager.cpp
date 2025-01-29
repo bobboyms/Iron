@@ -1,4 +1,5 @@
 #include "ScopeManager.h"
+#include "../headers/Utils.h"
 
 #include <stack>
 #include <unordered_map>
@@ -49,7 +50,29 @@ namespace scope
 
     void Statements::addVariable(const std::string &name, int type)
     {
+
+        if (name.empty())
+        {
+            throw std::runtime_error(util::format("Statements::addVariable. Variable name is empty", ""));
+        }
         variables.push_back(std::make_shared<Variable>(name, type));
+    }
+
+    void Statements::addFunctionAlias(const std::string varName, std::shared_ptr<Function> function)
+    {
+
+        if (!function)
+        {
+            throw std::runtime_error(util::format("Statements::addFunctionAlias. Function is empty", ""));
+        }
+
+        auto variable = getVariable(varName);
+        if (!variable)
+        {
+            throw std::runtime_error(util::format("Variable {} not found", varName));
+        }
+
+        variable->function = function;
     }
 
     std::shared_ptr<Variable> Statements::getVariable(const std::string &name)
@@ -123,8 +146,32 @@ namespace scope
         return returnType;
     }
 
+    void Function::setUpperFunction(std::shared_ptr<Function> function)
+    {
+        if (!function)
+        {
+            throw std::runtime_error(util::format("Function::setUpperFunction. Function is null", ""));
+        }
+
+        upperFunction = function;
+    }
+
     void Function::enterLocalScope(std::shared_ptr<LocalScope> scope)
     {
+        if (!scope)
+        {
+            throw std::runtime_error(util::format("Function::enterLocalScope. Scope is null", ""));
+        }
+
+        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        scope->setParent(parentPtr);
+
+        auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr);
+        if (!functionPtr)
+        {
+            throw std::runtime_error("Function::enterLocalScope. Failed to cast Parent to Function.");
+        }
+
         scopeStack.push(scope);
     }
 
@@ -158,10 +205,31 @@ namespace scope
         return nullptr;
     }
 
+    std::shared_ptr<Variable> Function::findVarCurrentScopeAndArg(const std::string varName)
+    {
+        auto statement = std::dynamic_pointer_cast<Statements>(getCurrentLocalScope());
+        if (statement)
+        {
+            auto var = statement->getVariable(varName);
+            if (var)
+            {
+                return var;
+            }
+        }
+
+        auto arg = getArgByName(varName);
+        if (arg)
+        {
+            return std::make_shared<Variable>(arg->name, arg->type);
+        }
+
+        return nullptr;
+    }
+
     std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string varName)
     {
 
-        // 1) Check local scopes (from top to bottom)
+        // verifica no escopo local e superiores
         std::stack<std::shared_ptr<LocalScope>> tempStack(scopeStack);
         while (!tempStack.empty())
         {
@@ -179,13 +247,18 @@ namespace scope
             }
         }
 
+        // verifica nos argumentos da função
         auto arg = getArgByName(varName);
         if (arg)
         {
             return std::make_shared<Variable>(arg->name, arg->type);
         }
 
-        // Not found
+        if (upperFunction)
+        {
+            return upperFunction->findVarAllScopesAndArg(varName);
+        }
+
         return nullptr;
     }
 
@@ -210,6 +283,11 @@ namespace scope
 
     void ScopeManager::enterScope(std::shared_ptr<GlobalScope> scope)
     {
+        if (!scope)
+        {
+            throw std::runtime_error(util::format("ScopeManager::enterScope. Scope is empty", ""));
+        }
+
         scopeStack.push(scope);
         scopeMap[scope->getName()] = scope;
     }
