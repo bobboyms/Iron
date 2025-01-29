@@ -188,6 +188,18 @@ namespace iron
         auto col = ctx->getStart()->getCharPositionInLine();
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
+        auto currentScope = scopeManager->currentScope();
+        if (!currentScope)
+        {
+            throw ScopeNotFoundException("SemanticalAnalysis::visitExpr. No current scope found");
+        }
+
+        auto currentFunction = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
+        if (!currentScope)
+        {
+            throw ScopeNotFoundException("SemanticalAnalysis::visitExpr. No current function found");
+        }
+
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
             return visitExpr(ctx->expr(0));
@@ -259,25 +271,24 @@ namespace iron
         }
         else if (ctx->functionCall())
         {
-            auto functionName = ctx->functionCall()->functionName->getText();
-            auto function = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
-            if (!function)
+            auto calledFunctionName = ctx->functionCall()->functionName->getText();
+            std::shared_ptr<scope::Function> calledFunction;
+            auto functionPtr = currentFunction->findVarAllScopesAndArg(calledFunctionName);
+            if (!functionPtr)
             {
-                auto functionPtr = function->findVarAllScopesAndArg(functionName);
-                if (!functionPtr)
+                calledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
+                if (!calledFunction)
                 {
-                    function = scopeManager->getFunctionDeclarationByName(functionName);
-                    if (!function)
-                    {
-                        throw ScopeNotFoundException("SemanticalAnalysis::visitExpr. No current function scope found");
-                    }
+                    throw ScopeNotFoundException("SemanticalAnalysis::visitExpr. No current function scope found");
                 }
-
-                function = functionPtr->function;
+            }
+            else
+            {
+                calledFunction = functionPtr->function;
             }
 
             visitFunctionCall(ctx->functionCall());
-            return std::pair(functionName, function->getReturnType());
+            return std::pair(calledFunctionName, calledFunction->getReturnType());
         }
 
         throw std::runtime_error("Invalid expression");
