@@ -88,42 +88,14 @@ int main()
 {
     std::string input = R"(
 
-        fn sub(a:int):int {}
+        
+        fn sub(x:int, y:int):int {}
 
         fn main() {
-            let p:int = 16
-            let inline:fn = (a:int, b:int):int -> a * b / p
-
-            let block2:fn = (a:int, x:int):string -> {
-                    let r:int = a * x - p
-                    let block:fn = (a:int, x:int):int -> {
-                        ((a * x) / r) - p
-                    }
-                }
-
-            let block:fn = (a:int, x:int):int -> {
-                let block:fn = (a:int, x:int):int -> {
-                    let r:int = a * x - p
-                    let block:fn = (a:int, x:int):int -> {
-                        ((a * x) / r) - p
-                    }
-                }
-
-                block(a:10,x:block2(a:25, x:sub(a:12)))
-            }
-
-            block(a:10,x:30) - block2(a:25, x:sub(a:12)) * 2.98
-
+            let add:fn = (pp:int):int -> pp + 32
+            let inline:fn = (a:int,b:float, c:boolean):int -> a + b
+            sub(x:12, y:add(pp:25)) * inline(b:25.00F,a:32, c:false)
         }
-
-        // fn sub(): int {
-        //     return 5
-        // }
-
-        // fn soma(): int {
-        //     let y: string = "hello"
-        //     y * sub()
-        // }
 
 
     )";

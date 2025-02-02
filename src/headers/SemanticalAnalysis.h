@@ -22,6 +22,7 @@ namespace iron
 
         std::pair<std::string, std::string> getCodeLineAndCaretLine(int line, int col, int steps);
 
+        std::pair<std::string, std::shared_ptr<scope::Function>> getCalledFunction(std::shared_ptr<scope::Function> currentFunction, std::string functionCalledName);
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
         void visitStatementList(IronParser::StatementListContext *ctx);

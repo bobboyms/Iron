@@ -568,11 +568,83 @@ namespace iron
 
     void SemanticalAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
     {
+        std::vector<std::string> argNames;
+        auto numberCallArg = 0;
         for (auto child : ctx->children)
         {
             if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
             {
+                argNames.push_back(functionCallArg->varName->getText());
                 visitFunctionCallArg(functionCallArg);
+                numberCallArg++;
+            }
+        }
+
+        if (auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent))
+        {
+
+            int line = ctx->getStart()->getLine();
+            int col = ctx->getStart()->getCharPositionInLine();
+            auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+
+            auto currentFunction = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
+            if (!currentFunction)
+            {
+                throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCallArgs. Current function not found");
+            }
+
+            auto functionCalledName = functionCall->functionName->getText();
+            auto [functionName, calledFunction] = getCalledFunction(currentFunction, functionCalledName);
+
+            if (calledFunction->getArgs()->size() != numberCallArg)
+            {
+
+                throw ArgumentCountMismatchException(util::format(
+                    "Function '{}' expects {} arguments, but {} were provided.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}\n",
+                    color::colorText(functionName, color::BOLD_GREEN),
+                    color::colorText(std::to_string(calledFunction->getArgs()->size()), color::BOLD_GREEN),
+                    color::colorText(std::to_string(numberCallArg), color::BOLD_BLUE),
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                    codeLine,
+                    caretLine));
+            }
+
+            for (size_t i = 0; i < calledFunction->getArgs()->size(); ++i)
+            {
+                auto arg = (*calledFunction->getArgs())[i];
+                if (arg->name != argNames[i])
+                {
+
+                    throw ArgumentOrderMismatchException(util::format(
+                        "Argument order mismatch in Function '{}'. Expected '{}', but got '{}'.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n",
+                        color::colorText(functionName, color::BOLD_GREEN),
+                        color::colorText(arg->name, color::BOLD_GREEN),
+                        color::colorText(argNames[i], color::BOLD_BLUE),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                        codeLine,
+                        caretLine));
+
+                    // throw ArgumentOrderMismatchException(util::format(
+                    //     "",
+                    //     "Line: {}, Scope: {}\n\n"
+                    //     "{}\n"
+                    //     "{}\n",
+                    //     color::colorText(functionName, color::BOLD_GREEN),
+                    //     color::colorText(arg->name, color::BOLD_GREEN),
+                    //     color::colorText(argNames[i], color::BOLD_BLUE),
+                    //     color::colorText(std::to_string(line), color::YELLOW),
+                    //     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                    //     codeLine,
+                    //     caretLine));
+                }
             }
         }
     }
@@ -599,51 +671,8 @@ namespace iron
 
         if (auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
         {
-            auto functionName = functionCall->functionName->getText();
-
-            std::shared_ptr<scope::Function> calledFunction;
-            auto functionPtr = currentFunction->findVarCurrentScopeAndArg(functionName);
-            if (!functionPtr)
-            {
-
-                functionPtr = currentFunction->findVarAllScopesAndArg(functionName);
-                if (!functionPtr)
-                {
-                    auto scope = scopeManager->getScopeByName(functionName);
-                    if (!scope)
-                    {
-
-                        util::printf("fff", "");
-                        throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCallArg. Current scope not found");
-                    }
-
-                    auto function = std::dynamic_pointer_cast<scope::Function>(scope);
-                    if (!function)
-                    {
-                        throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCallArg. Current function not found");
-                    }
-
-                    calledFunction = function;
-                }
-                else
-                {
-                    calledFunction = functionPtr->function;
-                    if (!calledFunction)
-                    {
-                        throw SemanticException("SemanticalAnalysis::visitFunctionCallArg. Invalid function ptr");
-                    }
-                    functionName = functionPtr->name;
-                }
-            }
-            else
-            {
-                calledFunction = functionPtr->function;
-                if (!calledFunction)
-                {
-                    throw SemanticException("SemanticalAnalysis::visitFunctionCallArg. Invalid function ptr");
-                }
-                functionName = functionPtr->name;
-            }
+            auto functionCalledName = functionCall->functionName->getText();
+            auto [functionName, calledFunction] = getCalledFunction(currentFunction, functionCalledName);
 
             auto funcArg = calledFunction->getArgByName(argName);
             if (!funcArg)

@@ -40,6 +40,7 @@ SRC_COMMON  = src/hlir/Type.cpp \
               src/hlir/WriterCodeHLIR.cpp \
               src/utils/Colors.cpp \
               src/semantical/SemanticalAnalysis.cpp \
+              src/semantical/Functions.cpp \
               src/parsers/IronLexer.cpp \
               src/parsers/IronParser.cpp \
               src/parsers/IronBaseListener.cpp \
