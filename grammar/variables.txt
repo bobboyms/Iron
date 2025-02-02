@@ -1,7 +1,8 @@
-fn sub(n:int, j:int): int {   
-        }
+fn main() {
+            let p:int = 16
+            let inline:fn = (a:int, b:int):int -> a * b / p
 
-        fn soma(): int {
-            let x:int = 25
-            sub(n:2, j:x)
+            let block:fn = (a:int, b:int):int -> {
+                a * b / p
+            }
         }

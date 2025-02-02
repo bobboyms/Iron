@@ -72,7 +72,7 @@ protected:
         auto parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<iron::ScopeManager>()));
+        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()));
         analysis.analyze();
 
         // Rewind

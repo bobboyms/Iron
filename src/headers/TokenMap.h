@@ -50,6 +50,7 @@ namespace tokenMap
         // tipos de controle
         PTR,
         FUNCTION_PTR,
+        FUNCTION_CALL,
         VARIABLE,
         VOID,
         NUMBER,
@@ -101,6 +102,7 @@ namespace tokenMap
         {ARGUMENT, "arg"},
         {FUNCTION_PTR, "fptr"},
         {PTR, "ptr"},
+        {FUNCTION_CALL, "fn_call"},
 
     };
 

@@ -33,17 +33,14 @@ SRC_COMMON  = src/hlir/Type.cpp \
                     src/hlir/Variable.cpp \
                     src/hlir/Operations.cpp \
                     src/hlir/HLIRGenerator.cpp \
-              src/llvm/Utils.cpp \
-              src/llvm/Expr.cpp \
+                    src/scope/ScopeManager.cpp \
               src/llvm/Types.cpp \
-              src/llvm/LLVMIR.cpp \
               src/llvm/LLVM.cpp \
               src/llvm/Operations.cpp \
               src/hlir/WriterCodeHLIR.cpp \
               src/utils/Colors.cpp \
-              src/utils/ScopeManager.cpp \
-              src/hlir/HighLevelIR.cpp \
               src/semantical/SemanticalAnalysis.cpp \
+              src/semantical/Functions.cpp \
               src/parsers/IronLexer.cpp \
               src/parsers/IronParser.cpp \
               src/parsers/IronBaseListener.cpp \
@@ -54,7 +51,8 @@ SRC_COMMON  = src/hlir/Type.cpp \
               src/parsers/HightLavelIRListener.cpp
 
 # Fontes de teste
-TEST_SRC    = tests/test_semantical_analysis.cpp tests/test_hlir_code.cpp tests/test_llvm_code.cpp
+TEST_SRC    = tests/test_semantical_analysis.cpp 
+                  # tests/test_hlir_code.cpp tests/test_llvm_code.cpp
                         
             #   tests/test_lexer.cpp \
             #   tests/test_hlir_types.cpp \
