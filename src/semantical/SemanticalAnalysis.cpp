@@ -568,83 +568,79 @@ namespace iron
 
     void SemanticalAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
     {
+        // Coleta os nomes dos argumentos e processa cada um
         std::vector<std::string> argNames;
-        auto numberCallArg = 0;
         for (auto child : ctx->children)
         {
             if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
             {
                 argNames.push_back(functionCallArg->varName->getText());
                 visitFunctionCallArg(functionCallArg);
-                numberCallArg++;
             }
         }
 
-        if (auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent))
+        // Verifica se o contexto pai é um FunctionCallContext
+        auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent);
+        if (!functionCall)
         {
+            // Caso não seja, você pode optar por retornar ou lançar uma exceção
+            return;
+        }
 
-            int line = ctx->getStart()->getLine();
-            int col = ctx->getStart()->getCharPositionInLine();
-            auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+        // Obtém informações de linha e coluna para mensagens de erro
+        const int line = ctx->getStart()->getLine();
+        const int col = ctx->getStart()->getCharPositionInLine();
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
-            auto currentFunction = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
-            if (!currentFunction)
+        // Obtém a função corrente do escopo e verifica se ela é válida
+        auto currentFunction = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
+        if (!currentFunction)
+        {
+            throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCallArgs. Current function not found");
+        }
+
+        // Recupera o nome da função chamada e obtém a função correspondente
+        const std::string functionCalledName = functionCall->functionName->getText();
+        auto [functionName, calledFunction] = getCalledFunction(currentFunction, functionCalledName);
+
+        // Armazena os argumentos esperados da função chamada
+        auto functionArgs = calledFunction->getArgs();
+
+        // Verifica se a quantidade de argumentos está correta
+        if (functionArgs->size() != argNames.size())
+        {
+            throw ArgumentCountMismatchException(util::format(
+                "Function '{}' expects {} arguments, but {} were provided.\n"
+                "Line: {}, Scope: {}\n\n"
+                "{}\n"
+                "{}\n",
+                color::colorText(functionName, color::BOLD_GREEN),
+                color::colorText(std::to_string(functionArgs->size()), color::BOLD_GREEN),
+                color::colorText(std::to_string(argNames.size()), color::BOLD_BLUE),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                codeLine,
+                caretLine));
+        }
+
+        // Verifica se a ordem dos argumentos está correta
+        for (size_t i = 0; i < functionArgs->size(); ++i)
+        {
+            const auto &expectedArg = (*functionArgs)[i];
+            if (expectedArg->name != argNames[i])
             {
-                throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCallArgs. Current function not found");
-            }
-
-            auto functionCalledName = functionCall->functionName->getText();
-            auto [functionName, calledFunction] = getCalledFunction(currentFunction, functionCalledName);
-
-            if (calledFunction->getArgs()->size() != numberCallArg)
-            {
-
-                throw ArgumentCountMismatchException(util::format(
-                    "Function '{}' expects {} arguments, but {} were provided.\n"
+                throw ArgumentOrderMismatchException(util::format(
+                    "Argument order mismatch in Function '{}'. Expected '{}', but got '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
                     "{}\n",
                     color::colorText(functionName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(calledFunction->getArgs()->size()), color::BOLD_GREEN),
-                    color::colorText(std::to_string(numberCallArg), color::BOLD_BLUE),
+                    color::colorText(expectedArg->name, color::BOLD_GREEN),
+                    color::colorText(argNames[i], color::BOLD_BLUE),
                     color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
                     codeLine,
                     caretLine));
-            }
-
-            for (size_t i = 0; i < calledFunction->getArgs()->size(); ++i)
-            {
-                auto arg = (*calledFunction->getArgs())[i];
-                if (arg->name != argNames[i])
-                {
-
-                    throw ArgumentOrderMismatchException(util::format(
-                        "Argument order mismatch in Function '{}'. Expected '{}', but got '{}'.\n"
-                        "Line: {}, Scope: {}\n\n"
-                        "{}\n"
-                        "{}\n",
-                        color::colorText(functionName, color::BOLD_GREEN),
-                        color::colorText(arg->name, color::BOLD_GREEN),
-                        color::colorText(argNames[i], color::BOLD_BLUE),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                        codeLine,
-                        caretLine));
-
-                    // throw ArgumentOrderMismatchException(util::format(
-                    //     "",
-                    //     "Line: {}, Scope: {}\n\n"
-                    //     "{}\n"
-                    //     "{}\n",
-                    //     color::colorText(functionName, color::BOLD_GREEN),
-                    //     color::colorText(arg->name, color::BOLD_GREEN),
-                    //     color::colorText(argNames[i], color::BOLD_BLUE),
-                    //     color::colorText(std::to_string(line), color::YELLOW),
-                    //     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                    //     codeLine,
-                    //     caretLine));
-                }
             }
         }
     }
