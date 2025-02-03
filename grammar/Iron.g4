@@ -79,7 +79,13 @@ statementList: (
 		| returnStatement
 	)*;
 
-returnStatement: RETURN (expr | functionCall)?;
+returnStatement:
+	RETURN (
+		dataFormat
+		| varName = IDENTIFIER
+		| functionCall
+		| expr
+	);
 
 // Declaração de função
 functionDeclaration:
@@ -143,6 +149,7 @@ varAssignment:
 	);
 
 // Expressão matemática com precedência adequada
+
 expr:
 	left = expr (mult = '*' | div = '/') right = expr
 	| left = expr (plus = '+' | minus = '-') right = expr

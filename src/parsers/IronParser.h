@@ -167,11 +167,14 @@ public:
 
   class  ReturnStatementContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *varName = nullptr;
     ReturnStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RETURN();
-    ExprContext *expr();
+    DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *IDENTIFIER();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

@@ -127,8 +127,8 @@ namespace scope
     class Function : public GlobalScope
     {
     private:
+        bool returnTokenFound = false;
         std::stack<std::shared_ptr<LocalScope>> scopeStack;
-        // Mapa para acessar escopos pelo nome
         std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
 
     protected:
@@ -144,6 +144,8 @@ namespace scope
         void setUpperFunction(std::shared_ptr<Function> function);
         void enterLocalScope(std::shared_ptr<LocalScope> scope);
         std::shared_ptr<LocalScope> getCurrentLocalScope();
+        bool isReturnTokenFound();
+        void updateReturnTokenStatusToFound();
         void exitLocalScope();
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string argName);

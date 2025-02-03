@@ -87,16 +87,11 @@ int runAnalysis(const std::string &input)
 int main()
 {
     std::string input = R"(
-
         
-        fn sub(x:int, y:int):int {}
-
-        fn main() {
-            let add:fn = (pp:int):int -> pp + 32
-            let inline:fn = (a:int,b:float, c:boolean):int -> a + b
-            sub(x:12, y:add(pp:25)) * inline(b:25.00F,a:32, c:false)
+        fn main():double {
+            // let inline:fn = (a:int):int -> a * 6
+            inline(a:10)
         }
-
 
     )";
 

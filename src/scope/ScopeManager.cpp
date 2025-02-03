@@ -136,6 +136,16 @@ namespace scope
         // Destructor body if needed
     }
 
+    bool Function::isReturnTokenFound()
+    {
+        return returnTokenFound;
+    }
+
+    void Function::updateReturnTokenStatusToFound()
+    {
+        returnTokenFound = true;
+    }
+
     std::string Function::getFunctionName()
     {
         return name; // 'name' is inherited from GlobalScope
@@ -342,6 +352,29 @@ namespace scope
             {
                 return function;
             }
+        }
+
+        // auto variable = currentFunctionDeclarationBy(); //->findVarCurrentScopeAndArg(functionName);
+        if (!currentScope())
+        {
+            return nullptr;
+        }
+
+        auto currentFunction = std::dynamic_pointer_cast<scope::Function>(currentScope());
+        if (!currentFunction)
+        {
+            return nullptr;
+        }
+
+        auto variable = currentFunction->findVarAllScopesAndArg(functionName);
+        if (!variable)
+        {
+            return nullptr;
+        }
+
+        if (variable->type == tokenMap::FUNCTION)
+        {
+            return variable->function;
         }
 
         return nullptr;

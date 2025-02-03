@@ -21,8 +21,6 @@ namespace iron
         std::vector<std::string> sourceLines;
 
         std::pair<std::string, std::string> getCodeLineAndCaretLine(int line, int col, int steps);
-
-        std::pair<std::string, std::shared_ptr<scope::Function>> getCalledFunction(std::shared_ptr<scope::Function> currentFunction, std::string functionCalledName);
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
         void visitStatementList(IronParser::StatementListContext *ctx);
@@ -42,6 +40,7 @@ namespace iron
 
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx);
 
+        std::shared_ptr<scope::Function> getCurrentFunction();
         std::shared_ptr<scope::Function> visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
         std::shared_ptr<scope::Function> visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
         void visitReturn(IronParser::ReturnStatementContext *ctx);

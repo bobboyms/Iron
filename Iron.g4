@@ -79,7 +79,13 @@ statementList: (
 		| returnStatement
 	)*;
 
-returnStatement: RETURN (expr | functionCall)?;
+returnStatement:
+	RETURN (
+		dataFormat
+		| varName = IDENTIFIER
+		| functionCall
+		| expr
+	);
 
 // Declaração de função
 functionDeclaration:

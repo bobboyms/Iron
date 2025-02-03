@@ -1,8 +1,4 @@
-fn main() {
-            let p:int = 16
-            let inline:fn = (a:int, b:int):int -> a * b / p
-
-            let block:fn = (a:int, b:int):int -> {
-                a * b / p
-            }
-        }
+fn main():double {
+    let inline:fn = (a:int) -> a * 6
+    return inline(a:15)
+}
