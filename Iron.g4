@@ -58,7 +58,7 @@ WS: [ \t]+ -> skip;
 
 // Ponto de entrada da gramática
 program:
-	importStatement* (functionDeclaration | entryPoint)* EOF;
+	importStatement* (externBlock | functionDeclaration)* EOF;
 
 // Declaração de importação
 importStatement: IMPORT qualifiedName (DOT STAR)?;
@@ -66,9 +66,8 @@ importStatement: IMPORT qualifiedName (DOT STAR)?;
 // Nome qualificado para importação (ex.: module.casa.janela)
 qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
-// Ponto de entrada principal
-entryPoint:
-	'@main' '(' argVar = IDENTIFIER ')' L_CURLY statementList R_CURLY;
+// Ponto de entrada principal entryPoint: '@main' '(' argVar = IDENTIFIER ')' L_CURLY statementList
+// R_CURLY;
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
@@ -86,6 +85,16 @@ returnStatement:
 		| functionCall
 		| expr
 	);
+
+// extern "C" { fn printf(format: *const i8, ...) -> i32; }
+
+externBlock:
+	'extern' language = IDENTIFIER '{' (
+		externFunctionDeclaration+
+	)* '}';
+
+externFunctionDeclaration:
+	'fn' IDENTIFIER '(' functionArgs? (',' '...')? ')' functionReturnType?;
 
 // Declaração de função
 functionDeclaration:

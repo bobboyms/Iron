@@ -5,7 +5,7 @@
 namespace iron
 {
 
-    void SemanticalAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
+    void SemanticAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
     {
 
         int line = ctx->getStart()->getLine();
@@ -54,7 +54,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitFunctionBody(IronParser::FunctionDeclarationContext *ctx)
+    void SemanticAnalysis::visitFunctionBody(IronParser::FunctionDeclarationContext *ctx)
     {
 
         int line = ctx->getStart()->getLine();
@@ -97,7 +97,7 @@ namespace iron
         scopeManager->exitScope();
     }
 
-    void SemanticalAnalysis::visitFunctionSignature(IronParser::FunctionSignatureContext *ctx)
+    void SemanticAnalysis::visitFunctionSignature(IronParser::FunctionSignatureContext *ctx)
     {
         for (auto child : ctx->children)
         {
@@ -108,7 +108,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitFunctionArgs(IronParser::FunctionArgsContext *ctx)
+    void SemanticAnalysis::visitFunctionArgs(IronParser::FunctionArgsContext *ctx)
     {
         for (auto child : ctx->children)
         {
@@ -119,7 +119,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitFunctionArg(IronParser::FunctionArgContext *ctx)
+    void SemanticAnalysis::visitFunctionArg(IronParser::FunctionArgContext *ctx)
     {
         std::string argName = ctx->varName->getText();
         std::string argType = ctx->varTypes()->getText();
@@ -152,7 +152,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitFunctionCall(IronParser::FunctionCallContext *ctx)
+    void SemanticAnalysis::visitFunctionCall(IronParser::FunctionCallContext *ctx)
     {
 
         std::string functionName = ctx->functionName->getText();
@@ -161,13 +161,13 @@ namespace iron
         auto currentScope = scopeManager->currentScope();
         if (!currentScope)
         {
-            throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCall. Current scope not found");
+            throw ScopeNotFoundException("SemanticAnalysis::visitFunctionCall. Current scope not found");
         }
 
         auto function = std::dynamic_pointer_cast<scope::Function>(currentScope);
         if (!function)
         {
-            throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCall. Current scope is not a function");
+            throw ScopeNotFoundException("SemanticAnalysis::visitFunctionCall. Current scope is not a function");
         }
 
         // Verificar argumentos e outras validações conforme necessário
@@ -180,7 +180,7 @@ namespace iron
         // Implementação adicional conforme necessário
     }
 
-    void SemanticalAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
+    void SemanticAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
     {
         // Coleta os nomes dos argumentos e processa cada um
         std::vector<std::string> argNames;
@@ -266,7 +266,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx)
+    void SemanticAnalysis::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx)
     {
         int line = ctx->getStart()->getLine();
         int col = ctx->getStart()->getCharPositionInLine();
@@ -383,7 +383,7 @@ namespace iron
                     auto functionPtr = currentFunction->findVarAllScopesAndArg(calledFunctionName);
                     if (!functionPtr)
                     {
-                        throw ScopeNotFoundException("SemanticalAnalysis::visitFunctionCallArg. No current function scope found");
+                        throw ScopeNotFoundException("SemanticAnalysis::visitFunctionCallArg. No current function scope found");
                     }
 
                     calledFunction = functionPtr->function;
@@ -422,7 +422,7 @@ namespace iron
         // Implementação adicional conforme necessário
     }
 
-    std::shared_ptr<scope::Function> SemanticalAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx)
+    std::shared_ptr<scope::Function> SemanticAnalysis::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx)
     {
 
         int line = ctx->getStart()->getLine();
@@ -432,13 +432,13 @@ namespace iron
         // auto currentScope = scopeManager->currentScope();
         // if (!currentScope)
         // {
-        //     throw ScopeNotFoundException("SemanticalAnalysis::visitArrowFunctionInline. Current scope not found");
+        //     throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current scope not found");
         // }
 
         auto currentFunction = getCurrentFunction();
         // if (!currentFunction)
         // {
-        //     throw ScopeNotFoundException("SemanticalAnalysis::visitArrowFunctionInline. Current function not found");
+        //     throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current function not found");
         // }
 
         if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
@@ -464,7 +464,7 @@ namespace iron
             auto currentStatement = std::dynamic_pointer_cast<scope::Statements>(currentFunction->getCurrentLocalScope());
             if (!currentStatement)
             {
-                throw ScopeNotFoundException("SemanticalAnalysis::visitArrowFunctionInline. Current statement not found");
+                throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current statement not found");
             }
 
             currentStatement->addFunctionAlias(varName, arrowFunction);
@@ -481,10 +481,10 @@ namespace iron
             return arrowFunction;
         }
 
-        throw SemanticException("SemanticalAnalysis::visitArrowFunctionInline error.");
+        throw SemanticException("SemanticAnalysis::visitArrowFunctionInline error.");
     }
 
-    std::shared_ptr<scope::Function> SemanticalAnalysis::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx)
+    std::shared_ptr<scope::Function> SemanticAnalysis::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx)
     {
         int line = ctx->getStart()->getLine();
         int col = ctx->getStart()->getCharPositionInLine();
@@ -493,13 +493,13 @@ namespace iron
         // auto currentScope = scopeManager->currentScope();
         // if (!currentScope)
         // {
-        //     throw ScopeNotFoundException("SemanticalAnalysis::visitArrowFunctionInline. Current scope not found");
+        //     throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current scope not found");
         // }
 
         auto currentFunction = getCurrentFunction();
         // if (!currentFunction)
         // {
-        //     throw ScopeNotFoundException("SemanticalAnalysis::visitArrowFunctionInline. Current function not found");
+        //     throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current function not found");
         // }
 
         if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
@@ -525,7 +525,7 @@ namespace iron
             auto currentStatement = std::dynamic_pointer_cast<scope::Statements>(currentFunction->getCurrentLocalScope());
             if (!currentStatement)
             {
-                throw ScopeNotFoundException("SemanticalAnalysis::visitArrowFunctionInline. Current statement not found");
+                throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current statement not found");
             }
 
             currentStatement->addFunctionAlias(varName, arrowFunction);
@@ -541,23 +541,23 @@ namespace iron
             return arrowFunction;
         }
 
-        throw SemanticException("SemanticalAnalysis::visitArrowFunctionInline error.");
+        throw SemanticException("SemanticAnalysis::visitArrowFunctionInline error.");
     }
 
     // Helper para obter o escopo da função atual
-    std::shared_ptr<scope::Function> SemanticalAnalysis::getCurrentFunction()
+    std::shared_ptr<scope::Function> SemanticAnalysis::getCurrentFunction()
     {
         auto currentScope = scopeManager->currentScope();
         if (!currentScope)
         {
-            throw ScopeNotFoundException("SemanticalAnalysis::getCurrentFunction. Current scope not found");
+            throw ScopeNotFoundException("SemanticAnalysis::getCurrentFunction. Current scope not found");
         }
 
         auto currentFunction = std::dynamic_pointer_cast<scope::Function>(currentScope);
 
         if (!currentFunction)
         {
-            throw ScopeNotFoundException("SemanticalAnalysis::getCurrentFunction. No current function found");
+            throw ScopeNotFoundException("SemanticAnalysis::getCurrentFunction. No current function found");
         }
         return currentFunction;
     }

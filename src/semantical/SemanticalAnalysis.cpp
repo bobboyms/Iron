@@ -5,18 +5,18 @@
 namespace iron
 {
     // Construtor
-    SemanticalAnalysis::SemanticalAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<scope::ScopeManager> scopeManager, std::vector<std::string> sourceLines)
+    SemanticAnalysis::SemanticAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<scope::ScopeManager> scopeManager, std::vector<std::string> sourceLines)
         : parser(parser), scopeManager(std::move(scopeManager)), sourceLines(sourceLines)
     {
     }
 
     // Destrutor
-    SemanticalAnalysis::~SemanticalAnalysis()
+    SemanticAnalysis::~SemanticAnalysis()
     {
     }
 
     // Método principal para análise semântica
-    void SemanticalAnalysis::analyze()
+    void SemanticAnalysis::analyze()
     {
         IronParser::ProgramContext *programContext = parser->program();
 
@@ -38,7 +38,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitStatementList(IronParser::StatementListContext *ctx)
+    void SemanticAnalysis::visitStatementList(IronParser::StatementListContext *ctx)
     {
         auto function = getCurrentFunction();
 
@@ -69,7 +69,7 @@ namespace iron
         function->exitLocalScope();
     }
 
-    void SemanticalAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext *ctx)
+    void SemanticAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext *ctx)
     {
 
         std::string varName = ctx->varName->getText();
@@ -97,13 +97,13 @@ namespace iron
         auto localScope = currentFunction->getCurrentLocalScope();
         if (!localScope)
         {
-            throw ScopeNotFoundException("SemanticalAnalysis::visitVarDeclaration. Local scope not found");
+            throw ScopeNotFoundException("SemanticAnalysis::visitVarDeclaration. Local scope not found");
         }
 
         auto statement = std::dynamic_pointer_cast<scope::Statements>(localScope);
         if (!statement)
         {
-            throw ScopeNotFoundException("SemanticalAnalysis::visitVarDeclaration. Local scope is not a statement");
+            throw ScopeNotFoundException("SemanticAnalysis::visitVarDeclaration. Local scope is not a statement");
         }
 
         statement->addVariable(varName, tokenMap::getTokenType(varType));
@@ -128,7 +128,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitVarAssignment(IronParser::VarAssignmentContext *ctx)
+    void SemanticAnalysis::visitVarAssignment(IronParser::VarAssignmentContext *ctx)
     {
 
         int col = ctx->getStart()->getCharPositionInLine();
@@ -160,7 +160,7 @@ namespace iron
         // Implementação adicional conforme necessário
     }
 
-    std::pair<std::string, int> SemanticalAnalysis::visitExpr(IronParser::ExprContext *ctx)
+    std::pair<std::string, int> SemanticAnalysis::visitExpr(IronParser::ExprContext *ctx)
     {
 
         auto line = ctx->getStart()->getLine();
@@ -208,7 +208,7 @@ namespace iron
             auto function = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
             if (!function)
             {
-                throw FunctionNotFoundException("SemanticalAnalysis::visitExpr. No current function scope found");
+                throw FunctionNotFoundException("SemanticAnalysis::visitExpr. No current function scope found");
             }
             auto variable = function->findVarAllScopesAndArg(varName);
             if (!variable)
@@ -248,7 +248,7 @@ namespace iron
                 calledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
                 if (!calledFunction)
                 {
-                    // throw ScopeNotFoundException("SemanticalAnalysis::visitExpr. No current function scope found");
+                    // throw ScopeNotFoundException("SemanticAnalysis::visitExpr. No current function scope found");
                     throw FunctionNotFoundException(util::format(
                         "Function {} not found.\n"
                         "Line: {}, Scope: {}\n\n"
@@ -273,7 +273,7 @@ namespace iron
         throw std::runtime_error("Invalid expression");
     }
 
-    std::pair<std::string, std::string> SemanticalAnalysis::getCodeLineAndCaretLine(int line, int col, int steps)
+    std::pair<std::string, std::string> SemanticAnalysis::getCodeLineAndCaretLine(int line, int col, int steps)
     {
         std::string codeLine;
         if (line > 0 && line <= (int)sourceLines.size())
@@ -292,7 +292,7 @@ namespace iron
         return std::make_pair(caretLine, codeLine);
     }
 
-    void SemanticalAnalysis::visitAssignment(IronParser::AssignmentContext *ctx)
+    void SemanticAnalysis::visitAssignment(IronParser::AssignmentContext *ctx)
     {
 
         int line = ctx->getStart()->getLine();
@@ -370,7 +370,7 @@ namespace iron
         }
     }
 
-    void SemanticalAnalysis::visitReturn(IronParser::ReturnStatementContext *ctx)
+    void SemanticAnalysis::visitReturn(IronParser::ReturnStatementContext *ctx)
     {
         const int line = ctx->getStart()->getLine();
         const int col = ctx->getStart()->getCharPositionInLine();

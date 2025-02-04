@@ -26,7 +26,7 @@ protected:
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_unique<IronParser>(&tokens);
-        semanticalAnalysis = std::make_unique<iron::SemanticalAnalysis>(std::move(parser), std::move(scopeManager), loadStringAsLines(input));
+        semanticalAnalysis = std::make_unique<iron::SemanticAnalysis>(std::move(parser), std::move(scopeManager), loadStringAsLines(input));
 
         // Executa a análise semântica
         semanticalAnalysis->analyze();
@@ -47,7 +47,7 @@ protected:
     }
 
     std::unique_ptr<scope::ScopeManager> scopeManager;
-    std::unique_ptr<iron::SemanticalAnalysis> semanticalAnalysis;
+    std::unique_ptr<iron::SemanticAnalysis> semanticalAnalysis;
 };
 
 TEST_F(SemanticalAnalysisTest, T1)
