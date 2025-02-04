@@ -46,3 +46,4 @@ venv/
 Makefile.in
 CMakeCache.txt
 CMakeFiles/
+/qodana.yaml
