@@ -3,11 +3,11 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <yaml-cpp/yaml.h>
 #include "headers/LLVMIR.h"
 #include "headers/SemanticAnalysis.h"
 #include "parsers/IronLexer.h"
 #include "scope/ScopeManager.h"
-#include <yaml-cpp/yaml.h>
 
 // Recebe todo o código em uma única string e devolve um vetor de strings,
 // onde cada elemento corresponde a uma linha.

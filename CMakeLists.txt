@@ -1,41 +1,111 @@
-cmake_minimum_required(VERSION 3.10)
-project(IronLang VERSION 1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.15)
+#project(IronLang VERSION 1.0 LANGUAGES CXX)
+project(IronLang VERSION 1.0 LANGUAGES C CXX)
+###############################################################################
+# 1. Configuração do compilador (clang++)
+###############################################################################
+# Tenta localizar o clang++ automaticamente
+find_program(CLANGPP_EXECUTABLE clang++)
+if(CLANGPP_EXECUTABLE)
+    message(STATUS "clang++ encontrado: ${CLANGPP_EXECUTABLE}")
+else()
+    message(WARNING "clang++ não foi encontrado; será usado o compilador padrão: ${CMAKE_CXX_COMPILER}")
+endif()
 
-# Define o compilador (opcional, se quiser fixar para o clang++ desejado)
-set(CMAKE_CXX_COMPILER "/opt/homebrew/opt/llvm/bin/clang++")
+# Se o compilador atual não for o clang++, exibe aviso.
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(WARNING "O compilador atual não é o clang++. Recomenda-se utilizar o clang++ para este projeto.")
+endif()
 
-# Define o padrão C++ de forma “oficial”
+###############################################################################
+# 2. Configuração do padrão C++
+###############################################################################
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# (Opcional) Adiciona a flag para utilizar a libc++
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O1 -stdlib=libc++")
+###############################################################################
+# 3. Encontrar e configurar o LLVM 19
+###############################################################################
+# Caso o CMake não encontre automaticamente o LLVM, defina a variável LLVM_DIR.
+# Exemplo (descomente se necessário):
+# set(LLVM_DIR "/opt/homebrew/opt/llvm/lib/cmake/llvm")
 
-# Diretórios de include
-include_directories(
-        /opt/homebrew/opt/llvm/include
-        /usr/local/include/antlr4-runtime
-        /opt/homebrew/include       # Para GTest
+# LLVM 19.1.7
+find_package(LLVM REQUIRED CONFIG)
+if(NOT LLVM_FOUND)
+    message(FATAL_ERROR "LLVM 19 não foi encontrado!")
+endif()
+message(STATUS "LLVM ${LLVM_PACKAGE_VERSION} encontrado.")
+
+# Inclui os diretórios de include e define macros conforme as configurações do LLVM
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+
+# Mapeia os componentes necessários do LLVM para as bibliotecas de linkagem.
+# Geralmente, "core" e "support" são indispensáveis; adicione outros componentes se necessário.
+llvm_map_components_to_libnames(llvm_libs
+        core
+        support
+        # Exemplo: irreader, bitwriter, etc.
 )
+message(STATUS "Bibliotecas do LLVM mapeadas: ${llvm_libs}")
 
-# Diretórios de link
-link_directories(
-        /opt/homebrew/opt/llvm/lib
-        /usr/local/lib
-        /opt/homebrew/lib
-)
-
-# Bibliotecas externas
-set(ANTLR_LIB /usr/local/lib/libantlr4-runtime.a)
-set(LLVM_LIB LLVM-19)
+###############################################################################
+# 4. Encontrar o yaml-cpp
+###############################################################################
 find_package(yaml-cpp REQUIRED)
+if(NOT yaml-cpp_FOUND)
+    message(FATAL_ERROR "yaml-cpp não foi encontrado!")
+endif()
+message(STATUS "yaml-cpp encontrado.")
 
-# Fontes do programa principal e comuns
-set(SRC_MAIN src/main.cpp
+###############################################################################
+# 5. Encontrar o GTest
+###############################################################################
+find_package(GTest REQUIRED)
+if(NOT GTest_FOUND)
+    message(FATAL_ERROR "GTest não foi encontrado!")
+endif()
+message(STATUS "GTest encontrado.")
+
+###############################################################################
+# 6. Encontrar o ANTLR4
+###############################################################################
+# Procura pela biblioteca do runtime do ANTLR4
+find_library(ANTLR4_LIBRARY
+        NAMES antlr4-runtime
+        PATHS /usr/lib /usr/local/lib /opt/homebrew/lib
+)
+if(NOT ANTLR4_LIBRARY)
+    message(FATAL_ERROR "A biblioteca antlr4-runtime não foi encontrada!")
+endif()
+message(STATUS "antlr4-runtime encontrado: ${ANTLR4_LIBRARY}")
+
+# Procura também o diretório de includes do ANTLR4 (para que os headers sejam encontrados)
+find_path(ANTLR4_INCLUDE_DIR
+        NAMES antlr4-runtime.h
+        PATH_SUFFIXES antlr4-runtime
+        PATHS /usr/include /usr/local/include /opt/homebrew/include
+)
+if(ANTLR4_INCLUDE_DIR)
+    message(STATUS "Diretório de include do ANTLR4 encontrado: ${ANTLR4_INCLUDE_DIR}")
+    include_directories(${ANTLR4_INCLUDE_DIR})
+else()
+    message(WARNING "Diretório de include do ANTLR4 não foi encontrado automaticamente.")
+endif()
+
+
+
+###############################################################################
+# 7. Lista de fontes do projeto
+###############################################################################
+set(SRC_MAIN
+        src/main.cpp
         src/semantic/Expr.cpp
         src/headers/SemanticAnalysis.h
 )
+
 set(SRC_COMMON
         src/hlir/Type.cpp
         src/hlir/FunctionArgs.cpp
@@ -51,6 +121,7 @@ set(SRC_COMMON
         src/utils/Colors.cpp
         src/semantic/SemanticAnalysis.cpp
         src/semantic/Functions.cpp
+        src/semantic/Expr.cpp
         src/parsers/IronLexer.cpp
         src/parsers/IronParser.cpp
         src/parsers/IronBaseListener.cpp
@@ -61,31 +132,29 @@ set(SRC_COMMON
         src/parsers/HightLavelIRListener.cpp
 )
 
-# Fontes dos testes
 set(TEST_SRC
         tests/test_semantic_analysis.cpp
         tests/test_hlir_code.cpp
         tests/test_llvm_code.cpp
-        # Outros testes podem ser adicionados aqui
 )
 
-###########################################
-# Executável do Programa Principal: "program"
-###########################################
+###############################################################################
+# 8. Criação dos executáveis e linkagem
+###############################################################################
+# Executável do programa principal
 add_executable(program ${SRC_MAIN} ${SRC_COMMON})
-target_link_libraries(program PRIVATE ${LLVM_LIB} ${ANTLR_LIB})
+target_link_libraries(program PRIVATE
+        ${llvm_libs}         # Bibliotecas do LLVM mapeadas
+        ${ANTLR4_LIBRARY}    # Biblioteca do ANTLR4
+        yaml-cpp::yaml-cpp   # Imported target do yaml-cpp (cuida dos includes e linkagem)
+)
 
-###########################################
-# Executável dos Testes: "test_program"
-###########################################
+# Executável dos testes
 add_executable(test_program ${TEST_SRC} ${SRC_COMMON})
-target_link_libraries(test_program PRIVATE ${LLVM_LIB} ${ANTLR_LIB})
-
-# Integração com GTest
-find_package(GTest REQUIRED)
-if(GTest_FOUND)
-    target_include_directories(test_program PRIVATE ${GTEST_INCLUDE_DIRS})
-    target_link_libraries(test_program PRIVATE GTest::GTest GTest::Main)
-else()
-    message(WARNING "GTest não foi encontrado. Verifique a instalação do GTest.")
-endif()
+target_link_libraries(test_program PRIVATE
+        ${llvm_libs}
+        ${ANTLR4_LIBRARY}
+        yaml-cpp::yaml-cpp
+        GTest::GTest
+        GTest::Main
+)

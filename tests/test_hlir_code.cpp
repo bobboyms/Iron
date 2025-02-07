@@ -7,7 +7,7 @@
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
 #include "../src/headers/Hlir.h"
-#include "../src/headers/SemanticalAnalysis.h"
+#include "../src/headers/SemanticAnalysis.h"
 #include "../src/headers/HLIRGenerator.h"
 
 // Create a test fixture in the same style

@@ -4,7 +4,7 @@
 #include <algorithm>
 
 // Ajuste os includes conforme a organização do seu projeto
-#include "../src/headers/SemanticalAnalysis.h"
+#include "../src/headers/SemanticAnalysis.h"
 #include "../src/headers/Exceptions.h"
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
