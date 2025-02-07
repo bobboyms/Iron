@@ -43,7 +43,7 @@ namespace iron
     std::string WriterCodeHLIR::getCode()
     {
         std::stringstream sb;
-        for (const auto &[scope, writer] : writerMap)
+        for (const auto &[scope, writer]: writerMap)
         {
             sb << writer.localSb->str();
         }

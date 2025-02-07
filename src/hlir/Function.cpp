@@ -1,21 +1,22 @@
 #include "../headers/Hlir.h"
+#include "../headers/Utils.h"
 
 namespace hlir
 {
-    Function::Function() {}
-    Function::~Function() {}
+    Function::Function() = default;
+    Function::~Function() = default;
 
     void Function::enableInline()
     {
         inlineFunction = true;
     }
 
-    bool Function::getInline()
+    bool Function::getInline() const
     {
         return inlineFunction;
     }
 
-    void Function::setParentFunction(std::shared_ptr<Function> function)
+    void Function::setParentFunction(const std::shared_ptr<Function> &function)
     {
         parentFunction = function;
     }
@@ -25,11 +26,13 @@ namespace hlir
         return statement;
     }
 
-    std::shared_ptr<Function> Function::set(std::string newFunctionName, std::shared_ptr<FunctionArgs> newFunctionArgs, std::shared_ptr<Type> newFunctionReturnType)
+    std::shared_ptr<Function> Function::set(const std::string &functionName,
+                                            std::shared_ptr<FunctionArgs> newFunctionArgs,
+                                            const std::shared_ptr<Type> &functionReturnType)
     {
-        functionName = newFunctionName;
-        functionArgs = newFunctionArgs;
-        functionReturnType = newFunctionReturnType;
+        this->functionName = functionName;
+        this->functionArgs = std::move(newFunctionArgs);
+        this->functionReturnType = functionReturnType;
 
         if (!functionArgs)
         {
@@ -40,7 +43,7 @@ namespace hlir
             throw HLIRException("FunctionReturnType cannot be null.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
 
         functionArgs->setParent(parentPtr);
         functionReturnType->setParent(parentPtr);
@@ -64,15 +67,15 @@ namespace hlir
         return parentFunction;
     }
 
-    std::shared_ptr<Function> Function::set(const std::string newFunctionName,
-                                            const std::shared_ptr<FunctionArgs> newFunctionArgs,
-                                            const std::shared_ptr<Type> newFunctionReturnType,
-                                            const std::shared_ptr<Statement> newStatement)
+    std::shared_ptr<Function> Function::set(const std::string &functionName,
+                                            const std::shared_ptr<FunctionArgs> &functionArgs,
+                                            const std::shared_ptr<Type> &functionReturnType,
+                                            const std::shared_ptr<Statement> &statement)
     {
-        functionName = newFunctionName;
-        functionArgs = newFunctionArgs;
-        functionReturnType = newFunctionReturnType;
-        statement = newStatement;
+        this->functionName = functionName;
+        this->functionArgs = functionArgs;
+        this->functionReturnType = functionReturnType;
+        this->statement = statement;
 
         if (!functionArgs)
         {
@@ -112,22 +115,19 @@ namespace hlir
         return functionReturnType;
     }
 
-    // void Function::setParent(std::shared_ptr<Parent> newParent)
-    //{
-    //     parent = newParent;
-    // }
-
     std::string Function::getText()
     {
         sb.str("");
         sb.clear();
-        if (statement && statement->getStatements().size() > 0)
+        if (statement && !statement->getStatements().empty())
         {
-            sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(), functionReturnType->getText(), statement->getText());
+            sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
+                               functionReturnType->getText(), statement->getText());
         }
         else
         {
-            sb << util::format("fn {}({}):{} { }\n", functionName, functionArgs->getText(), functionReturnType->getText());
+            sb << util::format("fn {}({}):{} { }\n", functionName, functionArgs->getText(),
+                               functionReturnType->getText());
         }
 
         return sb.str();
@@ -140,16 +140,12 @@ namespace hlir
         return callArgs;
     }
 
-    FunctionCallArgs::FunctionCallArgs()
-    {
-    }
+    FunctionCallArgs::FunctionCallArgs() = default;
 
-    FunctionCallArgs::~FunctionCallArgs()
-    {
-    }
+    FunctionCallArgs::~FunctionCallArgs() = default;
 
-    FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs)
-        : callArgs(callArgs)
+    FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs) :
+        callArgs(std::move(callArgs))
     {
     }
 
@@ -159,11 +155,11 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        int commaCount = callArgs.size();
+        const uint commaCount = callArgs.size();
         int argIndex = 1;
-        for (auto arg : callArgs)
+        for (const auto &arg: callArgs)
         {
-            bool hasComma = (argIndex < commaCount);
+            const bool hasComma = (argIndex < commaCount);
             sb << util::format("{}:{}", arg->argument, arg->value->getText());
             if (hasComma)
             {
@@ -176,7 +172,7 @@ namespace hlir
         return sb.str();
     }
 
-    void FunctionCallArgs::addCallArg(std::shared_ptr<FunctionCallArg> callArg)
+    void FunctionCallArgs::addCallArg(const std::shared_ptr<FunctionCallArg> &callArg)
     {
         if (!callArg)
         {
@@ -198,7 +194,8 @@ namespace hlir
         return callArgs;
     }
 
-    std::shared_ptr<FunctionCall> FunctionCall::set(std::shared_ptr<Function> newFunction, std::shared_ptr<FunctionCallArgs> newCallArgs)
+    std::shared_ptr<FunctionCall> FunctionCall::set(const std::shared_ptr<Function> &newFunction,
+                                                    const std::shared_ptr<FunctionCallArgs> &newCallArgs)
     {
         if (!newFunction)
         {
@@ -210,7 +207,7 @@ namespace hlir
             throw HLIRException("The CallArgs can't be nullptr");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
         newFunction->setParent(parentPtr);
         newCallArgs->setParent(parentPtr);
 
@@ -228,30 +225,21 @@ namespace hlir
     }
 
     // Function Call
-    FunctionCall::FunctionCall()
-    {
-    }
+    FunctionCall::FunctionCall() = default;
 
-    FunctionCall::~FunctionCall()
-    {
-    }
+    FunctionCall::~FunctionCall() = default;
 
     std::string FunctionCall::getText()
     {
         sb.str("");
         sb.clear();
-        sb << util::format("call {} {}({})", function->getFunctionReturnType()->getText(), function->getFunctionName(), callArgs->getText());
+        sb << util::format("call {} {}({})", function->getFunctionReturnType()->getText(), function->getFunctionName(),
+                           callArgs->getText());
         return sb.str();
     }
 
-    Statement::Statement()
-        : statementList()
-    {
-    }
-
-    Statement::~Statement()
-    {
-    }
+    Statement::Statement() = default;
+    Statement::~Statement() = default;
 
     std::shared_ptr<Statement> Statement::set(ValidStatement statement)
     {
@@ -263,35 +251,37 @@ namespace hlir
         std::shared_ptr<Parent> parentPtr = shared_from_this();
         statementList.push_back(statement);
 
-        bool hasParentType = false;
-        std::visit([parentPtr](auto &&arg)
-                   {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, std::shared_ptr<Assign>>)
-        {
-            if (arg)
-            {
-                arg->setParent(parentPtr);
-            }
-        }
-        if constexpr (std::is_same_v<T, std::shared_ptr<Expr>>)
-        {
-            if (arg)
-            {
-                arg->setParent(parentPtr);
-            }
-        }
-        else if constexpr (std::is_same_v<T, std::shared_ptr<FunctionCall>>)
-        {
-            if (arg)
-            {
-                arg->setParent(parentPtr);
-            }
-        }
-        else
-        {
-            throw HLIRException("Unsupported expression type encountered in set method.");
-        } }, statement);
+        std::visit(
+                [parentPtr](auto &&arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<Assign>>)
+                    {
+                        if (arg)
+                        {
+                            arg->setParent(parentPtr);
+                        }
+                    }
+                    if constexpr (std::is_same_v<T, std::shared_ptr<Expr>>)
+                    {
+                        if (arg)
+                        {
+                            arg->setParent(parentPtr);
+                        }
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<FunctionCall>>)
+                    {
+                        if (arg)
+                        {
+                            arg->setParent(parentPtr);
+                        }
+                    }
+                    else
+                    {
+                        throw HLIRException("Unsupported expression type encountered in set method.");
+                    }
+                },
+                statement);
 
         auto assignPtr = std::dynamic_pointer_cast<Statement>(parentPtr);
         if (!assignPtr)
@@ -315,11 +305,15 @@ namespace hlir
             throw HLIRException("Attempted to add a nullptr statement in addStatement method.");
         }
 
-        std::visit([](const auto &stmtPtr)
-                   {
-        if (!stmtPtr) {
-            throw HLIRException("Attempted to add a nullptr statement in addStatement method.");
-        } }, statement);
+        std::visit(
+                [](const auto &stmtPtr)
+                {
+                    if (!stmtPtr)
+                    {
+                        throw HLIRException("Attempted to add a nullptr statement in addStatement method.");
+                    }
+                },
+                statement);
 
         statementList.emplace_back(statement);
 
@@ -341,23 +335,30 @@ namespace hlir
 
         sb << "\n";
 
-        for (const auto &stmt : statementList)
+        for (const auto &stmt: statementList)
         {
-            std::visit([this](const auto &stmtPtr)
-                       {
-                       using T = std::decay_t<decltype(*stmtPtr)>;
+            std::visit(
+                    [this](const auto &stmtPtr)
+                    {
+                        using T = std::decay_t<decltype(*stmtPtr)>;
                         if constexpr (std::is_same_v<T, Assign>)
-                       {
-                           sb << util::format(" {}\n", stmtPtr->getText());
-                       }else if constexpr (std::is_same_v<T, Expr>)
-                       {
-                           sb << util::format(" {}\n", stmtPtr->getText());
-                       }
-                       else if constexpr (std::is_same_v<T, FunctionCall>)
-                       {
-                           sb << util::format(" {}\n", stmtPtr->getText());
-                       } },
-                       stmt);
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
+                        else if constexpr (std::is_same_v<T, Expr>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
+                        else if constexpr (std::is_same_v<T, FunctionCall>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
+                        else if constexpr (std::is_same_v<T, FuncReturn>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
+                    },
+                    stmt);
         }
 
         return sb.str();
@@ -367,25 +368,29 @@ namespace hlir
     {
 
         std::shared_ptr<Variable> variable = nullptr;
-        for (auto stmt : statementList)
+        for (auto stmt: statementList)
         {
-            std::visit([this, varName, &variable](const auto &stmtPtr)
-                       {
-                       using T = std::decay_t<decltype(*stmtPtr)>;
+            std::visit(
+                    [this, varName, &variable](const auto &stmtPtr)
+                    {
+                        using T = std::decay_t<decltype(*stmtPtr)>;
                         if constexpr (std::is_same_v<T, Assign>)
-                       {
+                        {
 
-                        if (stmtPtr->getVariable()->getVarName() == varName) {
-                            variable = stmtPtr->getVariable();
+                            if (stmtPtr->getVariable()->getVarName() == varName)
+                            {
+                                variable = stmtPtr->getVariable();
+                            }
                         }
-
-                       }else if constexpr (std::is_same_v<T, Expr>)
-                       {
-                        if (stmtPtr->getVariable()->getVarName() == varName) {
-                            variable = stmtPtr->getVariable();
+                        else if constexpr (std::is_same_v<T, Expr>)
+                        {
+                            if (stmtPtr->getVariable()->getVarName() == varName)
+                            {
+                                variable = stmtPtr->getVariable();
+                            }
                         }
-                       } },
-                       stmt);
+                    },
+                    stmt);
 
             if (variable != nullptr)
             {
@@ -395,4 +400,42 @@ namespace hlir
 
         return nullptr;
     }
-}
+
+    // Function Return
+    FuncReturn::FuncReturn(const std::shared_ptr<Function> &function, const std::shared_ptr<Variable> &variable)
+    {
+        if (!variable)
+        {
+            throw HLIRException("Variable is a nullptr.");
+        }
+
+        if (!function)
+        {
+            throw HLIRException("Function is a nullptr.");
+        }
+
+        if (function->getFunctionReturnType()->getType() != variable->getVarType()->getType())
+        {
+            throw HLIRException("Function returned a wrong type.");
+        }
+
+        this->function = function;
+        this->variable = variable;
+    }
+
+    FuncReturn::~FuncReturn() = default;
+
+    std::shared_ptr<Variable> FuncReturn::getVariable()
+    {
+        return variable;
+    }
+
+    std::string FuncReturn::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("return {} {}", variable->getVarType()->getText(), variable->getVarName());
+        return sb.str();
+    }
+
+} // namespace hlir

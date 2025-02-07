@@ -1,8 +1,8 @@
 #ifndef SCOPE_MANAGER_H
 #define SCOPE_MANAGER_H
 
-#include "../headers/TokenMap.h"
 #include <iostream>
+#include "../headers/TokenMap.h"
 
 namespace scope
 {
@@ -52,29 +52,31 @@ namespace scope
         int type;
         std::shared_ptr<Function> function;
 
-        Variable(const std::string &name, int type) : name(name), type(type) {}
+        Variable(const std::string &name, int type) : name(name), type(type)
+        {
+        }
     };
 
     class LocalScope : public Parent
     {
     protected:
-        int type;
+        int type{};
 
     public:
         int getType();
 
         LocalScope() = default;
-        ~LocalScope() = default;
+        ~LocalScope() override = default;
 
         std::shared_ptr<LocalScope> upperScope;
 
-        void setParent(std::shared_ptr<Parent> newParent) override
+        void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
         }
     };
 
-    class Statements : public LocalScope
+    class Statements final : public LocalScope
     {
     protected:
         std::vector<std::shared_ptr<Variable>> variables;
@@ -85,7 +87,7 @@ namespace scope
         std::shared_ptr<Variable> getVariable(const std::string &name);
 
         Statements();
-        ~Statements();
+        ~Statements() override;
 
         std::shared_ptr<Statements> upperScope;
 
@@ -97,10 +99,12 @@ namespace scope
         std::string name;
         int type;
 
-        CallArg(const std::string name, int type) : name(name), type(type) {}
+        CallArg(std::string  name, const int type) : name(std::move(name)), type(type)
+        {
+        }
     };
 
-    class FunctionCall : public LocalScope
+    class FunctionCall final : public LocalScope
     {
     protected:
         std::string name;
@@ -111,7 +115,7 @@ namespace scope
         std::shared_ptr<Function> getFunction();
 
         FunctionCall(std::string name, std::shared_ptr<Function> function);
-        ~FunctionCall();
+        ~FunctionCall() override;
 
         std::string getName();
     };
@@ -121,10 +125,12 @@ namespace scope
         std::string name;
         int type;
 
-        FunctionArg(const std::string &name, int type) : name(name), type(type) {}
+        FunctionArg(std::string name, const int type) : name(std::move(name)), type(type)
+        {
+        }
     };
 
-    class Function : public GlobalScope
+    class Function final : public GlobalScope
     {
     private:
         bool returnTokenFound = false;
@@ -132,13 +138,14 @@ namespace scope
         std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
 
     protected:
+        std::shared_ptr<Variable> alias;
         std::shared_ptr<Function> upperFunction;
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args;
         int returnType;
 
     public:
         Function(std::string name, std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args, int returnType);
-        ~Function();
+        ~Function() override;
         std::string getFunctionName();
         int getReturnType();
         void setUpperFunction(std::shared_ptr<Function> function);
@@ -147,11 +154,14 @@ namespace scope
         bool isReturnTokenFound();
         void updateReturnTokenStatusToFound();
         void exitLocalScope();
+        void setAlias(const std::shared_ptr<Variable>& alias);
+        std::shared_ptr<Variable> getAlias();
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string argName);
         std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string varName);
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string varName);
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> getArgs();
+        std::shared_ptr<Function> getUpperFunction();
 
         std::string getScopeName();
         int getScopeType();
@@ -176,6 +186,6 @@ namespace scope
         std::shared_ptr<GlobalScope> getScopeByName(const std::string &scopeName) const;
     };
 
-}
+} // namespace scope
 
 #endif // SCOPE_MANAGER_H

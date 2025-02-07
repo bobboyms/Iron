@@ -50,6 +50,9 @@ public:
   virtual void enterFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx) = 0;
   virtual void exitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext *ctx) = 0;
 
+  virtual void enterReturnStatemant(HightLavelIRParser::ReturnStatemantContext *ctx) = 0;
+  virtual void exitReturnStatemant(HightLavelIRParser::ReturnStatemantContext *ctx) = 0;
+
   virtual void enterOp(HightLavelIRParser::OpContext *ctx) = 0;
   virtual void exitOp(HightLavelIRParser::OpContext *ctx) = 0;
 

@@ -12,7 +12,7 @@ namespace hlir
         return value;
     }
 
-    std::shared_ptr<Assign> Assign::set(std::shared_ptr<Variable> newVariable, std::shared_ptr<Value> newValue)
+    std::shared_ptr<Assign> Assign::set(const std::shared_ptr<Variable>& newVariable, const std::shared_ptr<Value>& newValue)
     {
         if (!newVariable)
         {
@@ -29,7 +29,7 @@ namespace hlir
             throw HLIRException("Assign::set failed: Variable type is incompatible with the value type.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
         if (!parentPtr)
         {
             throw HLIRException("Assign::set failed: shared_from_this() returned null.");
@@ -50,11 +50,9 @@ namespace hlir
         return assignPtr;
     }
 
-    Assign::Assign()
-    {
-    }
+    Assign::Assign() = default;
 
-    Assign::~Assign() {}
+    Assign::~Assign() = default;
 
     std::shared_ptr<Variable> Assign::getVariable()
     {
@@ -66,7 +64,8 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), value->getText());
+        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(),
+                           value->getText());
 
         return sb.str();
     }
@@ -75,11 +74,9 @@ namespace hlir
      *
      */
 
-    Plus::Plus()
-    {
-    }
+    Plus::Plus() = default;
 
-    Plus::~Plus() {}
+    Plus::~Plus() = default;
 
     std::string Plus::getText()
     {
@@ -93,8 +90,8 @@ namespace hlir
     /*** Binary
      *  ***/
 
-    BinaryOperation::BinaryOperation() {}
-    BinaryOperation::~BinaryOperation() {}
+    BinaryOperation::BinaryOperation() = default;
+    BinaryOperation::~BinaryOperation() = default;
 
     std::shared_ptr<Variable> BinaryOperation::getVarLeft()
     {
@@ -112,7 +109,8 @@ namespace hlir
      *
      * @throws HLIRException If `varLeft` or `varRight` is nullptr.
      */
-    std::shared_ptr<BinaryOperation> BinaryOperation::set(std::shared_ptr<Variable> newVarLeft, std::shared_ptr<Variable> newVarRight)
+    std::shared_ptr<BinaryOperation> BinaryOperation::set(const std::shared_ptr<Variable>& newVarLeft,
+                                                          const std::shared_ptr<Variable>& newVarRight)
     {
         if (!newVarLeft)
         {
@@ -158,11 +156,9 @@ namespace hlir
     // {
     // }
 
-    Minus::Minus()
-    {
-    }
+    Minus::Minus() = default;
 
-    Minus::~Minus() {}
+    Minus::~Minus() = default;
 
     std::string Minus::getText()
     {
@@ -174,11 +170,9 @@ namespace hlir
         return sb.str();
     }
 
-    Mult::Mult()
-    {
-    }
+    Mult::Mult() = default;
 
-    Mult::~Mult() {}
+    Mult::~Mult() = default;
 
     std::string Mult::getText()
     {
@@ -190,11 +184,9 @@ namespace hlir
         return sb.str();
     }
 
-    Div::Div()
-    {
-    }
+    Div::Div() = default;
 
-    Div::~Div() {}
+    Div::~Div() = default;
 
     std::string Div::getText()
     {
@@ -210,12 +202,14 @@ namespace hlir
         return validExpr;
     }
 
+
     std::shared_ptr<Variable> Expr::getVariable()
     {
         return variable;
     }
 
-    std::shared_ptr<Expr> Expr::set(std::shared_ptr<Variable> newVariable, std::shared_ptr<Expression> newValidExpr)
+    std::shared_ptr<Expr> Expr::set(const std::shared_ptr<Variable>& newVariable,
+                                    const std::shared_ptr<Expression> &newValidExpr)
     {
         if (!newVariable)
         {
@@ -244,13 +238,9 @@ namespace hlir
         return exprPtr;
     }
 
-    Expr::Expr()
-    {
-    }
+    Expr::Expr() = default;
 
-    Expr::~Expr()
-    {
-    }
+    Expr::~Expr() = default;
 
     std::string Expr::getText()
     {
@@ -258,12 +248,13 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(), validExpr->getText());
+        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(),
+                           validExpr->getText());
 
         return sb.str();
     }
 
-    std::shared_ptr<Cast> Cast::apply(std::shared_ptr<Variable> newVariable, std::shared_ptr<Type> newType)
+    std::shared_ptr<Cast> Cast::apply(const std::shared_ptr<Variable>& newVariable, const std::shared_ptr<Type>& newType)
     {
         if (!newVariable)
         {
@@ -307,14 +298,9 @@ namespace hlir
         return assignPtr;
     }
 
-    Cast::Cast()
-    {
-    }
+    Cast::Cast() = default;
 
-    Cast::~Cast()
-    {
-        // Como usamos shared_ptr, não há necessidade de liberar manualmente os recursos.
-    }
+    Cast::~Cast() = default;
 
     std::shared_ptr<Variable> Cast::getVariable()
     {
@@ -338,7 +324,7 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<FunctionPtr> FunctionPtr::set(std::shared_ptr<Function> newFunction)
+    std::shared_ptr<FunctionPtr> FunctionPtr::set(const std::shared_ptr<Function>& newFunction)
     {
         if (!newFunction)
         {
@@ -363,13 +349,9 @@ namespace hlir
         return assignPtr;
     }
 
-    FunctionPtr::FunctionPtr()
-    {
-    }
+    FunctionPtr::FunctionPtr() = default;
 
-    FunctionPtr::~FunctionPtr()
-    {
-    }
+    FunctionPtr::~FunctionPtr() = default;
 
     std::string FunctionPtr::getText()
     {
@@ -381,16 +363,16 @@ namespace hlir
         return sb.str();
     }
 
-    Context::Context() {}
+    Context::Context() = default;
 
-    Context::~Context() {}
+    Context::~Context() = default;
 
     std::vector<std::shared_ptr<Function>> Context::getFunctions()
     {
         return functions;
     }
 
-    void Context::addFunction(std::shared_ptr<Function> function)
+    void Context::addFunction(const std::shared_ptr<Function> &function)
     {
         if (!function)
         {
@@ -406,11 +388,11 @@ namespace hlir
         functions.push_back(function);
     }
 
-    std::shared_ptr<Function> Context::getFunctionByName(std::string functionName)
+    std::shared_ptr<Function> Context::getFunctionByName(const std::string &funcName) const
     {
-        for (auto function : functions)
+        for (auto function: functions)
         {
-            if (function->getFunctionName() == functionName)
+            if (function->getFunctionName() == funcName)
             {
                 return function;
             }
@@ -424,7 +406,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        for (auto function : functions)
+        for (const auto& function: functions)
         {
             sb << util::format("{}\n", function->getText());
         }
@@ -432,4 +414,4 @@ namespace hlir
         return sb.str();
     }
 
-}
+} // namespace hlir

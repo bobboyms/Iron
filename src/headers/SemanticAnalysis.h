@@ -1,13 +1,15 @@
 #ifndef SEMANTICAL_ANALYSIS_H
 #define SEMANTICAL_ANALYSIS_H
 
-#include "../scope/ScopeManager.h"
 #include "../parsers/IronParser.h"
+#include "../scope/ScopeManager.h"
 #include "TokenMap.h"
 #include "Utils.h"
 
-namespace iron {
-    class SemanticAnalysis {
+namespace iron
+{
+    class SemanticAnalysis
+    {
     private:
         std::shared_ptr<IronParser> parser;
         std::unique_ptr<scope::ScopeManager> scopeManager;
@@ -19,11 +21,13 @@ namespace iron {
 
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
 
-        void visitStatementList(IronParser::StatementListContext *ctx);
+        void visitStatementList(const IronParser::StatementListContext *ctx);
 
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
 
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx);
+
+        void visitImportStatement(IronParser::ImportStatementContext *ctx);
 
         std::pair<std::string, int> visitExpr(IronParser::ExprContext *ctx);
 
@@ -51,12 +55,12 @@ namespace iron {
 
     public:
         SemanticAnalysis(std::shared_ptr<IronParser> parser, std::unique_ptr<scope::ScopeManager> scopeManager,
-                         std::vector<std::string> sourceLines);
+                         const std::vector<std::string> &sourceLines);
 
         ~SemanticAnalysis();
 
         void analyze();
     };
-}
+} // namespace iron
 
 #endif // SEMANTICAL_ANALYSIS_H

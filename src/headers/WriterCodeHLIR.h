@@ -2,10 +2,10 @@
 #ifndef WRITER_CODE_HLIR_H
 #define WRITER_CODE_HLIR_H
 
-#include <string>
-#include <sstream>
-#include <unordered_map>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <unordered_map>
 
 namespace iron
 {
@@ -19,7 +19,7 @@ namespace iron
     class WriterCodeHLIR
     {
     private:
-        // Mapeia o nome do escopo (string) para o Writer correspondente
+        // Mapeia o nome do escopo (‘string’) para o Writer correspondente
         std::unordered_map<std::string, Writer> writerMap;
 
     public:

@@ -5,16 +5,18 @@
 #include <string>
 namespace hlir
 {
-    class HLIRException : public std::exception
+    class HLIRException final : public std::exception
     {
     private:
         std::string message; // Mensagem de erro
 
     public:
-        explicit HLIRException(const std::string &msg) : message(msg) {}
+        explicit HLIRException(std::string msg) : message(std::move(msg))
+        {
+        }
 
         // Retorna a mensagem de erro
-        const char *what() const noexcept override
+        [[nodiscard]] const char *what() const noexcept override
         {
             return message.c_str();
         }
@@ -24,16 +26,18 @@ namespace hlir
 
 namespace iron
 {
-    class LLVMException : public std::exception
+    class LLVMException final : public std::exception
     {
     private:
         std::string message; // Mensagem de erro
 
     public:
-        explicit LLVMException(const std::string &msg) : message(msg) {}
+        explicit LLVMException(std::string msg) : message(std::move(msg))
+        {
+        }
 
         // Retorna a mensagem de erro
-        const char *what() const noexcept override
+        [[nodiscard]] const char *what() const noexcept override
         {
             return message.c_str();
         }
@@ -45,100 +49,122 @@ namespace iron
         std::string message; // Mensagem de erro
 
     public:
-        explicit SemanticException(const std::string &msg) : message(msg) {}
+        explicit SemanticException(std::string msg) : message(std::move(msg))
+        {
+        }
 
         // Retorna a mensagem de erro
-        const char *what() const noexcept override
+        [[nodiscard]] const char *what() const noexcept override
         {
             return message.c_str();
         }
     };
 
-    class ArgumentOrderMismatchException : public SemanticException
+    class ArgumentOrderMismatchException final : public SemanticException
     {
     public:
-        explicit ArgumentOrderMismatchException(const std::string &message)
-            : SemanticException(message) {}
+        explicit ArgumentOrderMismatchException(const std::string &message) : SemanticException(message)
+        {
+        }
     };
 
-    class ArgumentCountMismatchException : public SemanticException
+    class ReturnNotFoundException final : public SemanticException
     {
     public:
-        explicit ArgumentCountMismatchException(const std::string &message)
-            : SemanticException(message) {}
+        explicit ReturnNotFoundException(const std::string &message) : SemanticException(message)
+        {
+        }
     };
 
-    class UninitializedVariableException : public SemanticException
+    class ArgumentCountMismatchException final : public SemanticException
     {
     public:
-        explicit UninitializedVariableException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit ArgumentCountMismatchException(const std::string &message) : SemanticException(message)
+        {
+        }
     };
 
-    class VariableRedefinitionException : public SemanticException
+    class UninitializedVariableException final : public SemanticException
     {
     public:
-        explicit VariableRedefinitionException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit UninitializedVariableException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class FunctionRedefinitionException : public SemanticException
+    class VariableRedefinitionException final : public SemanticException
     {
     public:
-        explicit FunctionRedefinitionException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit VariableRedefinitionException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class VariableNotFoundException : public SemanticException
+    class FunctionRedefinitionException final : public SemanticException
     {
     public:
-        explicit VariableNotFoundException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit FunctionRedefinitionException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class ScopeNotFoundException : public SemanticException
+    class VariableNotFoundException final : public SemanticException
     {
     public:
-        explicit ScopeNotFoundException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit VariableNotFoundException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class TypeMismatchException : public SemanticException
+    class ScopeNotFoundException final : public SemanticException
     {
     public:
-        explicit TypeMismatchException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit ScopeNotFoundException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class FunctionNotFoundException : public SemanticException
+    class TypeMismatchException final : public SemanticException
     {
     public:
-        explicit FunctionNotFoundException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit TypeMismatchException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class FunctionArgNotFoundException : public SemanticException
+    class FunctionNotFoundException final : public SemanticException
     {
     public:
-        explicit FunctionArgNotFoundException(const std::string &msg)
-            : SemanticException(msg) {}
+        explicit FunctionNotFoundException(const std::string &msg) : SemanticException(msg)
+        {
+        }
     };
 
-    class LexusNotFoundException : public std::exception
+    class FunctionArgNotFoundException final : public SemanticException
+    {
+    public:
+        explicit FunctionArgNotFoundException(const std::string &msg) : SemanticException(msg)
+        {
+        }
+    };
+
+    class LexusNotFoundException final : public std::exception
     {
     private:
         std::string message; // Mensagem de erro
 
     public:
-        explicit LexusNotFoundException(const std::string &msg) : message(msg) {}
+        explicit LexusNotFoundException(const std::string &msg) : message(msg)
+        {
+        }
 
         // Retorna a mensagem de erro
-        const char *what() const noexcept override
+        [[nodiscard]] const char *what() const noexcept override
         {
             return message.c_str();
         }
     };
-}
+} // namespace iron
 
 namespace tokenMap
 {
@@ -148,21 +174,24 @@ namespace tokenMap
         std::string message; // Mensagem de erro
 
     public:
-        explicit TokenException(const std::string &msg) : message(msg) {}
+        explicit TokenException(const std::string &msg) : message(msg)
+        {
+        }
 
         // Retorna a mensagem de erro
-        const char *what() const noexcept override
+        [[nodiscard]] const char *what() const noexcept override
         {
             return message.c_str();
         }
     };
 
-    class TokenNotFoundException : public TokenException
+    class TokenNotFoundException final : public TokenException
     {
     public:
-        explicit TokenNotFoundException(const std::string &message)
-            : TokenException(message) {}
+        explicit TokenNotFoundException(const std::string &message) : TokenException(message)
+        {
+        }
     };
-}
+} // namespace tokenMap
 
 #endif // SEMANTIC_EXCEPTION_H

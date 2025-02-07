@@ -4,7 +4,6 @@
 #include <memory>
 #include "../parsers/IronParser.h"
 #include "../scope/ScopeManager.h"
-#include "SymbolTable.h"
 
 namespace iron
 {
@@ -23,8 +22,7 @@ namespace iron
         virtual void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx) = 0;
         virtual void visitFunctionArgs(IronParser::FunctionArgsContext *ctx) = 0;
         virtual void visitFunctionArg(IronParser::FunctionArgContext *ctx) = 0;
-        virtual void visitFunctionCall(IronParser::FunctionCallContext *ctx,
-                                       const std::string &actualFunctionName,
+        virtual void visitFunctionCall(IronParser::FunctionCallContext *ctx, const std::string &actualFunctionName,
                                        std::shared_ptr<scope::Function> parentScope) = 0;
         virtual void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx,
                                            const std::string &actualFunctionName,
@@ -39,6 +37,6 @@ namespace iron
         // como parte do contrato, dependendo do design
         // virtual void analyze() = 0;
     };
-}
+} // namespace iron
 
 #endif

@@ -2,27 +2,25 @@
 
 namespace hlir
 {
-    FunctionArgs::FunctionArgs()
-    {
-    }
+    FunctionArgs::FunctionArgs() = default;
 
-    FunctionArgs::~FunctionArgs() {}
+    FunctionArgs::~FunctionArgs() = default;
 
-    void FunctionArgs::addArg(std::shared_ptr<Arg> arg)
+    void FunctionArgs::addArg(const std::shared_ptr<Arg> &arg)
     {
         if (!arg)
         {
             throw HLIRException("Attempted to add a null argument to FunctionArgs.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
         arg->setParent(parentPtr);
         args.push_back(arg);
     }
 
-    std::shared_ptr<Arg> FunctionArgs::findArgByName(std::string argName)
+    std::shared_ptr<Arg> FunctionArgs::findArgByName(const std::string &argName) const
     {
-        for (auto arg : args)
+        for (auto arg: args)
         {
             if (arg->name == argName)
             {
@@ -42,16 +40,16 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        int commaCount = args.size();
+        const uint commaCount = args.size();
         int argIndex = 1;
-        for (const auto &arg : args)
+        for (const auto &arg: args)
         {
             if (!arg || !arg->type)
             {
                 throw HLIRException("Null argument or type encountered in FunctionArgs.");
             }
 
-            bool hasComma = (argIndex < commaCount);
+            const bool hasComma = (argIndex < commaCount);
             sb << util::format("{}:{}", arg->name, arg->type->getText());
             if (hasComma)
             {
@@ -63,4 +61,4 @@ namespace hlir
 
         return sb.str();
     }
-}
+} // namespace hlir

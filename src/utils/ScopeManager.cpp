@@ -8,14 +8,13 @@
 namespace iron
 {
     // Construtor sem nome (compatível com seu código original)
-    SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parentScope)
-        : name(""), parent(parentScope)
+    SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parentScope) : name(""), parent(parentScope)
     {
     }
 
     // Construtor adicional que recebe nome do escopo
-    SymbolTable::SymbolTable(const std::string &scopeName, std::shared_ptr<SymbolTable> parentScope)
-        : name(scopeName), parent(parentScope)
+    SymbolTable::SymbolTable(const std::string &scopeName, std::shared_ptr<SymbolTable> parentScope) :
+        name(scopeName), parent(parentScope)
     {
     }
 
@@ -69,11 +68,9 @@ namespace iron
     void SymbolTable::printSymbols(const std::string &scopeName) const
     {
         std::cout << "Scope: " << scopeName << "\n";
-        for (const auto &[symName, info] : symbols)
+        for (const auto &[symName, info]: symbols)
         {
-            std::cout << "  Name: " << symName
-                      << ", Type: " << info.type
-                      << ", Data Type: " << info.dataType << "\n";
+            std::cout << "  Name: " << symName << ", Type: " << info.type << ", Data Type: " << info.dataType << "\n";
         }
         std::cout << "---\n";
     }
@@ -147,4 +144,4 @@ namespace iron
         return nullptr;
     }
 
-}
+} // namespace iron

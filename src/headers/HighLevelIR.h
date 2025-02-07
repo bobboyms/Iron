@@ -1,14 +1,14 @@
 #ifndef HLIR_H
 #define HLIR_H
 
-#include "WriterCodeHLIR.h"
-#include "../parsers/IronParser.h"
-#include "../parsers/HightLavelIRParser.h"
-#include "../parsers/HightLavelIRLexer.h"
-#include "ScopeManager.h"
-#include "Visitors.h"
 #include <memory>
 #include <stack>
+#include "../parsers/HightLavelIRLexer.h"
+#include "../parsers/HightLavelIRParser.h"
+#include "../parsers/IronParser.h"
+#include "ScopeManager.h"
+#include "Visitors.h"
+#include "WriterCodeHLIR.h"
 
 namespace iron
 {
@@ -39,7 +39,8 @@ namespace iron
 
         void visitFunctionCall(IronParser::FunctionCallContext *ctx, std::shared_ptr<std::stringstream> sb);
         void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<std::stringstream> sb);
-        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma, std::shared_ptr<std::stringstream> sb);
+        void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, bool hasComma,
+                                  std::shared_ptr<std::stringstream> sb);
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
@@ -51,6 +52,6 @@ namespace iron
         std::string generateCode();
         std::shared_ptr<HightLavelIRParser> generateParser();
     };
-}
+} // namespace iron
 
 #endif // HLIR_H

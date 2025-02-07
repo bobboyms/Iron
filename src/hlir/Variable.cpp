@@ -3,7 +3,7 @@
 namespace hlir
 {
 
-    std::shared_ptr<Value> Value::set(Data newValue, std::shared_ptr<Type> newValueType)
+    std::shared_ptr<Value> Value::set(const Data &newValue, const std::shared_ptr<Type> &newValueType)
     {
         if (!newValueType)
         {
@@ -15,7 +15,7 @@ namespace hlir
             throw HLIRException("Value::set failed: The value type cannot be void.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
         if (!parentPtr)
         {
             throw HLIRException("Value::set failed: shared_from_this() returned null.");
@@ -52,9 +52,9 @@ namespace hlir
         return assignPtr;
     }
 
-    Value::Value() {}
+    Value::Value() = default;
 
-    Value::~Value() {}
+    Value::~Value() = default;
 
     Data Value::getValue()
     {
@@ -72,38 +72,53 @@ namespace hlir
         sb.clear();
 
         // Usa std::visit p/ converter "value" num std::string
-        std::visit([this](auto &&arg)
-                   {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, std::shared_ptr<Function>>) {
-            // Se Function tiver um método getText():
-            if (valueType->getType() == tokenMap::FUNCTION_PTR) {
-                sb << util::format("{} {}", tokenMap::getTokenText(tokenMap::FUNCTION_PTR), arg->getFunctionName());
-            } else {
-                sb << arg->getFunctionName();
-            }
-        } else
-        if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>) {
-            sb << util::format("{}", arg->getVarName());
-        }
-        else if constexpr (std::is_same_v<T, std::string>) {
-            sb << arg;
-        }
-        else if constexpr (std::is_same_v<T, int>) {
-            sb << arg; // int -> "123"
-        }
-        else if constexpr (std::is_same_v<T, float>) {
-            sb << arg; // float -> "1.230000"
-        }
-        else if constexpr (std::is_same_v<T, double>) {
-            sb << arg; // double -> "3.140000"
-        }
-        else if constexpr (std::is_same_v<T, bool>) {
-            sb << (arg ? "true" : "false");
-        }
-        else {
-            throw HLIRException("Value::getText failed: Unsupported type in value.");
-        } }, value);
+        std::visit(
+                [this](auto &&arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<Function>>)
+                    {
+                        // Se Function tiver um método getText():
+                        if (valueType->getType() == tokenMap::FUNCTION_PTR)
+                        {
+                            sb << util::format("{} {}", tokenMap::getTokenText(tokenMap::FUNCTION_PTR),
+                                               arg->getFunctionName());
+                        }
+                        else
+                        {
+                            sb << arg->getFunctionName();
+                        }
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
+                    {
+                        sb << util::format("{}", arg->getVarName());
+                    }
+                    else if constexpr (std::is_same_v<T, std::string>)
+                    {
+                        sb << arg;
+                    }
+                    else if constexpr (std::is_same_v<T, int>)
+                    {
+                        sb << arg; // int -> "123"
+                    }
+                    else if constexpr (std::is_same_v<T, float>)
+                    {
+                        sb << arg; // float -> "1.230000"
+                    }
+                    else if constexpr (std::is_same_v<T, double>)
+                    {
+                        sb << arg; // double -> "3.140000"
+                    }
+                    else if constexpr (std::is_same_v<T, bool>)
+                    {
+                        sb << (arg ? "true" : "false");
+                    }
+                    else
+                    {
+                        throw HLIRException("Value::getText failed: Unsupported type in value.");
+                    }
+                },
+                value);
 
         return sb.str();
     }
@@ -115,12 +130,12 @@ namespace hlir
         anotherScope = true;
     }
 
-    bool Variable::isAnotherScope()
+    bool Variable::isAnotherScope() const
     {
         return anotherScope;
     }
 
-    std::shared_ptr<Variable> Variable::set(const std::string &newVarName, std::shared_ptr<Type> newVarType)
+    std::shared_ptr<Variable> Variable::set(const std::string &newVarName, const std::shared_ptr<Type> &newVarType)
     {
         if (!newVarType)
         {
@@ -137,7 +152,7 @@ namespace hlir
             throw HLIRException("Variable::set failed: The variable name cannot be empty.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
         if (!parentPtr)
         {
             throw HLIRException("Variable::set failed: shared_from_this() returned null.");
@@ -157,9 +172,8 @@ namespace hlir
         return assignPtr;
     }
 
-    Variable::Variable() {}
-
-    Variable::~Variable() {}
+    Variable::Variable() = default;
+    Variable::~Variable() = default;
 
     std::string Variable::getVarName()
     {
@@ -179,4 +193,4 @@ namespace hlir
         return sb.str();
     }
 
-}
+} // namespace hlir

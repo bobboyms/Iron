@@ -38,8 +38,7 @@ int main()
     // Entramos nesse escopo global
     scopeManager.enterScope(global);
 
-    std::cout << "Escopo atual após entrar no GlobalScope: "
-              << scopeManager.currentScopeName() << "\n\n";
+    std::cout << "Escopo atual após entrar no GlobalScope: " << scopeManager.currentScopeName() << "\n\n";
 
     // ============================
     // 2) Criar uma função
@@ -55,8 +54,7 @@ int main()
     // Entrar no escopo da função (a função é um tipo de GlobalScope, pois herda de GlobalScope).
     scopeManager.enterScope(myFunction);
 
-    std::cout << "Escopo atual após entrar na funcao: "
-              << scopeManager.currentScopeName() << "\n\n";
+    std::cout << "Escopo atual após entrar na funcao: " << scopeManager.currentScopeName() << "\n\n";
 
     // Podemos pesquisar esse escopo pelo nome:
     auto foundScope = scopeManager.getScopeByName("minhaFuncao");
@@ -99,7 +97,7 @@ int main()
     // (Aqui também temos o mesmo "problema" de name e type serem protected.)
     // Adicionamos variáveis:
     localVars->addVariable("contador", 1); // int
-    localVars->addVariable("nome", 2);     // 2 = string, etc.
+    localVars->addVariable("nome", 2); // 2 = string, etc.
 
     // Entramos nesse novo escopo (ainda dentro da função).
     // Aqui não estamos usando scopeManager para gerenciar LocalScopes, mas poderíamos,
@@ -140,13 +138,11 @@ int main()
 
     // Sair do escopo da função
     scopeManager.exitScope();
-    std::cout << "\nEscopo atual após sair da funcao: "
-              << scopeManager.currentScopeName() << "\n";
+    std::cout << "\nEscopo atual após sair da funcao: " << scopeManager.currentScopeName() << "\n";
 
     // Finalmente, sair do escopo global
     scopeManager.exitScope();
-    std::cout << "Escopo atual apos sair do GlobalScope: "
-              << scopeManager.currentScopeName() << "\n";
+    std::cout << "Escopo atual apos sair do GlobalScope: " << scopeManager.currentScopeName() << "\n";
 
     return 0;
 }

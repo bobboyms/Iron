@@ -1,11 +1,11 @@
 #ifndef TOKEN_MAP_HLIR_H
 #define TOKEN_MAP_HLIR_H
 
-#include "../headers/Colors.h"
-#include "Exceptions.h"
+#include <regex>
 #include <string>
 #include <unordered_map>
-#include <regex>
+#include "../headers/Colors.h"
+#include "Exceptions.h"
 
 namespace tokenMap
 {
@@ -29,7 +29,7 @@ namespace tokenMap
         DIV,
         L_BRACKET,
         R_BRACKET,
-        ARROW, // Tokens especiais, como "->"
+        ARROW,
 
         // Palavras reservadas
         FUNCTION,
@@ -61,55 +61,54 @@ namespace tokenMap
     };
 
     inline const std::unordered_map<int, std::string> tokenText = {
-        {COLON, ":"},
-        {EQ, "="},
-        {SEMICOLON, ";"},
-        {DOT, "."},
-        {STAR, "*"},
-        {L_CURLY, "{"},
-        {R_CURLY, "}"},
-        {L_PAREN, "("},
-        {R_PAREN, ")"},
-        {PLUS, "+"},
-        {MINUS, "-"},
-        {DIV, "/"},
-        {L_BRACKET, "["},
-        {R_BRACKET, "]"},
-        {ARROW, "->"},
+            {COLON, ":"},
+            {EQ, "="},
+            {SEMICOLON, ";"},
+            {DOT, "."},
+            {STAR, "*"},
+            {L_CURLY, "{"},
+            {R_CURLY, "}"},
+            {L_PAREN, "("},
+            {R_PAREN, ")"},
+            {PLUS, "+"},
+            {MINUS, "-"},
+            {DIV, "/"},
+            {L_BRACKET, "["},
+            {R_BRACKET, "]"},
+            {ARROW, "->"},
 
-        {FUNCTION, "fn"},
-        {LET, "let"},
-        {PUBLIC, "public"},
-        {IMPORT, "import"},
-        {RETURN, "return"},
+            {FUNCTION, "fn"},
+            {LET, "let"},
+            {PUBLIC, "public"},
+            {IMPORT, "import"},
+            {RETURN, "return"},
 
-        // Tipos de dados
-        {TYPE_INT, "int"},
-        {TYPE_CHAR, "char"},
-        {TYPE_FLOAT, "float"},
-        {TYPE_STRING, "string"},
-        {TYPE_BOOLEAN, "boolean"},
-        {TYPE_DOUBLE, "double"},
+            // Tipos de dados
+            {TYPE_INT, "int"},
+            {TYPE_CHAR, "char"},
+            {TYPE_FLOAT, "float"},
+            {TYPE_STRING, "string"},
+            {TYPE_BOOLEAN, "boolean"},
+            {TYPE_DOUBLE, "double"},
 
-        // tipos de controle
-        {GLOBAL, "global"},
-        {VARIABLE, "variable"},
-        {VOID, "void"},
-        {NUMBER, "number"},
-        {NO_REAL_NUMBER, "not_is_a_real_number"},
-        {REAL_NUMBER, "real_number"},
-        {PRIVATE, "private"},
-        {ARGUMENT, "arg"},
-        {FUNCTION_PTR, "fptr"},
-        {PTR, "ptr"},
-        {FUNCTION_CALL, "fn_call"},
+            // tipos de controle
+            {GLOBAL, "global"},
+            {VARIABLE, "variable"},
+            {VOID, "void"},
+            {NUMBER, "number"},
+            {NO_REAL_NUMBER, "not_is_a_real_number"},
+            {REAL_NUMBER, "real_number"},
+            {PRIVATE, "private"},
+            {ARGUMENT, "arg"},
+            {FUNCTION_PTR, "fptr"},
+            {PTR, "ptr"},
+            {FUNCTION_CALL, "fn_call"},
 
     };
 
     inline std::string getTokenText(int tokenType)
     {
-        auto it = tokenText.find(tokenType);
-        if (it != tokenText.end())
+        if (const auto it = tokenText.find(tokenType); it != tokenText.end())
         {
             return it->second;
         }
@@ -118,11 +117,11 @@ namespace tokenMap
 
     inline int getTokenType(const std::string &tokenString)
     {
-        for (const auto &pair : tokenText)
+        for (const auto &[fst, snd]: tokenText)
         {
-            if (pair.second == tokenString)
+            if (snd == tokenString)
             {
-                return pair.first;
+                return fst;
             }
         }
         throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
@@ -132,13 +131,13 @@ namespace tokenMap
     {
         switch (type)
         {
-        case tokenMap::TYPE_DOUBLE:
-        case tokenMap::TYPE_FLOAT:
-        case tokenMap::TYPE_INT:
-        case tokenMap::NUMBER:
-            return true;
-        default:
-            return false;
+            case tokenMap::TYPE_DOUBLE:
+            case tokenMap::TYPE_FLOAT:
+            case tokenMap::TYPE_INT:
+            case tokenMap::NUMBER:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -146,11 +145,11 @@ namespace tokenMap
     {
         switch (type)
         {
-        case tokenMap::TYPE_DOUBLE:
-        case tokenMap::TYPE_FLOAT:
-            return true;
-        default:
-            return false;
+            case tokenMap::TYPE_DOUBLE:
+            case tokenMap::TYPE_FLOAT:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -179,7 +178,7 @@ namespace tokenMap
             return tokenMap::TYPE_STRING;
         }
 
-        throw TokenException("Isn't impossivel determine the type of " + input);
+        throw TokenException("Isn't impossible determine the type of " + input);
     }
 
     inline bool isValidFloatChar(char c)
@@ -195,8 +194,8 @@ namespace tokenMap
             throw std::invalid_argument("Literal vazio");
         }
 
-        // Verifica se o último caractere é um sufixo
-        char lastChar = literal.back();
+        // Verifica se o último character é um sufixo
+        const char lastChar = literal.back();
         int type = tokenMap::TYPE_FLOAT; // Tipo padrão
 
         if (lastChar == 'd' || lastChar == 'D')
@@ -204,13 +203,13 @@ namespace tokenMap
             type = tokenMap::TYPE_DOUBLE;
         }
 
-        // Se o último caractere é um sufixo, remova-o para validar o restante do literal
-        std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'd' || lastChar == 'D')
-                                      ? literal.substr(0, literal.size() - 1)
-                                      : literal;
+        // Se o último character é um sufixo, remova-o para validar o restante do literal
+        const std::string numericPart = (lastChar == 'f' || lastChar == 'F' || lastChar == 'd' || lastChar == 'D')
+                                                ? literal.substr(0, literal.size() - 1)
+                                                : literal;
 
         // Verifica se todos os caracteres na parte numérica são válidos
-        for (char c : numericPart)
+        for (char c: numericPart)
         {
             if (!isValidFloatChar(c))
             {
@@ -233,17 +232,17 @@ namespace tokenMap
 
     inline int getTypePrecedence(int dataType)
     {
-        // Defina a precedência de tipos conforme sua implementação em TokenMap
+        // Defina a precedência de tipos conforme a sua implementação em TokenMap
         switch (dataType)
         {
-        case tokenMap::TYPE_INT:
-            return 1;
-        case tokenMap::TYPE_FLOAT:
-            return 2;
-        case tokenMap::TYPE_DOUBLE:
-            return 3;
-        default:
-            throw std::runtime_error("TokenMap Error: Invalid type");
+            case tokenMap::TYPE_INT:
+                return 1;
+            case tokenMap::TYPE_FLOAT:
+                return 2;
+            case tokenMap::TYPE_DOUBLE:
+                return 3;
+            default:
+                throw std::runtime_error("TokenMap Error: Invalid type");
         }
     }
 
@@ -262,6 +261,6 @@ namespace tokenMap
         }
     }
 
-}
+} // namespace tokenMap
 
-#endif // TOKEN_MAP_H
+#endif // TOKEN_MAP_HLIR_H

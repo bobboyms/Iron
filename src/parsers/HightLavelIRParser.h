@@ -26,10 +26,10 @@ public:
     RuleProgram = 0, RuleImportStatement = 1, RuleQualifiedName = 2, RuleStatementList = 3, 
     RuleFunctionDeclaration = 4, RuleFunctionSignature = 5, RuleFunctionReturnType = 6, 
     RuleFunctionArgs = 7, RuleFunctionArg = 8, RuleFunctionCall = 9, RuleFunctionCallArgs = 10, 
-    RuleFunctionCallArg = 11, RuleOp = 12, RuleOpRight = 13, RuleOpLeft = 14, 
-    RuleTypeRight = 15, RuleTypeLeft = 16, RuleCast = 17, RuleMathOp = 18, 
-    RuleExpr = 19, RuleAssignment = 20, RuleFunctionPtr = 21, RuleNumber = 22, 
-    RuleDataFormat = 23, RuleVarTypes = 24
+    RuleFunctionCallArg = 11, RuleReturnStatemant = 12, RuleOp = 13, RuleOpRight = 14, 
+    RuleOpLeft = 15, RuleTypeRight = 16, RuleTypeLeft = 17, RuleCast = 18, 
+    RuleMathOp = 19, RuleExpr = 20, RuleAssignment = 21, RuleFunctionPtr = 22, 
+    RuleNumber = 23, RuleDataFormat = 24, RuleVarTypes = 25
   };
 
   explicit HightLavelIRParser(antlr4::TokenStream *input);
@@ -61,6 +61,7 @@ public:
   class FunctionCallContext;
   class FunctionCallArgsContext;
   class FunctionCallArgContext;
+  class ReturnStatemantContext;
   class OpContext;
   class OpRightContext;
   class OpLeftContext;
@@ -132,6 +133,8 @@ public:
     ExprContext* expr(size_t i);
     std::vector<FunctionCallContext *> functionCall();
     FunctionCallContext* functionCall(size_t i);
+    std::vector<ReturnStatemantContext *> returnStatemant();
+    ReturnStatemantContext* returnStatemant(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -278,6 +281,22 @@ public:
   };
 
   FunctionCallArgContext* functionCallArg();
+
+  class  ReturnStatemantContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *varName = nullptr;
+    ReturnStatemantContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *RETURN();
+    VarTypesContext *varTypes();
+    antlr4::tree::TerminalNode *IDENTIFIER();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  ReturnStatemantContext* returnStatemant();
 
   class  OpContext : public antlr4::ParserRuleContext {
   public:

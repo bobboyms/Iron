@@ -29,9 +29,13 @@ link_directories(
 # Bibliotecas externas
 set(ANTLR_LIB /usr/local/lib/libantlr4-runtime.a)
 set(LLVM_LIB LLVM-19)
+find_package(yaml-cpp REQUIRED)
 
 # Fontes do programa principal e comuns
-set(SRC_MAIN src/main.cpp)
+set(SRC_MAIN src/main.cpp
+        src/semantic/Expr.cpp
+        src/headers/SemanticAnalysis.h
+)
 set(SRC_COMMON
         src/hlir/Type.cpp
         src/hlir/FunctionArgs.cpp
@@ -45,8 +49,8 @@ set(SRC_COMMON
         src/llvm/Operations.cpp
         src/hlir/WriterCodeHLIR.cpp
         src/utils/Colors.cpp
-        src/semantical/SemanticalAnalysis.cpp
-        src/semantical/Functions.cpp
+        src/semantic/SemanticAnalysis.cpp
+        src/semantic/Functions.cpp
         src/parsers/IronLexer.cpp
         src/parsers/IronParser.cpp
         src/parsers/IronBaseListener.cpp
@@ -59,7 +63,9 @@ set(SRC_COMMON
 
 # Fontes dos testes
 set(TEST_SRC
-        tests/test_semantical_analysis.cpp
+        tests/test_semantic_analysis.cpp
+        tests/test_hlir_code.cpp
+        tests/test_llvm_code.cpp
         # Outros testes podem ser adicionados aqui
 )
 

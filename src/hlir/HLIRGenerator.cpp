@@ -1,10 +1,9 @@
-#include "../headers/Hlir.h"
 #include "../headers/HLIRGenerator.h"
+#include "../headers/Hlir.h"
 
 namespace hlir
 {
-
-    bool hasVariableOrArg(std::shared_ptr<Function> F, const std::string &varName)
+    bool hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName)
     {
         if (auto v = F->getStatement()->findVarByName(varName))
             return true;
@@ -13,34 +12,29 @@ namespace hlir
         return false;
     }
 
-    void ensureVariableCaptured(std::shared_ptr<Function> F,
-                                std::shared_ptr<Variable> var)
+    void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var)
     {
-
         if (hasVariableOrArg(F, var->getVarName()))
             return;
 
-        auto parentF = F->getParentFunction();
+        const auto parentF = F->getParentFunction();
         if (!parentF)
         {
-            throw HLIRException("Variável não encontrada em escopo global");
+            throw HLIRException(util::format("Variable {} not found", var->getVarName()));
         }
 
         ensureVariableCaptured(parentF, var);
 
         if (!hasVariableOrArg(F, var->getVarName()))
         {
-            auto functionArgs = F->getFunctionArgs();
-            auto newArg = std::make_shared<Arg>()->set(
-                var->getVarName(),
-                var->getVarType());
+            const auto functionArgs = F->getFunctionArgs();
+            const auto newArg = std::make_shared<Arg>()->set(var->getVarName(), var->getVarType());
             functionArgs->addArg(newArg);
         }
     }
 
-    std::pair<int, std::shared_ptr<Variable>> findVarByScope(
-        std::shared_ptr<Function> currentFunction,
-        const std::string &varName)
+    std::pair<int, std::shared_ptr<Variable>> findVarByScope(std::shared_ptr<Function> currentFunction,
+                                                             const std::string &varName)
     {
         int scopeNumber = 0;
 
@@ -59,7 +53,7 @@ namespace hlir
             }
 
             // 2. Tenta achar como argumento
-            if (auto arg = currentFunction->getFunctionArgs()->findArgByName(varName))
+            if (const auto arg = currentFunction->getFunctionArgs()->findArgByName(varName))
             {
                 // Cria um objeto Variable baseado no Arg encontrado
                 auto variable = std::make_shared<Variable>()->set(arg->name, arg->type);
@@ -74,7 +68,7 @@ namespace hlir
 
             // 3. Se não achou nem variável local, nem argumento,
             //    subimos para o próximo escopo (função pai)
-            auto parentFunction = currentFunction->getParentFunction();
+            const auto parentFunction = currentFunction->getParentFunction();
             if (!parentFunction)
             {
                 // Não há mais escopos para subir: variável não existe
@@ -89,10 +83,9 @@ namespace hlir
         throw hlir::HLIRException(util::format("Undefined variable: {} in expression", varName));
     }
 
-    HLIRGenerator::HLIRGenerator(std::shared_ptr<IronParser> parser, std::shared_ptr<Context> context)
-        : parser(parser), context(context)
+    HLIRGenerator::HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context) :
+        parser(parser), context(context)
     {
-
         if (!parser)
         {
             throw HLIRException("The parser can't be nullptr");
@@ -104,19 +97,20 @@ namespace hlir
         }
     }
 
-    HLIRGenerator::~HLIRGenerator() {}
+    HLIRGenerator::~HLIRGenerator() = default;
 
     void HLIRGenerator::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
     {
-        auto functionName = ctx->functionName->getText();
+        const auto functionName = ctx->functionName->getText();
         // PUBLIC? FUNCTION functionName = IDENTIFIER functionSignature L_CURLY statementList R_CURLY;
         // std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType
 
-        auto functionArgs = std::make_shared<FunctionArgs>();
-        auto functionReturnType = std::make_shared<Type>();
-        auto statement = std::make_shared<Statement>();
+        const auto functionArgs = std::make_shared<FunctionArgs>();
+        const auto functionReturnType = std::make_shared<Type>();
+        const auto statement = std::make_shared<Statement>();
 
-        auto function = std::make_shared<Function>()->set(functionName, functionArgs, functionReturnType, statement);
+        const auto function =
+                std::make_shared<Function>()->set(functionName, functionArgs, functionReturnType, statement);
         context->addFunction(function);
 
         if (ctx->functionSignature())
@@ -129,52 +123,53 @@ namespace hlir
             visitStatementList(ctx->statementList(), statement);
         }
     }
-    void HLIRGenerator::visitStatementList(IronParser::StatementListContext *ctx, std::shared_ptr<Statement> statement)
+
+    void HLIRGenerator::visitStatementList(const IronParser::StatementListContext *ctx,
+                                           const std::shared_ptr<Statement> &statement)
     {
-        for (auto child : ctx->children)
+        for (const auto child: ctx->children)
         {
-            if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(child))
+            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(child))
             {
                 visitVarDeclaration(varDeclaration, statement);
             }
-            if (auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext *>(child))
+            if (const auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext *>(child))
             {
                 visitVarAssignment(varAssignment, statement);
             }
-            if (auto expression = dynamic_cast<IronParser::ExprContext *>(child))
+            if (const auto expression = dynamic_cast<IronParser::ExprContext *>(child))
             {
-
                 visitExpr(expression, statement);
             }
-            if (auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(child))
+            if (const auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(child))
             {
                 auto call = visitFunctionCall(funcCall, statement);
                 statement->addStatement(call);
             }
             if (auto returnctx = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
-                visitReturn(returnctx);
+                visitReturn(returnctx, statement);
             }
         }
     }
-    void HLIRGenerator::visitVarDeclaration(IronParser::VarDeclarationContext *ctx, std::shared_ptr<Statement> statement)
+
+    void HLIRGenerator::visitVarDeclaration(IronParser::VarDeclarationContext *ctx,
+                                            const std::shared_ptr<Statement> &statement)
     {
+        const std::string varName = ctx->varName->getText();
 
-        std::string varName = ctx->varName->getText();
-        std::string varType = ctx->varTypes()->getText();
-
-        if (tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
+        if (const std::string varType = ctx->varTypes()->getText();
+            tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
         {
-            auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
+            const auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
             if (!currentFunction)
             {
                 throw HLIRException("Error: std::dynamic_pointer_cast<Function>(statement->getParent())");
             }
 
-            auto alias = iron::createFunctionName(currentFunction->getFunctionName(), varName);
-            auto aliasFunction = context->getFunctionByName(alias);
+            const auto alias = iron::createFunctionName(currentFunction->getFunctionName(), varName);
 
-            if (!aliasFunction)
+            if (auto aliasFunction = context->getFunctionByName(alias); !aliasFunction)
             {
                 if (ctx->assignment())
                 {
@@ -184,8 +179,10 @@ namespace hlir
             else
             {
                 auto funcPtr = std::make_shared<FunctionPtr>()->set(aliasFunction);
-                auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
-                auto value = std::make_shared<Value>()->set(aliasFunction, std::make_shared<Type>(tokenMap::FUNCTION_PTR));
+                const auto variable = std::make_shared<Variable>()->set(
+                        varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
+                const auto value =
+                        std::make_shared<Value>()->set(aliasFunction, std::make_shared<Type>(tokenMap::FUNCTION_PTR));
                 auto assign = std::make_shared<Assign>()->set(variable, value);
 
                 statement->addStatement(assign);
@@ -193,7 +190,6 @@ namespace hlir
         }
         else if (ctx->assignment())
         {
-
             visitAssignment(ctx->assignment(), statement);
         }
     }
@@ -202,14 +198,13 @@ namespace hlir
     {
     }
 
-    std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, std::shared_ptr<Statement> statement)
+    std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement)
     {
-
-        int line = ctx->getStart()->getLine();
+        const int line = ctx->getStart()->getLine();
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
-            for (auto child : ctx->children)
+            for (auto child: ctx->children)
             {
                 if (auto subExpr = dynamic_cast<IronParser::ExprContext *>(child))
                 {
@@ -220,7 +215,6 @@ namespace hlir
 
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
-
             std::string strLeftVar = visitExpr(ctx->left, statement);
             std::string strRightVar = visitExpr(ctx->right, statement);
 
@@ -243,7 +237,6 @@ namespace hlir
 
             if (!leftVar)
             {
-
                 throw hlir::HLIRException(util::format("Undefined left variable: {} in expression", strLeftVar));
             }
 
@@ -257,7 +250,8 @@ namespace hlir
                 ensureVariableCaptured(currentFunction, leftVar);
             }
 
-            int higherType = tokenMap::getHigherPrecedenceType(leftVar->getVarType()->getType(), rightVar->getVarType()->getType());
+            int higherType = tokenMap::getHigherPrecedenceType(leftVar->getVarType()->getType(),
+                                                               rightVar->getVarType()->getType());
 
             if (leftVar->getVarType()->getType() != higherType)
             {
@@ -291,7 +285,6 @@ namespace hlir
 
             if (ctx->mult)
             {
-
                 auto operation = std::make_shared<Mult>()->set(newLeftVar, newRightVar);
                 auto expr = std::make_shared<Expr>()->set(tempVar, operation);
                 statement->addStatement(expr);
@@ -324,7 +317,6 @@ namespace hlir
         }
         else if (ctx->number())
         {
-
             std::string tempVarStr = statement->getNewVarName();
             std::string numberLiteral = ctx->number()->getText();
             int dataType = tokenMap::determineType(numberLiteral);
@@ -343,10 +335,8 @@ namespace hlir
 
             return tempVarStr;
         }
-
         else if (ctx->functionCall())
         {
-
             auto functionName = ctx->functionCall()->functionName->getText();
 
             auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
@@ -361,8 +351,8 @@ namespace hlir
             {
                 std::string strTempVar = statement->getNewVarName();
 
-                auto tempVar = std::make_shared<Variable>()->set(strTempVar,
-                                                                 std::make_shared<Type>(globalFunction->getFunctionReturnType()->getType()));
+                auto tempVar = std::make_shared<Variable>()->set(
+                        strTempVar, std::make_shared<Type>(globalFunction->getFunctionReturnType()->getType()));
 
                 auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
                 auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
@@ -372,7 +362,8 @@ namespace hlir
             }
             else
             {
-                const std::string localFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), functionName);
+                const std::string localFunctionName =
+                        iron::createFunctionName(currentFunction->getFunctionName(), functionName);
 
                 auto localFunction = context->getFunctionByName(localFunctionName);
 
@@ -383,8 +374,8 @@ namespace hlir
 
                 std::string strTempVar = statement->getNewVarName();
 
-                auto tempVar = std::make_shared<Variable>()->set(strTempVar,
-                                                                 std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));
+                auto tempVar = std::make_shared<Variable>()->set(
+                        strTempVar, std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));
 
                 auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
                 auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
@@ -433,8 +424,10 @@ namespace hlir
                 //     tokenMap::determineFloatType(literalValue);
                 // }
 
-                auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
-                auto value = std::make_shared<Value>()->set(literalValue, std::make_shared<Type>(tokenMap::getTokenType(varType)));
+                auto variable = std::make_shared<Variable>()->set(
+                        varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
+                auto value = std::make_shared<Value>()->set(literalValue,
+                                                            std::make_shared<Type>(tokenMap::getTokenType(varType)));
                 auto assign = std::make_shared<Assign>()->set(variable, value);
 
                 statement->addStatement(assign);
@@ -443,7 +436,6 @@ namespace hlir
 
         if (ctx->expr())
         {
-
             const auto strRightVarName = visitExpr(ctx->expr(), statement);
             auto variable = findVarByScope(currentFunction, strRightVarName);
             auto rightVar = variable.second;
@@ -459,7 +451,8 @@ namespace hlir
                 std::string strLeftvarTypeName = varDecl->varTypes()->getText();
 
                 int leftDataTypeType = tokenMap::getTokenType(strLeftvarTypeName);
-                auto leftVar = std::make_shared<Variable>()->set(strLeftVarName, std::make_shared<Type>(leftDataTypeType));
+                auto leftVar =
+                        std::make_shared<Variable>()->set(strLeftVarName, std::make_shared<Type>(leftDataTypeType));
 
                 if (rightVar->isAnotherScope())
                 {
@@ -477,11 +470,11 @@ namespace hlir
 
                 if (leftDataTypeType != rightVar->getVarType()->getType())
                 {
-
                     std::string strTempVar = statement->getNewVarName();
 
                     auto cast = std::make_shared<Cast>()->apply(rightVar, std::make_shared<Type>(leftDataTypeType));
-                    auto tempVariable = std::make_shared<Variable>()->set(strTempVar, std::make_shared<Type>(leftDataTypeType));
+                    auto tempVariable =
+                            std::make_shared<Variable>()->set(strTempVar, std::make_shared<Type>(leftDataTypeType));
 
                     auto expr = std::make_shared<Expr>()->set(tempVariable, cast);
                     statement->addStatement(expr);
@@ -492,7 +485,6 @@ namespace hlir
                 }
                 else
                 {
-
                     auto value = std::make_shared<Value>()->set(rightVar, rightVar->getVarType());
                     auto assign = std::make_shared<Assign>()->set(leftVar, value);
                     statement->addStatement(assign);
@@ -510,7 +502,9 @@ namespace hlir
         }
     }
 
-    void HLIRGenerator::visitFunctionSignature(IronParser::FunctionSignatureContext *ctx, std::shared_ptr<FunctionArgs> functionArgs, std::shared_ptr<Type> functionReturnType)
+    void HLIRGenerator::visitFunctionSignature(IronParser::FunctionSignatureContext *ctx,
+                                               std::shared_ptr<FunctionArgs> functionArgs,
+                                               std::shared_ptr<Type> functionReturnType)
     {
         if (ctx->functionArgs())
         {
@@ -527,10 +521,11 @@ namespace hlir
             functionReturnType->set(tokenMap::VOID);
         }
     }
-    void HLIRGenerator::visitFunctionArgs(IronParser::FunctionArgsContext *ctx, std::shared_ptr<FunctionArgs> functionArgs)
-    {
 
-        for (auto child : ctx->children)
+    void HLIRGenerator::visitFunctionArgs(IronParser::FunctionArgsContext *ctx,
+                                          std::shared_ptr<FunctionArgs> functionArgs)
+    {
+        for (auto child: ctx->children)
         {
             if (auto funcDecl = dynamic_cast<IronParser::FunctionArgContext *>(child))
             {
@@ -538,7 +533,9 @@ namespace hlir
             }
         }
     }
-    void HLIRGenerator::visitFunctionArg(IronParser::FunctionArgContext *ctx, std::shared_ptr<FunctionArgs> functionArgs)
+
+    void HLIRGenerator::visitFunctionArg(IronParser::FunctionArgContext *ctx,
+                                         std::shared_ptr<FunctionArgs> functionArgs)
     {
         auto argName = ctx->varName->getText();
         auto type = std::make_shared<Type>();
@@ -546,22 +543,20 @@ namespace hlir
         functionArgs->addArg(std::make_shared<Arg>()->set(argName, type));
     }
 
-    std::shared_ptr<FunctionCall> HLIRGenerator::visitFunctionCall(IronParser::FunctionCallContext *ctx, std::shared_ptr<Statement> statement)
+    std::shared_ptr<FunctionCall> HLIRGenerator::visitFunctionCall(IronParser::FunctionCallContext *ctx,
+                                                                   std::shared_ptr<Statement> statement)
     {
-
         auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
         if (!currentFunction)
         {
             throw HLIRException("HLIRGenerator::visitFunctionCall. currentFunction is null");
         }
 
-        auto functionName = ctx->functionName->getText();
-        auto globalFunction = context->getFunctionByName(functionName);
+        const auto functionName = ctx->functionName->getText();
 
-        if (globalFunction)
+        if (const auto globalFunction = context->getFunctionByName(functionName))
         {
-
-            auto callArgs = std::make_shared<FunctionCallArgs>();
+            const auto callArgs = std::make_shared<FunctionCallArgs>();
             auto call = std::make_shared<FunctionCall>()->set(globalFunction, callArgs);
 
             if (ctx->functionCallArgs())
@@ -573,8 +568,8 @@ namespace hlir
         }
         else
         {
-
-            const std::string inlineFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), functionName);
+            const std::string inlineFunctionName =
+                    iron::createFunctionName(currentFunction->getFunctionName(), functionName);
             auto inlineFunction = context->getFunctionByName(inlineFunctionName);
 
             if (!inlineFunction)
@@ -605,9 +600,9 @@ namespace hlir
                 // auto diff = funcArgSize - callArgSize;
                 for (size_t i = callArgSize; i < funcArgSize; i++)
                 {
-                    auto arg = inlineFunction->getFunctionArgs()->getArgs()[i];
-                    auto tuple = findVarByScope(inlineFunction, arg->name);
-                    auto variable = tuple.second;
+                    const auto arg = inlineFunction->getFunctionArgs()->getArgs()[i];
+                    auto [fst, snd] = findVarByScope(inlineFunction, arg->name);
+                    auto variable = snd;
 
                     if (!variable)
                     {
@@ -624,10 +619,11 @@ namespace hlir
         }
     }
 
-    void HLIRGenerator::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs, std::shared_ptr<Statement> statement)
+    void HLIRGenerator::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx,
+                                              std::shared_ptr<FunctionCallArgs> callArgs,
+                                              std::shared_ptr<Statement> statement)
     {
-
-        for (auto child : ctx->children)
+        for (auto child: ctx->children)
         {
             if (auto *arg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
             {
@@ -636,9 +632,10 @@ namespace hlir
         }
     }
 
-    void HLIRGenerator::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs, std::shared_ptr<Statement> statement)
+    void HLIRGenerator::visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
+                                             const std::shared_ptr<FunctionCallArgs> &callArgs,
+                                             const std::shared_ptr<Statement> &statement)
     {
-
         auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
         auto argName = ctx->varName->getText();
         auto callFunction = std::dynamic_pointer_cast<FunctionCall>(callArgs->getParent());
@@ -649,12 +646,10 @@ namespace hlir
 
         if (ctx->dataFormat())
         {
-
             std::string strValue = ctx->dataFormat()->getText();
 
             int realType;
-            auto definedType = tokenMap::determineType(strValue);
-            if (definedType == tokenMap::REAL_NUMBER)
+            if (auto definedType = tokenMap::determineType(strValue); definedType == tokenMap::REAL_NUMBER)
             {
                 realType = tokenMap::determineFloatType(strValue);
             }
@@ -673,7 +668,6 @@ namespace hlir
 
             if (auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
             {
-
                 // std::string anotherVar = ctx->anotherVarName->getText();
                 std::string inlineFunctionName = callFunction->getFunction()->getFunctionName();
 
@@ -708,13 +702,13 @@ namespace hlir
                 }
 
                 auto value = std::make_shared<Value>()->set(anotherVar, std::make_shared<Type>(arg->type->getType()));
-                callArgs->addCallArg(std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(arg->type->getType()), value));
+                callArgs->addCallArg(std::make_shared<FunctionCallArg>(
+                        argName, std::make_shared<Type>(arg->type->getType()), value));
             }
         }
 
         if (ctx->functionCall())
         {
-
             auto functionName = ctx->functionCall()->functionName->getText();
             auto function = context->getFunctionByName(functionName);
 
@@ -722,7 +716,6 @@ namespace hlir
 
             if (!function)
             {
-
                 auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
                 auto inlineFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), functionName);
 
@@ -748,11 +741,13 @@ namespace hlir
             }
 
             auto value = std::make_shared<Value>()->set(anotherVar, std::make_shared<Type>(arg->type->getType()));
-            callArgs->addCallArg(std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(arg->type->getType()), value));
+            callArgs->addCallArg(
+                    std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(arg->type->getType()), value));
         }
     }
 
-    void HLIRGenerator::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx, std::shared_ptr<Statement> statement)
+    void HLIRGenerator::visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx,
+                                                 const std::shared_ptr<Statement> &statement)
     {
         // Verifica se o nó pai é uma declaração de variável (VarDeclarationContext)
         if (auto *varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
@@ -767,7 +762,8 @@ namespace hlir
             }
 
             // Cria um nome único para a função no escopo global
-            std::string inlineFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
+            std::string inlineFunctionName =
+                    iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
 
             // Verifica se há tipo de retorno na assinatura da arrow function
             std::string returnTypeStr;
@@ -780,11 +776,12 @@ namespace hlir
                 returnTypeStr = tokenMap::getTokenText(tokenMap::VOID);
             }
 
-            auto functionArgs = std::make_shared<FunctionArgs>();
-            auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
+            const auto functionArgs = std::make_shared<FunctionArgs>();
+            const auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
             auto statement = std::make_shared<Statement>();
 
-            auto inlineFunction = std::make_shared<Function>()->set(inlineFunctionName, functionArgs, functionReturnType, statement);
+            auto inlineFunction =
+                    std::make_shared<Function>()->set(inlineFunctionName, functionArgs, functionReturnType, statement);
             inlineFunction->enableInline();
             context->addFunction(inlineFunction);
 
@@ -795,28 +792,38 @@ namespace hlir
 
             if (ctx->expr())
             {
-                visitExpr(ctx->expr(), statement);
+                const auto varName = visitExpr(ctx->expr(), statement);
+                auto [_, variable] = findVarByScope(inlineFunction, varName);
+
+                if (functionReturnType->getType() != tokenMap::VOID)
+                {
+                    auto funcReturn = std::make_shared<FuncReturn>(inlineFunction, variable);
+                    inlineFunction->getStatement()->addStatement(funcReturn);
+                }
+
+
             }
         }
     }
 
-    void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx, std::shared_ptr<Statement> statement)
+    void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
+                                                const std::shared_ptr<Statement> &statement)
     {
-
         // Verifica se o nó pai é uma declaração de variável (VarDeclarationContext)
-        if (auto *varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
+        if (const auto *varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
         {
             // Nome "original" da arrow function
-            std::string arrowFuncName = varDeclaration->varName->getText();
+            const std::string arrowFuncName = varDeclaration->varName->getText();
 
-            auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
+            const auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
             if (!currentFunction)
             {
                 throw HLIRException("std::dynamic_pointer_cast<Function>(statement->getParent())");
             }
 
             // Cria um nome único para a função no escopo global
-            std::string inlineFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
+            const std::string inlineFunctionName =
+                    iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
 
             // Verifica se há tipo de retorno na assinatura da arrow function
             std::string returnTypeStr;
@@ -829,11 +836,12 @@ namespace hlir
                 returnTypeStr = tokenMap::getTokenText(tokenMap::VOID);
             }
 
-            auto functionArgs = std::make_shared<FunctionArgs>();
-            auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
-            auto statement = std::make_shared<Statement>();
+            const auto functionArgs = std::make_shared<FunctionArgs>();
+            const auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
+            const auto statement = std::make_shared<Statement>();
 
-            auto inlineFunction = std::make_shared<Function>()->set(inlineFunctionName, functionArgs, functionReturnType, statement);
+            const auto inlineFunction =
+                    std::make_shared<Function>()->set(inlineFunctionName, functionArgs, functionReturnType, statement);
             inlineFunction->enableInline();
             context->addFunction(inlineFunction);
 
@@ -849,18 +857,70 @@ namespace hlir
         }
     }
 
-    void HLIRGenerator::visitReturn(IronParser::ReturnStatementContext *ctx) {}
+    void HLIRGenerator::visitReturn(IronParser::ReturnStatementContext *ctx,
+                                    const std::shared_ptr<Statement> &statement)
+    {
+        const auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
+        if (!currentFunction)
+        {
+            throw HLIRException("Error: std::dynamic_pointer_cast<Function>(statement->getParent())");
+        }
+
+        if (ctx->dataFormat())
+        {
+            const auto strValue = ctx->dataFormat()->getText();
+            auto valueType = tokenMap::determineType(strValue);
+            if (valueType == tokenMap::REAL_NUMBER)
+            {
+                valueType = tokenMap::determineFloatType(strValue);
+            }
+
+            const auto varName = currentFunction->getStatement()->getNewVarName();
+            const auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(valueType));
+
+            const auto value = std::make_shared<Value>()->set(strValue, variable->getVarType());
+            const auto assign = std::make_shared<Assign>()->set(variable, value);
+            currentFunction->getStatement()->addStatement(assign);
+            auto funcReturn = std::make_shared<FuncReturn>(currentFunction, variable);
+            currentFunction->getStatement()->addStatement(funcReturn);
+        }
+
+        if (ctx->varName)
+        {
+            auto [_, variable] = findVarByScope(currentFunction, ctx->varName->getText());
+            auto funcReturn = std::make_shared<FuncReturn>(currentFunction, variable);
+            currentFunction->getStatement()->addStatement(funcReturn);
+        }
+
+        if (ctx->expr())
+        {
+            const auto varName = visitExpr(ctx->expr(), statement);
+            auto [_, variable] = findVarByScope(currentFunction, varName);
+            auto funcReturn = std::make_shared<FuncReturn>(currentFunction, variable);
+            currentFunction->getStatement()->addStatement(funcReturn);
+        }
+
+        if (ctx->functionCall())
+        {
+            const auto varName = currentFunction->getStatement()->getNewVarName();
+
+            const auto funcCall = visitFunctionCall(ctx->functionCall(), statement);
+            const auto funcReturnType = funcCall->getFunction()->getFunctionReturnType();
+            const auto variable = std::make_shared<Variable>()->set(varName, funcReturnType);
+            const auto expr = std::make_shared<Expr>()->set(variable, funcCall);
+            currentFunction->getStatement()->addStatement(expr);
+            auto funcReturn = std::make_shared<FuncReturn>(currentFunction, variable);
+            currentFunction->getStatement()->addStatement(funcReturn);
+        }
+    }
 
     std::string HLIRGenerator::generateCode()
     {
+        const IronParser::ProgramContext *programContext = parser->program();
 
-        IronParser::ProgramContext *programContext = parser->program();
-
-        // Processa todas as declarações no programa
-
-        for (auto child : programContext->children)
+        for (const auto child: programContext->children)
         {
-            if (auto funcDecl = dynamic_cast<IronParser::FunctionDeclarationContext *>(child))
+            if (const auto funcDecl = dynamic_cast<IronParser::FunctionDeclarationContext *>(child))
             {
                 visitFunctionDeclaration(funcDecl);
             }
@@ -868,4 +928,4 @@ namespace hlir
 
         return context->getText();
     }
-}
+} // namespace hlir

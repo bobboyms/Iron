@@ -52,6 +52,9 @@ public:
   virtual void enterFunctionCallArg(HightLavelIRParser::FunctionCallArgContext * /*ctx*/) override { }
   virtual void exitFunctionCallArg(HightLavelIRParser::FunctionCallArgContext * /*ctx*/) override { }
 
+  virtual void enterReturnStatemant(HightLavelIRParser::ReturnStatemantContext * /*ctx*/) override { }
+  virtual void exitReturnStatemant(HightLavelIRParser::ReturnStatemantContext * /*ctx*/) override { }
+
   virtual void enterOp(HightLavelIRParser::OpContext * /*ctx*/) override { }
   virtual void exitOp(HightLavelIRParser::OpContext * /*ctx*/) override { }
 

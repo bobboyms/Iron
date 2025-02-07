@@ -1,33 +1,36 @@
-#include "../headers/LLVMIR.h"
 #include "../headers/Exceptions.h"
+#include "../headers/LLVMIR.h"
 #include "../headers/TokenMap.h"
 #include "../headers/Utils.h"
 
 namespace iron
 {
 
-    void LLVM::assignVariable(std::shared_ptr<hlir::Value> value, llvm::AllocaInst *allocaVariable, llvm::Function *function)
+    void LLVM::assignVariable(const std::shared_ptr<hlir::Value>& value, llvm::AllocaInst *allocaVariable,
+                              llvm::Function *function)
     {
 
         std::visit(
-            [this, function, allocaVariable](auto &&variable)
-            {
-                using T = std::decay_t<decltype(variable)>;
-                if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
+                [this, function, allocaVariable](auto &&variable)
                 {
-                    if (variable)
+                    using T = std::decay_t<decltype(variable)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
-                        auto type = mapType(variable->getVarType()->getType());
-                        auto anotherAlloca = this->findAllocaByName(function, variable->getVarName());
-                        llvm::LoadInst *loadInst = builder.CreateLoad(type, anotherAlloca, util::format("load_{}", variable->getVarName()));
-                        builder.CreateStore(loadInst, allocaVariable);
+                        if (variable)
+                        {
+                            auto type = mapType(variable->getVarType()->getType());
+                            auto anotherAlloca = this->findAllocaByName(function, variable->getVarName());
+                            llvm::LoadInst *loadInst = builder.CreateLoad(
+                                    type, anotherAlloca, util::format("load_{}", variable->getVarName()));
+                            builder.CreateStore(loadInst, allocaVariable);
+                        }
                     }
-                }
-            },
-            value->getValue());
+                },
+                value->getValue());
     }
 
-    void LLVM::assignValue(std::shared_ptr<hlir::Variable> variable, std::shared_ptr<hlir::Value> value, llvm::AllocaInst *allocaVariable)
+    void LLVM::assignValue(const std::shared_ptr<hlir::Variable>& variable, const std::shared_ptr<hlir::Value>& value,
+                           llvm::AllocaInst *allocaVariable)
     {
         // Verificações iniciais de validade
         if (!variable)
@@ -49,46 +52,44 @@ namespace iron
 
         switch (variable->getVarType()->getType())
         {
-        case tokenMap::TYPE_INT:
-        {
+            case tokenMap::TYPE_INT:
+            {
 
-            // Convert string to int
-            int num = std::stoi(value->getText());
+                // Convert string to int
+                const int num = std::stoi(value->getText());
 
-            // Create a 32-bit integer constant
-            llvm::Constant *constInt = llvm::ConstantInt::get(
-                llvm::Type::getInt32Ty(llvmContext),
-                num,
-                true // Signed
-            );
-            valueToStore = constInt;
-            break;
-        }
+                // Create a 32-bit integer constant
+                llvm::Constant *constInt = llvm::ConstantInt::get(llvm::Type::getInt32Ty(llvmContext), num,
+                                                                  true // Signed
+                );
+                valueToStore = constInt;
+                break;
+            }
 
-        case tokenMap::TYPE_FLOAT:
-        {
-            // Convert string to float
-            float num = std::stof(value->getText());
-            llvm::APFloat apFloatValue(num);
-            llvm::Constant *constFP = llvm::ConstantFP::get(llvmContext, apFloatValue);
-            valueToStore = constFP;
-            break;
-        }
+            case tokenMap::TYPE_FLOAT:
+            {
+                // Convert string to float
+                const float num = std::stof(value->getText());
+                const llvm::APFloat apFloatValue(num);
+                llvm::Constant *constFP = llvm::ConstantFP::get(llvmContext, apFloatValue);
+                valueToStore = constFP;
+                break;
+            }
 
-        case tokenMap::TYPE_DOUBLE:
-        {
-            // Convert string to double
-            double num = std::stod(value->getText());
-            llvm::APFloat apFloatValue(num);
-            llvm::Constant *constFP = llvm::ConstantFP::get(llvmContext, apFloatValue);
-            valueToStore = constFP;
-            break;
-        }
+            case tokenMap::TYPE_DOUBLE:
+            {
+                // Convert string to double
+                const double num = std::stod(value->getText());
+                const llvm::APFloat apFloatValue(num);
+                llvm::Constant *constFP = llvm::ConstantFP::get(llvmContext, apFloatValue);
+                valueToStore = constFP;
+                break;
+            }
 
-        default:
-        {
-            throw iron::LLVMException(util::format("Unsupported type for number literal: {}", value->getText()));
-        }
+            default:
+            {
+                throw iron::LLVMException(util::format("Unsupported type for number literal: {}", value->getText()));
+            }
         }
 
         // Verifica a consistência de tipos antes de armazenar
@@ -104,32 +105,27 @@ namespace iron
         // Caso float
         if (functionReturnType->isFloatTy())
         {
-            builder.CreateRet(
-                llvm::ConstantFP::get(llvmContext, llvm::APFloat(0.0f)));
+            builder.CreateRet(llvm::ConstantFP::get(llvmContext, llvm::APFloat(0.0f)));
         }
         // Caso double
         else if (functionReturnType->isDoubleTy())
         {
-            builder.CreateRet(
-                llvm::ConstantFP::get(llvmContext, llvm::APFloat(0.0)));
+            builder.CreateRet(llvm::ConstantFP::get(llvmContext, llvm::APFloat(0.0)));
         }
         // Caso boolean (i1)
         else if (functionReturnType->isIntegerTy(1))
         {
-            builder.CreateRet(
-                llvm::ConstantInt::get(functionReturnType, 0, /*isSigned=*/false));
+            builder.CreateRet(llvm::ConstantInt::get(functionReturnType, 0, /*isSigned=*/false));
         }
         // Caso char (i8)
         else if (functionReturnType->isIntegerTy(8))
         {
-            builder.CreateRet(
-                llvm::ConstantInt::get(functionReturnType, 0, /*isSigned=*/false));
+            builder.CreateRet(llvm::ConstantInt::get(functionReturnType, 0, /*isSigned=*/false));
         }
         // Caso int (i32) - se quiser diferenciar int32 de outros ints
         else if (functionReturnType->isIntegerTy(32))
         {
-            builder.CreateRet(
-                llvm::ConstantInt::get(functionReturnType, 0));
+            builder.CreateRet(llvm::ConstantInt::get(functionReturnType, 0));
         }
         else if (functionReturnType->isVoidTy())
         {
@@ -173,17 +169,16 @@ namespace iron
         throw LLVMException(util::format("Unknown data type: {}", tokenMap::getTokenText(type)));
     }
 
-    llvm::Argument *LLVM::findArgByName(llvm::Function *function, const std::string &argname)
+    llvm::Argument *LLVM::findArgByName(llvm::Function *function, const std::string &argName)
     {
         if (!function)
         {
-            throw LLVMException(
-                util::format("{} Function not found", "LLVM::findArgByName"));
+            throw LLVMException(util::format("{} Function not found", "LLVM::findArgByName"));
         }
 
-        for (auto &arg : function->args())
+        for (auto &arg: function->args())
         {
-            if (arg.getName().str() == argname)
+            if (arg.getName().str() == argName)
             {
                 return &arg;
             }
@@ -220,8 +215,7 @@ namespace iron
         auto insertPoint = entryBB.getFirstInsertionPt();
         llvm::IRBuilder<> tempBuilder(&entryBB, insertPoint);
 
-        llvm::AllocaInst *argAlloca = tempBuilder.CreateAlloca(
-            arg->getType(), nullptr, arg->getName() + "_alloca");
+        llvm::AllocaInst *argAlloca = tempBuilder.CreateAlloca(arg->getType(), nullptr, arg->getName() + "_alloca");
         builder.CreateStore(arg, argAlloca);
 
         return argAlloca;
@@ -230,9 +224,9 @@ namespace iron
     // Função para buscar uma AllocaInst por nome
     llvm::AllocaInst *LLVM::findAllocaByName(llvm::Function *function, const std::string &varName)
     {
-        for (auto &block : *function)
+        for (auto &block: *function)
         {
-            for (auto &inst : block)
+            for (auto &inst: block)
             {
                 if (auto allocaInst = llvm::dyn_cast<llvm::AllocaInst>(&inst))
                 {
@@ -250,76 +244,87 @@ namespace iron
 
     llvm::Value *LLVM::createConstValue(std::shared_ptr<hlir::Type> hlirType, std::shared_ptr<hlir::Value> value)
     {
-        llvm::Value *callArg = std::visit([this, hlirType](auto &&argValue) -> llvm::Value *
-                                          {
-            using T = std::decay_t<decltype(argValue)>;
-            if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>) {
-                throw LLVMException("LLVM::createConstValue. Function type arguments not yet implemented.");
-            }
-            else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>) {
-                
-                
-                if (argValue->getVarName().empty()) {
-                    throw std::invalid_argument("Variable name is empty");
-                }
-
-                
-                llvm::AllocaInst *allocaVar = getOrPromoteToAlloca(argValue->getVarName(), builder.GetInsertBlock()->getParent());
-                
-                llvm::Type *type = allocaVar->getAllocatedType();
-                if (type == nullptr) {
-                    throw std::runtime_error("Failed to retrieve allocated type");
-                }
-
-
-                llvm::Value *loadedVar = builder.CreateLoad(allocaVar->getAllocatedType(), allocaVar, util::format("load_{}", argValue->getVarName()));
-
-                return loadedVar;
-            }
-            else if constexpr (std::is_same_v<T, std::string>) {
-                
-                auto argType = hlirType->getType();
-                
-                llvm::Type *type = mapType(argType);
-                if (!type) {
-                    throw LLVMException("LLVM::createConstValue. Unknown type for argument.");
-                }
-
-                if (argType == tokenMap::TYPE_INT)
+        llvm::Value *callArg = std::visit(
+                [this, hlirType](auto &&argValue) -> llvm::Value *
                 {
-                    return llvm::ConstantInt::get(type, std::stoi(argValue), true);
-                }
-                else if (argType == tokenMap::TYPE_FLOAT)
-                {
-                    float floatVal = std::stof(argValue);
-                    return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(floatVal));
-                }
-                else if (argType == tokenMap::TYPE_DOUBLE)
-                {
-                    double doubleVal = std::stod(argValue);
-                    return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(doubleVal));
-                }
-                else if (argType == tokenMap::TYPE_CHAR)
-                {
-                    if (argValue.empty()) {
-                        throw LLVMException("LLVM::createConstValue. Empty string for char type.");
+                    using T = std::decay_t<decltype(argValue)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
+                    {
+                        throw LLVMException("LLVM::createConstValue. Function type arguments not yet implemented.");
                     }
-                    return llvm::ConstantInt::get(type, static_cast<int>(argValue[0]), true);
-                }
-                else if (argType == tokenMap::TYPE_BOOLEAN)
-                {
-                    bool boolVal = (argValue == "true");
-                    return llvm::ConstantInt::get(type, boolVal ? 1 : 0, false);
-                }
-                else
-                {
-                    throw LLVMException("LLVM::createConstValue. Unsupported argument type.");
-                }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
+                    {
 
-            }
-            else {
-                throw LLVMException("LLVM::createConstValue. Unsupported type in value.");
-            } }, value->getValue());
+                        if (argValue->getVarName().empty())
+                        {
+                            throw std::invalid_argument("Variable name is empty");
+                        }
+
+
+                        llvm::AllocaInst *allocaVar =
+                                getOrPromoteToAlloca(argValue->getVarName(), builder.GetInsertBlock()->getParent());
+
+                        llvm::Type *type = allocaVar->getAllocatedType();
+                        if (type == nullptr)
+                        {
+                            throw std::runtime_error("Failed to retrieve allocated type");
+                        }
+
+
+                        llvm::Value *loadedVar = builder.CreateLoad(allocaVar->getAllocatedType(), allocaVar,
+                                                                    util::format("load_{}", argValue->getVarName()));
+
+                        return loadedVar;
+                    }
+                    else if constexpr (std::is_same_v<T, std::string>)
+                    {
+
+                        auto argType = hlirType->getType();
+
+                        llvm::Type *type = mapType(argType);
+                        if (!type)
+                        {
+                            throw LLVMException("LLVM::createConstValue. Unknown type for argument.");
+                        }
+
+                        if (argType == tokenMap::TYPE_INT)
+                        {
+                            return llvm::ConstantInt::get(type, std::stoi(argValue), true);
+                        }
+                        else if (argType == tokenMap::TYPE_FLOAT)
+                        {
+                            float floatVal = std::stof(argValue);
+                            return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(floatVal));
+                        }
+                        else if (argType == tokenMap::TYPE_DOUBLE)
+                        {
+                            double doubleVal = std::stod(argValue);
+                            return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(doubleVal));
+                        }
+                        else if (argType == tokenMap::TYPE_CHAR)
+                        {
+                            if (argValue.empty())
+                            {
+                                throw LLVMException("LLVM::createConstValue. Empty string for char type.");
+                            }
+                            return llvm::ConstantInt::get(type, static_cast<int>(argValue[0]), true);
+                        }
+                        else if (argType == tokenMap::TYPE_BOOLEAN)
+                        {
+                            bool boolVal = (argValue == "true");
+                            return llvm::ConstantInt::get(type, boolVal ? 1 : 0, false);
+                        }
+                        else
+                        {
+                            throw LLVMException("LLVM::createConstValue. Unsupported argument type.");
+                        }
+                    }
+                    else
+                    {
+                        throw LLVMException("LLVM::createConstValue. Unsupported type in value.");
+                    }
+                },
+                value->getValue());
 
         return callArg;
     }
@@ -349,10 +354,8 @@ namespace iron
         return allocaVariable;
     }
 
-    llvm::Value *LLVM::numberCasting(
-        std::shared_ptr<hlir::Variable> variable,
-        std::shared_ptr<hlir::Type> type,
-        llvm::Function *currentFunction)
+    llvm::Value *LLVM::numberCasting(std::shared_ptr<hlir::Variable> variable, std::shared_ptr<hlir::Type> type,
+                                     llvm::Function *currentFunction)
     {
         // Initial check of input pointers
         if (!variable)
@@ -381,28 +384,32 @@ namespace iron
         auto castVar = getOrPromoteToAlloca(varName, currentFunction);
         if (!castVar)
         {
-            throw LLVMException(util::format("LLVM::numberCasting: AllocaInst for variable '{}' was not found.", varName));
+            throw LLVMException(
+                    util::format("LLVM::numberCasting: AllocaInst for variable '{}' was not found.", varName));
         }
 
         // Get the allocated type and verify it's valid
         llvm::Type *allocatedType = castVar->getAllocatedType();
         if (!allocatedType)
         {
-            throw LLVMException(util::format("LLVM::numberCasting: 'getAllocatedType()' returned a null pointer for variable '{}'.", varName));
+            throw LLVMException(util::format(
+                    "LLVM::numberCasting: 'getAllocatedType()' returned a null pointer for variable '{}'.", varName));
         }
 
         // Create the load instruction and verify it was successful
         llvm::LoadInst *loadedVar = builder.CreateLoad(allocatedType, castVar, util::format("load_{}", varName));
         if (!loadedVar)
         {
-            throw LLVMException(util::format("LLVM::numberCasting: Failed to create LoadInst for variable '{}'.", varName));
+            throw LLVMException(
+                    util::format("LLVM::numberCasting: Failed to create LoadInst for variable '{}'.", varName));
         }
 
         // Map the desired type and verify it was mapped correctly
         llvm::Type *desiredType = mapType(type->getType());
         if (!desiredType)
         {
-            throw LLVMException(util::format("LLVM::numberCasting: 'mapType' returned a null pointer for the type of variable '{}'.", varName));
+            throw LLVMException(util::format(
+                    "LLVM::numberCasting: 'mapType' returned a null pointer for the type of variable '{}'.", varName));
         }
 
         llvm::Value *value = nullptr;
@@ -411,7 +418,8 @@ namespace iron
         auto varType = variable->getVarType();
         if (!varType)
         {
-            throw LLVMException(util::format("LLVM::numberCasting: 'variable->getVarType()' is a null pointer for variable '{}'.", varName));
+            throw LLVMException(util::format(
+                    "LLVM::numberCasting: 'variable->getVarType()' is a null pointer for variable '{}'.", varName));
         }
 
         int varTypeInt = varType->getType();
@@ -450,10 +458,11 @@ namespace iron
         // Verify if the cast instruction was created correctly
         if (!value)
         {
-            throw LLVMException(util::format("LLVM::numberCasting: Failed to create the cast instruction for variable '{}'.", varName));
+            throw LLVMException(util::format(
+                    "LLVM::numberCasting: Failed to create the cast instruction for variable '{}'.", varName));
         }
 
         return value;
     }
 
-}
+} // namespace iron

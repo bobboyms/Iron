@@ -64,7 +64,21 @@ protected:
         }
     }
 
-    std::string getHighLevelCode(std::string input)
+    static std::vector<std::string> loadStringAsLines(const std::string &code)
+    {
+        std::vector<std::string> lines;
+        std::stringstream ss(code);
+
+        std::string line;
+        while (std::getline(ss, line))
+        {
+            lines.push_back(line);
+        }
+
+        return lines;
+    }
+
+    std::string getHighLevelCode(const std::string& input)
     {
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
@@ -72,7 +86,7 @@ protected:
         auto parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticalAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()));
+        iron::SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()), loadStringAsLines(input));
         analysis.analyze();
 
         // Rewind
@@ -93,31 +107,35 @@ protected:
 TEST_F(HlIrTestCode, T1)
 {
     std::string output = R"(
-        fn soma(n:float,j:int):int { 
-        call int gfn_soma_block(j:j)
+        fn soma(n:float,j:int):int {
+         let var_1:int = call int gfn_soma_block(j:j)
+         return int var_1
         }
 
-        fn gfn_soma_block(j:int):int { 
-        let x:int = 25
-        call int gfn_gfn_soma_block_block(j:j,x:x)
+        fn gfn_soma_block(j:int):int {
+         let x:int = 25
+         let var_1:int = call int gfn_gfn_soma_block_block(j:j,x:x)
+         return int var_1
         }
 
-        fn gfn_gfn_soma_block_block(j:int,x:int):int { 
-        let var_1:int = 2
-        let var_2:int = MULT var_1, j
-        let var_3:int = MULT var_2, x
-        let r:int = var_3
-        let x:float = 25.25
-        call int gfn_gfn_gfn_soma_block_block_block(n:14524.25D,j:j,x:x)
+        fn gfn_gfn_soma_block_block(j:int,x:int):int {
+         let var_1:int = 2
+         let var_2:int = MULT var_1, j
+         let var_3:int = MULT var_2, x
+         let r:int = var_3
+         let x:float = 25.25
+         let var_4:int = call int gfn_gfn_gfn_soma_block_block_block(n:14524.25D,j:j,x:x)
+         return int var_4
         }
 
-        fn gfn_gfn_gfn_soma_block_block_block(n:double,j:int,x:float):int { 
-        let var_1:int = 2
-        let var_2:int = MULT var_1, j
-        let var_3:float = var_2 int to float
-        let var_4:float = MULT var_3, x
-        let var_5:int = var_4 float to int
-        let r:int = var_5
+        fn gfn_gfn_gfn_soma_block_block_block(n:double,j:int,x:float):int {
+         let var_1:int = 2
+         let var_2:int = MULT var_1, j
+         let var_3:float = var_2 int to float
+         let var_4:float = MULT var_3, x
+         let var_5:int = var_4 float to int
+         let r:int = var_5
+         return int r
         }
     )";
 
@@ -125,20 +143,21 @@ TEST_F(HlIrTestCode, T1)
         fn soma(n:float, j:int): int {
 
             let block:fn = ():int -> {
-            let x:int = 25
-               let block:fn = ():int -> {
-                    let r:int = 2 * j * x
-                    let x:float = 25.25
-                    
-                    let block:fn = (n:double):int -> {
+                   let x:int = 25
+                   let block:fn = ():int -> {
                         let r:int = 2 * j * x
-                    }
+                        let x:float = 25.25
 
-                    block(n:14524.25D)
+                        let block:fn = (n:double):int -> {
+                            let r:int = 2 * j * x
+                            return r
+                        }
+
+                        return block(n:14524.25D)
+                    }
+                    return block()
                 }
-                block()
-            }
-            block()
+            return block()
         }
     )";
 
@@ -202,7 +221,7 @@ TEST_F(HlIrTestCode, T4)
     std::string output = R"(
         fn teste():void { 
             let a:int = 10
-            let b:double = 20.00
+            let b:double = 20.00D
             let c:int = 30
             let var_1:double = a int to double
             let var_2:double = PLUS var_1, b
@@ -215,10 +234,10 @@ TEST_F(HlIrTestCode, T4)
         }
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn teste() {
             let a:int = 10
-            let b:double = 20.00
+            let b:double = 20.00D
             let c:int = 30
             let r:float = (a + b) * c - a
         }
@@ -251,22 +270,25 @@ TEST_F(HlIrTestCode, T5)
 // parei aqui
 TEST_F(HlIrTestCode, T6)
 {
-    std::string output = R"(
-        fn sub(ax:int,bx:int,nx:int):int { }
+    const std::string output = R"(
+        fn sub(ax:int,bx:int,nx:int):int {
+         let var_1:int = 0
+         return int var_1
+        }
 
-        fn soma():int { 
-            let var_1:float = 32.25
-            let var_2:int = call int sub(ax:1,bx:32,nx:25)
-            let var_3:float = var_2 int to float
-            let var_4:float = MULT var_1, var_3
+        fn soma():void {
+         let var_1:float = 32.25
+         let var_2:int = call int sub(ax:1,bx:32,nx:25)
+         let var_3:float = var_2 int to float
+         let var_4:float = MULT var_1, var_3
         }
 
     )";
 
     std::string input = R"(
-        fn sub(ax:int, bx:int, nx:int): int {}
+        fn sub(ax:int, bx:int, nx:int): int { return 0 }
 
-        fn soma(): int {
+        fn soma() {
             32.25 * sub(ax: 1, bx: 32, nx: 25)
         }
     )";
@@ -277,27 +299,33 @@ TEST_F(HlIrTestCode, T6)
 TEST_F(HlIrTestCode, T7)
 {
     std::string output = R"(
-        fn mult(n:int,p:float):float { }
+        fn mult(n:int,p:float):float {
+         let var_1:float = 0.0
+         return float var_1
+        }
 
-        fn sub(ax:int,bx:float):int { }
+        fn sub(ax:int,bx:float):int {
+         let var_1:int = 0
+         return int var_1
+        }
 
-        fn soma():int { 
-            let x:float = 25.00
-            let var_1:float = 32.25
-            let var_3:float = call float mult(n:22,p:x)
-            let var_2:int = call int sub(ax:1,bx:var_3)
-            let var_4:float = var_2 int to float
-            let var_5:float = MULT var_1, var_4
+        fn soma():void {
+         let x:float = 25.00
+         let var_1:float = 32.25
+         let var_3:float = call float mult(n:22,p:x)
+         let var_2:int = call int sub(ax:1,bx:var_3)
+         let var_4:float = var_2 int to float
+         let var_5:float = MULT var_1, var_4
         }
 
     )";
 
     std::string input = R"(
-        fn mult(n:int, p:float): float {}
+        fn mult(n:int, p:float): float {return 0.0}
 
-        fn sub(ax:int, bx:float): int {}
+        fn sub(ax:int, bx:float): int { return 0 }
 
-        fn soma(): int {
+        fn soma() {
             let x: float = 25.00
             32.25 * sub(ax: 1, bx: mult(n:22, p:x))
         }
@@ -309,36 +337,44 @@ TEST_F(HlIrTestCode, T7)
 TEST_F(HlIrTestCode, T8)
 {
     std::string output = R"(
-        fn mult(n:int,p:float):float { }
+        fn mult(n:int,p:float):float {
+         let var_1:float = 0.0
+         return float var_1
+        }
 
-        fn sub(ax:int,bx:float):int { }
+        fn sub(ax:int,bx:float):int {
+         let var_1:int = 0
+         return int var_1
+        }
 
-        fn soma():int { 
-            let x:float = 25.00
-            let var_1:float = 32.25
-            let var_3:float = call float gfn_soma_inline(a:25,x:x)
-            let var_4:float = call float mult(n:22,p:var_3)
-            let var_2:int = call int sub(ax:1,bx:var_4)
-            let var_5:float = var_2 int to float
-            let var_6:float = MULT var_1, var_5
-            }
+        fn soma():float {
+         let x:float = 25.00
+         let var_1:float = 32.25
+         let var_3:float = call float gfn_soma_inline(a:25,x:x)
+         let var_4:float = call float mult(n:22,p:var_3)
+         let var_2:int = call int sub(ax:1,bx:var_4)
+         let var_5:float = var_2 int to float
+         let var_6:float = MULT var_1, var_5
+         return float var_6
+        }
 
-            fn gfn_soma_inline(a:int,x:float):float { 
-            let var_1:float = a int to float
-            let var_2:float = MULT var_1, x
+        fn gfn_soma_inline(a:int,x:float):float {
+         let var_1:float = a int to float
+         let var_2:float = MULT var_1, x
+         return float var_2
         }
 
     )";
 
     std::string input = R"(
-        fn mult(n:int, p:float): float {}
+        fn mult(n:int, p:float): float {return 0.0}
 
-        fn sub(ax:int, bx:float): int {}
+        fn sub(ax:int, bx:float): int {return 0 }
 
-        fn soma(): int {
+        fn soma(): float {
             let x: float = 25.00
             let inline:fn = (a:int):float -> a * x
-            32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
+            return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
         }
     )";
 
@@ -347,40 +383,50 @@ TEST_F(HlIrTestCode, T8)
 
 TEST_F(HlIrTestCode, T9)
 {
-    std::string output = R"(
-        fn mult(n:int,p:float):float { }
-
-        fn sub(ax:int,bx:float):int { }
-
-        fn soma():int { 
-            let x:float = 25.00
-            let var_1:float = 32.25
-            let var_3:int = call int gfn_soma_block(a:25,x:x)
-            let var_4:float = call float gfn_soma_inline(a:var_3,x:x)
-            let var_5:float = call float mult(n:22,p:var_4)
-            let var_2:int = call int sub(ax:1,bx:var_5)
-            let var_6:float = var_2 int to float
-            let var_7:float = MULT var_1, var_6
+    const std::string output = R"(
+        fn mult(n:int,p:float):float {
+         let var_1:float = 0.0
+         return float var_1
         }
 
-        fn gfn_soma_block(a:int,x:float):int { }
+        fn sub(ax:int,bx:float):int {
+         let var_1:int = 0
+         return int var_1
+        }
 
-        fn gfn_soma_inline(a:int,x:float):float { 
-            let var_1:float = a int to float
-            let var_2:float = MULT var_1, x
+        fn soma():void {
+         let x:float = 25.00
+         let var_1:float = 32.25
+         let var_3:int = call int gfn_soma_block(a:25,x:x)
+         let var_4:float = call float gfn_soma_inline(a:var_3,x:x)
+         let var_5:float = call float mult(n:22,p:var_4)
+         let var_2:int = call int sub(ax:1,bx:var_5)
+         let var_6:float = var_2 int to float
+         let var_7:float = MULT var_1, var_6
+        }
+
+        fn gfn_soma_block(a:int,x:float):int {
+         let var_1:int = 0
+         return int var_1
+        }
+
+        fn gfn_soma_inline(a:int,x:float):float {
+         let var_1:float = a int to float
+         let var_2:float = MULT var_1, x
+         return float var_2
         }
 
     )";
 
     std::string input = R"(
-        fn mult(n:int, p:float): float {}
+        fn mult(n:int, p:float): float {return 0.0 }
+        fn sub (ax:int, bx:float): int {return 0 }
 
-        fn sub(ax:int, bx:float): int {}
-
-        fn soma(): int {
+        fn soma() {
             let x: float = 25.00
-            
+
             let block:fn = (a:int):int -> {
+                return 0
             }
 
             let inline:fn = (a:int):float -> a * x
@@ -396,23 +442,25 @@ TEST_F(HlIrTestCode, T10)
 {
     std::string output = R"(
         fn main():void { 
-            let xb:int = 36
-            let var_1:int = call int gfn_main_inline(a:12,b:14,xb:xb)
-            let var_2:float = 5.22
-            let var_3:float = call float gfn_main_sum(x:2,y:3.26F)
-            let var_4:float = DIV var_2, var_3
-            let var_5:float = var_1 int to float
-            let var_6:float = PLUS var_5, var_4
+         let xb:int = 36
+         let var_1:int = call int gfn_main_inline(a:12,b:14,xb:xb)
+         let var_2:float = 5.22
+         let var_3:float = call float gfn_main_sum(x:2,y:3.26F)
+         let var_4:float = DIV var_2, var_3
+         let var_5:float = var_1 int to float
+         let var_6:float = PLUS var_5, var_4
         }
 
-        fn gfn_main_inline(a:int,b:int,xb:int):int { 
-            let var_1:int = PLUS xb, b
-            let var_2:int = MULT var_1, a
+        fn gfn_main_inline(a:int,b:int,xb:int):int {
+         let var_1:int = PLUS xb, b
+         let var_2:int = MULT var_1, a
+         return int var_2
         }
 
-        fn gfn_main_sum(x:int,y:float):float { 
-            let var_1:float = x int to float
-            let var_2:float = PLUS var_1, y
+        fn gfn_main_sum(x:int,y:float):float {
+         let var_1:float = x int to float
+         let var_2:float = PLUS var_1, y
+         return float var_2
         }
 
     )";
@@ -433,44 +481,52 @@ TEST_F(HlIrTestCode, T10)
 
 TEST_F(HlIrTestCode, T11)
 {
-    std::string output = R"(
-        fn mult(pp:float):float { }
-
-        fn xptc(z:float):int { }
-
-        fn main():void { 
-            let xb:int = 36
-            let var_1:float = 5.22
-            let var_2:int = call int gfn_main_inline(a:12,b:14,xb:xb)
-            let var_3:float = call float gfn_main_sum(x:12,y:87)
-            let var_4:float = var_2 int to float
-            let var_5:float = MULT var_4, var_3
-            let var_6:float = PLUS var_1, var_5
-            let var_8:float = call float mult(pp:12.00F)
-            let var_7:int = call int xptc(z:var_8)
-            let var_9:int = DIV var_7, xb
-            let var_10:float = var_9 int to float
-            let var_11:float = MINUS var_6, var_10
+    const std::string output = R"(
+        fn mult(pp:float):float {
+         let var_1:float = 1.0
+         return float var_1
         }
 
-        fn gfn_main_inline(a:int,b:int,xb:int):int { 
-            let var_1:int = PLUS xb, b
-            let var_2:int = MULT var_1, a
+        fn xptc(z:float):int {
+         let var_1:int = 0
+         return int var_1
         }
 
-        fn gfn_main_sum(x:int,y:int):float { 
-            let var_1:float = 2.25
-            let var_2:float = x int to float
-            let var_3:float = PLUS var_1, var_2
-            let var_4:float = y int to float
-            let var_5:float = PLUS var_3, var_4
+        fn main():void {
+         let xb:int = 36
+         let var_1:float = 5.22
+         let var_2:int = call int gfn_main_inline(a:12,b:14,xb:xb)
+         let var_3:float = call float gfn_main_sum(x:12,y:87)
+         let var_4:float = var_2 int to float
+         let var_5:float = MULT var_4, var_3
+         let var_6:float = PLUS var_1, var_5
+         let var_8:float = call float mult(pp:12.00F)
+         let var_7:int = call int xptc(z:var_8)
+         let var_9:int = DIV var_7, xb
+         let var_10:float = var_9 int to float
+         let var_11:float = MINUS var_6, var_10
+        }
+
+        fn gfn_main_inline(a:int,b:int,xb:int):int {
+         let var_1:int = PLUS xb, b
+         let var_2:int = MULT var_1, a
+         return int var_2
+        }
+
+        fn gfn_main_sum(x:int,y:int):float {
+         let var_1:float = 2.25
+         let var_2:float = x int to float
+         let var_3:float = PLUS var_1, var_2
+         let var_4:float = y int to float
+         let var_5:float = PLUS var_3, var_4
+         return float var_5
         }
 
     )";
 
     std::string input = R"(
-        fn mult(pp:float): float {}
-        fn xptc(z:float): int {}
+        fn mult(pp:float): float {return 1.0 }
+        fn xptc(z:float): int {return 0 }
 
         fn main() {
             let xb: int = 36
@@ -479,6 +535,133 @@ TEST_F(HlIrTestCode, T11)
 
             5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc(z:mult(pp:12.00F)) / xb
         }
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T12)
+{
+    const std::string output = R"(
+        fn teste():float {
+         let var_1:float = 42.0
+         return float var_1
+        }
+
+    )";
+
+    const std::string input = R"(
+        fn teste():float {
+            return 42.0
+        }
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T13)
+{
+    const std::string output = R"(
+        fn teste():int {
+         let j:int = 56
+         return int j
+        }
+    )";
+
+    const std::string input = R"(
+
+        fn teste():int {
+            let j:int = 56
+            return j
+        }
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T15)
+{
+    const std::string output = R"(
+        fn teste():int {
+         let j:int = 56
+         let var_1:int = 25
+         let var_2:int = PLUS j, var_1
+         let var_3:int = 2
+         let var_4:int = PLUS j, var_3
+         let var_5:int = DIV var_2, var_4
+         return int var_5
+        }
+    )";
+
+    const std::string input = R"(
+        fn teste():int {
+            let j:int = 56
+            return (j + 25) / (j + 2)
+        }
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T16)
+{
+    const std::string output = R"(
+        fn teste():double {
+            let var_1:double = call double gfn_teste_inline()
+            return double var_1
+        }
+
+        fn gfn_teste_inline():double {
+            let var_1:double = 12.00D
+            return double var_1
+        }
+
+    )";
+
+    const std::string input = R"(
+        fn teste():double {
+            let inline:fn = ():double -> 12.00D
+            return inline()
+        }
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T17)
+{
+    const std::string output = R"(
+        fn teste():void {
+         call void gfn_teste_inline()
+        }
+
+        fn gfn_teste_inline():void {
+         let var_1:double = 12.00D
+        }
+    )";
+
+    const std::string input = R"(
+        fn teste() {
+            let inline:fn = () -> 12.00D
+            inline()
+        }
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T18)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
 
     )";
 

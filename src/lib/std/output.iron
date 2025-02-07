@@ -1,5 +1,3 @@
-import std.output.printf
-
 extern C {
    fn printf(format: char, ...):int
 }

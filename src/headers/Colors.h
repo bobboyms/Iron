@@ -1,8 +1,8 @@
 #ifndef COLOR_CODES_H
 #define COLOR_CODES_H
 
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace color
 {
@@ -24,6 +24,6 @@ namespace color
     const std::string BOLD_CYAN = "\033[1;36m";
 
     std::string colorText(const std::string &text, const std::string &colorCode);
-}
+} // namespace color
 
 #endif

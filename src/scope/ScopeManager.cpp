@@ -1,10 +1,10 @@
 #include "ScopeManager.h"
 #include "../headers/Utils.h"
 
+#include <iostream>
+#include <memory>
 #include <stack>
 #include <unordered_map>
-#include <memory>
-#include <iostream>
 
 namespace scope
 {
@@ -38,15 +38,9 @@ namespace scope
 
     /* --------------------------- STATEMENTS ---------------------------- */
 
-    Statements::Statements()
-    {
-        // Constructor body, if needed
-    }
+    Statements::Statements() = default;
 
-    Statements::~Statements()
-    {
-        // Destructor body, if needed
-    }
+    Statements::~Statements() = default;
 
     void Statements::addVariable(const std::string &name, int type)
     {
@@ -77,7 +71,7 @@ namespace scope
 
     std::shared_ptr<Variable> Statements::getVariable(const std::string &name)
     {
-        for (auto &var : variables)
+        for (auto &var: variables)
         {
             if (var->name == name)
             {
@@ -99,16 +93,13 @@ namespace scope
     //   private: std::string callName;
     // Make sure you add that to the class definition if it isn't there yet.
 
-    FunctionCall::FunctionCall(std::string name, std::shared_ptr<Function> function)
-        : name(name), function(function)
+    FunctionCall::FunctionCall(std::string name, std::shared_ptr<Function> function) : name(name), function(function)
     {
         // If you need to store the name in a member variable, do so here.
         // E.g.: this->callName = name;
     }
 
-    FunctionCall::~FunctionCall()
-    {
-    }
+    FunctionCall::~FunctionCall() = default;
 
     std::string FunctionCall::getName()
     {
@@ -122,19 +113,13 @@ namespace scope
 
     /* ------------------------------ FUNCTION ---------------------------- */
 
-    Function::Function(std::string name,
-                       std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args,
-                       int returnType)
-        : args(args),
-          returnType(returnType)
+    Function::Function(std::string name, std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args,
+                       int returnType) : args(args), returnType(returnType)
     {
         this->name = name;
     }
 
-    Function::~Function()
-    {
-        // Destructor body if needed
-    }
+    Function::~Function() = default;
 
     bool Function::isReturnTokenFound()
     {
@@ -201,11 +186,22 @@ namespace scope
             scopeStack.pop();
         }
     }
+    void Function::setAlias(const std::shared_ptr<Variable> &alias)
+    {
+        if (!alias)
+            throw std::runtime_error(util::format("Function::setAlias. Alias is null", ""));
+        this->alias = alias;
+    }
+
+    std::shared_ptr<Variable> Function::getAlias()
+    {
+        return alias;
+    }
 
     std::shared_ptr<FunctionArg> Function::getArgByName(const std::string argName)
     {
 
-        for (auto arg : *args)
+        for (auto arg: *args)
         {
             if (arg->name == argName)
             {
@@ -258,8 +254,7 @@ namespace scope
         }
 
         // verifica nos argumentos da função
-        auto arg = getArgByName(varName);
-        if (arg)
+        if (auto arg = getArgByName(varName))
         {
             return std::make_shared<Variable>(arg->name, arg->type);
         }
@@ -275,6 +270,11 @@ namespace scope
     std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> Function::getArgs()
     {
         return args;
+    }
+
+    std::shared_ptr<Function> Function::getUpperFunction()
+    {
+        return upperFunction;
     }
 
     std::string Function::getScopeName()
@@ -346,7 +346,7 @@ namespace scope
 
     std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(std::string functionName)
     {
-        for (auto function : functionDeclarations)
+        for (auto function: functionDeclarations)
         {
             if (function->getFunctionName() == functionName)
             {

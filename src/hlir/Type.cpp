@@ -1,52 +1,49 @@
 #include "../headers/Hlir.h"
+#include "../headers/Utils.h"
 
 namespace hlir
 {
-    bool verifyType(int type)
+    bool verifyType(const int type)
     {
         switch (type)
         {
 
-        case tokenMap::TYPE_INT:
-        case tokenMap::TYPE_FLOAT:
-        case tokenMap::TYPE_CHAR:
-        case tokenMap::TYPE_STRING:
-        case tokenMap::TYPE_BOOLEAN:
-        case tokenMap::TYPE_DOUBLE:
-        case tokenMap::FUNCTION:
-        case tokenMap::FUNCTION_PTR:
-        case tokenMap::VOID:
-            return true;
-            break;
+            case tokenMap::TYPE_INT:
+            case tokenMap::TYPE_FLOAT:
+            case tokenMap::TYPE_CHAR:
+            case tokenMap::TYPE_STRING:
+            case tokenMap::TYPE_BOOLEAN:
+            case tokenMap::TYPE_DOUBLE:
+            case tokenMap::FUNCTION:
+            case tokenMap::FUNCTION_PTR:
+            case tokenMap::VOID:
+                return true;
 
-        default:
-            throw HLIRException(util::format("Type::verifyType: DataType error: type not allowed -> {}", tokenMap::getTokenText(type)));
+            default:
+                throw HLIRException(util::format("Type::verifyType: DataType error: type not allowed -> {}",
+                                                 tokenMap::getTokenText(type)));
         }
     }
 
-    Type::Type() {}
+    Type::Type()
+    = default;
 
-    Type::Type(int type) : type(type)
+    Type::Type(const int type) : type(type)
     {
-        if (verifyType(type))
-        {
-            this->type = type;
-        }
+        verifyType(type);
+        this->type = type;
     }
 
-    void Type::set(int type)
+    void Type::set(const int type)
     {
-        if (verifyType(type))
-        {
-            this->type = type;
-        }
+        verifyType(type);
+        this->type = type;
     }
 
     Type::~Type()
-    {
-    }
+    = default;
 
-    int Type::getType()
+    int Type::getType() const
     {
         return type;
     }
@@ -60,4 +57,4 @@ namespace hlir
         return sb.str();
     }
 
-}
+} // namespace hlir

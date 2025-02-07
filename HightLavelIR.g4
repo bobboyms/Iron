@@ -68,7 +68,7 @@ importStatement: IMPORT qualifiedName (DOT STAR)?;
 qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
 // Lista de declarações dentro do ponto de entrada ou função
-statementList: (expr | functionCall)*;
+statementList: ( expr | functionCall | returnStatemant)*;
 
 // Declaração de função
 functionDeclaration: (PRIVATE | PUBLIC)? FUNCTION functionName = IDENTIFIER functionSignature
@@ -102,6 +102,10 @@ functionCallArg:
 		| dataFormat
 		| functionCall
 	);
+
+returnStatemant:
+    RETURN varTypes varName = IDENTIFIER
+;
 
 op: (varName = IDENTIFIER | number);
 opRight: op;
