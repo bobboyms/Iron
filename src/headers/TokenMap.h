@@ -163,19 +163,19 @@ namespace tokenMap
 
         if (std::regex_match(input, realNumberRegex))
         {
-            return tokenMap::REAL_NUMBER;
+            return REAL_NUMBER;
         }
         if (std::regex_match(input, intNumberRegex))
         {
-            return tokenMap::TYPE_INT;
+            return TYPE_INT;
         }
         if (std::regex_match(input, booleanValueRegex))
         {
-            return tokenMap::TYPE_BOOLEAN;
+            return TYPE_BOOLEAN;
         }
         if (std::regex_match(input, stringLiteralRegex))
         {
-            return tokenMap::TYPE_STRING;
+            return TYPE_STRING;
         }
 
         throw TokenException("Isn't impossible determine the type of " + input);

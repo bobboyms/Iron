@@ -1,0 +1,11 @@
+import std.output.printf
+
+fn pi():float {
+    return 3.398
+}
+
+fn main():int {
+    let idade:string = "25"
+    let value:string = f'("Age: %f", pi())
+    return 0
+}

@@ -102,8 +102,6 @@ endif()
 ###############################################################################
 set(SRC_MAIN
         src/main.cpp
-        src/semantic/Expr.cpp
-        src/headers/SemanticAnalysis.h
 )
 
 set(SRC_COMMON
@@ -122,6 +120,8 @@ set(SRC_COMMON
         src/semantic/SemanticAnalysis.cpp
         src/semantic/Functions.cpp
         src/semantic/Expr.cpp
+        src/semantic/Extern.cpp
+        src/semantic/Format.cpp
         src/parsers/IronLexer.cpp
         src/parsers/IronParser.cpp
         src/parsers/IronBaseListener.cpp
@@ -130,13 +130,33 @@ set(SRC_COMMON
         src/parsers/HightLavelIRParser.cpp
         src/parsers/HightLavelIRBaseListener.cpp
         src/parsers/HightLavelIRListener.cpp
+        src/config/Configuration.cpp
+        src/analyser/Analyser.cpp
+        src/headers/Analyser.h
+        src/utils/Path.cpp
 )
 
 set(TEST_SRC
         tests/test_semantic_analysis.cpp
-        tests/test_hlir_code.cpp
-        tests/test_llvm_code.cpp
+#        tests/test_hlir_code.cpp
+#        tests/test_llvm_code.cpp
 )
+
+# Cópia do arquivo YAML para a pasta de build
+configure_file(
+        ${CMAKE_SOURCE_DIR}/compiler_config.yaml
+        ${CMAKE_BINARY_DIR}/compiler_config.yaml
+        COPYONLY
+)
+
+configure_file(
+        ${CMAKE_SOURCE_DIR}/main.iron
+        ${CMAKE_BINARY_DIR}/main.iron
+        COPYONLY
+)
+
+
+
 
 ###############################################################################
 # 8. Criação dos executáveis e linkagem

@@ -6,8 +6,8 @@ namespace iron
     void SemanticAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
     {
 
-        const int line = ctx->getStart()->getLine();
-        const int col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
 
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 1);
 
@@ -36,7 +36,7 @@ namespace iron
         int returnType = tokenMap::VOID;
         if (ctx->functionSignature()->functionReturnType())
         {
-            std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+            const std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
             returnType = tokenMap::getTokenType(type);
         }
 
@@ -52,8 +52,8 @@ namespace iron
     void SemanticAnalysis::visitFunctionBody(IronParser::FunctionDeclarationContext *ctx)
     {
 
-        int line = ctx->getStart()->getLine();
-        int col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
 
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 1);
 
@@ -78,14 +78,15 @@ namespace iron
 
         scopeManager->enterScope(function);
 
+
         for (const auto child: ctx->children)
         {
             if (const auto statementList = dynamic_cast<IronParser::StatementListContext *>(child))
             {
-
                 visitStatementList(statementList);
             }
         }
+
 
         scopeManager->exitScope();
     }
@@ -115,26 +116,25 @@ namespace iron
     void SemanticAnalysis::visitFunctionArg(IronParser::FunctionArgContext *ctx)
     {
         std::string argName = ctx->varName->getText();
-        std::string argType = ctx->varTypes()->getText();
-        int line = ctx->getStart()->getLine();
+        const std::string argType = ctx->varTypes()->getText();
+        const uint line = ctx->getStart()->getLine();
 
-        const auto function = scopeManager->currentFunctionDeclarationBy();
-        if (!function)
+        const auto currentFunction = scopeManager->currentFunctionDeclarationBy();
+        if (!currentFunction)
         {
             throw ScopeNotFoundException(util::format("visitFunctionArg. Scope current not found. Line: {}",
                                                       color::colorText(std::to_string(line), color::BOLD_GREEN)));
         }
 
-        auto arg = function->getArgByName(argName);
-        if (arg)
+        if (auto arg = currentFunction->getArgByName(argName))
         {
             throw VariableRedefinitionException(util::format(
                     "Function arg {} already declared. Line: {}, Scope: fn {}",
                     color::colorText(argName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(function->getFunctionName(), color::BOLD_YELLOW)));
+                    color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW)));
         }
 
-        auto argsList = function->getArgs();
+        const auto argsList = currentFunction->getArgs();
         argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType)));
 
         if (ctx->assignment())
@@ -191,8 +191,8 @@ namespace iron
         }
 
         // Obtém informações de linha e coluna para mensagens de erro
-        const int line = ctx->getStart()->getLine();
-        const int col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
         // Obtém a função corrente do escopo e verifica se ela é válida

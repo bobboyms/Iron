@@ -1,0 +1,7 @@
+extern C {
+   fn printf(format: char, ...):int
+}
+
+fn print(format:string) {
+    // printf(format)
+}

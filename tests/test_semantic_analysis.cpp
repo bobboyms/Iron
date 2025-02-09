@@ -1,41 +1,47 @@
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include <algorithm>
 
 // Ajuste os includes conforme a organização do seu projeto
-#include "../src/headers/SemanticAnalysis.h"
 #include "../src/headers/Exceptions.h"
+#include "../src/headers/SemanticAnalysis.h"
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
 #include "antlr4-runtime.h" // Removida a barra '/'
 
 // Fixture de teste
-class SemanticAnalysisTest : public ::testing::Test {
+class SemanticAnalysisTest : public ::testing::Test
+{
 protected:
-    void SetUp() override {
-        // Cria um gerenciador de escopos
+    void SetUp() override
+    {
         scopeManager = std::make_unique<scope::ScopeManager>();
     }
 
-    void runAnalysis(const std::string &input) {
+    void runAnalysis(const std::string &input)
+    {
+        auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
+
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_unique<IronParser>(&tokens);
         semanticAnalysis = std::make_unique<iron::SemanticAnalysis>(std::move(parser), std::move(scopeManager),
-                                                                    loadStringAsLines(input));
+                                                                    loadStringAsLines(input), config);
 
         // Executa a análise semântica
         semanticAnalysis->analyze();
     }
 
-    static std::vector<std::string> loadStringAsLines(const std::string &code) {
+    static std::vector<std::string> loadStringAsLines(const std::string &code)
+    {
         std::vector<std::string> lines;
         std::stringstream ss(code);
 
         std::string line;
-        while (std::getline(ss, line)) {
+        while (std::getline(ss, line))
+        {
             lines.push_back(line);
         }
 
@@ -46,7 +52,8 @@ protected:
     std::unique_ptr<iron::SemanticAnalysis> semanticAnalysis;
 };
 
-TEST_F(SemanticAnalysisTest, T1) {
+TEST_F(SemanticAnalysisTest, T1)
+{
     const std::string input = R"(
         fn main() {
         }
@@ -55,7 +62,8 @@ TEST_F(SemanticAnalysisTest, T1) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T2) {
+TEST_F(SemanticAnalysisTest, T2)
+{
     const std::string input = R"(
         fn main():int {
             return 0
@@ -65,7 +73,8 @@ TEST_F(SemanticAnalysisTest, T2) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T3) {
+TEST_F(SemanticAnalysisTest, T3)
+{
     std::string input = R"(
         fn main():int {
         }
@@ -77,7 +86,8 @@ TEST_F(SemanticAnalysisTest, T3) {
     EXPECT_THROW(runAnalysis(input), iron::FunctionRedefinitionException);
 }
 
-TEST_F(SemanticAnalysisTest, T4) {
+TEST_F(SemanticAnalysisTest, T4)
+{
     std::string input = R"(
         fn main():int {
             let x:int = 25
@@ -89,7 +99,8 @@ TEST_F(SemanticAnalysisTest, T4) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T5) {
+TEST_F(SemanticAnalysisTest, T5)
+{
     std::string input = R"(
         fn main():int {
             let x:int = 25
@@ -101,7 +112,8 @@ TEST_F(SemanticAnalysisTest, T5) {
     EXPECT_THROW(runAnalysis(input), iron::VariableRedefinitionException);
 }
 
-TEST_F(SemanticAnalysisTest, T6) {
+TEST_F(SemanticAnalysisTest, T6)
+{
     std::string input = R"(
         fn main():int {
             let x:int
@@ -112,7 +124,8 @@ TEST_F(SemanticAnalysisTest, T6) {
     EXPECT_THROW(runAnalysis(input), iron::UninitializedVariableException);
 }
 
-TEST_F(SemanticAnalysisTest, T7) {
+TEST_F(SemanticAnalysisTest, T7)
+{
     std::string input = R"(
         fn main() {
             let x:int = 25
@@ -126,7 +139,8 @@ TEST_F(SemanticAnalysisTest, T7) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T8) {
+TEST_F(SemanticAnalysisTest, T8)
+{
     std::string input = R"(
         fn main() {
             let x:int = 25.00
@@ -136,7 +150,8 @@ TEST_F(SemanticAnalysisTest, T8) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T9) {
+TEST_F(SemanticAnalysisTest, T9)
+{
     std::string input = R"(
         fn main() {
             let y:float = 25
@@ -146,7 +161,8 @@ TEST_F(SemanticAnalysisTest, T9) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T10) {
+TEST_F(SemanticAnalysisTest, T10)
+{
     std::string input = R"(
         fn main() {
             let z:double = 250.00
@@ -156,7 +172,8 @@ TEST_F(SemanticAnalysisTest, T10) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T11) {
+TEST_F(SemanticAnalysisTest, T11)
+{
     std::string input = R"(
         fn main() {
             let d:string = 2
@@ -166,7 +183,8 @@ TEST_F(SemanticAnalysisTest, T11) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T12) {
+TEST_F(SemanticAnalysisTest, T12)
+{
     std::string input = R"(
         fn teste() {
             x
@@ -176,7 +194,8 @@ TEST_F(SemanticAnalysisTest, T12) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T13) {
+TEST_F(SemanticAnalysisTest, T13)
+{
     std::string input = R"(
         fn teste() {
             x = 10
@@ -186,7 +205,8 @@ TEST_F(SemanticAnalysisTest, T13) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T14) {
+TEST_F(SemanticAnalysisTest, T14)
+{
     std::string input = R"(
         fn teste() {
             let x:int = b
@@ -196,7 +216,8 @@ TEST_F(SemanticAnalysisTest, T14) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T15) {
+TEST_F(SemanticAnalysisTest, T15)
+{
     std::string input = R"(
         fn soma() {
             let b:int = 12
@@ -208,7 +229,8 @@ TEST_F(SemanticAnalysisTest, T15) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T16) {
+TEST_F(SemanticAnalysisTest, T16)
+{
     std::string input = R"(
         fn teste() {
             let b:int = 12
@@ -220,7 +242,8 @@ TEST_F(SemanticAnalysisTest, T16) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T17) {
+TEST_F(SemanticAnalysisTest, T17)
+{
     std::string input = R"(
         fn teste() {
             let b:int = 12
@@ -232,7 +255,8 @@ TEST_F(SemanticAnalysisTest, T17) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T18) {
+TEST_F(SemanticAnalysisTest, T18)
+{
     std::string input = R"(
         fn teste() {
             let a:int = 25
@@ -247,7 +271,8 @@ TEST_F(SemanticAnalysisTest, T18) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T19) {
+TEST_F(SemanticAnalysisTest, T19)
+{
     std::string input = R"(
         fn teste() {
             let a:int = 25
@@ -262,7 +287,8 @@ TEST_F(SemanticAnalysisTest, T19) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T20) {
+TEST_F(SemanticAnalysisTest, T20)
+{
     std::string input = R"(
         fn teste() {
             let a:int = 25
@@ -274,7 +300,8 @@ TEST_F(SemanticAnalysisTest, T20) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T21) {
+TEST_F(SemanticAnalysisTest, T21)
+{
     std::string input = R"(
         fn teste() {
             (10 * 1.36 / (250.1254D - 25) + 28)
@@ -284,7 +311,8 @@ TEST_F(SemanticAnalysisTest, T21) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T22) {
+TEST_F(SemanticAnalysisTest, T22)
+{
     std::string input = R"(
         fn sub(): int {
             return 5
@@ -299,7 +327,8 @@ TEST_F(SemanticAnalysisTest, T22) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T23) {
+TEST_F(SemanticAnalysisTest, T23)
+{
     std::string input = R"(
         fn sub(): int {
             return 5
@@ -314,7 +343,8 @@ TEST_F(SemanticAnalysisTest, T23) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T24) {
+TEST_F(SemanticAnalysisTest, T24)
+{
     std::string input = R"(
         fn soma(x:int, b:int, n:string) {
             x + b * z
@@ -324,7 +354,8 @@ TEST_F(SemanticAnalysisTest, T24) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T25) {
+TEST_F(SemanticAnalysisTest, T25)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 5}
 
@@ -336,7 +367,8 @@ TEST_F(SemanticAnalysisTest, T25) {
     EXPECT_THROW(runAnalysis(input), iron::FunctionArgNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T26) {
+TEST_F(SemanticAnalysisTest, T26)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 22 }
 
@@ -348,7 +380,8 @@ TEST_F(SemanticAnalysisTest, T26) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T27) {
+TEST_F(SemanticAnalysisTest, T27)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
 
@@ -360,7 +393,8 @@ TEST_F(SemanticAnalysisTest, T27) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T28) {
+TEST_F(SemanticAnalysisTest, T28)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0 }
 
@@ -372,7 +406,8 @@ TEST_F(SemanticAnalysisTest, T28) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T29) {
+TEST_F(SemanticAnalysisTest, T29)
+{
     std::string input = R"(
         fn sub(a:float, b:int):int { return 0}
 
@@ -385,7 +420,8 @@ TEST_F(SemanticAnalysisTest, T29) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T30) {
+TEST_F(SemanticAnalysisTest, T30)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0 }
 
@@ -397,7 +433,8 @@ TEST_F(SemanticAnalysisTest, T30) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T31) {
+TEST_F(SemanticAnalysisTest, T31)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int {  return 0 }
         fn div():int { return 0 }
@@ -410,7 +447,8 @@ TEST_F(SemanticAnalysisTest, T31) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T32) {
+TEST_F(SemanticAnalysisTest, T32)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
         fn div():float { return 0}
@@ -423,7 +461,8 @@ TEST_F(SemanticAnalysisTest, T32) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T33) {
+TEST_F(SemanticAnalysisTest, T33)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
         fn div(d:double):int { return 0}
@@ -436,7 +475,8 @@ TEST_F(SemanticAnalysisTest, T33) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T34) {
+TEST_F(SemanticAnalysisTest, T34)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
         fn div(d:double):int { return 0}
@@ -450,7 +490,8 @@ TEST_F(SemanticAnalysisTest, T34) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T35) {
+TEST_F(SemanticAnalysisTest, T35)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
         fn div(d:double):float { return 0.0 }
@@ -463,7 +504,8 @@ TEST_F(SemanticAnalysisTest, T35) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T36) {
+TEST_F(SemanticAnalysisTest, T36)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
         fn div(d:double):int { return 0}
@@ -477,7 +519,8 @@ TEST_F(SemanticAnalysisTest, T36) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T37) {
+TEST_F(SemanticAnalysisTest, T37)
+{
     std::string input = R"(
         fn sub(a:int, b:int):int { return 0}
         fn div(d:double):int { return 0}
@@ -491,7 +534,8 @@ TEST_F(SemanticAnalysisTest, T37) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T38) {
+TEST_F(SemanticAnalysisTest, T38)
+{
     std::string input = R"(
         fn addOne(): int {
             return 1
@@ -510,7 +554,8 @@ TEST_F(SemanticAnalysisTest, T38) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T39) {
+TEST_F(SemanticAnalysisTest, T39)
+{
     const std::string input = R"(
         fn main() {
             let p:int = 16
@@ -536,7 +581,8 @@ TEST_F(SemanticAnalysisTest, T39) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T40) {
+TEST_F(SemanticAnalysisTest, T40)
+{
     std::string input = R"(
         fn main() {
             let p:int = 16
@@ -561,7 +607,8 @@ TEST_F(SemanticAnalysisTest, T40) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T41) {
+TEST_F(SemanticAnalysisTest, T41)
+{
     const std::string input = R"(
         fn main() {
             let p:int = 16
@@ -586,7 +633,8 @@ TEST_F(SemanticAnalysisTest, T41) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T42) {
+TEST_F(SemanticAnalysisTest, T42)
+{
     std::string input = R"(
         fn main() {
             // let p:int = 16
@@ -611,7 +659,8 @@ TEST_F(SemanticAnalysisTest, T42) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T43) {
+TEST_F(SemanticAnalysisTest, T43)
+{
     std::string input = R"(
         fn main() {
             let p:string = "16"
@@ -637,7 +686,8 @@ TEST_F(SemanticAnalysisTest, T43) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T44) {
+TEST_F(SemanticAnalysisTest, T44)
+{
     std::string input = R"(
         fn sub(a:int):int { return 0 }
 
@@ -664,7 +714,8 @@ TEST_F(SemanticAnalysisTest, T44) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T45) {
+TEST_F(SemanticAnalysisTest, T45)
+{
     std::string input = R"(
         fn sub(ax:int, bx:int): int {return 0}
 
@@ -677,7 +728,8 @@ TEST_F(SemanticAnalysisTest, T45) {
     EXPECT_THROW(runAnalysis(input), iron::FunctionArgNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T46) {
+TEST_F(SemanticAnalysisTest, T46)
+{
     std::string input = R"(
         fn sub(ax:int, bx:int, nx:int): int {return 0}
 
@@ -689,7 +741,8 @@ TEST_F(SemanticAnalysisTest, T46) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T47) {
+TEST_F(SemanticAnalysisTest, T47)
+{
     std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
@@ -701,7 +754,8 @@ TEST_F(SemanticAnalysisTest, T47) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T48) {
+TEST_F(SemanticAnalysisTest, T48)
+{
     std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
@@ -714,7 +768,8 @@ TEST_F(SemanticAnalysisTest, T48) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T49) {
+TEST_F(SemanticAnalysisTest, T49)
+{
     std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
@@ -727,7 +782,8 @@ TEST_F(SemanticAnalysisTest, T49) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T50) {
+TEST_F(SemanticAnalysisTest, T50)
+{
     std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
@@ -740,7 +796,8 @@ TEST_F(SemanticAnalysisTest, T50) {
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T51) {
+TEST_F(SemanticAnalysisTest, T51)
+{
     std::string input = R"(
         fn sub(ax:int, bx:int): int {return 0}
 
@@ -753,7 +810,8 @@ TEST_F(SemanticAnalysisTest, T51) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T52) {
+TEST_F(SemanticAnalysisTest, T52)
+{
     std::string input = R"(
         fn sub(ax:double, bx:int): int {return 0}
 
@@ -766,7 +824,8 @@ TEST_F(SemanticAnalysisTest, T52) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T53) {
+TEST_F(SemanticAnalysisTest, T53)
+{
     std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
@@ -780,7 +839,8 @@ TEST_F(SemanticAnalysisTest, T53) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T54) {
+TEST_F(SemanticAnalysisTest, T54)
+{
     std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
@@ -794,7 +854,8 @@ TEST_F(SemanticAnalysisTest, T54) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T55) {
+TEST_F(SemanticAnalysisTest, T55)
+{
     std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
@@ -809,7 +870,8 @@ TEST_F(SemanticAnalysisTest, T55) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T56) {
+TEST_F(SemanticAnalysisTest, T56)
+{
     std::string input = R"(
         fn main() {
             let inline: fn = (a: int, b: int) -> a + b
@@ -819,7 +881,8 @@ TEST_F(SemanticAnalysisTest, T56) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T57) {
+TEST_F(SemanticAnalysisTest, T57)
+{
     std::string input = R"(
         fn main() {
             let inline: fn = (a: int, b: int) -> a + b
@@ -830,7 +893,8 @@ TEST_F(SemanticAnalysisTest, T57) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T58) {
+TEST_F(SemanticAnalysisTest, T58)
+{
     std::string input = R"(
         fn main() {
             let xb: int = 36
@@ -842,7 +906,8 @@ TEST_F(SemanticAnalysisTest, T58) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T59) {
+TEST_F(SemanticAnalysisTest, T59)
+{
     std::string input = R"(
         fn main() {
             let xb: int = 36
@@ -854,7 +919,8 @@ TEST_F(SemanticAnalysisTest, T59) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T60) {
+TEST_F(SemanticAnalysisTest, T60)
+{
     std::string input = R"(
         fn main() {
             let xb: int = 36
@@ -866,7 +932,8 @@ TEST_F(SemanticAnalysisTest, T60) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T61) {
+TEST_F(SemanticAnalysisTest, T61)
+{
     std::string input = R"(
         fn main() {
             let xb: int = 36
@@ -880,7 +947,8 @@ TEST_F(SemanticAnalysisTest, T61) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T62) {
+TEST_F(SemanticAnalysisTest, T62)
+{
     std::string input = R"(
         fn xptc(): int {
             return 0
@@ -898,7 +966,8 @@ TEST_F(SemanticAnalysisTest, T62) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T63) {
+TEST_F(SemanticAnalysisTest, T63)
+{
     std::string input = R"(
         fn xptc(z:int): int {
             return 0
@@ -916,7 +985,8 @@ TEST_F(SemanticAnalysisTest, T63) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T64) {
+TEST_F(SemanticAnalysisTest, T64)
+{
     std::string input = R"(
         fn mult(pp:float): float {return 0.0}
         fn xptc(z:float): int {return 0}
@@ -933,7 +1003,8 @@ TEST_F(SemanticAnalysisTest, T64) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T65) {
+TEST_F(SemanticAnalysisTest, T65)
+{
     std::string input = R"(
         fn sub(x:int, y:int):int {return 0}
 
@@ -947,7 +1018,8 @@ TEST_F(SemanticAnalysisTest, T65) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T66) {
+TEST_F(SemanticAnalysisTest, T66)
+{
     std::string input = R"(
         fn adicionar(a:int, b:int): int {
             return a + b
@@ -961,7 +1033,8 @@ TEST_F(SemanticAnalysisTest, T66) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T67) {
+TEST_F(SemanticAnalysisTest, T67)
+{
     std::string input = R"(
         fn sub(x:int, y:int):int {return 0}
 
@@ -975,7 +1048,8 @@ TEST_F(SemanticAnalysisTest, T67) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T68) {
+TEST_F(SemanticAnalysisTest, T68)
+{
     std::string input = R"(
         fn main() {
             let inline:fn = (a:int, b:float, c:boolean):int -> a + b
@@ -986,7 +1060,8 @@ TEST_F(SemanticAnalysisTest, T68) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T69) {
+TEST_F(SemanticAnalysisTest, T69)
+{
     std::string input = R"(
         fn multiply(x:int, y:float):float {return 0.0}
 
@@ -998,7 +1073,8 @@ TEST_F(SemanticAnalysisTest, T69) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T70) {
+TEST_F(SemanticAnalysisTest, T70)
+{
     std::string input = R"(
         fn sub(a:int, b:int, c:boolean):int {return 0}
 
@@ -1012,7 +1088,8 @@ TEST_F(SemanticAnalysisTest, T70) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T71) {
+TEST_F(SemanticAnalysisTest, T71)
+{
     std::string input = R"(
         fn addOne(n:int):int {
             return n + 1
@@ -1028,7 +1105,8 @@ TEST_F(SemanticAnalysisTest, T71) {
     EXPECT_THROW(runAnalysis(input), iron::ArgumentOrderMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T72) {
+TEST_F(SemanticAnalysisTest, T72)
+{
     std::string input = R"(
         fn value():int{
             return 25
@@ -1043,7 +1121,8 @@ TEST_F(SemanticAnalysisTest, T72) {
 }
 
 // Teste 1: Redeclaração de variáveis em escopos aninhados
-TEST_F(SemanticAnalysisTest, T73) {
+TEST_F(SemanticAnalysisTest, T73)
+{
     std::string input = R"(
         fn soma(n:float): int {
             let x: float = 25.32
@@ -1064,7 +1143,8 @@ TEST_F(SemanticAnalysisTest, T73) {
 }
 
 // Teste 2: Uso de variável indefinida lança exceção
-TEST_F(SemanticAnalysisTest, T74) {
+TEST_F(SemanticAnalysisTest, T74)
+{
     std::string input = R"(
         fn soma(n:float): int {
             let x: float = 25.32
@@ -1085,7 +1165,8 @@ TEST_F(SemanticAnalysisTest, T74) {
 }
 
 // Teste 3: Declarações de funções aninhadas com chamadas de funções
-TEST_F(SemanticAnalysisTest, T75) {
+TEST_F(SemanticAnalysisTest, T75)
+{
     std::string input = R"(
         fn sub(a:int):int {return 0}
 
@@ -1123,7 +1204,8 @@ TEST_F(SemanticAnalysisTest, T75) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T76) {
+TEST_F(SemanticAnalysisTest, T76)
+{
     std::string input = R"(
         fn sub():float {
             let x:int = 25
@@ -1138,7 +1220,8 @@ TEST_F(SemanticAnalysisTest, T76) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T77) {
+TEST_F(SemanticAnalysisTest, T77)
+{
     std::string input = R"(
         fn sub():int {
             let x:int = 25
@@ -1153,7 +1236,8 @@ TEST_F(SemanticAnalysisTest, T77) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T78) {
+TEST_F(SemanticAnalysisTest, T78)
+{
     std::string input = R"(
         fn returnFN():fn {
             let inline:fn = (a:int):int -> a * 2
@@ -1168,7 +1252,8 @@ TEST_F(SemanticAnalysisTest, T78) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T79) {
+TEST_F(SemanticAnalysisTest, T79)
+{
     std::string input = R"(
         fn returnFN():string {
             let inline:fn = (a:int):int -> a * 2
@@ -1183,7 +1268,8 @@ TEST_F(SemanticAnalysisTest, T79) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T80) {
+TEST_F(SemanticAnalysisTest, T80)
+{
     std::string input = R"(
         fn returnDouble():double {
             return 10.0
@@ -1197,7 +1283,8 @@ TEST_F(SemanticAnalysisTest, T80) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T81) {
+TEST_F(SemanticAnalysisTest, T81)
+{
     std::string input = R"(
         fn returnFloat():float {
             return 10
@@ -1211,7 +1298,8 @@ TEST_F(SemanticAnalysisTest, T81) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T82) {
+TEST_F(SemanticAnalysisTest, T82)
+{
     std::string input = R"(
         fn returnInt():int {
             return 10.00
@@ -1225,7 +1313,8 @@ TEST_F(SemanticAnalysisTest, T82) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T83) {
+TEST_F(SemanticAnalysisTest, T83)
+{
     std::string input = R"(
         fn returnInt():int {
             return 10
@@ -1239,7 +1328,8 @@ TEST_F(SemanticAnalysisTest, T83) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T84) {
+TEST_F(SemanticAnalysisTest, T84)
+{
     std::string input = R"(
         fn returnFloat():float {
             return 10.00
@@ -1253,7 +1343,8 @@ TEST_F(SemanticAnalysisTest, T84) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T85) {
+TEST_F(SemanticAnalysisTest, T85)
+{
     std::string input = R"(
         fn returnFloat():float {
             return 10.00
@@ -1267,7 +1358,8 @@ TEST_F(SemanticAnalysisTest, T85) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T86) {
+TEST_F(SemanticAnalysisTest, T86)
+{
     std::string input = R"(
         fn main():double {
             let inline:fn = (a:int):double -> a * 6
@@ -1278,7 +1370,8 @@ TEST_F(SemanticAnalysisTest, T86) {
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
-TEST_F(SemanticAnalysisTest, T87) {
+TEST_F(SemanticAnalysisTest, T87)
+{
     std::string input = R"(
         fn main():double {
             let inline:fn = (a:int):float -> a * 6
@@ -1289,7 +1382,8 @@ TEST_F(SemanticAnalysisTest, T87) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T88) {
+TEST_F(SemanticAnalysisTest, T88)
+{
     std::string input = R"(
         fn returnFloat():float {
             return 10.00
@@ -1303,7 +1397,8 @@ TEST_F(SemanticAnalysisTest, T88) {
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
 
-TEST_F(SemanticAnalysisTest, T89) {
+TEST_F(SemanticAnalysisTest, T89)
+{
     std::string input = R"(
 
         fn main():int {
@@ -1314,7 +1409,8 @@ TEST_F(SemanticAnalysisTest, T89) {
     EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T90) {
+TEST_F(SemanticAnalysisTest, T90)
+{
     std::string input = R"(
         fn main():int {
             // let inline:fn = (a:int):float -> a * 6
@@ -1325,7 +1421,8 @@ TEST_F(SemanticAnalysisTest, T90) {
     EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T100) {
+TEST_F(SemanticAnalysisTest, T100)
+{
     const std::string input = R"(
         fn teste():float {
             let block:fn = (a:int):float -> {
@@ -1336,4 +1433,59 @@ TEST_F(SemanticAnalysisTest, T100) {
     )";
 
     EXPECT_THROW(runAnalysis(input), iron::ReturnNotFoundException);
+}
+
+TEST_F(SemanticAnalysisTest, T101)
+{
+    const std::string input = R"(
+        fn main():int {
+            let age:string = "32"
+            let value:int = f'("Age: %s", age)
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, T102)
+{
+    const std::string input = R"(
+        fn main():int {
+            let age:string = "32"
+            let value:string = f'("Age: %p", age)
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::UnrecognizedIdentifierException);
+}
+
+TEST_F(SemanticAnalysisTest, T103)
+{
+    const std::string input = R"(
+        fn main():int {
+            let value:string = f'("Age: %u", 32, 12)
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, T104)
+{
+    const std::string input = R"(
+        fn pi():float {
+            return 3.398
+        }
+
+        fn main():int {
+            let idade:string = "25"
+            let value:string = f'("Age: %u", pi())
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }

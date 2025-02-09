@@ -1,5 +1,6 @@
 import std.output.printf
 
-extern C {
-   fn printf(format: char, ...):int
+fn main():int {
+    let value:int = f'("Age: %u", 32 * 3)
+    return 0
 }

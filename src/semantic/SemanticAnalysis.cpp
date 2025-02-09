@@ -1,17 +1,18 @@
 #include "../headers/SemanticAnalysis.h"
-
 #include <iostream>
 #include <utility>
+#include "../headers/Analyser.h"
+#include "../headers/Files.h"
 
-namespace fs = std::filesystem;
 
 namespace iron
 {
     // Construtor
     SemanticAnalysis::SemanticAnalysis(std::shared_ptr<IronParser> parser,
                                        std::unique_ptr<scope::ScopeManager> scopeManager,
-                                       const std::vector<std::string> &sourceLines) :
-        parser(std::move(parser)), scopeManager(std::move(scopeManager)), sourceLines(sourceLines)
+                                       const std::vector<std::string> &sourceLines,
+                                       const std::shared_ptr<config::Configuration> &config) :
+        parser(std::move(parser)), scopeManager(std::move(scopeManager)), sourceLines(sourceLines), config(config)
     {
     }
 
@@ -23,9 +24,15 @@ namespace iron
     {
         IronParser::ProgramContext *programContext = parser->program();
 
-        std::vector<IronParser::ImportStatementContext*> imports = programContext->importStatement();
-        for (auto importStmt : programContext->importStatement()) {
+        std::vector<IronParser::ImportStatementContext *> imports = programContext->importStatement();
+        for (const auto importStmt: programContext->importStatement())
+        {
             visitImportStatement(importStmt);
+        }
+
+        if (programContext->externBlock())
+        {
+            visitExternBlock(programContext->externBlock());
         }
 
 
@@ -49,8 +56,8 @@ namespace iron
 
     void SemanticAnalysis::visitStatementList(const IronParser::StatementListContext *ctx)
     {
-        const int col = ctx->getStart()->getCharPositionInLine();
-        const int line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
         auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, -7);
 
         const auto currentFunction = getCurrentFunction();
@@ -82,6 +89,7 @@ namespace iron
                 hasReturn = true;
             }
         }
+        currentFunction->exitLocalScope();
 
         if (currentFunction->getReturnType() != tokenMap::VOID && !hasReturn)
         {
@@ -115,8 +123,8 @@ namespace iron
         const std::string varName = ctx->varName->getText();
         const std::string varType = ctx->varTypes()->getText();
 
-        const int col = ctx->getStart()->getCharPositionInLine();
-        const int line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
         auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, 0);
 
         const std::string scopeName = scopeManager->currentScopeName();
@@ -163,18 +171,15 @@ namespace iron
 
     void SemanticAnalysis::visitVarAssignment(IronParser::VarAssignmentContext *ctx)
     {
-        const int col = ctx->getStart()->getCharPositionInLine();
-        const int line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
 
         auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, 0);
 
-        std::string varName = ctx->varName->getText();
+        const std::string varName = ctx->varName->getText();
+        const auto function = getCurrentFunction();
 
-        auto function = getCurrentFunction();
-
-        auto variable = function->findVarAllScopesAndArg(varName);
-
-        if (!variable)
+        if (const auto variable = function->findVarAllScopesAndArg(varName); !variable)
         {
             throw VariableNotFoundException(util::format(
                     "Variable '{}' not found.\n"
@@ -184,21 +189,33 @@ namespace iron
                     color::colorText(varName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
         }
-
-        // Implementação adicional conforme necessário
     }
     void SemanticAnalysis::visitImportStatement(IronParser::ImportStatementContext *ctx)
     {
-        fs::path currentPath = fs::current_path();
-        std::cout << "Diretório de trabalho: " << currentPath << "\n";
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
+
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, 0);
+
         if (ctx->qualifiedName())
         {
-            util::printf("{}\n",ctx->qualifiedName()->getText());
+            const std::string import = ctx->qualifiedName()->getText();
+            const auto [path, element] = convertImportPath(import);
+            const std::string fullPath = util::format("{}{}", config->getStdFolder(), path);
+
+            Analyser analyser(config);
+            if (const uint result = analyser.run(fullPath); result == 1)
+            {
+                util::printf("Line {}\n{}\n {}\n\n{} {}", color::colorText(std::to_string(line), color::BOLD_YELLOW),
+                             color::colorText(caretLine, color::BOLD_GREEN),
+                             color::colorText(codeLine, color::BOLD_GREEN), color::colorText("File path:", color::BOLD),
+                             color::colorText(path, color::BOLD_GREEN));
+            }
         }
     }
 
 
-    std::pair<std::string, std::string> SemanticAnalysis::getCodeLineAndCaretLine(const int line, const int col,
+    std::pair<std::string, std::string> SemanticAnalysis::getCodeLineAndCaretLine(const uint line, const uint col,
                                                                                   const int steps)
     {
         std::string codeLine;
@@ -211,17 +228,22 @@ namespace iron
             throw std::runtime_error("Unknown line (out of range)");
         }
 
-        // Cria a linha de marcação
-        std::string caretLine(col + steps, ' ');
+        // Calcula o número de espaços; se for negativo, define como zero
+        int numSpaces = col + steps;
+        if (numSpaces < 0)
+            numSpaces = 0;
+
+        std::string caretLine(numSpaces, ' ');
         caretLine += '^';
 
         return std::make_pair(caretLine, codeLine);
     }
 
+
     void SemanticAnalysis::visitAssignment(IronParser::AssignmentContext *ctx)
     {
-        int line = ctx->getStart()->getLine();
-        int col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
 
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 2);
 
@@ -289,12 +311,38 @@ namespace iron
         {
             visitExpr(ctx->expr());
         }
+
+        if (ctx->formatStatement())
+        {
+            if (auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+            {
+                const std::string varName = varDeclaration->varName->getText();
+
+                if (const std::string varType = varDeclaration->varTypes()->getText();
+                    tokenMap::getTokenType(varType) != tokenMap::TYPE_STRING)
+                {
+                    throw TypeMismatchException(util::format(
+                            "The variable {} must be of type {} to receive the formatted value, but it is declared as "
+                            "type {}.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n",
+                            color::colorText(varName, color::BOLD_GREEN), color::colorText("string", color::BOLD_GREEN),
+                            color::colorText(varType, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+                            caretLine));
+                }
+
+                visitFormatStatement(ctx->formatStatement());
+            }
+        }
     }
 
     void SemanticAnalysis::visitReturn(IronParser::ReturnStatementContext *ctx)
     {
-        const int line = ctx->getStart()->getLine();
-        const int col = ctx->getStart()->getCharPositionInLine();
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
 
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
@@ -302,7 +350,7 @@ namespace iron
 
         if (ctx->dataFormat())
         {
-            auto value = ctx->dataFormat()->getText();
+            const auto value = ctx->dataFormat()->getText();
             auto valueType = tokenMap::determineType(value);
             if (valueType == tokenMap::REAL_NUMBER)
             {

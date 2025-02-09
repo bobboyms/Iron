@@ -1,0 +1,5 @@
+# compiler_config.yaml
+name: "Compiler config file"
+version: 1.0
+libs:
+  std: "/Users/thiagorodrigues/Desktop/IronLang/lib"

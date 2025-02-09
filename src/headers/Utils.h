@@ -60,6 +60,7 @@ namespace iron
     {
         return util::format("gfn_{}_{}", currentScopeName, std::move(functionName));
     }
-} // namespace iron
 
+
+} // namespace iron
 #endif // HLIR_UTILS_H

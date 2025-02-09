@@ -3,33 +3,33 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 namespace hlir
 {
     class HLIRException final : public std::exception
     {
     private:
-        std::string message; // Mensagem de erro
+        std::string message;
 
     public:
         explicit HLIRException(std::string msg) : message(std::move(msg))
         {
         }
 
-        // Retorna a mensagem de erro
         [[nodiscard]] const char *what() const noexcept override
         {
             return message.c_str();
         }
     };
 
-} // namespace hlir
+}
 
 namespace iron
 {
     class LLVMException final : public std::exception
     {
     private:
-        std::string message; // Mensagem de erro
+        std::string message;
 
     public:
         explicit LLVMException(std::string msg) : message(std::move(msg))
@@ -60,6 +60,23 @@ namespace iron
         }
     };
 
+    // class ModuleNotFoundException final : public std::exception
+    // {
+    // private:
+    //     std::string message;
+    //
+    // public:
+    //     explicit ModuleNotFoundException(std::string msg) : message(std::move(msg))
+    //     {
+    //     }
+    //
+    //     [[nodiscard]] const char *what() const noexcept override
+    //     {
+    //         return message.c_str();
+    //     }
+    // };
+
+
     class ArgumentOrderMismatchException final : public SemanticException
     {
     public:
@@ -75,6 +92,16 @@ namespace iron
         {
         }
     };
+
+    class UnrecognizedIdentifierException final : public SemanticException
+    {
+    public:
+        explicit UnrecognizedIdentifierException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
+
 
     class ArgumentCountMismatchException final : public SemanticException
     {
@@ -154,7 +181,7 @@ namespace iron
         std::string message; // Mensagem de erro
 
     public:
-        explicit LexusNotFoundException(const std::string &msg) : message(msg)
+        explicit LexusNotFoundException(std::string msg) : message(std::move(msg))
         {
         }
 

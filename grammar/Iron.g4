@@ -40,6 +40,7 @@ TYPE_FLOAT: 'float';
 TYPE_STRING: 'string';
 TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
+TYPE_VOID: 'void';
 
 // Literais
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
@@ -58,7 +59,7 @@ WS: [ \t]+ -> skip;
 
 // Ponto de entrada da gramática
 program:
-	importStatement* (externBlock | functionDeclaration)* EOF;
+	importStatement* externBlock? (functionDeclaration)* EOF;
 
 // Declaração de importação
 importStatement: IMPORT qualifiedName (DOT STAR)?;
@@ -83,10 +84,24 @@ returnStatement:
 		dataFormat
 		| varName = IDENTIFIER
 		| functionCall
+		| formatStatement
 		| expr
 	);
 
-// extern "C" { fn printf(format: *const i8, ...) -> i32; }
+//Format
+
+//printf("Taxa de aprovação: %d%%\n", 90);
+// f"Nome: %s", maria
+formatStatement:
+    'f\'(' STRING_LITERAL COMMA (formatArguments) ')'
+;
+
+formatArguments: formatArgument (COMMA formatArgument)*;
+
+formatArgument:
+	(dataFormat | varName=IDENTIFIER | functionCall | expr | STRING_LITERAL);
+
+//extern C function
 
 externBlock:
 	'extern' language = IDENTIFIER '{' (
@@ -94,7 +109,24 @@ externBlock:
 	)* '}';
 
 externFunctionDeclaration:
-	'fn' IDENTIFIER '(' functionArgs? (',' '...')? ')' functionReturnType?;
+	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' functionReturnType?;
+
+// Argumentos da função
+externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
+
+externFunctionArg:
+	varName = IDENTIFIER COLON cTypes;
+
+cTypes:
+	TYPE_BOOLEAN
+	| TYPE_CHAR
+	| TYPE_DOUBLE
+	| TYPE_FLOAT
+	| TYPE_INT
+	| TYPE_VOID
+	;
+
+//**********************
 
 // Declaração de função
 functionDeclaration:
@@ -130,10 +162,11 @@ functionCallArgs: functionCallArg (COMMA functionCallArg)*;
 functionCallArg:
 	varName = IDENTIFIER COLON (
 		dataFormat
+		| anotherVarName = IDENTIFIER
 		| functionCall
+		| formatStatement
 		| arrowFunctionInline
 		| arrowFunctionBlock
-		| anotherVarName = IDENTIFIER
 	);
 
 // Declaração de variável
@@ -147,6 +180,7 @@ assignment:
 		| arrowFunctionBlock
 		| dataFormat
 		| expr
+		| formatStatement
 	);
 
 varAssignment:

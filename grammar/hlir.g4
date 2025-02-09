@@ -1,12 +1,16 @@
-grammar hlir;
+grammar Iron;
 
 // --------------------------------- Regras do Lexer (Tokens) ---------------------------------
 
-// --------------------------------- Regras do Lexer (Tokens) ---------------------------------
+// Comentário de linha: "//" seguido de qualquer coisa até a quebra de linha ou EOF
+LINE_COMMENT: '//' ~[\r\n]* -> skip;
+
+// Comentário de bloco: "/*" seguido de qualquer conteúdo até "*/"
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
 
 // Símbolos
-COLON: ':';
 COMMA: ',';
+COLON: ':';
 EQ: '=';
 SEMICOLON: ';'; // Mantido caso seja necessário no futuro
 DOT: '.';
@@ -15,36 +19,28 @@ L_CURLY: '{';
 R_CURLY: '}';
 L_PAREN: '(';
 R_PAREN: ')';
-MULT: 'MULT';
-PLUS: 'PLUS';
-MINUS: 'MINUS';
-DIV: 'DIV';
+PLUS: '+';
+MINUS: '-';
+DIV: '/';
 L_BRACKET: '[';
 R_BRACKET: ']';
-AT: '@';
 ARROW: '->';
-UNDERSCORE: '_';
 
 // Palavras reservadas
 FUNCTION: 'fn';
 LET: 'let';
 PUBLIC: 'public';
-PRIVATE: 'private';
 IMPORT: 'import';
 RETURN: 'return';
 
 // Tipos de dados
-TO: 'to';
 TYPE_INT: 'int';
 TYPE_CHAR: 'char';
 TYPE_FLOAT: 'float';
 TYPE_STRING: 'string';
 TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
-VOID: 'void';
 
-CAST: 'cast';
-CALL: 'call';
 // Literais
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
 INT_NUMBER: '-'? [0-9]+;
@@ -61,7 +57,8 @@ WS: [ \t]+ -> skip;
 // --------------------------------- Regras do Parser ---------------------------------
 
 // Ponto de entrada da gramática
-program: importStatement* ( functionDeclaration)* EOF;
+program:
+	importStatement* externBlock? (functionDeclaration)* EOF;
 
 // Declaração de importação
 importStatement: IMPORT qualifiedName (DOT STAR)?;
@@ -69,67 +66,135 @@ importStatement: IMPORT qualifiedName (DOT STAR)?;
 // Nome qualificado para importação (ex.: module.casa.janela)
 qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
+// Ponto de entrada principal entryPoint: '@main' '(' argVar = IDENTIFIER ')' L_CURLY statementList
+// R_CURLY;
+
 // Lista de declarações dentro do ponto de entrada ou função
-statementList: (expr | functionCall)*;
+statementList: (
+		varDeclaration
+		| functionCall
+		| varAssignment
+		| expr
+		| returnStatement
+		| formatStatement
+	)*;
+
+returnStatement:
+	RETURN (
+		dataFormat
+		| varName = IDENTIFIER
+		| functionCall
+		| expr
+	);
+
+//Format
+
+//printf("Taxa de aprovação: %d%%\n", 90);
+// f"Nome: %s", maria)"
+formatStatement:
+    'f' STRING_LITERAL (formatArguments) '"'
+;
+
+formatArguments: formatArgument (COMMA formatArgument)*;
+
+formatArgument:
+	( varName=IDENTIFIER | functionCall | expr | STRING_LITERAL);
+
+//extern C function
+
+externBlock:
+	'extern' language = IDENTIFIER '{' (
+		externFunctionDeclaration+
+	)* '}';
+
+externFunctionDeclaration:
+	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' cTypes?;
+
+// Argumentos da função
+externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
+
+externFunctionArg:
+	varName = IDENTIFIER COLON cTypes;
+
+cTypes:
+	TYPE_BOOLEAN
+	| TYPE_CHAR
+	| TYPE_DOUBLE
+	| TYPE_FLOAT
+	| TYPE_INT;
+
+//**********************
 
 // Declaração de função
-functionDeclaration: (PRIVATE | PUBLIC)? FUNCTION functionName = IDENTIFIER functionSignature
-		L_CURLY statementList R_CURLY;
+functionDeclaration:
+	PUBLIC? FUNCTION functionName = IDENTIFIER functionSignature L_CURLY statementList R_CURLY;
+
+//(peso:float, idade:int):float -> peso * idade
+arrowFunctionInline: functionSignature ARROW expr;
+
+arrowFunctionBlock:
+	functionSignature ARROW L_CURLY statementList R_CURLY;
 
 functionSignature:
 	L_PAREN functionArgs? R_PAREN functionReturnType?;
 
 // Tipo de retorno da função
-functionReturnType: COLON (varTypes | VOID);
+functionReturnType: COLON varTypes;
 
 // Argumentos da função
-functionArgs: functionArg (',' functionArg)*;
+functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (varTypes | functionSignature);
+	varName = IDENTIFIER COLON (varTypes | functionSignature) assignment?;
 
 // Chamada de função
 functionCall:
-	//call i32 @add(i32 10, i32 20)
-	CALL varTypes functionName = IDENTIFIER L_PAREN functionCallArgs? R_PAREN;
+	functionName = IDENTIFIER L_PAREN functionCallArgs? R_PAREN;
 
 // Argumentos da chamada de função
-functionCallArgs: functionCallArg (',' functionCallArg)*;
+functionCallArgs: functionCallArg (COMMA functionCallArg)*;
 
-// Argumento da chamada de função functionCallArg: varName = IDENTIFIER COLON varTypes ( dataFormat
-// | anotherVarName = IDENTIFIER | functionCall );
-
+// Argumento da chamada de função
 functionCallArg:
 	varName = IDENTIFIER COLON (
-		anotherVarName = IDENTIFIER
-		| dataFormat
+		dataFormat
 		| functionCall
+		| arrowFunctionInline
+		| arrowFunctionBlock
+		| anotherVarName = IDENTIFIER
 	);
 
-op: (varName = IDENTIFIER | number);
-opRight: op;
-opLeft: op;
+// Declaração de variável
+varDeclaration:
+	LET varName = IDENTIFIER COLON varTypes assignment?;
 
-typeRight: varTypes;
-typeLeft: varTypes;
+// Atribuição
+assignment:
+	EQ (
+		arrowFunctionInline
+		| arrowFunctionBlock
+		| dataFormat
+		| expr
+	);
 
-cast: anotherVarName = IDENTIFIER typeLeft TO typeRight;
+varAssignment:
+	varName = IDENTIFIER EQ (
+		arrowFunctionInline
+		| arrowFunctionBlock
+		| dataFormat
+		| expr
+	);
 
-mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
+// Expressão matemática com precedência adequada
 
 expr:
-	LET varName = IDENTIFIER COLON varTypes EQ (
-		mathOp
-		| functionCall
-		| cast
-		| number
-		| functionPtr
-		| assignment
-	);
-
-assignment: anotherVarName = IDENTIFIER;
-functionPtr: 'fptr' functionName = IDENTIFIER;
+	left = expr (mult = '*' | div = '/') right = expr
+	| left = expr (plus = '+' | minus = '-') right = expr
+	| number
+	| functionCall
+	| varName = IDENTIFIER
+	| L_PAREN expr R_PAREN;
 
 number: REAL_NUMBER | INT_NUMBER;
 
@@ -148,5 +213,4 @@ varTypes:
 	| TYPE_FLOAT
 	| TYPE_INT
 	| TYPE_STRING
-	| FUNCTION
-	| VOID;
+	| FUNCTION;
