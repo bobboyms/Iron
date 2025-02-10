@@ -23,16 +23,18 @@ namespace iron
 
         void visitExternFunctionDeclaration(IronParser::ExternFunctionDeclarationContext *ctx);
 
-        void visitExternFunctionArgs(IronParser::ExternFunctionArgsContext *ctx);
+        void visitExternFunctionArgs(IronParser::ExternFunctionArgsContext *ctx,
+                                     std::shared_ptr<std::vector<std::shared_ptr<scope::FunctionArg>>> argsList);
 
-        void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx);
+        void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
+                                    std::shared_ptr<std::vector<std::shared_ptr<scope::FunctionArg>>> argsList);
 
         // Format
-        void visitFormatStatement(IronParser::FormatStatementContext *ctx);
-        void visitFormatArguments(IronParser::FormatArgumentsContext *ctx,
-                                  const std::vector<std::pair<std::string, int>> &specifiers);
-        void showConversionSpecifiersHelp();
-        void visitFormatArgument(IronParser::FormatArgumentContext *ctx, const std::pair<std::string, int> &specifier);
+        // void visitFormatStatement(IronParser::FormatStatementContext *ctx);
+        // void visitFormatArguments(IronParser::FormatArgumentsContext *ctx,
+        //                           const std::vector<std::pair<std::string, int>> &specifiers);
+        // void showConversionSpecifiersHelp();
+        // void visitFormatArgument(IronParser::FormatArgumentContext *ctx, const std::pair<std::string, int> &specifier);
 
         //
 
@@ -83,7 +85,7 @@ namespace iron
 
         ~SemanticAnalysis();
 
-        void analyze();
+        std::vector<std::shared_ptr<scope::Function>> analyze();
     };
 } // namespace iron
 

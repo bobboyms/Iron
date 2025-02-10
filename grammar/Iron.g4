@@ -109,7 +109,7 @@ externBlock:
 	)* '}';
 
 externFunctionDeclaration:
-	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' functionReturnType?;
+	'fn' exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
 
 // Argumentos da função
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;

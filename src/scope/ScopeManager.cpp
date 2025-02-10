@@ -113,10 +113,12 @@ namespace scope
 
     /* ------------------------------ FUNCTION ---------------------------- */
 
-    Function::Function(std::string name, std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args,
-                       int returnType) : args(args), returnType(returnType)
+    Function::Function(const std::string &name, const std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> &args,
+                       const int returnType) : args(args), returnType(returnType)
     {
         this->name = name;
+        this->variedArguments = false;
+        this->external = false;
     }
 
     Function::~Function() = default;
@@ -198,7 +200,7 @@ namespace scope
         return alias;
     }
 
-    std::shared_ptr<FunctionArg> Function::getArgByName(const std::string argName)
+    std::shared_ptr<FunctionArg> Function::getArgByName(const std::string &argName)
     {
 
         for (auto arg: *args)
@@ -211,7 +213,7 @@ namespace scope
         return nullptr;
     }
 
-    std::shared_ptr<Variable> Function::findVarCurrentScopeAndArg(const std::string varName)
+    std::shared_ptr<Variable> Function::findVarCurrentScopeAndArg(const std::string &varName)
     {
         auto statement = std::dynamic_pointer_cast<Statements>(getCurrentLocalScope());
         if (statement)
@@ -232,7 +234,7 @@ namespace scope
         return nullptr;
     }
 
-    std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string varName)
+    std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName)
     {
 
         // verifica no escopo local e superiores
@@ -277,9 +279,26 @@ namespace scope
         return upperFunction;
     }
 
+    bool Function::isExternal()
+    {
+        return external;
+    }
+
+    void Function::changeToExternal()
+    {
+        external = true;
+    }
+    bool Function::isVariedArguments()
+    {
+        return variedArguments;
+    }
+    void Function::changeToVariedArguments()
+    {
+        variedArguments = true;
+    }
+
     std::string Function::getScopeName()
     {
-        // For a function, let's just return its name
         return name;
     }
 
@@ -338,6 +357,14 @@ namespace scope
 
         return nullptr;
     }
+    std::vector<std::shared_ptr<Function>> ScopeManager::getFunctionDeclarations()
+    {
+        return functionDeclarations;
+    }
+    void ScopeManager::setExternDeclarations(const std::vector<std::shared_ptr<Function>> &declarations)
+    {
+        externDeclarations = declarations;
+    }
 
     void ScopeManager::addFunctionDeclaration(std::shared_ptr<Function> function)
     {
@@ -347,6 +374,14 @@ namespace scope
     std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(std::string functionName)
     {
         for (auto function: functionDeclarations)
+        {
+            if (function->getFunctionName() == functionName)
+            {
+                return function;
+            }
+        }
+
+        for (auto function: externDeclarations)
         {
             if (function->getFunctionName() == functionName)
             {
@@ -377,10 +412,12 @@ namespace scope
             return variable->function;
         }
 
+
+
         return nullptr;
     }
 
-    std::shared_ptr<Function> ScopeManager::currentFunctionDeclarationBy()
+    std::shared_ptr<Function> ScopeManager::currentFunctionDeclaration()
     {
         if (functionDeclarations.empty())
         {

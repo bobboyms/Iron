@@ -136,6 +136,8 @@ namespace scope
         bool returnTokenFound = false;
         std::stack<std::shared_ptr<LocalScope>> scopeStack;
         std::unordered_map<std::string, std::shared_ptr<LocalScope>> scopeMap;
+        bool external;
+        bool variedArguments;
 
     protected:
         std::shared_ptr<Variable> alias;
@@ -144,7 +146,7 @@ namespace scope
         int returnType;
 
     public:
-        Function(std::string name, std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args, int returnType);
+        Function(const std::string &name, const std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> &args, int returnType);
         ~Function() override;
         std::string getFunctionName();
         int getReturnType();
@@ -157,11 +159,16 @@ namespace scope
         void setAlias(const std::shared_ptr<Variable>& alias);
         std::shared_ptr<Variable> getAlias();
 
-        std::shared_ptr<FunctionArg> getArgByName(const std::string argName);
-        std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string varName);
-        std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string varName);
+        std::shared_ptr<FunctionArg> getArgByName(const std::string &argName);
+        std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string &varName);
+        std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName);
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> getArgs();
         std::shared_ptr<Function> getUpperFunction();
+
+        bool isExternal();
+        void changeToExternal();
+        bool isVariedArguments();
+        void changeToVariedArguments();
 
         std::string getScopeName();
         int getScopeType();
@@ -171,6 +178,7 @@ namespace scope
     {
     private:
         std::vector<std::shared_ptr<Function>> functionDeclarations;
+        std::vector<std::shared_ptr<Function>> externDeclarations;
         std::stack<std::shared_ptr<GlobalScope>> scopeStack;
         // Mapa para acessar escopos pelo nome
         std::unordered_map<std::string, std::shared_ptr<GlobalScope>> scopeMap;
@@ -178,12 +186,16 @@ namespace scope
     public:
         void addFunctionDeclaration(std::shared_ptr<Function> function);
         std::shared_ptr<Function> getFunctionDeclarationByName(std::string functionName);
-        std::shared_ptr<Function> currentFunctionDeclarationBy();
+        std::shared_ptr<Function> currentFunctionDeclaration();
         void enterScope(std::shared_ptr<GlobalScope> scope);
         void exitScope();
         std::string currentScopeName() const;
         std::shared_ptr<GlobalScope> currentScope() const;
         std::shared_ptr<GlobalScope> getScopeByName(const std::string &scopeName) const;
+        std::vector<std::shared_ptr<Function>> getFunctionDeclarations();
+
+        void setExternDeclarations(const std::vector<std::shared_ptr<Function>> &declarations);
+
     };
 
 } // namespace scope

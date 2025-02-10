@@ -737,16 +737,16 @@ IronParser::FormatStatementContext::FormatStatementContext(ParserRuleContext *pa
   : ParserRuleContext(parent, invokingState) {
 }
 
+tree::TerminalNode* IronParser::FormatStatementContext::STRING_LITERAL() {
+  return getToken(IronParser::STRING_LITERAL, 0);
+}
+
 tree::TerminalNode* IronParser::FormatStatementContext::COMMA() {
   return getToken(IronParser::COMMA, 0);
 }
 
 tree::TerminalNode* IronParser::FormatStatementContext::R_PAREN() {
   return getToken(IronParser::R_PAREN, 0);
-}
-
-tree::TerminalNode* IronParser::FormatStatementContext::STRING_LITERAL() {
-  return getToken(IronParser::STRING_LITERAL, 0);
 }
 
 IronParser::FormatArgumentsContext* IronParser::FormatStatementContext::formatArguments() {
@@ -786,7 +786,7 @@ IronParser::FormatStatementContext* IronParser::formatStatement() {
     setState(109);
     match(IronParser::T__0);
     setState(110);
-    antlrcpp::downCast<FormatStatementContext *>(_localctx)->format = match(IronParser::STRING_LITERAL);
+    match(IronParser::STRING_LITERAL);
     setState(111);
     match(IronParser::COMMA);
 
@@ -1099,16 +1099,16 @@ tree::TerminalNode* IronParser::ExternFunctionDeclarationContext::FUNCTION() {
   return getToken(IronParser::FUNCTION, 0);
 }
 
-tree::TerminalNode* IronParser::ExternFunctionDeclarationContext::IDENTIFIER() {
-  return getToken(IronParser::IDENTIFIER, 0);
-}
-
 tree::TerminalNode* IronParser::ExternFunctionDeclarationContext::L_PAREN() {
   return getToken(IronParser::L_PAREN, 0);
 }
 
 tree::TerminalNode* IronParser::ExternFunctionDeclarationContext::R_PAREN() {
   return getToken(IronParser::R_PAREN, 0);
+}
+
+tree::TerminalNode* IronParser::ExternFunctionDeclarationContext::IDENTIFIER() {
+  return getToken(IronParser::IDENTIFIER, 0);
 }
 
 IronParser::ExternFunctionArgsContext* IronParser::ExternFunctionDeclarationContext::externFunctionArgs() {
@@ -1157,7 +1157,7 @@ IronParser::ExternFunctionDeclarationContext* IronParser::externFunctionDeclarat
     setState(145);
     match(IronParser::FUNCTION);
     setState(146);
-    match(IronParser::IDENTIFIER);
+    antlrcpp::downCast<ExternFunctionDeclarationContext *>(_localctx)->exterFunctionName = match(IronParser::IDENTIFIER);
     setState(147);
     match(IronParser::L_PAREN);
     setState(149);
@@ -1176,7 +1176,7 @@ IronParser::ExternFunctionDeclarationContext* IronParser::externFunctionDeclarat
       setState(151);
       match(IronParser::COMMA);
       setState(152);
-      match(IronParser::T__2);
+      antlrcpp::downCast<ExternFunctionDeclarationContext *>(_localctx)->varied = match(IronParser::T__2);
     }
     setState(155);
     match(IronParser::R_PAREN);

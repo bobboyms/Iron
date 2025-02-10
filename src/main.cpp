@@ -15,15 +15,16 @@
 // onde cada elemento corresponde a uma linha.
 
 
-int runAnalysis(const std::string &file)
+void runAnalysis(const std::string &file)
 {
     const auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
     iron::Analyser analyser(config);
-    return analyser.run(file);
+    analyser.run(file);
 
 }
 
 int main()
 {
-    return runAnalysis("main.iron");
+    runAnalysis("main.iron");
+    return 0;
 }

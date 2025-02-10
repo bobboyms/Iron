@@ -28,7 +28,7 @@ namespace iron
         return lines;
     }
 
-    int Analyser::run(const std::string &fileName)
+    std::vector<std::shared_ptr<scope::Function>> Analyser::run(const std::string &fileName)
     {
         try
         {
@@ -42,7 +42,7 @@ namespace iron
             // Executa a análise semântica
             SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()),
                                             loadStringAsLines(input), config);
-            analysis.analyze();
+            return analysis.analyze();
 
             // // Rewind
             tokens.seek(0);
@@ -59,32 +59,26 @@ namespace iron
             // auto llvmCode = llvm.generateCode();
             // std::cout << llvmCode << std::endl;
 
-            return 0;
         }
         catch (const iron::SemanticException &e)
         {
             std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
-            return 1;
         }
         catch (const hlir::HLIRException &e)
         {
             std::cerr << color::colorText("HLIRE error: ", color::RED) << e.what() << std::endl;
-            return 2; // Erro semântico específico
         }
         catch (const iron::LLVMException &e)
         {
             std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
-            return 3; // Erro semântico específico
         }
         catch (const std::exception &e)
         {
             std::cerr << color::colorText("Unexpected error: ", color::RED) << e.what() << std::endl;
-            return 4; // Outros erros padrão
         }
         catch (...)
         {
             std::cerr << color::colorText("I panicked, I need a psychoanalyst: ", color::BOLD_RED) << std::endl;
-            return 6;
         }
     }
 } // namespace iron

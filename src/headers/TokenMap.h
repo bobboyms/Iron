@@ -106,12 +106,13 @@ namespace tokenMap
 
     };
 
-    inline std::string getTokenText(int tokenType)
+    inline std::string getTokenText(const int tokenType)
     {
         if (const auto it = tokenText.find(tokenType); it != tokenText.end())
         {
             return it->second;
         }
+        printf("Token: %i\n", tokenType);
         throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 

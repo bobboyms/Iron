@@ -1,11 +1,5 @@
 import std.output.printf
 
-fn pi():float {
-    return 3.398
-}
-
-fn main():int {
-    let idade:string = "25"
-    let value:string = f'("Age: %f", pi())
-    return 0
+fn main() {
+    printf(format:"Idade %u", idade:25, arg:12)
 }

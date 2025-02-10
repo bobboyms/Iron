@@ -1435,57 +1435,76 @@ TEST_F(SemanticAnalysisTest, T100)
     EXPECT_THROW(runAnalysis(input), iron::ReturnNotFoundException);
 }
 
-TEST_F(SemanticAnalysisTest, T101)
-{
-    const std::string input = R"(
-        fn main():int {
-            let age:string = "32"
-            let value:int = f'("Age: %s", age)
-            return 0
-        }
-    )";
-
-    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-}
-
-TEST_F(SemanticAnalysisTest, T102)
-{
-    const std::string input = R"(
-        fn main():int {
-            let age:string = "32"
-            let value:string = f'("Age: %p", age)
-            return 0
-        }
-    )";
-
-    EXPECT_THROW(runAnalysis(input), iron::UnrecognizedIdentifierException);
-}
-
-TEST_F(SemanticAnalysisTest, T103)
-{
-    const std::string input = R"(
-        fn main():int {
-            let value:string = f'("Age: %u", 32, 12)
-            return 0
-        }
-    )";
-
-    EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
-}
-
-TEST_F(SemanticAnalysisTest, T104)
-{
-    const std::string input = R"(
-        fn pi():float {
-            return 3.398
-        }
-
-        fn main():int {
-            let idade:string = "25"
-            let value:string = f'("Age: %u", pi())
-            return 0
-        }
-    )";
-
-    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-}
+// TEST_F(SemanticAnalysisTest, T101)
+// {
+//     const std::string input = R"(
+//         fn main():int {
+//             let age:string = "32"
+//             let value:int = f'("Age: %s", age)
+//             return 0
+//         }
+//     )";
+//
+//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+// }
+//
+// TEST_F(SemanticAnalysisTest, T102)
+// {
+//     const std::string input = R"(
+//         fn main():int {
+//             let age:string = "32"
+//             let value:string = f'("Age: %p", age)
+//             return 0
+//         }
+//     )";
+//
+//     EXPECT_THROW(runAnalysis(input), iron::UnrecognizedIdentifierException);
+// }
+//
+// TEST_F(SemanticAnalysisTest, T103)
+// {
+//     const std::string input = R"(
+//         fn main():int {
+//             let value:string = f'("Age: %u", 32, 12)
+//             return 0
+//         }
+//     )";
+//
+//     EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
+// }
+//
+// TEST_F(SemanticAnalysisTest, T104)
+// {
+//     const std::string input = R"(
+//         fn pi():float {
+//             return 3.398
+//         }
+//
+//         fn main():int {
+//             let idade:string = "25"
+//             let value:string = f'("Age: %u", pi())
+//             return 0
+//         }
+//     )";
+//
+//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+// }
+//
+// TEST_F(SemanticAnalysisTest, T105)
+// {
+//     const std::string input = R"(
+//         fn getSalary():double {
+//             return 1500.0D
+//         }
+//
+//         fn main():int {
+//             let name:string = f'("Nome: %s Idade: %d anos Salário: R$ %.2f\n", "Thiago", 12, 1500.0)
+//
+//             let idade:int = 32
+//             let result:string = f'("Nome: %s Idade: %d anos Salário: R$ %.2f\n", "Thiago", idade, getSalary())
+//             return 0
+//         }
+//     )";
+//
+//     EXPECT_NO_THROW(runAnalysis(input));
+// }

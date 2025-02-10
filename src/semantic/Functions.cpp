@@ -104,9 +104,9 @@ namespace iron
 
     void SemanticAnalysis::visitFunctionArgs(IronParser::FunctionArgsContext *ctx)
     {
-        for (auto child: ctx->children)
+        for (const auto child: ctx->children)
         {
-            if (auto functionArg = dynamic_cast<IronParser::FunctionArgContext *>(child))
+            if (const auto functionArg = dynamic_cast<IronParser::FunctionArgContext *>(child))
             {
                 visitFunctionArg(functionArg);
             }
@@ -119,7 +119,7 @@ namespace iron
         const std::string argType = ctx->varTypes()->getText();
         const uint line = ctx->getStart()->getLine();
 
-        const auto currentFunction = scopeManager->currentFunctionDeclarationBy();
+        const auto currentFunction = scopeManager->currentFunctionDeclaration();
         if (!currentFunction)
         {
             throw ScopeNotFoundException(util::format("visitFunctionArg. Scope current not found. Line: {}",
@@ -149,42 +149,39 @@ namespace iron
         std::string functionName = ctx->functionName->getText();
         int line = ctx->getStart()->getLine();
 
-        auto currentScope = scopeManager->currentScope();
+        const auto currentScope = scopeManager->currentScope();
         if (!currentScope)
         {
             throw ScopeNotFoundException("SemanticAnalysis::visitFunctionCall. Current scope not found");
         }
 
-        auto function = std::dynamic_pointer_cast<scope::Function>(currentScope);
-        if (!function)
+        if (const auto function = std::dynamic_pointer_cast<scope::Function>(currentScope); !function)
         {
             throw ScopeNotFoundException("SemanticAnalysis::visitFunctionCall. Current scope is not a function");
         }
 
-        // Verificar argumentos e outras validações conforme necessário
-        // Exemplo:
+
         if (ctx->functionCallArgs())
         {
             visitFunctionCallArgs(ctx->functionCallArgs());
         }
-
-        // Implementação adicional conforme necessário
     }
 
     void SemanticAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
     {
         // Coleta os nomes dos argumentos e processa cada um
         std::vector<std::string> argNames;
-        for (auto child: ctx->children)
+        for (const auto child: ctx->children)
         {
-            if (auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
+            if (const auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
             {
                 argNames.push_back(functionCallArg->varName->getText());
                 visitFunctionCallArg(functionCallArg);
             }
         }
 
-        auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent);
+
+        const auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent);
         if (!functionCall)
         {
             return;
@@ -201,8 +198,10 @@ namespace iron
         // Recupera o nome da função chamada e obtém a função correspondente
         const std::string functionCalledName = functionCall->functionName->getText();
         auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCalledName);
+
         if (!calledFunction)
         {
+
             throw FunctionNotFoundException(util::format(
                     "Function {} not found.\n"
                     "Line: {}, Scope: {}\n\n"
@@ -214,11 +213,16 @@ namespace iron
         }
 
         // Armazena os argumentos esperados da função chamada
-        auto functionArgs = calledFunction->getArgs();
+        const auto functionArgs = calledFunction->getArgs();
 
         // Verifica se a quantidade de argumentos está correta
         if (functionArgs->size() != argNames.size())
         {
+            if (calledFunction->isExternal() && calledFunction->isVariedArguments())
+            {
+                return;
+            }
+
             throw ArgumentCountMismatchException(util::format(
                     "Function '{}' expects {} arguments, but {} were provided.\n"
                     "Line: {}, Scope: {}\n\n"
@@ -276,10 +280,13 @@ namespace iron
                         color::colorText(std::to_string(line), color::YELLOW),
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
-
             auto funcArg = calledFunction->getArgByName(argName);
             if (!funcArg)
             {
+                if (calledFunction->isExternal() && calledFunction->isVariedArguments())
+                {
+                    return;
+                }
                 throw FunctionArgNotFoundException(util::format(
                         "The argument {} not found.\n"
                         "Line: {}, Scope: {}\n\n"
@@ -290,6 +297,7 @@ namespace iron
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
 
+
             if (ctx->dataFormat())
             {
 
@@ -299,6 +307,15 @@ namespace iron
                 {
                     valueType = tokenMap::determineFloatType(value);
                 }
+
+                if (calledFunction->isExternal())
+                {
+                    if (funcArg->type == tokenMap::TYPE_CHAR && valueType == tokenMap::TYPE_STRING)
+                    {
+                        return;
+                    }
+                }
+
 
                 if (valueType != funcArg->type)
                 {
@@ -316,6 +333,7 @@ namespace iron
                             color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                 }
             }
+
 
             if (ctx->anotherVarName)
             {
@@ -349,6 +367,7 @@ namespace iron
                 }
             }
 
+
             if (ctx->functionCall())
             {
                 auto calledFunctionName = ctx->functionCall()->functionName->getText();
@@ -379,21 +398,9 @@ namespace iron
                             color::colorText(std::to_string(line), color::YELLOW),
                             color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                 }
-
                 visitFunctionCall(ctx->functionCall());
             }
         }
-
-        // if (ctx->varName)
-        // {
-        // }
-
-        // if (ctx->functionCall())
-        // {
-        //     visitFunctionCall(ctx->functionCall());
-        // }
-
-        // Implementação adicional conforme necessário
     }
 
     std::shared_ptr<scope::Function>

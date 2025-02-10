@@ -6,7 +6,12 @@ grammar Iron;
 LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 // Comentário de bloco: "/*" seguido de qualquer conteúdo até "*/"
-BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+//BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+
+BLOCK_COMMENT_TRIPLE_STAR
+  : '***' .*? '***' -> skip
+  ;
+
 
 // Símbolos
 COMMA: ',';
@@ -40,17 +45,15 @@ TYPE_FLOAT: 'float';
 TYPE_STRING: 'string';
 TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
+TYPE_VOID: 'void';
 
 // Literais
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
 INT_NUMBER: '-'? [0-9]+;
 BOOLEAN_VALUE: 'true' | 'false';
-STRING_LITERAL: '"' ~["\r\n]* '"';
-
-// Identificador
 IDENTIFIER: [a-zA-Z_] [a-zA-Z0-9_]*;
 
-// Ignorar espaços em branco e quebras de linha como tokens separados
+STRING_LITERAL: '"' ~["\r\n]* '"';
 NEWLINE: '\r'? '\n' -> skip;
 WS: [ \t]+ -> skip;
 
@@ -66,9 +69,6 @@ importStatement: IMPORT qualifiedName (DOT STAR)?;
 // Nome qualificado para importação (ex.: module.casa.janela)
 qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
-// Ponto de entrada principal entryPoint: '@main' '(' argVar = IDENTIFIER ')' L_CURLY statementList
-// R_CURLY;
-
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
 		varDeclaration
@@ -76,7 +76,6 @@ statementList: (
 		| varAssignment
 		| expr
 		| returnStatement
-		| formatStatement
 	)*;
 
 returnStatement:
@@ -89,16 +88,14 @@ returnStatement:
 
 //Format
 
-//printf("Taxa de aprovação: %d%%\n", 90);
-// f"Nome: %s", maria)"
-formatStatement:
-    'f' STRING_LITERAL (formatArguments) '"'
-;
-
-formatArguments: formatArgument (COMMA formatArgument)*;
-
-formatArgument:
-	( varName=IDENTIFIER | functionCall | expr | STRING_LITERAL);
+//formatStatement:
+//    'f\'(' format = STRING_LITERAL COMMA (formatArguments) ')'
+//;
+//
+//formatArguments: formatArgument (COMMA formatArgument)*;
+//
+//formatArgument:
+//	(dataFormat | varName=IDENTIFIER | functionCall | expr);
 
 //extern C function
 
@@ -108,7 +105,7 @@ externBlock:
 	)* '}';
 
 externFunctionDeclaration:
-	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' cTypes?;
+	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' functionReturnType?;
 
 // Argumentos da função
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
@@ -121,7 +118,9 @@ cTypes:
 	| TYPE_CHAR
 	| TYPE_DOUBLE
 	| TYPE_FLOAT
-	| TYPE_INT;
+	| TYPE_INT
+	| TYPE_VOID
+	;
 
 //**********************
 
@@ -159,10 +158,10 @@ functionCallArgs: functionCallArg (COMMA functionCallArg)*;
 functionCallArg:
 	varName = IDENTIFIER COLON (
 		dataFormat
+		| anotherVarName = IDENTIFIER
 		| functionCall
 		| arrowFunctionInline
 		| arrowFunctionBlock
-		| anotherVarName = IDENTIFIER
 	);
 
 // Declaração de variável

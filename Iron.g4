@@ -90,14 +90,16 @@ returnStatement:
 
 //Format
 
+//printf("Taxa de aprovação: %d%%\n", 90);
+// f"Nome: %s", maria
 formatStatement:
-    'f\'(' format = STRING_LITERAL COMMA (formatArguments) ')'
+    'f\'(' STRING_LITERAL COMMA (formatArguments) ')'
 ;
 
 formatArguments: formatArgument (COMMA formatArgument)*;
 
 formatArgument:
-	(dataFormat | varName=IDENTIFIER | functionCall | expr );
+	(dataFormat | varName=IDENTIFIER | functionCall | expr | STRING_LITERAL);
 
 //extern C function
 
@@ -107,7 +109,7 @@ externBlock:
 	)* '}';
 
 externFunctionDeclaration:
-	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' functionReturnType?;
+	'fn' exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
 
 // Argumentos da função
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;

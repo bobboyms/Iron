@@ -176,12 +176,11 @@ public:
 
   class  FormatStatementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *format = nullptr;
     FormatStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *STRING_LITERAL();
     antlr4::tree::TerminalNode *COMMA();
     antlr4::tree::TerminalNode *R_PAREN();
-    antlr4::tree::TerminalNode *STRING_LITERAL();
     FormatArgumentsContext *formatArguments();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -245,12 +244,14 @@ public:
 
   class  ExternFunctionDeclarationContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *exterFunctionName = nullptr;
+    antlr4::Token *varied = nullptr;
     ExternFunctionDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *FUNCTION();
-    antlr4::tree::TerminalNode *IDENTIFIER();
     antlr4::tree::TerminalNode *L_PAREN();
     antlr4::tree::TerminalNode *R_PAREN();
+    antlr4::tree::TerminalNode *IDENTIFIER();
     ExternFunctionArgsContext *externFunctionArgs();
     antlr4::tree::TerminalNode *COMMA();
     FunctionReturnTypeContext *functionReturnType();
