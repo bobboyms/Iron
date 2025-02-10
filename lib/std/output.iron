@@ -1,3 +1,9 @@
+import std.math.sum
+
 extern C {
    fn printf(format: char, idade:int, ...):int
+}
+
+fn sap():float {
+    return sum(a:12,b:13)
 }

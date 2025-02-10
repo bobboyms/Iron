@@ -178,14 +178,14 @@ namespace scope
     {
     private:
         std::vector<std::shared_ptr<Function>> functionDeclarations;
-        std::vector<std::shared_ptr<Function>> externDeclarations;
+        std::unordered_map<std::string, std::shared_ptr<Function>> externDeclarations;
         std::stack<std::shared_ptr<GlobalScope>> scopeStack;
         // Mapa para acessar escopos pelo nome
         std::unordered_map<std::string, std::shared_ptr<GlobalScope>> scopeMap;
 
     public:
-        void addFunctionDeclaration(std::shared_ptr<Function> function);
-        std::shared_ptr<Function> getFunctionDeclarationByName(std::string functionName);
+        void addFunctionDeclaration(const std::shared_ptr<Function>& function);
+        std::shared_ptr<Function> getFunctionDeclarationByName(const std::string& functionName);
         std::shared_ptr<Function> currentFunctionDeclaration();
         void enterScope(std::shared_ptr<GlobalScope> scope);
         void exitScope();
@@ -194,7 +194,7 @@ namespace scope
         std::shared_ptr<GlobalScope> getScopeByName(const std::string &scopeName) const;
         std::vector<std::shared_ptr<Function>> getFunctionDeclarations();
 
-        void setExternDeclarations(const std::vector<std::shared_ptr<Function>> &declarations);
+        void setExternDeclaration(const std::shared_ptr<Function> &declarations);
 
     };
 

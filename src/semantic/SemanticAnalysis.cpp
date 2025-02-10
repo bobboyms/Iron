@@ -207,9 +207,32 @@ namespace iron
             const auto [path, element] = convertImportPath(import);
             const std::string fullPath = util::format("{}{}", config->getStdFolder(), path);
 
+            if (auto globalScope = scopeManager->getFunctionDeclarationByName(element))
+            {
+
+                throw FunctionRedefinitionException(util::format("Function {} already declared."
+                                                                 "Line: {}, Scope: {}\n\n"
+                                                                 "{}\n"
+                                                                 "{}\n",
+                                                                 color::colorText(element, color::BOLD_GREEN),
+                                                                 color::colorText(std::to_string(line), color::YELLOW),
+                                                                 color::colorText("Global", color::BOLD_YELLOW), codeLine,
+                                                                 caretLine));
+            }
+
             Analyser analyser(config);
             auto const externalDeclarations = analyser.run(fullPath);
-            scopeManager->setExternDeclarations(externalDeclarations);
+            for (const auto externalDeclaration : externalDeclarations)
+            {
+                if (externalDeclaration->getFunctionName() != element)
+                {
+                    continue;
+                }
+
+                scopeManager->setExternDeclaration(externalDeclaration);
+            }
+
+
 
 
             // if (const uint result = analyser.run(fullPath); result == 1)

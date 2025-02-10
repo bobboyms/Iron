@@ -1,5 +1,8 @@
 import std.output.printf
 
+
 fn main() {
     printf(format:"Idade %u", idade:25, arg:12)
+    sum(x:12)
+
 }

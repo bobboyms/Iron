@@ -361,17 +361,17 @@ namespace scope
     {
         return functionDeclarations;
     }
-    void ScopeManager::setExternDeclarations(const std::vector<std::shared_ptr<Function>> &declarations)
+    void ScopeManager::setExternDeclaration(const std::shared_ptr<Function> &declarations)
     {
-        externDeclarations = declarations;
+        externDeclarations.insert({declarations->getFunctionName(), declarations});
     }
 
-    void ScopeManager::addFunctionDeclaration(std::shared_ptr<Function> function)
+    void ScopeManager::addFunctionDeclaration(const std::shared_ptr<Function>& function)
     {
         functionDeclarations.push_back(function);
     }
 
-    std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(std::string functionName)
+    std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(const std::string& functionName)
     {
         for (auto function: functionDeclarations)
         {
@@ -381,12 +381,8 @@ namespace scope
             }
         }
 
-        for (auto function: externDeclarations)
-        {
-            if (function->getFunctionName() == functionName)
-            {
-                return function;
-            }
+        if (const auto it = externDeclarations.find(functionName); it != externDeclarations.end()) {
+            return it->second;
         }
 
         // auto variable = currentFunctionDeclarationBy(); //->findVarCurrentScopeAndArg(functionName);
@@ -395,13 +391,13 @@ namespace scope
             return nullptr;
         }
 
-        auto currentFunction = std::dynamic_pointer_cast<scope::Function>(currentScope());
+        const auto currentFunction = std::dynamic_pointer_cast<scope::Function>(currentScope());
         if (!currentFunction)
         {
             return nullptr;
         }
 
-        auto variable = currentFunction->findVarAllScopesAndArg(functionName);
+        const auto variable = currentFunction->findVarAllScopesAndArg(functionName);
         if (!variable)
         {
             return nullptr;
