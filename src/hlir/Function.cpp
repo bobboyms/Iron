@@ -3,15 +3,38 @@
 
 namespace hlir
 {
-    Function::Function() = default;
-    Function::~Function() = default;
+    Function::Function() : external(false), variedArguments(false)
+    {
+    }
+
+    Function::~Function() {}
 
     void Function::enableInline()
     {
         inlineFunction = true;
     }
 
-    bool Function::getInline() const
+    bool Function::isExternal()
+    {
+        return external;
+    }
+
+    void Function::changeToExternal()
+    {
+        external = true;
+    }
+
+    void Function::changeToVariedArguments()
+    {
+        variedArguments = true;
+    }
+
+    bool Function::isVariedArguments()
+    {
+        return variedArguments;
+    }
+
+    bool Function::getInline()
     {
         return inlineFunction;
     }
@@ -27,11 +50,11 @@ namespace hlir
     }
 
     std::shared_ptr<Function> Function::set(const std::string &functionName,
-                                            std::shared_ptr<FunctionArgs> newFunctionArgs,
+                                            const std::shared_ptr<FunctionArgs> &newFunctionArgs,
                                             const std::shared_ptr<Type> &functionReturnType)
     {
         this->functionName = functionName;
-        this->functionArgs = std::move(newFunctionArgs);
+        this->functionArgs = newFunctionArgs;
         this->functionReturnType = functionReturnType;
 
         if (!functionArgs)
@@ -119,15 +142,24 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        if (statement && !statement->getStatements().empty())
+        if (external)
         {
-            sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
-                               functionReturnType->getText(), statement->getText());
+            sb << util::format("extern fn {}({}):{}\n", functionName, functionArgs->getText(),
+                                   functionReturnType->getText());
+
         }
         else
         {
-            sb << util::format("fn {}({}):{} { }\n", functionName, functionArgs->getText(),
-                               functionReturnType->getText());
+            if (statement && !statement->getStatements().empty())
+            {
+                sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
+                                   functionReturnType->getText(), statement->getText());
+            }
+            else
+            {
+                sb << util::format("fn {}({}):{} { }\n", functionName, functionArgs->getText(),
+                                   functionReturnType->getText());
+            }
         }
 
         return sb.str();
@@ -144,8 +176,8 @@ namespace hlir
 
     FunctionCallArgs::~FunctionCallArgs() = default;
 
-    FunctionCallArgs::FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs) :
-        callArgs(std::move(callArgs))
+    FunctionCallArgs::FunctionCallArgs(const std::vector<std::shared_ptr<FunctionCallArg>> &callArgs) :
+        callArgs(callArgs)
     {
     }
 

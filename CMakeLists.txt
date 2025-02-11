@@ -126,10 +126,6 @@ set(SRC_COMMON
         src/parsers/IronParser.cpp
         src/parsers/IronBaseListener.cpp
         src/parsers/IronListener.cpp
-        src/parsers/HightLavelIRLexer.cpp
-        src/parsers/HightLavelIRParser.cpp
-        src/parsers/HightLavelIRBaseListener.cpp
-        src/parsers/HightLavelIRListener.cpp
         src/config/Configuration.cpp
         src/analyser/Analyser.cpp
         src/headers/Analyser.h

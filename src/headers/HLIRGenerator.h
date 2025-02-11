@@ -1,6 +1,7 @@
-#include "../parsers/HightLavelIRLexer.h"
-#include "../parsers/HightLavelIRParser.h"
+#include "../parsers/HighLevelIRLexer.h"
+#include "../parsers/HighLevelIRParser.h"
 #include "../parsers/IronParser.h"
+#include "Configuration.h"
 #include "Hlir.h"
 
 namespace hlir
@@ -10,6 +11,7 @@ namespace hlir
     private:
         std::shared_ptr<IronParser> parser;
         std::shared_ptr<Context> context;
+        std::shared_ptr<config::Configuration> config;
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
         void visitStatementList(const IronParser::StatementListContext *ctx, const std::shared_ptr<Statement>& statement);
@@ -27,8 +29,9 @@ namespace hlir
 
         std::shared_ptr<FunctionCall> visitFunctionCall(IronParser::FunctionCallContext *ctx,
                                                         std::shared_ptr<Statement> statement);
-        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx, std::shared_ptr<FunctionCallArgs> callArgs,
-                                   std::shared_ptr<Statement> statement);
+        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx,
+                                   const std::shared_ptr<FunctionCallArgs> &callArgs,
+                                   const std::shared_ptr<Statement> &statement);
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
                                   const std::shared_ptr<FunctionCallArgs> &callArgs,
                                   const std::shared_ptr<Statement> &statement);
@@ -39,9 +42,21 @@ namespace hlir
                                      const std::shared_ptr<Statement> &statement);
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Statement> &statement);
 
+
     public:
-        std::string generateCode();
-        HLIRGenerator(const std::shared_ptr<IronParser>& parser, const std::shared_ptr<Context>& context);
+        // std::string generateCode();
+        std::shared_ptr<Context> getContext();
+        void visitImportStatement(IronParser::ImportStatementContext *ctx);
+        void visitExternBlock(IronParser::ExternBlockContext *ctx);
+        void visitExternFunctionDeclaration(IronParser::ExternFunctionDeclarationContext *ctx);
+        void visitExternFunctionArgs(IronParser::ExternFunctionArgsContext *ctx,
+                                     const std::shared_ptr<FunctionArgs> &argsList);
+        void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
+                                    const std::shared_ptr<FunctionArgs> &argsList);
+        // HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context);
+        HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::__1::shared_ptr<hlir::Context> &context,
+                      const std::shared_ptr<config::Configuration> &config);
+        HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context);
         ~HLIRGenerator();
     };
 

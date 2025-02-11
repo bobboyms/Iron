@@ -35,10 +35,10 @@ namespace scope
 
     public:
         std::string getName();
-        int getType();
+        int getType() const;
 
         GlobalScope() = default;
-        ~GlobalScope() = default;
+        ~GlobalScope() override = default;
 
         void setParent(std::shared_ptr<Parent> newParent) override
         {
@@ -52,7 +52,7 @@ namespace scope
         int type;
         std::shared_ptr<Function> function;
 
-        Variable(const std::string &name, int type) : name(name), type(type)
+        Variable(const std::string &name, const int type) : name(name), type(type)
         {
         }
     };
@@ -63,7 +63,7 @@ namespace scope
         int type{};
 
     public:
-        int getType();
+        int getType() const;
 
         LocalScope() = default;
         ~LocalScope() override = default;
@@ -83,7 +83,7 @@ namespace scope
 
     public:
         void addVariable(const std::string &name, int type);
-        void addFunctionAlias(const std::string varName, std::shared_ptr<Function> function);
+        void addFunctionAlias(const std::string& varName, const std::shared_ptr<Function>& function);
         std::shared_ptr<Variable> getVariable(const std::string &name);
 
         Statements();
@@ -91,7 +91,7 @@ namespace scope
 
         std::shared_ptr<Statements> upperScope;
 
-        int getScopeType();
+        int getScopeType() const;
     };
 
     struct CallArg
@@ -114,7 +114,7 @@ namespace scope
     public:
         std::shared_ptr<Function> getFunction();
 
-        FunctionCall(std::string name, std::shared_ptr<Function> function);
+        FunctionCall(const std::string &name, const std::shared_ptr<Function> &function);
         ~FunctionCall() override;
 
         std::string getName();
@@ -149,29 +149,29 @@ namespace scope
         Function(const std::string &name, const std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> &args, int returnType);
         ~Function() override;
         std::string getFunctionName();
-        int getReturnType();
-        void setUpperFunction(std::shared_ptr<Function> function);
-        void enterLocalScope(std::shared_ptr<LocalScope> scope);
+        int getReturnType() const;
+        void setUpperFunction(const std::shared_ptr<Function>& function);
+        void enterLocalScope(const std::shared_ptr<LocalScope>& scope);
         std::shared_ptr<LocalScope> getCurrentLocalScope();
-        bool isReturnTokenFound();
+        bool isReturnTokenFound() const;
         void updateReturnTokenStatusToFound();
         void exitLocalScope();
         void setAlias(const std::shared_ptr<Variable>& alias);
         std::shared_ptr<Variable> getAlias();
 
-        std::shared_ptr<FunctionArg> getArgByName(const std::string &argName);
+        std::shared_ptr<FunctionArg> getArgByName(const std::string &argName) const;
         std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string &varName);
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName);
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> getArgs();
         std::shared_ptr<Function> getUpperFunction();
 
-        bool isExternal();
+        bool isExternal() const;
         void changeToExternal();
-        bool isVariedArguments();
+        bool isVariedArguments() const;
         void changeToVariedArguments();
 
         std::string getScopeName();
-        int getScopeType();
+        int getScopeType() const;
     };
 
     class ScopeManager
@@ -187,7 +187,7 @@ namespace scope
         void addFunctionDeclaration(const std::shared_ptr<Function>& function);
         std::shared_ptr<Function> getFunctionDeclarationByName(const std::string& functionName);
         std::shared_ptr<Function> currentFunctionDeclaration();
-        void enterScope(std::shared_ptr<GlobalScope> scope);
+        void enterScope(const std::shared_ptr<GlobalScope>& scope);
         void exitScope();
         std::string currentScopeName() const;
         std::shared_ptr<GlobalScope> currentScope() const;

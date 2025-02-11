@@ -75,7 +75,7 @@ TEST_F(SemanticAnalysisTest, T2)
 
 TEST_F(SemanticAnalysisTest, T3)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main():int {
         }
 
@@ -88,7 +88,7 @@ TEST_F(SemanticAnalysisTest, T3)
 
 TEST_F(SemanticAnalysisTest, T4)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main():int {
             let x:int = 25
             let b:float = 25.00
@@ -101,7 +101,7 @@ TEST_F(SemanticAnalysisTest, T4)
 
 TEST_F(SemanticAnalysisTest, T5)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main():int {
             let x:int = 25
             let x:float = 25.00
@@ -661,7 +661,7 @@ TEST_F(SemanticAnalysisTest, T42)
 
 TEST_F(SemanticAnalysisTest, T43)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main() {
             let p:string = "16"
             let inline:fn = (a:int, b:int):int -> a * b / p
@@ -688,7 +688,7 @@ TEST_F(SemanticAnalysisTest, T43)
 
 TEST_F(SemanticAnalysisTest, T44)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(a:int):int { return 0 }
 
         fn main() {
@@ -716,7 +716,7 @@ TEST_F(SemanticAnalysisTest, T44)
 
 TEST_F(SemanticAnalysisTest, T45)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:int): int {return 0}
 
         fn soma() {
@@ -743,7 +743,7 @@ TEST_F(SemanticAnalysisTest, T46)
 
 TEST_F(SemanticAnalysisTest, T47)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
         fn soma() {
@@ -756,7 +756,7 @@ TEST_F(SemanticAnalysisTest, T47)
 
 TEST_F(SemanticAnalysisTest, T48)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
         fn soma(n:float) {
@@ -770,7 +770,7 @@ TEST_F(SemanticAnalysisTest, T48)
 
 TEST_F(SemanticAnalysisTest, T49)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
         fn soma(n:float) {
@@ -784,7 +784,7 @@ TEST_F(SemanticAnalysisTest, T49)
 
 TEST_F(SemanticAnalysisTest, T50)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:float): int {return 0}
 
         fn soma() {
@@ -798,7 +798,7 @@ TEST_F(SemanticAnalysisTest, T50)
 
 TEST_F(SemanticAnalysisTest, T51)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:int): int {return 0}
 
         fn soma() {
@@ -812,7 +812,7 @@ TEST_F(SemanticAnalysisTest, T51)
 
 TEST_F(SemanticAnalysisTest, T52)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:double, bx:int): int {return 0}
 
         fn soma() {
@@ -826,7 +826,7 @@ TEST_F(SemanticAnalysisTest, T52)
 
 TEST_F(SemanticAnalysisTest, T53)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
         fn sub(ax:int, bx:float): int {return 0}
@@ -841,7 +841,7 @@ TEST_F(SemanticAnalysisTest, T53)
 
 TEST_F(SemanticAnalysisTest, T54)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
         fn sub(ax:int, bx:float): int {return 0}
@@ -856,7 +856,7 @@ TEST_F(SemanticAnalysisTest, T54)
 
 TEST_F(SemanticAnalysisTest, T55)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
         fn sub(ax:int, bx:float): int {return 0}
@@ -872,7 +872,7 @@ TEST_F(SemanticAnalysisTest, T55)
 
 TEST_F(SemanticAnalysisTest, T56)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main() {
             let inline: fn = (a: int, b: int) -> a + b
         }
@@ -883,7 +883,7 @@ TEST_F(SemanticAnalysisTest, T56)
 
 TEST_F(SemanticAnalysisTest, T57)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main() {
             let inline: fn = (a: int, b: int) -> a + b
             inline(a:12, b:14)
@@ -934,7 +934,7 @@ TEST_F(SemanticAnalysisTest, T60)
 
 TEST_F(SemanticAnalysisTest, T61)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn main() {
             let xb: int = 36
             let inline:fn = (a: int, b: int):int -> (xb + b) * a
@@ -949,8 +949,8 @@ TEST_F(SemanticAnalysisTest, T61)
 
 TEST_F(SemanticAnalysisTest, T62)
 {
-    std::string input = R"(
-        fn xptc(): int {
+    const std::string input = R"(
+        fn etc(): int {
             return 0
         }
 
@@ -959,7 +959,7 @@ TEST_F(SemanticAnalysisTest, T62)
             let inline:fn = (a: int, b: int):int -> (xb + b) * a
             let sum:fn = (x: int, y: int):float -> 2.25 + x + y
 
-            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - xptc()
+            5.22 + inline(a:12, b:14) * sum(x:12, y:87) - etc()
         }
     )";
 
@@ -1433,6 +1433,36 @@ TEST_F(SemanticAnalysisTest, T100)
     )";
 
     EXPECT_THROW(runAnalysis(input), iron::ReturnNotFoundException);
+}
+
+TEST_F(SemanticAnalysisTest, T101)
+{
+    const std::string input = R"(
+        //import std.output.printf
+
+        fn main():int
+        {
+            printf(format:"Idade: %u, Sexo: %s", idade:25, sexo:"masculina")
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
+}
+
+TEST_F(SemanticAnalysisTest, T102)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main():int
+        {
+            printf(format:"Idade: %u, Sexo: %s", idade:25, sexo:"masculina")
+            return 0
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
 }
 
 // TEST_F(SemanticAnalysisTest, T101)

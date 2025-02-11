@@ -324,9 +324,9 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<FunctionPtr> FunctionPtr::set(const std::shared_ptr<Function>& newFunction)
+    std::shared_ptr<FunctionPtr> FunctionPtr::set(const std::shared_ptr<Function>& function)
     {
-        if (!newFunction)
+        if (!function)
         {
             throw HLIRException("FunctionPtr::set failed: newFunction is null.");
         }
@@ -337,8 +337,8 @@ namespace hlir
             throw HLIRException("FunctionPtr::set failed: shared_from_this() returned null.");
         }
 
-        function = newFunction;
-        function->setParent(parentPtr);
+        this->function = function;
+        this->function->setParent(parentPtr);
 
         auto assignPtr = std::dynamic_pointer_cast<FunctionPtr>(parentPtr);
         if (!assignPtr)
@@ -372,6 +372,21 @@ namespace hlir
         return functions;
     }
 
+    void Context::addExternalFunction(const std::shared_ptr<Function> &function)
+    {
+        if (!function)
+        {
+            throw HLIRException("Context::addExternalFunction failed: function is null.");
+        }
+
+        if (!function->isExternal())
+        {
+            throw HLIRException("Context::addExternalFunction failed: function is not external.");
+        }
+
+        functions.push_back(function);
+    }
+
     void Context::addFunction(const std::shared_ptr<Function> &function)
     {
         if (!function)
@@ -381,7 +396,7 @@ namespace hlir
 
         if (!functions.empty() && function->getInline())
         {
-            std::shared_ptr<Function> lastFunction = functions.back();
+            const std::shared_ptr<Function> lastFunction = functions.back();
             function->setParentFunction(lastFunction);
         }
 

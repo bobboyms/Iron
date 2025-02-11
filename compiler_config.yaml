@@ -3,3 +3,7 @@ name: "Compiler config file"
 version: 1.0
 libs:
   std: "/Users/thiagorodrigues/Desktop/IronLang/lib"
+
+compiler:
+  output_temp_files: "/Users/thiagorodrigues/Desktop/IronLang/temp"
+  output_executable: "/Users/thiagorodrigues/Desktop/IronLang/temp"

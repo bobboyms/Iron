@@ -59,6 +59,18 @@ namespace hlir
             argIndex++;
         }
 
+        if (const auto function = std::dynamic_pointer_cast<Function>(getParent()))
+        {
+            if (function->isExternal() and function->isVariedArguments())
+            {
+                sb << "...";
+            }
+        }
+        else
+        {
+            throw std::runtime_error("FunctionArgs::getArgs is not a function.");
+        }
+
         return sb.str();
     }
 } // namespace hlir

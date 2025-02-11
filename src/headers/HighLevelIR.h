@@ -6,7 +6,7 @@
 #include "../parsers/HightLavelIRLexer.h"
 #include "../parsers/HightLavelIRParser.h"
 #include "../parsers/IronParser.h"
-#include "ScopeManager.h"
+//#include "ScopeManager.h"
 #include "Visitors.h"
 #include "WriterCodeHLIR.h"
 
@@ -20,7 +20,7 @@ namespace iron
         // std::stringstream* globalSb;
         int tempVarCounter = 0;
         std::shared_ptr<IronParser> parser;
-        std::unique_ptr<ScopeManager> scopeManager;
+        std::unique_ptr<scope::ScopeManager> scopeManager;
         std::unique_ptr<WriterCodeHLIR> writerCodeHLIR;
 
         std::string generateTempVar();
@@ -47,7 +47,7 @@ namespace iron
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 
     public:
-        HighLevelIR(std::shared_ptr<IronParser> parser, std::unique_ptr<ScopeManager> scopeManager);
+        HighLevelIR(std::shared_ptr<IronParser> parser, std::unique_ptr<scope::ScopeManager> scopeManager);
         ~HighLevelIR();
         std::string generateCode();
         std::shared_ptr<HightLavelIRParser> generateParser();

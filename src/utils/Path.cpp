@@ -4,9 +4,11 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <filesystem>
 #include "../headers/Files.h"
 #include "../headers/Utils.h"
 
+namespace fs = std::filesystem;
 
 namespace iron
 {
@@ -60,4 +62,43 @@ namespace iron
 
         return buffer.str();
     }
-}
+
+    void saveToFile(const std::string &text, const std::string &directory, const std::string &filename)
+    {
+        // 1. Substitui os pontos por sublinhados no diretório e no nome do arquivo.
+        std::string fixedDirectory = directory;
+        std::replace(fixedDirectory.begin(), fixedDirectory.end(), '.', '_');
+
+        std::string fixedFilename = filename;
+        // std::replace(fixedFilename.begin(), fixedFilename.end(), '.', '_');
+
+        // 2. Cria o diretório, se necessário.
+        if (fs::path dir(fixedDirectory); !fs::exists(dir))
+        {
+            if (!create_directories(dir))
+            {
+                throw::std::runtime_error("Não foi possível criar o diretório:  " + fixedDirectory);
+            }
+        }
+
+        // 3. Constrói o caminho completo para o arquivo.
+        std::string fullPath = fixedDirectory;
+        if (!fullPath.empty() && fullPath.back() != PATH_SEPARATOR)
+        {
+            fullPath.push_back(PATH_SEPARATOR);
+        }
+        fullPath += fixedFilename;
+
+        // 4. Abre o arquivo para escrita, sobrescrevendo se ele já existir.
+        std::ofstream outFile(fullPath, std::ios::out | std::ios::trunc);
+        if (!outFile.is_open())
+        {
+            throw::std::runtime_error("Erro: Não foi possível abrir o arquivo para escrita: " + fullPath);
+        }
+
+        // 5. Escreve o conteúdo e fecha o arquivo.
+        outFile << text;
+        outFile.close();
+
+    }
+} // namespace iron

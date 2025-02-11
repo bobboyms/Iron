@@ -17,9 +17,36 @@
 
 void runAnalysis(const std::string &file)
 {
-    const auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
-    iron::Analyser analyser(config);
-    analyser.run(file);
+    try
+    {
+        const auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
+        iron::Analyser analyser(config);
+        analyser.semantic(file);
+        const auto context = analyser.hlir(file);
+
+        printf("%s", context->getText().c_str());
+
+    }
+    catch (const iron::SemanticException &e)
+    {
+        std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
+    }
+    catch (const hlir::HLIRException &e)
+    {
+        std::cerr << color::colorText("HLIRE error: ", color::RED) << e.what() << std::endl;
+    }
+    catch (const iron::LLVMException &e)
+    {
+        std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << color::colorText("Unexpected error: ", color::RED) << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cerr << color::colorText("I panicked, I need a psychoanalyst: ", color::BOLD_RED) << std::endl;
+    }
 
 }
 

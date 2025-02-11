@@ -1,4 +1,4 @@
-grammar HightLavelIR;
+grammar HighLevelIR;
 
 // --------------------------------- Regras do Lexer (Tokens) ---------------------------------
 
@@ -43,6 +43,7 @@ VOID: 'void';
 
 CAST: 'cast';
 CALL: 'call';
+EXTERN: 'extern';
 // Literais
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
 INT_NUMBER: '-'? [0-9]+;
@@ -59,16 +60,34 @@ WS: [ \t]+ -> skip;
 // --------------------------------- Regras do Parser ---------------------------------
 
 // Ponto de entrada da gramática
-program: importStatement* ( functionDeclaration)* EOF;
+program: externFunctionDeclaration* (functionDeclaration)* EOF;
 
 // Declaração de importação
-importStatement: IMPORT qualifiedName (DOT STAR)?;
-
-// Nome qualificado para importação (ex.: module.casa.janela)
-qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
+//importStatement: IMPORT qualifiedName (DOT STAR)?;
+//
+//// Nome qualificado para importação (ex.: module.casa.janela)
+//qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: ( expr | functionCall | returnStatemant)*;
+
+//funções externas
+externFunctionDeclaration:
+	EXTERN FUNCTION exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
+
+externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
+
+externFunctionArg:
+	varName = IDENTIFIER COLON cTypes;
+
+cTypes:
+	TYPE_BOOLEAN
+	| TYPE_CHAR
+	| TYPE_DOUBLE
+	| TYPE_FLOAT
+	| TYPE_INT
+	| TYPE_VOID
+	;
 
 // Declaração de função
 functionDeclaration: (PRIVATE | PUBLIC)? FUNCTION functionName = IDENTIFIER functionSignature

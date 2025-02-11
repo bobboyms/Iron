@@ -17,7 +17,8 @@ namespace config
         YAML::Node configFile;
 
     public:
-        std::string getStdFolder();
+        std::string stdFolder();
+        std::string outputTempFiles();
         explicit Configuration(const std::string &configFolder);
     };
 

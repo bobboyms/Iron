@@ -25,7 +25,7 @@ namespace iron
 
         IronParser::ProgramContext *programContext = parser->program();
 
-        std::vector<IronParser::ImportStatementContext *> imports = programContext->importStatement();
+        // std::vector<IronParser::ImportStatementContext *> imports = programContext->importStatement();
         for (const auto importStmt: programContext->importStatement())
         {
             visitImportStatement(importStmt);
@@ -205,7 +205,7 @@ namespace iron
         {
             const std::string import = ctx->qualifiedName()->getText();
             const auto [path, element] = convertImportPath(import);
-            const std::string fullPath = util::format("{}{}", config->getStdFolder(), path);
+            const std::string fullPath = util::format("{}{}", config->stdFolder(), path);
 
             if (auto globalScope = scopeManager->getFunctionDeclarationByName(element))
             {
@@ -221,7 +221,7 @@ namespace iron
             }
 
             Analyser analyser(config);
-            auto const externalDeclarations = analyser.run(fullPath);
+            auto const externalDeclarations = analyser.semantic(fullPath);
             for (const auto externalDeclaration : externalDeclarations)
             {
                 if (externalDeclaration->getFunctionName() != element)

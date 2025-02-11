@@ -4,7 +4,8 @@
 
 #include "../headers/Analyser.h"
 #include "../headers/Files.h"
-// #include "../headers/Utils.h"
+#include "../headers/HLIRGenerator.h"
+#include "../headers/Hlir.h"
 
 namespace iron
 {
@@ -28,57 +29,56 @@ namespace iron
         return lines;
     }
 
-    std::vector<std::shared_ptr<scope::Function>> Analyser::run(const std::string &fileName)
+    std::shared_ptr<hlir::Context> Analyser::hlir(const std::string &fileName)
     {
-        try
-        {
-            const auto input = fileContent(fileName);
+        // Certifique-se de que o código de entrada esteja disponível para o parser.
+        // Por exemplo, se você tiver o código em uma string 'input':
+        // printf("File: %s\n", fileName.c_str());
+        const auto input = fileContent(fileName);
+        antlr4::ANTLRInputStream inputStream(input);
+        IronLexer lexer(&inputStream);
+        antlr4::CommonTokenStream tokens(&lexer);
+        parser = std::make_shared<IronParser>(&tokens);
 
-            antlr4::ANTLRInputStream inputStream(input);
-            IronLexer lexer(&inputStream);
-            antlr4::CommonTokenStream tokens(&lexer);
-            parser = std::make_shared<IronParser>(&tokens);
+        const auto context = std::make_shared<hlir::Context>();
+        hlir::HLIRGenerator highLevelCodeGenerator(parser, context, config);
+        highLevelCodeGenerator.getContext();
 
-            // Executa a análise semântica
-            SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()),
-                                            loadStringAsLines(input), config);
-            return analysis.analyze();
+        const auto hlirPath = util::format("{}", config->outputTempFiles());
+        saveToFile(context->getText(), hlirPath, "main.hlir");
 
-            // // Rewind
-            tokens.seek(0);
-            parser->reset();
+        return context;
+    }
+
+    std::vector<std::shared_ptr<scope::Function>> Analyser::semantic(const std::string &fileName)
+    {
+
+        const auto input = fileContent(fileName);
+
+        antlr4::ANTLRInputStream inputStream(input);
+        IronLexer lexer(&inputStream);
+        antlr4::CommonTokenStream tokens(&lexer);
+        parser = std::make_shared<IronParser>(&tokens);
+
+        // Executa a análise semântica
+        SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()),
+                                        loadStringAsLines(input), config);
 
 
 
-            // auto context = std::make_shared<hlir::Context>();
-            // hlir::HLIRGenerator hightLevelCodeGenerator(parser, context);
-            // const auto hlirCode = hightLevelCodeGenerator.generateCode();
-            // std::cout << hlirCode << std::endl;
-            //
-            // iron::LLVM llvm(context);
-            // auto llvmCode = llvm.generateCode();
-            // std::cout << llvmCode << std::endl;
+        return analysis.analyze();
 
-        }
-        catch (const iron::SemanticException &e)
-        {
-            std::cerr << color::colorText("Semantic error: ", color::RED) << e.what() << std::endl;
-        }
-        catch (const hlir::HLIRException &e)
-        {
-            std::cerr << color::colorText("HLIRE error: ", color::RED) << e.what() << std::endl;
-        }
-        catch (const iron::LLVMException &e)
-        {
-            std::cerr << color::colorText("LLVM error: ", color::RED) << e.what() << std::endl;
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << color::colorText("Unexpected error: ", color::RED) << e.what() << std::endl;
-        }
-        catch (...)
-        {
-            std::cerr << color::colorText("I panicked, I need a psychoanalyst: ", color::BOLD_RED) << std::endl;
-        }
+
+
+
+
+
+
+        //
+        // iron::LLVM llvm(context);
+        // auto llvmCode = llvm.generateCode();
+        // std::cout << llvmCode << std::endl;
+
+
     }
 } // namespace iron

@@ -169,36 +169,18 @@ namespace iron
 
     void SemanticAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
     {
-        // Coleta os nomes dos argumentos e processa cada um
-        std::vector<std::string> argNames;
-        for (const auto child: ctx->children)
-        {
-            if (const auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
-            {
-                argNames.push_back(functionCallArg->varName->getText());
-                visitFunctionCallArg(functionCallArg);
-            }
-        }
-
+        // Obtém informações de linha e coluna para mensagens de erro
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
         const auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent);
         if (!functionCall)
         {
             return;
         }
-
-        // Obtém informações de linha e coluna para mensagens de erro
-        const uint line = ctx->getStart()->getLine();
-        const uint col = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
-
-        // Obtém a função corrente do escopo e verifica se ela é válida
-        auto currentFunction = getCurrentFunction();
-
-        // Recupera o nome da função chamada e obtém a função correspondente
         const std::string functionCalledName = functionCall->functionName->getText();
-        auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCalledName);
-
+        const auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCalledName);
         if (!calledFunction)
         {
 
@@ -212,16 +194,44 @@ namespace iron
                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
         }
 
-        // Armazena os argumentos esperados da função chamada
+
         const auto functionArgs = calledFunction->getArgs();
+
+
+        // Coleta os nomes dos argumentos e processa cada um
+        std::vector<std::string> argNames;
+        for (const auto child: ctx->children)
+        {
+            if (const auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
+            {
+                const auto varName = functionCallArg->varName->getText();
+                argNames.push_back(varName);
+                visitFunctionCallArg(functionCallArg);
+
+                if (calledFunction->isExternal() && calledFunction->isVariedArguments())
+                {
+                    if (!calledFunction->findVarCurrentScopeAndArg(varName))
+                    {
+                        const auto arg = std::make_shared<scope::FunctionArg>(varName, tokenMap::VOID);
+                        functionArgs->push_back(arg);
+                    }
+                }
+            }
+        }
+
+
+
+        // Obtém a função corrente do escopo e verifica se ela é válida
+        auto currentFunction = getCurrentFunction();
+
+        // Recupera o nome da função chamada e obtém a função correspondente
+
+
+
 
         // Verifica se a quantidade de argumentos está correta
         if (functionArgs->size() != argNames.size())
         {
-            if (calledFunction->isExternal() && calledFunction->isVariedArguments())
-            {
-                return;
-            }
 
             throw ArgumentCountMismatchException(util::format(
                     "Function '{}' expects {} arguments, but {} were provided.\n"
@@ -238,8 +248,7 @@ namespace iron
         // Verifica se a ordem dos argumentos está correta
         for (size_t i = 0; i < functionArgs->size(); ++i)
         {
-            const auto &expectedArg = (*functionArgs)[i];
-            if (expectedArg->name != argNames[i])
+            if (const auto &expectedArg = (*functionArgs)[i]; expectedArg->name != argNames[i])
             {
                 throw ArgumentOrderMismatchException(util::format(
                         "Argument order mismatch in Function '{}'. Expected '{}', but got '{}'.\n"
@@ -283,18 +292,18 @@ namespace iron
             auto funcArg = calledFunction->getArgByName(argName);
             if (!funcArg)
             {
-                if (calledFunction->isExternal() && calledFunction->isVariedArguments())
+                if (!calledFunction->isExternal() && !calledFunction->isVariedArguments())
                 {
-                    return;
+                    throw FunctionArgNotFoundException(
+                            util::format("The argument {} not found.\n"
+                                         "Line: {}, Scope: {}\n\n"
+                                         "{}\n"
+                                         "{}\n",
+                                         color::colorText(argName, color::BOLD_GREEN),
+                                         color::colorText(std::to_string(line), color::YELLOW),
+                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                         codeLine, caretLine));
                 }
-                throw FunctionArgNotFoundException(util::format(
-                        "The argument {} not found.\n"
-                        "Line: {}, Scope: {}\n\n"
-                        "{}\n"
-                        "{}\n",
-                        color::colorText(argName, color::BOLD_GREEN),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
 
 
@@ -308,30 +317,45 @@ namespace iron
                     valueType = tokenMap::determineFloatType(value);
                 }
 
-                if (calledFunction->isExternal())
+                if (!calledFunction->isExternal() && !calledFunction->isVariedArguments())
                 {
-                    if (funcArg->type == tokenMap::TYPE_CHAR && valueType == tokenMap::TYPE_STRING)
+                    // if (funcArg->type == tokenMap::TYPE_CHAR && valueType == tokenMap::TYPE_STRING)
+                    // {
+                    //     return;
+                    // }
+                    if (valueType != funcArg->type)
                     {
-                        return;
+
+                        throw TypeMismatchException(util::format(
+                                "The function argument {} type is {} and the value {} type is {}.\n"
+                                "Line: {}, Scope: {}\n\n"
+                                "{}\n" // Exibe a linha de código
+                                "{}\n", // Exibe a setinha '^'
+                                color::colorText(argName, color::BOLD_GREEN),
+                                color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
+                                color::colorText(value, color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
+                    }
+
+                    if (valueType != funcArg->type)
+                    {
+
+                        throw TypeMismatchException(util::format(
+                                "The function argument {} type is {} and the value {} type is {}.\n"
+                                "Line: {}, Scope: {}\n\n"
+                                "{}\n" // Exibe a linha de código
+                                "{}\n", // Exibe a setinha '^'
+                                color::colorText(argName, color::BOLD_GREEN),
+                                color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
+                                color::colorText(value, color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                     }
                 }
 
-
-                if (valueType != funcArg->type)
-                {
-
-                    throw TypeMismatchException(util::format(
-                            "The function argument {} type is {} and the value {} type is {}.\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n" // Exibe a linha de código
-                            "{}\n", // Exibe a setinha '^'
-                            color::colorText(argName, color::BOLD_GREEN),
-                            color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
-                            color::colorText(value, color::BOLD_BLUE),
-                            color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
-                }
             }
 
 
@@ -351,28 +375,34 @@ namespace iron
                             color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                 }
 
-                if (variable->type != funcArg->type)
-                {
-                    throw TypeMismatchException(util::format(
-                            "The function argument {} type is {} and the variable {} type is {}.\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n" // Exibe a linha de código
-                            "{}\n", // Exibe a setinha '^'
-                            color::colorText(argName, color::BOLD_GREEN),
-                            color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
-                            color::colorText(variable->name, color::BOLD_BLUE),
-                            color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
-                }
-            }
 
+                if (!calledFunction->isExternal() && !calledFunction->isVariedArguments())
+                {
+                    if (variable->type != funcArg->type)
+                    {
+                        throw TypeMismatchException(util::format(
+                                "The function argument {} type is {} and the variable {} type is {}.\n"
+                                "Line: {}, Scope: {}\n\n"
+                                "{}\n" // Exibe a linha de código
+                                "{}\n", // Exibe a setinha '^'
+                                color::colorText(argName, color::BOLD_GREEN),
+                                color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
+                                color::colorText(variable->name, color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
+                    }
+                }
+
+            }
 
             if (ctx->functionCall())
             {
+
+
                 auto calledFunctionName = ctx->functionCall()->functionName->getText();
-                auto calledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
-                if (!calledFunction)
+                auto localCalledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
+                if (!localCalledFunction)
                 {
                     auto functionPtr = currentFunction->findVarAllScopesAndArg(calledFunctionName);
                     if (!functionPtr)
@@ -381,23 +411,27 @@ namespace iron
                                 "SemanticAnalysis::visitFunctionCallArg. No current function scope found");
                     }
 
-                    calledFunction = functionPtr->function;
+                    localCalledFunction = functionPtr->function;
                 }
 
-                if (funcArg->type != calledFunction->getReturnType())
+                if (!calledFunction->isExternal() && !calledFunction->isVariedArguments())
                 {
-                    throw TypeMismatchException(util::format(
-                            "The function argument {} type is {} and the function {} return type is {}.\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n" // Exibe a linha de código
-                            "{}\n", // Exibe a setinha '^'
-                            color::colorText(argName, color::BOLD_GREEN),
-                            color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
-                            color::colorText(calledFunction->getName(), color::BOLD_BLUE),
-                            color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()), color::BOLD_BLUE),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
+                    if (funcArg->type != localCalledFunction->getReturnType())
+                    {
+                        throw TypeMismatchException(util::format(
+                                "The function argument {} type is {} and the function {} return type is {}.\n"
+                                "Line: {}, Scope: {}\n\n"
+                                "{}\n" // Exibe a linha de código
+                                "{}\n", // Exibe a setinha '^'
+                                color::colorText(argName, color::BOLD_GREEN),
+                                color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
+                                color::colorText(calledFunction->getName(), color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()), color::BOLD_BLUE),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
+                    }
                 }
+
                 visitFunctionCall(ctx->functionCall());
             }
         }

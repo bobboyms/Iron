@@ -472,7 +472,7 @@ namespace hlir
          * @brief Constructs a FunctionCallArgs with an existing list of arguments.
          * @param callArgs The vector of pointers to FunctionCallArg.
          */
-        explicit FunctionCallArgs(std::vector<std::shared_ptr<FunctionCallArg>> callArgs);
+        explicit FunctionCallArgs(const std::vector<std::shared_ptr<FunctionCallArg>> &callArgs);
 
         /**
          * @brief Default constructor (empty list).
@@ -842,22 +842,21 @@ namespace hlir
     private:
         std::shared_ptr<Function> function;
         std::shared_ptr<Variable> variable;
+
     public:
-        FuncReturn(const std::shared_ptr<Function>& function, const std::shared_ptr<Variable>& variable);
+        FuncReturn(const std::shared_ptr<Function> &function, const std::shared_ptr<Variable> &variable);
         ~FuncReturn() override;
         std::shared_ptr<Variable> getVariable();
         std::string getText() override;
     };
 
     using ValidStatement = std::variant<std::shared_ptr<Assign>, std::shared_ptr<Expr>, std::shared_ptr<FunctionCall>,
-    std::shared_ptr<FuncReturn>
-    >;
+                                        std::shared_ptr<FuncReturn>>;
 
     inline bool isValidStatementNull(const ValidStatement &statement)
     {
         return std::visit([](const auto &ptr) { return ptr == nullptr; }, statement);
     }
-
 
 
     class Statement final : public Basic, public Parent
@@ -902,12 +901,14 @@ namespace hlir
          */
         std::shared_ptr<Type> functionReturnType;
 
+        bool external;
+        bool variedArguments;
+
     protected:
         /**
          * @brief Pointer to the function's body (optional).
          */
         std::shared_ptr<Statement> statement;
-
         std::shared_ptr<Function> parentFunction;
 
         /**
@@ -951,11 +952,16 @@ namespace hlir
          * @param functionArgs Shared pointer to FunctionArgs.
          * @param functionReturnType Shared pointer to the return Type.
          */
-        std::shared_ptr<Function> set(const std::string &functionName, std::shared_ptr<FunctionArgs> functionArgs,
+        std::shared_ptr<Function> set(const std::string &functionName,
+                                      const std::shared_ptr<FunctionArgs> &functionArgs,
                                       const std::shared_ptr<Type> &functionReturnType);
 
         void enableInline();
-        bool getInline() const;
+        bool isExternal();
+        void changeToExternal();
+        void changeToVariedArguments();
+        bool isVariedArguments();
+        bool getInline();
         // bool getInline() const;
 
         /**
@@ -1004,6 +1010,7 @@ namespace hlir
         std::string getText() override;
 
         std::vector<std::shared_ptr<Function>> getFunctions();
+        void addExternalFunction(const std::shared_ptr<Function> &function);
     };
 
 } // namespace hlir

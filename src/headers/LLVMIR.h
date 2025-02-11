@@ -15,8 +15,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <stack>
-#include "../parsers/HightLavelIRLexer.h"
-#include "../parsers/HightLavelIRParser.h"
+#include "../headers/Hlir.h"
 #include "Exceptions.h"
 #include "Hlir.h"
 #include "TokenMap.h"

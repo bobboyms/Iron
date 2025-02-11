@@ -1,8 +1,14 @@
 import std.output.printf
 
+fn PI(a:int, b:int):int {
+return 0
+}
 
-fn main() {
-    printf(format:"Idade %u", idade:25, arg:12)
-    sum(x:12)
+fn main():int
+{
+    let age:int = 38
+    // printf(format:"Idade: %u, Sexo: %s", idade:age, sexo:"masculino", pi:PI(a:25))
+    printf(format:"Idade: %u, Sexo: %s", idade:age, sexo:"homen", pi:PI(a:25,b:12))
 
+    return 0
 }
