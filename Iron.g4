@@ -115,7 +115,7 @@ externFunctionDeclaration:
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
 
 externFunctionArg:
-	varName = IDENTIFIER COLON cTypes;
+	varName = IDENTIFIER COLON ptr = '*'? cTypes;
 
 cTypes:
 	TYPE_BOOLEAN
@@ -125,6 +125,7 @@ cTypes:
 	| TYPE_INT
 	| TYPE_VOID
 	;
+
 
 //**********************
 

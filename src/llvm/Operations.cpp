@@ -11,8 +11,6 @@ namespace iron
         llvm::AllocaInst *leftVar = getOrPromoteToAlloca(op->getVarLeft()->getVarName(), currentFunction);
         llvm::AllocaInst *rightVar = getOrPromoteToAlloca(op->getVarRight()->getVarName(), currentFunction);
 
-        auto varType = op->getVarLeft()->getVarType()->getType();
-
         llvm::Type *leftAllocatedType = leftVar->getAllocatedType();
         llvm::Type *rightAllocatedType = rightVar->getAllocatedType();
 

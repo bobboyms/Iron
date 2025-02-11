@@ -63,7 +63,7 @@ namespace iron
         return buffer.str();
     }
 
-    void saveToFile(const std::string &text, const std::string &directory, const std::string &filename)
+    std::pair<std::string, std::string> saveToFile(const std::string &text, const std::string &directory, const std::string &filename)
     {
         // 1. Substitui os pontos por sublinhados no diretório e no nome do arquivo.
         std::string fixedDirectory = directory;
@@ -99,6 +99,8 @@ namespace iron
         // 5. Escreve o conteúdo e fecha o arquivo.
         outFile << text;
         outFile.close();
+
+        return std::make_pair(fixedDirectory, fixedFilename);
 
     }
 } // namespace iron

@@ -6,7 +6,7 @@
 namespace iron
 {
 
-    void LLVM::assignVariable(const std::shared_ptr<hlir::Value>& value, llvm::AllocaInst *allocaVariable,
+    void LLVM::assignVariable(const std::shared_ptr<hlir::Value> &value, llvm::AllocaInst *allocaVariable,
                               llvm::Function *function)
     {
 
@@ -29,7 +29,7 @@ namespace iron
                 value->getValue());
     }
 
-    void LLVM::assignValue(const std::shared_ptr<hlir::Variable>& variable, const std::shared_ptr<hlir::Value>& value,
+    void LLVM::assignValue(const std::shared_ptr<hlir::Variable> &variable, const std::shared_ptr<hlir::Value> &value,
                            llvm::AllocaInst *allocaVariable)
     {
         // Verificações iniciais de validade
@@ -50,11 +50,11 @@ namespace iron
 
         llvm::Value *valueToStore = nullptr;
 
+
         switch (variable->getVarType()->getType())
         {
             case tokenMap::TYPE_INT:
             {
-
                 // Convert string to int
                 const int num = std::stoi(value->getText());
 
@@ -86,18 +86,32 @@ namespace iron
                 break;
             }
 
+            case tokenMap::TYPE_STRING:
+            {
+                valueToStore = llvm::ConstantDataArray::getString(llvmContext, value->getText(), true);
+                break;
+            }
+
             default:
             {
                 throw iron::LLVMException(util::format("Unsupported type for number literal: {}", value->getText()));
             }
         }
 
-        // Verifica a consistência de tipos antes de armazenar
-        if (valueToStore->getType() != allocaVariable->getAllocatedType())
+
+        if (variable->getVarType()->getType() == tokenMap::TYPE_STRING)
         {
-            throw iron::LLVMException(util::format("LLVM::assignValue: Type mismatch", ""));
+            builder.CreateStore(valueToStore, allocaVariable);
         }
-        builder.CreateStore(valueToStore, allocaVariable);
+        else
+        {
+            if (valueToStore->getType() != allocaVariable->getAllocatedType())
+            {
+                throw iron::LLVMException(util::format("LLVM::assignValue: Type mismatch", ""));
+            }
+            builder.CreateStore(valueToStore, allocaVariable);
+        }
+        printf("%s\n", tokenMap::getTokenText(variable->getVarType()->getType()).c_str());
     }
 
     void LLVM::generateTerminator(llvm::Type *functionReturnType)
@@ -145,23 +159,47 @@ namespace iron
         {
             return llvm::Type::getInt32Ty(llvmContext);
         }
-        else if (type == tokenMap::TYPE_FLOAT)
+        if (type == tokenMap::PTR_TYPE_INT)
+        {
+            return llvm::PointerType::get(llvm::Type::getInt32Ty(llvmContext), 0);
+        }
+        if (type == tokenMap::TYPE_FLOAT)
         {
             return llvm::Type::getFloatTy(llvmContext);
         }
-        else if (type == tokenMap::TYPE_DOUBLE)
+        if (type == tokenMap::PTR_TYPE_FLOAT)
+        {
+            return llvm::PointerType::get(llvm::Type::getFloatTy(llvmContext), 0);
+        }
+        if (type == tokenMap::TYPE_DOUBLE)
         {
             return llvm::Type::getDoubleTy(llvmContext);
         }
-        else if (type == tokenMap::TYPE_CHAR)
+        if (type == tokenMap::PTR_TYPE_DOUBLE)
+        {
+            return llvm::PointerType::get(llvm::Type::getDoubleTy(llvmContext), 0);
+        }
+        if (type == tokenMap::TYPE_CHAR)
         {
             return llvm::Type::getInt8Ty(llvmContext);
         }
-        else if (type == tokenMap::TYPE_BOOLEAN)
+        if (type == tokenMap::PTR_TYPE_CHAR)
+        {
+            return llvm::PointerType::get(llvm::Type::getInt8Ty(llvmContext), 0);
+        }
+        if (type == tokenMap::TYPE_BOOLEAN)
         {
             return llvm::Type::getInt1Ty(llvmContext);
         }
-        else if (type == tokenMap::VOID)
+        if (type == tokenMap::PTR_TYPE_BOOLEAN)
+        {
+            return llvm::PointerType::get(llvm::Type::getInt1Ty(llvmContext), 0);
+        }
+        if (type == tokenMap::TYPE_STRING)
+        {
+            return llvm::PointerType::get(llvm::Type::getInt8Ty(llvmContext), 0);
+        }
+        if (type == tokenMap::VOID)
         {
             return llvm::Type::getVoidTy(llvmContext);
         }
@@ -212,7 +250,7 @@ namespace iron
         }
 
         llvm::BasicBlock &entryBB = function->getEntryBlock();
-        auto insertPoint = entryBB.getFirstInsertionPt();
+        const auto insertPoint = entryBB.getFirstInsertionPt();
         llvm::IRBuilder<> tempBuilder(&entryBB, insertPoint);
 
         llvm::AllocaInst *argAlloca = tempBuilder.CreateAlloca(arg->getType(), nullptr, arg->getName() + "_alloca");
@@ -242,7 +280,8 @@ namespace iron
         return nullptr;
     }
 
-    llvm::Value *LLVM::createConstValue(std::shared_ptr<hlir::Type> hlirType, std::shared_ptr<hlir::Value> value)
+    llvm::Value *LLVM::createConstValue(const std::shared_ptr<hlir::Type> &hlirType,
+                                        const std::shared_ptr<hlir::Value> &value)
     {
         llvm::Value *callArg = std::visit(
                 [this, hlirType](auto &&argValue) -> llvm::Value *
@@ -264,22 +303,26 @@ namespace iron
                         llvm::AllocaInst *allocaVar =
                                 getOrPromoteToAlloca(argValue->getVarName(), builder.GetInsertBlock()->getParent());
 
-                        llvm::Type *type = allocaVar->getAllocatedType();
-                        if (type == nullptr)
+                        if (const llvm::Type *type = allocaVar->getAllocatedType(); type == nullptr)
                         {
                             throw std::runtime_error("Failed to retrieve allocated type");
                         }
 
 
+                        if (hlirType->getType() == tokenMap::TYPE_STRING)
+                        {
+                            llvm::ConstantInt *zero = llvm::ConstantInt::get(llvm::Type::getInt32Ty(llvmContext), 0);
+                            return builder.CreateGEP(allocaVar->getAllocatedType(), allocaVar, {zero, zero}, "str_ptr");
+                        }
+
                         llvm::Value *loadedVar = builder.CreateLoad(allocaVar->getAllocatedType(), allocaVar,
                                                                     util::format("load_{}", argValue->getVarName()));
-
                         return loadedVar;
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
                     {
 
-                        auto argType = hlirType->getType();
+                        const auto argType = hlirType->getType();
 
                         llvm::Type *type = mapType(argType);
                         if (!type)
@@ -291,17 +334,17 @@ namespace iron
                         {
                             return llvm::ConstantInt::get(type, std::stoi(argValue), true);
                         }
-                        else if (argType == tokenMap::TYPE_FLOAT)
+                        if (argType == tokenMap::TYPE_FLOAT)
                         {
-                            float floatVal = std::stof(argValue);
+                            const float floatVal = std::stof(argValue);
                             return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(floatVal));
                         }
-                        else if (argType == tokenMap::TYPE_DOUBLE)
+                        if (argType == tokenMap::TYPE_DOUBLE)
                         {
-                            double doubleVal = std::stod(argValue);
+                            const double doubleVal = std::stod(argValue);
                             return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(doubleVal));
                         }
-                        else if (argType == tokenMap::TYPE_CHAR)
+                        if (argType == tokenMap::TYPE_CHAR)
                         {
                             if (argValue.empty())
                             {
@@ -309,11 +352,16 @@ namespace iron
                             }
                             return llvm::ConstantInt::get(type, static_cast<int>(argValue[0]), true);
                         }
-                        else if (argType == tokenMap::TYPE_BOOLEAN)
+                        if (argType == tokenMap::TYPE_BOOLEAN)
                         {
-                            bool boolVal = (argValue == "true");
+                            const bool boolVal = (argValue == "true");
                             return llvm::ConstantInt::get(type, boolVal ? 1 : 0, false);
                         }
+                        // TODO: Aqui ajustar
+                        // if (argType == tokenMap::TYPE_STRING)
+                        // {
+                        //
+                        // }
                         else
                         {
                             throw LLVMException("LLVM::createConstValue. Unsupported argument type.");
@@ -327,6 +375,27 @@ namespace iron
                 value->getValue());
 
         return callArg;
+    }
+
+    llvm::AllocaInst *LLVM::allocaVariableStr(const std::shared_ptr<hlir::Variable> &variable, const std::string &value)
+    {
+        if (!variable)
+        {
+            throw LLVMException("allocaVariable: variable is null");
+        }
+        if (!variable->getVarType())
+        {
+            throw LLVMException("allocaVariable: variable->getVarType() is null");
+        }
+        if (value.empty())
+        {
+            throw LLVMException("allocaVariable: value is null");
+        }
+
+        const unsigned strSize = value.size() + 1;
+        llvm::ArrayType *strArrType = llvm::ArrayType::get(llvm::Type::getInt8Ty(llvmContext), strSize);
+        llvm::AllocaInst *localStr = builder.CreateAlloca(strArrType, nullptr, variable->getVarName());
+        return localStr;
     }
 
     llvm::AllocaInst *LLVM::allocaVariable(std::shared_ptr<hlir::Variable> variable)
@@ -349,13 +418,14 @@ namespace iron
         llvm::BasicBlock &entryBlock = currentFunction->getEntryBlock();
         llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
 
+        printf("Alocou como: %s", tokenMap::getTokenText(variable->getVarType()->getType()).c_str());
         llvm::Type *llvmType = mapType(variable->getVarType()->getType());
         llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, variable->getVarName());
         return allocaVariable;
     }
 
-    llvm::Value *LLVM::numberCasting(std::shared_ptr<hlir::Variable> variable, std::shared_ptr<hlir::Type> type,
-                                     llvm::Function *currentFunction)
+    llvm::Value *LLVM::numberCasting(const std::shared_ptr<hlir::Variable> &variable,
+                                     const std::shared_ptr<hlir::Type> &type, llvm::Function *currentFunction)
     {
         // Initial check of input pointers
         if (!variable)

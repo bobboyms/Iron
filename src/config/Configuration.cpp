@@ -15,13 +15,22 @@ namespace config
         throw std::runtime_error("key libs and std not found in compiler_config.yaml");
     }
 
-    std::string Configuration::outputTempFiles()
+    std::string Configuration::outputHLIR()
     {
-        if (configFile["compiler"] && configFile["compiler"]["output_temp_files"]) {
-            return configFile["compiler"]["output_temp_files"].as<std::string>();
+        if (configFile["compiler"] && configFile["compiler"]["output_hlir"]) {
+            return configFile["compiler"]["output_hlir"].as<std::string>();
         }
 
-        throw std::runtime_error("key compiler and output_temp_files not found in compiler_config.yaml");
+        throw std::runtime_error("key compiler and output_hlir not found in compiler_config.yaml");
+    }
+
+    std::string Configuration::outputLLVM()
+    {
+        if (configFile["compiler"] && configFile["compiler"]["output_llvm"]) {
+            return configFile["compiler"]["output_llvm"].as<std::string>();
+        }
+
+        throw std::runtime_error("key compiler and output_llvm not found in compiler_config.yaml");
     }
 
     Configuration::Configuration(const std::string &configFolder)

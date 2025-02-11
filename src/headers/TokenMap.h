@@ -31,6 +31,10 @@ namespace tokenMap
         R_BRACKET,
         ARROW,
 
+        // Linguagens suportadas
+        C_LANG,
+        IRON_LANG,
+
         // Palavras reservadas
         FUNCTION,
 
@@ -47,8 +51,14 @@ namespace tokenMap
         TYPE_BOOLEAN,
         TYPE_DOUBLE,
 
+        // Ponteiros
+        PTR_TYPE_INT,
+        PTR_TYPE_CHAR,
+        PTR_TYPE_FLOAT,
+        PTR_TYPE_BOOLEAN,
+        PTR_TYPE_DOUBLE,
+
         // tipos de controle
-        PTR,
         FUNCTION_PTR,
         FUNCTION_CALL,
         VARIABLE,
@@ -91,6 +101,16 @@ namespace tokenMap
             {TYPE_BOOLEAN, "boolean"},
             {TYPE_DOUBLE, "double"},
 
+            {PTR_TYPE_INT, "ptr int"},
+            {PTR_TYPE_CHAR, "ptr char"},
+            {PTR_TYPE_FLOAT, "ptr float"},
+            {PTR_TYPE_BOOLEAN, "ptr boolean"},
+            {PTR_TYPE_DOUBLE, "ptr double"},
+
+            // Linguagens suportadas
+            {C_LANG, "C"},
+            {IRON_LANG, "IRON"},
+
             // tipos de controle
             {GLOBAL, "global"},
             {VARIABLE, "variable"},
@@ -101,7 +121,6 @@ namespace tokenMap
             {PRIVATE, "private"},
             {ARGUMENT, "arg"},
             {FUNCTION_PTR, "fptr"},
-            {PTR, "ptr"},
             {FUNCTION_CALL, "fn_call"},
 
     };

@@ -910,6 +910,7 @@ namespace hlir
          */
         std::shared_ptr<Statement> statement;
         std::shared_ptr<Function> parentFunction;
+        int languageType;
 
         /**
          * @brief Pointer to the function's argument list.
@@ -935,6 +936,7 @@ namespace hlir
 
         std::shared_ptr<Statement> getStatement();
 
+
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -958,6 +960,8 @@ namespace hlir
 
         void enableInline();
         bool isExternal();
+        int getLanguageType();
+        void setLanguageType(int type);
         void changeToExternal();
         void changeToVariedArguments();
         bool isVariedArguments();

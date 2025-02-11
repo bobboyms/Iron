@@ -210,7 +210,7 @@ namespace iron
             if (auto globalScope = scopeManager->getFunctionDeclarationByName(element))
             {
 
-                throw FunctionRedefinitionException(util::format("Function {} already declared."
+                throw ModuleRedefinitionException(util::format("Module {} already declared."
                                                                  "Line: {}, Scope: {}\n\n"
                                                                  "{}\n"
                                                                  "{}\n",
@@ -220,9 +220,10 @@ namespace iron
                                                                  caretLine));
             }
 
+            bool foundExternal = false;
             Analyser analyser(config);
             auto const externalDeclarations = analyser.semantic(fullPath);
-            for (const auto externalDeclaration : externalDeclarations)
+            for (const auto &externalDeclaration : externalDeclarations)
             {
                 if (externalDeclaration->getFunctionName() != element)
                 {
@@ -230,6 +231,19 @@ namespace iron
                 }
 
                 scopeManager->setExternDeclaration(externalDeclaration);
+                foundExternal = true;
+            }
+
+            if (!foundExternal)
+            {
+                throw ModuleNotFoundException(util::format("Module {} not found."
+                                                                 "Line: {}, Scope: {}\n\n"
+                                                                 "{}\n"
+                                                                 "{}\n",
+                                                                 color::colorText(element, color::BOLD_GREEN),
+                                                                 color::colorText(std::to_string(line), color::YELLOW),
+                                                                 color::colorText("Global", color::BOLD_YELLOW), codeLine,
+                                                                 caretLine));
             }
 
 

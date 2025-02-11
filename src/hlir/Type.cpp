@@ -16,6 +16,11 @@ namespace hlir
             case tokenMap::TYPE_DOUBLE:
             case tokenMap::FUNCTION:
             case tokenMap::FUNCTION_PTR:
+            case tokenMap::PTR_TYPE_INT:
+            case tokenMap::PTR_TYPE_FLOAT:
+            case tokenMap::PTR_TYPE_CHAR:
+            case tokenMap::PTR_TYPE_BOOLEAN:
+            case tokenMap::PTR_TYPE_DOUBLE:
             case tokenMap::VOID:
                 return true;
 
@@ -52,7 +57,6 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-
         sb << tokenMap::getTokenText(type);
         return sb.str();
     }

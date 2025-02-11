@@ -18,8 +18,10 @@ public:
     L_BRACKET = 19, R_BRACKET = 20, ARROW = 21, FUNCTION = 22, LET = 23, 
     PUBLIC = 24, IMPORT = 25, RETURN = 26, TYPE_INT = 27, TYPE_CHAR = 28, 
     TYPE_FLOAT = 29, TYPE_STRING = 30, TYPE_BOOLEAN = 31, TYPE_DOUBLE = 32, 
-    TYPE_VOID = 33, REAL_NUMBER = 34, INT_NUMBER = 35, BOOLEAN_VALUE = 36, 
-    STRING_LITERAL = 37, IDENTIFIER = 38, NEWLINE = 39, WS = 40
+    TYPE_VOID = 33, PTR_TYPE_INT = 34, PTR_TYPE_CHAR = 35, PTR_TYPE_FLOAT = 36, 
+    PTR_TYPE_BOOLEAN = 37, PTR_TYPE_DOUBLE = 38, REAL_NUMBER = 39, INT_NUMBER = 40, 
+    BOOLEAN_VALUE = 41, STRING_LITERAL = 42, IDENTIFIER = 43, NEWLINE = 44, 
+    WS = 45
   };
 
   enum {
@@ -282,11 +284,13 @@ public:
   class  ExternFunctionArgContext : public antlr4::ParserRuleContext {
   public:
     antlr4::Token *varName = nullptr;
+    antlr4::Token *ptr = nullptr;
     ExternFunctionArgContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *COLON();
     CTypesContext *cTypes();
     antlr4::tree::TerminalNode *IDENTIFIER();
+    antlr4::tree::TerminalNode *STAR();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

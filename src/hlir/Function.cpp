@@ -3,11 +3,13 @@
 
 namespace hlir
 {
-    Function::Function() : external(false), variedArguments(false)
+    Function::Function() : external(false), variedArguments(false), languageType(tokenMap::IRON_LANG)
     {
     }
 
-    Function::~Function() {}
+    Function::~Function()
+    {
+    }
 
     void Function::enableInline()
     {
@@ -17,6 +19,16 @@ namespace hlir
     bool Function::isExternal()
     {
         return external;
+    }
+
+    int Function::getLanguageType()
+    {
+        return languageType;
+    }
+
+    void Function::setLanguageType(const int type)
+    {
+        languageType = type;
     }
 
     void Function::changeToExternal()
@@ -144,9 +156,9 @@ namespace hlir
         sb.clear();
         if (external)
         {
-            sb << util::format("extern fn {}({}):{}\n", functionName, functionArgs->getText(),
-                                   functionReturnType->getText());
-
+            const auto language = tokenMap::getTokenText(languageType);
+            sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
+                               functionReturnType->getText());
         }
         else
         {

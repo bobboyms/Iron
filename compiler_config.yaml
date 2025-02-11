@@ -5,5 +5,6 @@ libs:
   std: "/Users/thiagorodrigues/Desktop/IronLang/lib"
 
 compiler:
-  output_temp_files: "/Users/thiagorodrigues/Desktop/IronLang/temp"
-  output_executable: "/Users/thiagorodrigues/Desktop/IronLang/temp"
+  output_hlir: "/Users/thiagorodrigues/Desktop/IronLang/temp/hlir"
+  output_llvm: "/Users/thiagorodrigues/Desktop/IronLang/temp/llvm"
+#  output_executable: "/Users/thiagorodrigues/Desktop/IronLang/temp/build"

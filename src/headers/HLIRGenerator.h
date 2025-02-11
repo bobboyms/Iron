@@ -12,13 +12,15 @@ namespace hlir
         std::shared_ptr<IronParser> parser;
         std::shared_ptr<Context> context;
         std::shared_ptr<config::Configuration> config;
+        std::shared_ptr<std::vector<std::pair<std::string, std::string>>> hilirFiles;
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
-        void visitStatementList(const IronParser::StatementListContext *ctx, const std::shared_ptr<Statement>& statement);
-        void visitVarDeclaration(IronParser::VarDeclarationContext *ctx, const std::shared_ptr<Statement>& statement);
+        void visitStatementList(const IronParser::StatementListContext *ctx,
+                                const std::shared_ptr<Statement> &statement);
+        void visitVarDeclaration(IronParser::VarDeclarationContext *ctx, const std::shared_ptr<Statement> &statement);
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement);
 
-        std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement>& statement);
+        std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement);
         void visitAssignment(IronParser::AssignmentContext *ctx, std::shared_ptr<Statement> statement);
 
         void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx,
@@ -55,8 +57,9 @@ namespace hlir
                                     const std::shared_ptr<FunctionArgs> &argsList);
         // HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context);
         HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::__1::shared_ptr<hlir::Context> &context,
-                      const std::shared_ptr<config::Configuration> &config);
-        HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context);
+                      const std::shared_ptr<config::Configuration> &config,
+                      const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles);
+        // HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context);
         ~HLIRGenerator();
     };
 

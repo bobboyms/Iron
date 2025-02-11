@@ -29,7 +29,12 @@ namespace iron
         ~Analyser();
         std::vector<std::shared_ptr<scope::Function>> semantic(const std::string &fileName);
         static std::vector<std::string> loadStringAsLines(const std::string &code);
-        std::shared_ptr<hlir::Context> hlir(const std::string &fileName);
+        std::shared_ptr<hlir::Context>
+        hlir(const std::string &fileName,
+             const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) const;
+
+        // std::shared_ptr<hlir::Context> hlir(const std::string &fileName,
+        //      const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) const;
     };
 }
 

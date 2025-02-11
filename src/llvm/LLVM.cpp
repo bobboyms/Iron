@@ -4,8 +4,8 @@
 
 namespace iron
 {
-
-    LLVM::LLVM(std::shared_ptr<hlir::Context> hlirContext) : hlirContext(std::move(hlirContext)), builder(llvmContext)
+    LLVM::LLVM(const std::shared_ptr<hlir::Context> &hlirContext) :
+        hlirContext(std::move(hlirContext)), builder(llvmContext)
     {
         module = std::make_unique<llvm::Module>("file_1", llvmContext);
         module->setTargetTriple("arm64-apple-macosx15.0.0");
@@ -15,6 +15,11 @@ namespace iron
 
     void LLVM::visitFunction(const std::shared_ptr<hlir::Function> &hlirFunction)
     {
+
+        if (hlirFunction->isExternal())
+        {
+            return;
+        }
 
         if (!hlirFunction)
         {
@@ -86,7 +91,7 @@ namespace iron
         const auto allocaVariable = findAllocaByName(currentFunction, varName);
 
         const auto type = mapType(funcReturn->getVariable()->getVarType()->getType());
-        llvm::Value *varValue = builder.CreateLoad(type, allocaVariable, util::format("load_{}",varName));
+        llvm::Value *varValue = builder.CreateLoad(type, allocaVariable, util::format("load_{}", varName));
 
         // 9. Retorna o valor de "idade"
         builder.CreateRet(varValue);
@@ -154,16 +159,24 @@ namespace iron
                 throw LLVMException(util::format("LLVM::visitFunctionCall. Variable {} found", arg->argument));
             }
 
+            // auto val = tokenMap::getTokenText(arg->value->getValueType()->getType());
+
+            // llvm::Constant *helloConst = ConstantDataArray::getString(Context, "Hello, world!\n", true);
+            printf("Arg: %s\n", arg->argument.c_str());
             auto value = createConstValue(arg->value->getValueType(), arg->value);
             args.push_back(value);
         }
 
         // Verificar se o número de argumentos corresponde à assinatura da função
-        if (function->arg_size() != args.size())
+        if (!functionCall->getFunction()->isVariedArguments())
         {
-            throw LLVMException(
-                    util::format("LLVM::visitFunctionCall. Argument count mismatch for function {}.", functionName));
+            if (function->arg_size() != args.size())
+            {
+                throw LLVMException(
+                        util::format("LLVM::visitFunctionCall. Argument count mismatch for function {}.", functionName));
+            }
         }
+
 
         // Criar a chamada função diretamente
         if (function->getReturnType()->isVoidTy())
@@ -198,10 +211,14 @@ namespace iron
             throw LLVMException("visitAssignment: currentFunction is null");
         }
 
-        auto alloca = allocaVariable(hlirAssignment->getVariable());
-        auto value = hlirAssignment->getValue()->getValue();
+        const auto variable = hlirAssignment->getVariable();
+        const auto value = hlirAssignment->getValue()->getValue();
+
+
+
+        // auto value = hlirAssignment->getValue()->getValue();
         std::visit(
-                [this, hlirAssignment, alloca, currentFunction]([[maybe_unused]] auto &&arg)
+                [this, hlirAssignment, variable, currentFunction]([[maybe_unused]] auto &&arg)
                 {
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
@@ -209,14 +226,27 @@ namespace iron
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
+                        const auto alloca = allocaVariable(hlirAssignment->getVariable());
                         this->assignVariable(hlirAssignment->getValue(), alloca, currentFunction);
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
                     {
+                        llvm::AllocaInst * alloca;
+                        if (variable->getVarType()->getType() == tokenMap::TYPE_STRING)
+                        {
+                            alloca = allocaVariableStr(hlirAssignment->getVariable(), arg);
+                        } else
+                        {
+                            alloca = allocaVariable(hlirAssignment->getVariable());
+                        }
+
                         this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);
+                        // this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);
                     }
                 },
                 value);
+
+
     }
 
     void LLVM::visitExpr(const std::shared_ptr<hlir::Expr> &hlirExpr)
@@ -303,8 +333,7 @@ namespace iron
         llvm::FunctionType *funcType;
         if (!argTypes.empty())
         {
-            // Definir o tipo da função
-            funcType = llvm::FunctionType::get(functionReturnType, argTypes, false);
+            funcType = llvm::FunctionType::get(functionReturnType, argTypes, hlirFunction->isVariedArguments());
         }
         else
         {

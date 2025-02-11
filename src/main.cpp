@@ -19,12 +19,26 @@ void runAnalysis(const std::string &file)
 {
     try
     {
+        // const std::make_sh ;
+        const auto hilirFiles = std::make_shared<std::vector<std::pair<std::string, std::string>>>();
         const auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
         iron::Analyser analyser(config);
         analyser.semantic(file);
-        const auto context = analyser.hlir(file);
+        const auto context = analyser.hlir(file, hilirFiles);
+        hilirFiles->push_back(std::make_pair(config->outputHLIR(), file));
 
-        printf("%s", context->getText().c_str());
+        // for (const auto &hilirFile : *hilirFiles)
+        // {
+        //     auto [path, file] = hilirFile;
+        //     printf("%s %s\n", path.c_str(), file.c_str());
+        // }
+
+        iron::LLVM llvm(context);
+        const auto llvmCode = llvm.generateCode();
+        std::cout << llvmCode << std::endl;
+
+
+        // printf("%s", context->getText().c_str());
 
     }
     catch (const iron::SemanticException &e)

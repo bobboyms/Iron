@@ -76,6 +76,23 @@ namespace iron
     //     }
     // };
 
+    class ModuleNotFoundException final : public SemanticException
+    {
+    public:
+        explicit ModuleNotFoundException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
+    class ModuleRedefinitionException final : public SemanticException
+    {
+    public:
+        explicit ModuleRedefinitionException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
+
 
     class ArgumentOrderMismatchException final : public SemanticException
     {

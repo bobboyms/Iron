@@ -1465,6 +1465,55 @@ TEST_F(SemanticAnalysisTest, T102)
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
+TEST_F(SemanticAnalysisTest, T103)
+{
+    const std::string input = R"(
+        import std.output.printex
+
+        fn main():int
+        {
+            printf(format:"Idade: %u, Sexo: %s", idade:25, sexo:"masculina")
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::ModuleNotFoundException);
+}
+
+TEST_F(SemanticAnalysisTest, T104)
+{
+    const std::string input = R"(
+        import std.output.printf
+        import std.output.printf
+
+        fn main():int
+        {
+            printf(format:"Idade: %u, Sexo: %s", idade:25, sexo:"masculina")
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::ModuleRedefinitionException);
+}
+
+TEST_F(SemanticAnalysisTest, T105)
+{
+    const std::string input = R"(
+        import std.output.printf
+        // import std.math.PI
+
+        fn main():int
+        {
+            printf(format:"Idade: %u, Sexo: %s", idade:25, sexo:"masculina", pi:PI())
+            return 0
+        }
+    )";
+
+    EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
+}
+
+
+
 // TEST_F(SemanticAnalysisTest, T101)
 // {
 //     const std::string input = R"(

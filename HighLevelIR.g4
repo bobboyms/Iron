@@ -23,6 +23,10 @@ AT: '@';
 ARROW: '->';
 UNDERSCORE: '_';
 
+//LANGUAGES
+C_LANG: 'C';
+IRON_LANG: 'IRON';
+
 // Palavras reservadas
 FUNCTION: 'fn';
 LET: 'let';
@@ -73,7 +77,7 @@ statementList: ( expr | functionCall | returnStatemant)*;
 
 //funções externas
 externFunctionDeclaration:
-	EXTERN FUNCTION exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
+	EXTERN (C_LANG | IRON_LANG ) FUNCTION exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
 
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
 

@@ -24,6 +24,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Adiciona flags de compilação para tornar a compilação mais rigorosa
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall) # -Wextra -Werror
+endif()
+
+
 ###############################################################################
 # 3. Encontrar e configurar o LLVM 19
 ###############################################################################

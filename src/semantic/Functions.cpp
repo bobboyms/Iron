@@ -147,7 +147,6 @@ namespace iron
     {
 
         std::string functionName = ctx->functionName->getText();
-        int line = ctx->getStart()->getLine();
 
         const auto currentScope = scopeManager->currentScope();
         if (!currentScope)
@@ -220,13 +219,10 @@ namespace iron
         }
 
 
-
         // Obtém a função corrente do escopo e verifica se ela é válida
         auto currentFunction = getCurrentFunction();
 
         // Recupera o nome da função chamada e obtém a função correspondente
-
-
 
 
         // Verifica se a quantidade de argumentos está correta
@@ -355,7 +351,6 @@ namespace iron
                                 color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                     }
                 }
-
             }
 
 
@@ -393,7 +388,6 @@ namespace iron
                                 color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                     }
                 }
-
             }
 
             if (ctx->functionCall())
@@ -407,8 +401,15 @@ namespace iron
                     auto functionPtr = currentFunction->findVarAllScopesAndArg(calledFunctionName);
                     if (!functionPtr)
                     {
-                        throw ScopeNotFoundException(
-                                "SemanticAnalysis::visitFunctionCallArg. No current function scope found");
+                        throw FunctionNotFoundException(
+                                util::format("Function {} not found.\n"
+                                             "Line: {}, Scope: {}\n\n"
+                                             "{}\n"
+                                             "{}\n",
+                                             color::colorText(calledFunctionName, color::BOLD_GREEN),
+                                             color::colorText(std::to_string(line), color::YELLOW),
+                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                             codeLine, caretLine));
                     }
 
                     localCalledFunction = functionPtr->function;
@@ -426,7 +427,8 @@ namespace iron
                                 color::colorText(argName, color::BOLD_GREEN),
                                 color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
                                 color::colorText(calledFunction->getName(), color::BOLD_BLUE),
-                                color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()), color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()),
+                                                 color::BOLD_BLUE),
                                 color::colorText(std::to_string(line), color::YELLOW),
                                 color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                     }

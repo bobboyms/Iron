@@ -15,7 +15,7 @@ namespace iron
 {
     std::pair<std::string, std::string> convertImportPath(const std::string &importPath);
     std::string fileContent(const std::string &importPath);
-    void saveToFile(const std::string &text, const std::string &directory, const std::string &filename);
+    std::pair<std::string, std::string> saveToFile(const std::string &text, const std::string &directory, const std::string &filename);
 
 }
 #endif // FILES_UTILS_H

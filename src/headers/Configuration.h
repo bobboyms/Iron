@@ -18,7 +18,8 @@ namespace config
 
     public:
         std::string stdFolder();
-        std::string outputTempFiles();
+        std::string outputHLIR();
+        std::string outputLLVM();
         explicit Configuration(const std::string &configFolder);
     };
 

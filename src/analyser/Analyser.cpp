@@ -29,7 +29,7 @@ namespace iron
         return lines;
     }
 
-    std::shared_ptr<hlir::Context> Analyser::hlir(const std::string &fileName)
+    std::shared_ptr<hlir::Context> Analyser::hlir(const std::string &fileName, const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) const
     {
         // Certifique-se de que o código de entrada esteja disponível para o parser.
         // Por exemplo, se você tiver o código em uma string 'input':
@@ -38,14 +38,16 @@ namespace iron
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
-        parser = std::make_shared<IronParser>(&tokens);
+        auto const parser = std::make_shared<IronParser>(&tokens);
 
         const auto context = std::make_shared<hlir::Context>();
-        hlir::HLIRGenerator highLevelCodeGenerator(parser, context, config);
+        hlir::HLIRGenerator highLevelCodeGenerator(parser, context, config, hilirFiles);
         highLevelCodeGenerator.getContext();
 
-        const auto hlirPath = util::format("{}", config->outputTempFiles());
-        saveToFile(context->getText(), hlirPath, "main.hlir");
+        const auto hlirPath = util::format("{}", config->outputHLIR());
+        const auto pathAndFile = saveToFile(context->getText(), hlirPath, "main.hlir");
+
+
 
         return context;
     }
@@ -58,10 +60,10 @@ namespace iron
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
-        parser = std::make_shared<IronParser>(&tokens);
+        auto const parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()),
+        SemanticAnalysis analysis(parser, std::make_unique<scope::ScopeManager>(),
                                         loadStringAsLines(input), config);
 
 
@@ -69,15 +71,6 @@ namespace iron
         return analysis.analyze();
 
 
-
-
-
-
-
-        //
-        // iron::LLVM llvm(context);
-        // auto llvmCode = llvm.generateCode();
-        // std::cout << llvmCode << std::endl;
 
 
     }
