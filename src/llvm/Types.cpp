@@ -398,7 +398,7 @@ namespace iron
         return localStr;
     }
 
-    llvm::AllocaInst *LLVM::allocaVariable(std::shared_ptr<hlir::Variable> variable)
+    llvm::AllocaInst *LLVM::allocaVariable(const std::shared_ptr<hlir::Variable>& variable)
     {
         if (!variable)
         {

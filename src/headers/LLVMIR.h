@@ -60,7 +60,7 @@ namespace iron
         void assignVariable(const std::shared_ptr<hlir::Value>& value, llvm::AllocaInst *allocaVariable,
                             llvm::Function *function);
 
-        llvm::AllocaInst *allocaVariable(std::shared_ptr<hlir::Variable> variable);
+        llvm::AllocaInst *allocaVariable(const std::shared_ptr<hlir::Variable>& variable);
 
         llvm::AllocaInst *findAllocaByName(llvm::Function *function, const std::string &varName);
 

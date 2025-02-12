@@ -184,10 +184,7 @@ namespace iron
             builder.CreateCall(function, args);
             return nullptr;
         }
-        else
-        {
-            return builder.CreateCall(function, args, "call_" + functionName);
-        }
+        return builder.CreateCall(function, args, "call_" + functionName);
     }
 
     void LLVM::visitAssignment(const std::shared_ptr<hlir::Assign> &hlirAssignment)
