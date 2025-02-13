@@ -27,12 +27,11 @@ namespace iron
     public:
         explicit Analyser(const std::shared_ptr<config::Configuration> &config);
         ~Analyser();
-        std::vector<std::shared_ptr<scope::Function>> semantic(const std::string &fileName);
+        std::vector<std::shared_ptr<scope::Function>> semantic(const std::string &fileName) const;
         static std::vector<std::string> loadStringAsLines(const std::string &code);
         std::shared_ptr<hlir::Context>
         hlir(const std::string &fileName,
-             const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) const;
-
+             const std::shared_ptr<std::map<std::string, std::shared_ptr<hlir::Context>>> &exportContexts) const;
         // std::shared_ptr<hlir::Context> hlir(const std::string &fileName,
         //      const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) const;
     };

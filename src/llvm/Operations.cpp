@@ -26,19 +26,16 @@ namespace iron
     {
         auto [loadLeftVar, loadRightVar] = operationLoad(mult, currentFunction);
 
-        if (auto varType = mult->getVarLeft()->getVarType()->getType();
+        if (const auto varType = mult->getVarLeft()->getVarType()->getType();
             varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
         {
             llvm::Value *result = builder.CreateFMul(loadLeftVar, loadRightVar, util::format("rmult", ""));
 
             return result;
         }
-        else
-        {
-            llvm::Value *result = builder.CreateMul(loadLeftVar, loadRightVar, util::format("rmult", ""));
+        llvm::Value *result = builder.CreateMul(loadLeftVar, loadRightVar, util::format("rmult", ""));
 
-            return result;
-        }
+        return result;
     }
 
     llvm::Value *LLVM::executeDiv(const std::shared_ptr<hlir::Div> &div, llvm::Function *currentFunction)
@@ -52,15 +49,13 @@ namespace iron
 
             return result;
         }
-        else
-        {
-            llvm::Value *result = builder.CreateSDiv(loadLeftVar, loadRightVar, util::format("rdiv", ""));
 
-            return result;
-        }
+        llvm::Value *result = builder.CreateSDiv(loadLeftVar, loadRightVar, util::format("rdiv", ""));
+
+        return result;
     }
 
-    llvm::Value *LLVM::executePlus(std::shared_ptr<hlir::Plus> plus, llvm::Function *currentFunction)
+    llvm::Value *LLVM::executePlus(const std::shared_ptr<hlir::Plus> &plus, llvm::Function *currentFunction)
     {
         auto [loadLeftVar, loadRightVar] = operationLoad(plus, currentFunction);
 
@@ -70,11 +65,9 @@ namespace iron
             llvm::Value *result = builder.CreateFAdd(loadLeftVar, loadRightVar, util::format("rplus", ""));
             return result;
         }
-        else
-        {
-            llvm::Value *result = builder.CreateAdd(loadRightVar, loadRightVar, util::format("rplus", ""));
-            return result;
-        }
+
+        llvm::Value *result = builder.CreateAdd(loadLeftVar, loadRightVar, util::format("rplus", ""));
+        return result;
     }
 
     llvm::Value *LLVM::executeMinus(const std::shared_ptr<hlir::Minus> &minus, llvm::Function *currentFunction)
@@ -87,10 +80,7 @@ namespace iron
             llvm::Value *result = builder.CreateFSub(loadLeftVar, loadRightVar, util::format("rminus", ""));
             return result;
         }
-        else
-        {
-            llvm::Value *result = builder.CreateSub(loadLeftVar, loadRightVar, util::format("rminus", ""));
-            return result;
-        }
+        llvm::Value *result = builder.CreateSub(loadLeftVar, loadRightVar, util::format("rminus", ""));
+        return result;
     }
 } // namespace iron

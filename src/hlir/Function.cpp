@@ -60,6 +60,10 @@ namespace hlir
     {
         return statement;
     }
+    void Function::setStatement(std::shared_ptr<Statement> statement)
+    {
+        this->statement = statement;
+    }
 
     std::shared_ptr<Function> Function::set(const std::string &functionName,
                                             const std::shared_ptr<FunctionArgs> &newFunctionArgs,
@@ -100,6 +104,22 @@ namespace hlir
     std::shared_ptr<Function> Function::getParentFunction()
     {
         return parentFunction;
+    }
+
+    std::shared_ptr<Function> Function::clone() const
+    {
+        const auto newFunction = std::make_shared<Function>(); //->set(functionName, functionArgs, functionReturnType);
+        newFunction->functionName = functionName;
+        newFunction->functionArgs = functionArgs;
+        newFunction->functionReturnType = functionReturnType;
+        newFunction->parent = parent;
+        newFunction->statement = statement;
+        newFunction->languageType = languageType;
+        newFunction->external = external;
+        newFunction->variedArguments = variedArguments;
+        newFunction->inlineFunction = inlineFunction;
+
+        return newFunction;
     }
 
     std::shared_ptr<Function> Function::set(const std::string &functionName,
@@ -410,17 +430,16 @@ namespace hlir
 
     std::shared_ptr<Variable> Statement::findVarByName(std::string varName)
     {
-
         std::shared_ptr<Variable> variable = nullptr;
         for (auto stmt: statementList)
         {
             std::visit(
                     [this, varName, &variable](const auto &stmtPtr)
                     {
+
                         using T = std::decay_t<decltype(*stmtPtr)>;
                         if constexpr (std::is_same_v<T, Assign>)
                         {
-
                             if (stmtPtr->getVariable()->getVarName() == varName)
                             {
                                 variable = stmtPtr->getVariable();

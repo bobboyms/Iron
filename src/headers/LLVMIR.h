@@ -30,14 +30,14 @@ namespace iron
         llvm::LLVMContext llvmContext; /**< LLVM context used for IR generation. */
         llvm::IRBuilder<> builder; /**< LLVM IRBuilder used to create LLVM instructions. */
         std::unique_ptr<llvm::Module> module; /**< LLVM Module that holds the generated IR. */
-        // std::shared_ptr<std::vector<std::pair<std::string, std::string>>> hilirFiles;
+        std::string filename;
 
     public:
-        explicit LLVM(const std::shared_ptr<hlir::Context> &hlirContext);
+        explicit LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename);
 
         ~LLVM();
 
-        std::string generateCode();
+        std::unique_ptr<llvm::Module> generateCode();
 
         /**
          * @brief Maps a custom type from the HLIR to the corresponding LLVM Type.
@@ -54,13 +54,15 @@ namespace iron
 
         void generateTerminator(llvm::Type *functionReturnType);
 
-        void assignValue(const std::shared_ptr<hlir::Variable>& variable, const std::shared_ptr<hlir::Value>& value,
+        std::string normalizeUserString(const std::string &input);
+
+        void assignValue(const std::shared_ptr<hlir::Variable> &variable, const std::shared_ptr<hlir::Value> &value,
                          llvm::AllocaInst *allocaVariable);
 
-        void assignVariable(const std::shared_ptr<hlir::Value>& value, llvm::AllocaInst *allocaVariable,
+        void assignVariable(const std::shared_ptr<hlir::Value> &value, llvm::AllocaInst *allocaVariable,
                             llvm::Function *function);
 
-        llvm::AllocaInst *allocaVariable(const std::shared_ptr<hlir::Variable>& variable);
+        llvm::AllocaInst *allocaVariable(const std::shared_ptr<hlir::Variable> &variable);
 
         llvm::AllocaInst *findAllocaByName(llvm::Function *function, const std::string &varName);
 
@@ -70,12 +72,12 @@ namespace iron
 
         llvm::Value *executeDiv(const std::shared_ptr<hlir::Div> &div, llvm::Function *currentFunction);
 
-        llvm::Value *executePlus(std::shared_ptr<hlir::Plus> plus, llvm::Function *currentFunction);
+        llvm::Value *executePlus(const std::shared_ptr<hlir::Plus> &plus, llvm::Function *currentFunction);
 
         llvm::Value *executeMinus(const std::shared_ptr<hlir::Minus> &minus, llvm::Function *currentFunction);
 
-        llvm::Value *numberCasting(const std::shared_ptr<hlir::Variable>& variable, const std::shared_ptr<hlir::Type>& type,
-                                   llvm::Function *currentFunction);
+        llvm::Value *numberCasting(const std::shared_ptr<hlir::Variable> &variable,
+                                   const std::shared_ptr<hlir::Type> &type, llvm::Function *currentFunction);
 
         std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(std::shared_ptr<hlir::BinaryOperation> op,
                                                                     llvm::Function *currentFunction);
@@ -88,19 +90,23 @@ namespace iron
                                       const std::shared_ptr<hlir::Value> &value);
         llvm::AllocaInst *allocaVariableStr(const std::shared_ptr<hlir::Variable> &variable, const std::string &value);
 
-        void declareFunction(const std::shared_ptr<hlir::Function>& hlirFunction);
+        void declareFunction(const std::shared_ptr<hlir::Function> &hlirFunction);
 
-        void visitFunction(const std::shared_ptr<hlir::Function>& hlirFunction);
+        void visitFunction(const std::shared_ptr<hlir::Function> &hlirFunction);
 
-        void visitStatement(const std::shared_ptr<hlir::Statement>& hlirStatement);
+        void visitStatement(const std::shared_ptr<hlir::Statement> &hlirStatement);
 
         void visitFuncReturn(const std::shared_ptr<hlir::FuncReturn> &funcReturn);
 
-        void visitExpr(const std::shared_ptr<hlir::Expr>& hlirExpr);
+        void visitExpr(const std::shared_ptr<hlir::Expr> &hlirExpr);
 
-        void visitAssignment(const std::shared_ptr<hlir::Assign>& hlirAssignment);
+        void visitAssignment(const std::shared_ptr<hlir::Assign> &hlirAssignment);
 
-        llvm::Value *visitFunctionCall(const std::shared_ptr<hlir::FunctionCall>& functionCall);
+        llvm::Value *visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall);
+        static void linkExecutable(const std::vector<std::string> &objects, const std::string &exeName,
+                            const std::string &arch, const std::string &macosxVersionMin);
+
+        static void emitObjectFile(llvm::Module *module, const std::string &filename);
     };
 } // namespace iron
 

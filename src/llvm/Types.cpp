@@ -88,7 +88,7 @@ namespace iron
 
             case tokenMap::TYPE_STRING:
             {
-                valueToStore = llvm::ConstantDataArray::getString(llvmContext, value->getText(), true);
+                valueToStore = llvm::ConstantDataArray::getString(llvmContext, normalizeUserString(value->getText()), true);
                 break;
             }
 
@@ -111,7 +111,6 @@ namespace iron
             }
             builder.CreateStore(valueToStore, allocaVariable);
         }
-        printf("%s\n", tokenMap::getTokenText(variable->getVarType()->getType()).c_str());
     }
 
     void LLVM::generateTerminator(llvm::Type *functionReturnType)
@@ -266,7 +265,7 @@ namespace iron
         {
             for (auto &inst: block)
             {
-                if (auto allocaInst = llvm::dyn_cast<llvm::AllocaInst>(&inst))
+                if (const auto allocaInst = llvm::dyn_cast<llvm::AllocaInst>(&inst))
                 {
 
                     if (allocaInst->getName() == varName)
@@ -283,6 +282,7 @@ namespace iron
     llvm::Value *LLVM::createConstValue(const std::shared_ptr<hlir::Type> &hlirType,
                                         const std::shared_ptr<hlir::Value> &value)
     {
+
         llvm::Value *callArg = std::visit(
                 [this, hlirType](auto &&argValue) -> llvm::Value *
                 {
@@ -418,7 +418,6 @@ namespace iron
         llvm::BasicBlock &entryBlock = currentFunction->getEntryBlock();
         llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
 
-        printf("Alocou como: %s", tokenMap::getTokenText(variable->getVarType()->getType()).c_str());
         llvm::Type *llvmType = mapType(variable->getVarType()->getType());
         llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, variable->getVarName());
         return allocaVariable;
@@ -535,4 +534,74 @@ namespace iron
         return value;
     }
 
+    std::string LLVM::normalizeUserString(const std::string &input) {
+        std::string output;
+        output.reserve(input.size());
+
+        // Se a string começa e termina com aspas, remova-as
+        size_t start = 0;
+        size_t end = input.size();
+        if (!input.empty() && input.front() == '\"' && input.back() == '\"') {
+            start = 1;
+            end = input.size() - 1;
+        }
+
+        // Processa a string caractere a caractere, interpretando sequências de escape comuns
+        for (size_t i = start; i < end; ++i) {
+            if (input[i] == '\\' && i + 1 < end) {
+                char next = input[i+1];
+                switch (next) {
+                    case 'n':
+                        output.push_back('\n');
+                    i++; // pula o próximo caractere
+                    break;
+                    case 't':
+                        output.push_back('\t');
+                    i++;
+                    break;
+                    case '\"':
+                        output.push_back('\"');
+                    i++;
+                    break;
+                    case '\\':
+                        output.push_back('\\');
+                    i++;
+                    break;
+                    // Você pode adicionar mais casos, se necessário.
+                    default:
+                        // Se não for uma sequência conhecida, apenas copia os dois caracteres
+                            output.push_back(input[i]);
+                    // output.push_back(input[i+1]); // opcional, dependendo do que você deseja
+                    i++; // pula o próximo caractere
+                    break;
+                }
+            } else {
+                output.push_back(input[i]);
+            }
+        }
+
+        return output;
+    }
+
 } // namespace iron
+
+#include <iostream>
+
+// Função para normalizar a string de entrada
+
+
+// int main() {
+//     // Exemplo 1: String com aspas delimitadoras e escapes literais
+//     std::string test1 = "\"Resultado: %i\\n\"";
+//     std::string normalized1 = normalizeUserString(test1);
+//     std::cout << "Normalized 1:" << std::endl;
+//     std::cout << normalized1 << std::endl;
+//
+//     // Exemplo 2: String sem aspas e já com nova linha real
+//     std::string test2 = "Resultado: %i\n";
+//     std::string normalized2 = normalizeUserString(test2);
+//     std::cout << "Normalized 2:" << std::endl;
+//     std::cout << normalized2 << std::endl;
+//
+//     return 0;
+// }

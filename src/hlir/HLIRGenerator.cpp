@@ -87,11 +87,11 @@ namespace hlir
         throw hlir::HLIRException(util::format("Undefined variable: {} in expression", varName));
     }
 
-    HLIRGenerator::HLIRGenerator(const std::shared_ptr<IronParser> &parser,
-                                 const std::__1::shared_ptr<hlir::Context> &context,
-                                 const std::shared_ptr<config::Configuration> &config,
-                                 const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) :
-        parser(parser), context(context), config(config), hilirFiles(hilirFiles)
+    HLIRGenerator::HLIRGenerator(
+            const std::shared_ptr<IronParser> &parser, const std::__1::shared_ptr<Context> &context,
+            const std::shared_ptr<config::Configuration> &config,
+            const std::shared_ptr<std::map<std::string, std::shared_ptr<Context>>> &exportContexts) :
+        parser(parser), context(context), config(config), exportContexts(exportContexts)
     {
         if (!parser)
         {
@@ -108,9 +108,9 @@ namespace hlir
             throw HLIRException("The config can't be nullptr");
         }
 
-        if (!hilirFiles)
+        if (!exportContexts)
         {
-            throw HLIRException("The hilirFiles can't be nullptr");
+            throw HLIRException("The exportContexts can't be nullptr");
         }
     }
 
@@ -689,7 +689,8 @@ namespace hlir
             // auto expr = std::make_shared<Expr>()->set(anotherVar, assign);
             statement->addStatement(assign);
 
-            // callArgs->addCallArg(std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(realType), value));
+            // callArgs->addCallArg(std::make_shared<FunctionCallArg>(argName, std::make_shared<Type>(realType),
+            // value));
         }
 
         if (ctx->anotherVarName)
@@ -814,9 +815,9 @@ namespace hlir
         if (auto *varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
         {
             // Nome "original" da arrow function
-            std::string arrowFuncName = varDeclaration->varName->getText();
+            const std::string arrowFuncName = varDeclaration->varName->getText();
 
-            auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
+            const auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
             if (!currentFunction)
             {
                 throw HLIRException("std::dynamic_pointer_cast<Function>(statement->getParent())");
@@ -1006,25 +1007,52 @@ namespace hlir
             const auto [path, element] = iron::convertImportPath(import);
             const std::string fullPath = util::format("{}{}", config->stdFolder(), path);
 
-            const iron::Analyser analyser(config);
-            const auto parentContext = analyser.hlir(fullPath, hilirFiles);
-
-            const auto hlirPath = util::format("{}{}", config->outputHLIR(), path);
-            const auto pathAndFile = iron::saveToFile(parentContext->getText(), hlirPath, "hlir");
-
-            hilirFiles->push_back(pathAndFile);
-
-            for (const auto &externalDeclaration: parentContext->getFunctions())
+            if (const auto it = exportContexts->find(fullPath); it != exportContexts->end())
             {
-
-                if (externalDeclaration->getFunctionName() != element)
+                if (auto foundContext = it->second)
                 {
-                    continue;
+                    auto externalFunction = foundContext->getFunctionByName(element);
+                    registerExternalFunction(externalFunction);
                 }
-
-                externalDeclaration->changeToExternal();
-                context->addExternalFunction(externalDeclaration);
             }
+            else
+            {
+                const iron::Analyser analyser(config);
+                const auto parentContext = analyser.hlir(fullPath, exportContexts);
+                exportContexts->emplace(fullPath, parentContext);
+
+                const auto hlirPath = util::format("{}{}", config->outputHLIR(), path);
+                const auto pathAndFile = iron::saveToFile(parentContext->getText(), hlirPath, "hlir");
+
+                // hilirFiles->push_back(pathAndFile);
+
+                for (const auto &externalFunction: parentContext->getFunctions())
+                {
+
+                    if (externalFunction->getFunctionName() != element)
+                    {
+                        continue;
+                    }
+                    registerExternalFunction(externalFunction);
+                }
+            }
+        }
+    }
+
+    void HLIRGenerator::registerExternalFunction(const std::shared_ptr<Function>& function) const
+    {
+        if (function) {
+
+            const auto externalFunction = function->clone();
+            externalFunction->changeToExternal();
+            if (function->isVariedArguments())
+            {
+                externalFunction->changeToVariedArguments();
+            }
+
+            externalFunction->setLanguageType(function->getLanguageType());
+
+            context->addExternalFunction(externalFunction);
         }
     }
 

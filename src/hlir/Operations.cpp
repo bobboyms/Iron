@@ -384,7 +384,12 @@ namespace hlir
             throw HLIRException("Context::addExternalFunction failed: function is not external.");
         }
 
-        functions.push_back(function);
+        if (!getFunctionByName(function->getFunctionName()))
+        {
+            functions.push_back(function);
+        }
+
+
     }
 
     void Context::addFunction(const std::shared_ptr<Function> &function)
