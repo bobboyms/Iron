@@ -6,7 +6,7 @@ import std.math.sum
  {
     let inline:fn = ():int -> 2
     let idade:int = 28
-    printf(format:"Idade: %u Nome: %s sum:%i\n", idade:idade, name:"Jaba", sum:inline())
+    printf(format:"Idade: %u Nome: %s sum:%i\n", idade:idade, name:"Jaba", sum:inline() * 2)
     // printf(format:"Soma: %u\n", soma:2)
     return 0
  }

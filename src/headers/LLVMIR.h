@@ -27,14 +27,16 @@ namespace iron
     {
     private:
         std::shared_ptr<hlir::Context> hlirContext;
-        llvm::LLVMContext llvmContext; /**< LLVM context used for IR generation. */
+        llvm::LLVMContext &llvmContext; /**< LLVM context used for IR generation. */
         llvm::IRBuilder<> builder; /**< LLVM IRBuilder used to create LLVM instructions. */
         std::unique_ptr<llvm::Module> module; /**< LLVM Module that holds the generated IR. */
         std::string filename;
 
     public:
-        explicit LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename);
+        explicit LLVM(const std::shared_ptr<hlir::Context>& hlirContext, llvm::LLVMContext &context, const std::string &filename);
 
+        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename,
+             const llvm::LLVMContext &context);
         ~LLVM();
 
         std::unique_ptr<llvm::Module> generateCode();
@@ -104,9 +106,10 @@ namespace iron
 
         llvm::Value *visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall);
         static void linkExecutable(const std::vector<std::string> &objects, const std::string &exeName,
-                            const std::string &arch, const std::string &macosxVersionMin);
+                                   const std::string &arch, const std::string &macosxVersionMin);
 
         static void emitObjectFile(llvm::Module *module, const std::string &filename);
+        static void mergeModulesAndExecute(std::vector<std::unique_ptr<llvm::Module>> modules);
     };
 } // namespace iron
 

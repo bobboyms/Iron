@@ -1,18 +1,20 @@
 #include <antlr4-runtime.h>
 #include "headers/Analyser.h"
-// #include <iostream>
-// #include <sstream>
-// #include <string>
-// #include <vector>
-// #include <yaml-cpp/yaml.h>
-// #include "headers/Configuration.h"
-// #include "headers/LLVM.h"
-#include "headers/Analyser.h"
-// #include "parsers/IronLexer.h"
-// #include "scope/ScopeManager.h"
+#include <llvm/Support/ManagedStatic.h>
 
-// Recebe todo o código em uma única string e devolve um vetor de strings,
-// onde cada elemento corresponde a uma linha.
+// // #include <iostream>
+// // #include <sstream>
+// // #include <string>
+// // #include <vector>
+// // #include <yaml-cpp/yaml.h>
+// // #include "headers/Configuration.h"
+// // #include "headers/LLVM.h"
+// #include "headers/Analyser.h"
+// // #include "parsers/IronLexer.h"
+// // #include "scope/ScopeManager.h"
+//
+// // Recebe todo o código em uma única string e devolve um vetor de strings,
+// // onde cada elemento corresponde a uma linha.
 
 
 std::string getFileNameWithoutExtension(const std::string &filePath)
@@ -21,37 +23,42 @@ std::string getFileNameWithoutExtension(const std::string &filePath)
     return path.stem().string() + ".o";
 }
 
-void runAnalysis(const std::string &file)
+void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
 {
     try
     {
-        const auto contexts = std::make_shared<std::map<std::string, std::shared_ptr<hlir::Context>>>();
+        const auto hlirContexts = std::make_shared<std::map<std::string, std::shared_ptr<hlir::Context>>>();
 
         const auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
         const iron::Analyser analyser(config);
         analyser.semantic(file);
-        const auto context = analyser.hlir(file, contexts);
-        contexts->emplace("main", context);
+        const auto hlirContext = analyser.hlir(file, hlirContexts);
+        hlirContexts->emplace("main", hlirContext);
 
-        auto objectFiles = std::vector<std::string>();
-        for (const auto &[path, context]: *contexts)
+        std::vector<std::unique_ptr<llvm::Module>> modules;
+        std::vector<std::string> objectFiles;
+
+        for (const auto &[path, hlirContext] : *hlirContexts)
         {
-            printf("%s\n", "******************************");
-            printf("%s\n", path.c_str());
+            // printf("%s\n", "******************************");
+            // printf("%s\n", path.c_str());
             const auto filename = getFileNameWithoutExtension(path);
             objectFiles.push_back(filename);
 
-            // printf("%s\n", filename.c_str());
-            iron::LLVM llvm(context, filename);
+            iron::LLVM llvm(hlirContext, llvmContext, filename);
             auto module = llvm.generateCode();
-            iron::LLVM::emitObjectFile(std::move(module).get(), filename);
+
+            if (!module) {
+                std::cerr << "Erro: llvm.generateCode() retornou um ponteiro nulo." << std::endl;
+                return;
+            }
+
+            modules.push_back(std::move(module));
+            // iron::LLVM::emitObjectFile(std::move(module).get(), filename);
         }
 
-        std::string exeName = "my_executable";
-        iron::LLVM::linkExecutable(objectFiles, exeName, "arm64", "15.0.0");
+        iron::LLVM::mergeModulesAndExecute(std::move(modules));
 
-
-        // printf("%s", context->getText().c_str());
     }
     catch (const iron::SemanticException &e)
     {
@@ -77,6 +84,8 @@ void runAnalysis(const std::string &file)
 
 int main()
 {
-    runAnalysis("main.iron");
+    llvm::LLVMContext globalContext;
+    runAnalysis("main.iron", globalContext);
+    llvm::llvm_shutdown();
     return 0;
 }

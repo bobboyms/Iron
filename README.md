@@ -28,6 +28,7 @@ Este guia auxiliará na configuração do ambiente de desenvolvimento no macOS p
 2. **Instale o LLVM via Homebrew:**
    ```bash
    brew install llvm
+   brew install lld
    ```
    **Observação:**
    - Em Macs com chip Apple Silicon, o LLVM é instalado em `/opt/homebrew/opt/llvm`;
@@ -36,6 +37,7 @@ Este guia auxiliará na configuração do ambiente de desenvolvimento no macOS p
    ```bash
    brew --prefix llvm
    ```
+   https://releases.llvm.org/download.html
 
 3. **Configure o PATH e defina variáveis de ambiente:**  
    Para que o sistema utilize o `clang++` instalado pelo LLVM e para que os compiladores encontrem os headers e bibliotecas do LLVM, adicione as seguintes linhas ao arquivo de configuração do seu shell (por exemplo, `~/.zshrc` se você utiliza Zsh):

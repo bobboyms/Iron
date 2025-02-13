@@ -4,11 +4,11 @@
 
 namespace iron
 {
-    LLVM::LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename) :
-        hlirContext(std::move(hlirContext)), builder(llvmContext), filename(filename)
+    LLVM::LLVM(const std::shared_ptr<hlir::Context>& hlirContext, llvm::LLVMContext &context, const std::string &filename)
+    : hlirContext(std::move(hlirContext)), llvmContext(context), builder(llvmContext), filename(filename)
     {
         module = std::make_unique<llvm::Module>(filename, llvmContext);
-        // module->setTargetTriple("arm64-apple-macosx15.0.0");
+
     }
 
     LLVM::~LLVM() = default;

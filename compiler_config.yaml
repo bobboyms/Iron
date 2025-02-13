@@ -7,4 +7,5 @@ libs:
 compiler:
   output_hlir: "/Users/thiagorodrigues/Desktop/IronLang/temp/hlir"
   output_llvm: "/Users/thiagorodrigues/Desktop/IronLang/temp/llvm"
+  output_object: "/Users/thiagorodrigues/Desktop/IronLang/temp/obj"
 #  output_executable: "/Users/thiagorodrigues/Desktop/IronLang/temp/build"

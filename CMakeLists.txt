@@ -49,23 +49,32 @@ include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 # Mapeia os componentes necessários do LLVM para as bibliotecas de linkagem.
-# Geralmente, "core" e "support" são indispensáveis; adicione outros componentes se necessário.
-#llvm_map_components_to_libnames(llvm_libs
-#        core
-#        support
-#        # Exemplo: irreader, bitwriter, etc.
-#)
-
 llvm_map_components_to_libnames(llvm_libs
         core
         support
+        linker
         codegen
         asmprinter
         mc
         target
+        executionengine
+        mcjit
+        interpreter
         AArch64CodeGen
         AArch64AsmParser
 )
+
+#llvm_map_components_to_libnames(llvm_libs
+#        core
+#        support
+#        codegen
+#        asmprinter
+#        mc
+#        target
+#        executionengine      # Adicione este componente
+#        AArch64CodeGen
+#        AArch64AsmParser
+#)
 
 #llvm_map_components_to_libnames(llvm_libs
 #        core
@@ -150,6 +159,7 @@ set(SRC_COMMON
         src/llvm/Operations.cpp
         src/llvm/EmitObject.cpp
         src/llvm/LLD.cpp
+        src/llvm/VM.cpp
 #        src/hlir/WriterCodeHLIR.cpp
         src/utils/Colors.cpp
         src/semantic/SemanticAnalysis.cpp
