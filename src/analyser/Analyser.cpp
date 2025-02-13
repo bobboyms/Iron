@@ -29,7 +29,7 @@ namespace iron
         return lines;
     }
 
-    std::shared_ptr<hlir::Context> Analyser::hlir(const std::string &fileName, const std::shared_ptr<std::vector<std::pair<std::string, std::string>>> &hilirFiles) const
+    std::shared_ptr<hlir::Context> Analyser::hlir(const std::string &fileName, const std::shared_ptr<std::map<std::string, std::shared_ptr<hlir::Context>>> &exportContexts) const
     {
         // Certifique-se de que o código de entrada esteja disponível para o parser.
         // Por exemplo, se você tiver o código em uma string 'input':
@@ -41,7 +41,7 @@ namespace iron
         auto const parser = std::make_shared<IronParser>(&tokens);
 
         const auto context = std::make_shared<hlir::Context>();
-        hlir::HLIRGenerator highLevelCodeGenerator(parser, context, config, hilirFiles);
+        hlir::HLIRGenerator highLevelCodeGenerator(parser, context, config, exportContexts);
         highLevelCodeGenerator.getContext();
 
         const auto hlirPath = util::format("{}", config->outputHLIR());
@@ -52,7 +52,7 @@ namespace iron
         return context;
     }
 
-    std::vector<std::shared_ptr<scope::Function>> Analyser::semantic(const std::string &fileName)
+    std::vector<std::shared_ptr<scope::Function>> Analyser::semantic(const std::string &fileName) const
     {
 
         const auto input = fileContent(fileName);

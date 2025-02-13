@@ -935,6 +935,7 @@ namespace hlir
         void setParentFunction(const std::shared_ptr<Function> &function);
 
         std::shared_ptr<Statement> getStatement();
+        void setStatement(std::shared_ptr<Statement> statement);
 
 
         void setParent(const std::shared_ptr<Parent> newParent) override
@@ -979,6 +980,8 @@ namespace hlir
                                       const std::shared_ptr<FunctionArgs> &functionArgs,
                                       const std::shared_ptr<Type> &functionReturnType,
                                       const std::shared_ptr<Statement> &statement);
+
+        std::shared_ptr<Function> clone() const;
 
         Function();
         /**

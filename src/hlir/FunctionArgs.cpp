@@ -63,7 +63,7 @@ namespace hlir
         {
             if (function->isExternal() and function->isVariedArguments())
             {
-                sb << "...";
+                sb << ", ...";
             }
         }
         else

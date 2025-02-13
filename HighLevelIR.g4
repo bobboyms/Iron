@@ -82,7 +82,7 @@ externFunctionDeclaration:
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
 
 externFunctionArg:
-	varName = IDENTIFIER COLON cTypes;
+	varName = IDENTIFIER COLON 'ptr'? cTypes;
 
 cTypes:
 	TYPE_BOOLEAN
@@ -144,15 +144,16 @@ mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
 expr:
 	LET varName = IDENTIFIER COLON varTypes EQ (
 		mathOp
+		| assignment
 		| functionCall
 		| cast
 		| number
 		| functionPtr
-		| assignment
+
 	);
 
-assignment: anotherVarName = IDENTIFIER;
-functionPtr: 'fptr' functionName = IDENTIFIER;
+assignment: (anotherVarName = IDENTIFIER | STRING_LITERAL);
+functionPtr: 'ptr' functionName = IDENTIFIER;
 
 number: REAL_NUMBER | INT_NUMBER;
 

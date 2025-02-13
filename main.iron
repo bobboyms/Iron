@@ -1,9 +1,12 @@
- import std.output.printf
+import std.output.printf
+import std.math.sum
+
 
  fn main():int
  {
+    let inline:fn = ():int -> 2
     let idade:int = 28
-    idade = idade / 2
-    printf(format:"Resultado: %i\n", idade:idade)
+    printf(format:"Idade: %u Nome: %s sum:%i\n", idade:idade, name:"Jaba", sum:inline() * 2)
+    // printf(format:"Soma: %u\n", soma:2)
     return 0
  }
