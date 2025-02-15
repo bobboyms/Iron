@@ -1116,10 +1116,10 @@ namespace hlir
 
         if (ctx->ptr)
         {
-            auto ptrType = tokenMap::getTokenType(ctx->cTypes()->getText());
-            if (ptrType == tokenMap::TYPE_CHAR; ptrType = tokenMap::PTR_TYPE_CHAR)
-            {
-            }
+            const auto ptrType = tokenMap::getTokenType(ctx->cTypes()->getText());
+            // if (ptrType == tokenMap::TYPE_CHAR; ptrType = tokenMap::PTR_TYPE_CHAR)
+            // {
+            // }
             type->set(ptrType);
         }
         else

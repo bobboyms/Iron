@@ -26,9 +26,22 @@ L_BRACKET: '[';
 R_BRACKET: ']';
 ARROW: '->';
 
+// Tokens para operadores lógicos e relacionais (adicione esses tokens se ainda não existirem)
+AND: 'and';
+OR: 'or';
+NOT: 'not';
+EQEQ: '==';
+NEQ: '!=';
+LT: '<';
+LTE: '<=';
+GT: '>';
+GTE: '>=';
+
 // Palavras reservadas
+IF: 'if';
 FUNCTION: 'fn';
 LET: 'let';
+ELSE: 'else';
 PUBLIC: 'public';
 IMPORT: 'import';
 RETURN: 'return';
@@ -76,6 +89,8 @@ statementList: (
 		| functionCall
 		| varAssignment
 		| expr
+		| boolExpr
+		| ifStatement
 		| returnStatement
 	)*;
 
@@ -84,7 +99,6 @@ returnStatement:
 		dataFormat
 		| varName = IDENTIFIER
 		| functionCall
-		| formatStatement
 		| expr
 	);
 
@@ -179,9 +193,11 @@ assignment:
 	EQ (
 		arrowFunctionInline
 		| arrowFunctionBlock
+		| varName = IDENTIFIER
 		| dataFormat
+		| functionCall
 		| expr
-		| formatStatement
+		| boolExpr
 	);
 
 varAssignment:
@@ -192,7 +208,50 @@ varAssignment:
 		| expr
 	);
 
-// Expressão matemática com precedência adequada
+//if e else
+ifBlock
+    : L_CURLY statementList? R_CURLY
+    ;
+
+// ifStatement
+ifStatement
+    : IF L_PAREN boolExpr R_PAREN ifBlock (ELSE elseStatement)?
+    ;
+
+elseStatement
+    : ifStatement
+    | ifBlock
+    ;
+
+//expression
+// : LPAREN expression RPAREN                       #parenExpression
+// | NOT expression                                 #notExpression
+// | left=expression op=comparator right=expression #comparatorExpression
+// | left=expression op=binary right=expression     #binaryExpression
+// | bool                                           #boolExpression
+// | IDENTIFIER                                     #identifierExpression
+// | DECIMAL                                        #decimalExpression
+// ;
+
+boolExpr
+   : L_PAREN boolExpr R_PAREN
+   | not = NOT boolExpr
+   | left=boolExpr op= (OR | AND ) right=boolExpr
+   | left=boolExpr op= ( EQEQ | NEQ | LT | LTE | GT | GTE) right=boolExpr
+   | booleanValue = BOOLEAN_VALUE
+   | number
+   | varName = IDENTIFIER
+   | functionCall
+   | expr;
+
+primary
+   : number
+   | IDENTIFIER
+   | BOOLEAN_VALUE
+   | functionCall
+   | L_PAREN boolExpr R_PAREN
+   | expr
+   ;
 
 expr:
 	left = expr (mult = '*' | div = '/') right = expr

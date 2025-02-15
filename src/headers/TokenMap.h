@@ -35,6 +35,10 @@ namespace tokenMap
         C_LANG,
         IRON_LANG,
 
+        //
+        TRUE,
+        FALSE,
+
         // Palavras reservadas
         FUNCTION,
 
@@ -93,6 +97,9 @@ namespace tokenMap
             {IMPORT, "import"},
             {RETURN, "return"},
 
+            {TRUE, "true"},
+            {FALSE, "false"},
+
             // Tipos de dados
             {TYPE_INT, "int"},
             {TYPE_CHAR, "char"},
@@ -147,26 +154,38 @@ namespace tokenMap
         throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 
-    inline bool isNumber(int type)
+    inline bool isNumber(const int type)
     {
         switch (type)
         {
-            case tokenMap::TYPE_DOUBLE:
-            case tokenMap::TYPE_FLOAT:
-            case tokenMap::TYPE_INT:
-            case tokenMap::NUMBER:
+            case TYPE_DOUBLE:
+            case TYPE_FLOAT:
+            case TYPE_INT:
+            case NUMBER:
                 return true;
             default:
                 return false;
         }
     }
 
-    inline bool isRealNumber(int type)
+    inline bool isBooleanValue(const int type)
     {
         switch (type)
         {
-            case tokenMap::TYPE_DOUBLE:
-            case tokenMap::TYPE_FLOAT:
+            case TRUE:
+            case FALSE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    inline bool isRealNumber(const int type)
+    {
+        switch (type)
+        {
+            case TYPE_DOUBLE:
+            case TYPE_FLOAT:
                 return true;
             default:
                 return false;

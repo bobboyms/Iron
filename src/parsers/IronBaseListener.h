@@ -94,6 +94,18 @@ public:
   virtual void enterVarAssignment(IronParser::VarAssignmentContext * /*ctx*/) override { }
   virtual void exitVarAssignment(IronParser::VarAssignmentContext * /*ctx*/) override { }
 
+  virtual void enterIfBlock(IronParser::IfBlockContext * /*ctx*/) override { }
+  virtual void exitIfBlock(IronParser::IfBlockContext * /*ctx*/) override { }
+
+  virtual void enterIfStatement(IronParser::IfStatementContext * /*ctx*/) override { }
+  virtual void exitIfStatement(IronParser::IfStatementContext * /*ctx*/) override { }
+
+  virtual void enterElseStatement(IronParser::ElseStatementContext * /*ctx*/) override { }
+  virtual void exitElseStatement(IronParser::ElseStatementContext * /*ctx*/) override { }
+
+  virtual void enterBoolExpr(IronParser::BoolExprContext * /*ctx*/) override { }
+  virtual void exitBoolExpr(IronParser::BoolExprContext * /*ctx*/) override { }
+
   virtual void enterExpr(IronParser::ExprContext * /*ctx*/) override { }
   virtual void exitExpr(IronParser::ExprContext * /*ctx*/) override { }
 

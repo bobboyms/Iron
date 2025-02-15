@@ -29,14 +29,11 @@ namespace iron
         void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
                                     std::shared_ptr<std::vector<std::shared_ptr<scope::FunctionArg>>> argsList);
 
-        // Format
-        // void visitFormatStatement(IronParser::FormatStatementContext *ctx);
-        // void visitFormatArguments(IronParser::FormatArgumentsContext *ctx,
-        //                           const std::vector<std::pair<std::string, int>> &specifiers);
-        // void showConversionSpecifiersHelp();
-        // void visitFormatArgument(IronParser::FormatArgumentContext *ctx, const std::pair<std::string, int> &specifier);
+        std::pair<std::string, int> visitBoolExpr(IronParser::BoolExprContext *ctx);
 
-        //
+        void visitIfBlock(IronParser::IfBlockContext *ctx);
+        void visitIfStatement(IronParser::IfStatementContext *ctx);
+        void visitElseStatement(IronParser::ElseStatementContext *ctx);
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
 
@@ -75,6 +72,7 @@ namespace iron
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 
         std::vector<std::pair<std::string, int>>
+
         parseFormatSpecifiers(const std::string &format, uint line, const std::string &caretLine, const std::string &codeLine) const;
 
 

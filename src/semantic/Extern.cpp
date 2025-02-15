@@ -69,7 +69,9 @@ namespace iron
         }
     }
 
-    void SemanticAnalysis::visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx, std::shared_ptr<std::vector<std::shared_ptr<scope::FunctionArg>>> argsList)
+    void
+    SemanticAnalysis::visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
+                                             std::shared_ptr<std::vector<std::shared_ptr<scope::FunctionArg>>> argsList)
     {
         std::string argName = ctx->varName->getText();
         const std::string argType = ctx->cTypes()->getText();
@@ -91,8 +93,8 @@ namespace iron
         }
 
         argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType)));
-
-
     }
+
+
 
 } // namespace iron

@@ -92,6 +92,18 @@ public:
   virtual void enterVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
   virtual void exitVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
 
+  virtual void enterIfBlock(IronParser::IfBlockContext *ctx) = 0;
+  virtual void exitIfBlock(IronParser::IfBlockContext *ctx) = 0;
+
+  virtual void enterIfStatement(IronParser::IfStatementContext *ctx) = 0;
+  virtual void exitIfStatement(IronParser::IfStatementContext *ctx) = 0;
+
+  virtual void enterElseStatement(IronParser::ElseStatementContext *ctx) = 0;
+  virtual void exitElseStatement(IronParser::ElseStatementContext *ctx) = 0;
+
+  virtual void enterBoolExpr(IronParser::BoolExprContext *ctx) = 0;
+  virtual void exitBoolExpr(IronParser::BoolExprContext *ctx) = 0;
+
   virtual void enterExpr(IronParser::ExprContext *ctx) = 0;
   virtual void exitExpr(IronParser::ExprContext *ctx) = 0;
 
