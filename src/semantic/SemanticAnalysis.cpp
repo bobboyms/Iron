@@ -67,6 +67,7 @@ namespace iron
 
         bool hasReturn = false;
         currentFunction->enterLocalScope(std::make_shared<scope::Statements>());
+
         for (const auto child: ctx->children)
         {
 
@@ -555,8 +556,6 @@ namespace iron
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
         }
-
-
 
         if (ctx->varName)
         {

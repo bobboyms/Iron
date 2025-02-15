@@ -1,7 +1,5 @@
-fn getNumber(a:int):int {
-            return 5
-        }
-        fn main() {
-            let x:int = 2
-            let b:float = x x x x != 3
-        }
+fn soma():int {
+   let b:int = 12
+   let x:int = b
+   return 28 * x + b
+}

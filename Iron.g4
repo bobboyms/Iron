@@ -86,8 +86,8 @@ qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
 		varDeclaration
-		| functionCall
 		| varAssignment
+		| functionCall
 		| expr
 		| boolExpr
 		| ifStatement

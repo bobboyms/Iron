@@ -84,7 +84,7 @@ namespace hlir
         }
 
         // 4. Se chegar aqui, não encontrou a variável em nenhum escopo
-        throw hlir::HLIRException(util::format("Undefined variable: {} in expression", varName));
+        throw HLIRException(util::format("Undefined variable: {} in expression", varName));
     }
 
     HLIRGenerator::HLIRGenerator(
@@ -150,10 +150,10 @@ namespace hlir
             {
                 visitVarDeclaration(varDeclaration, statement);
             }
-            if (const auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext *>(child))
-            {
-                visitVarAssignment(varAssignment, statement);
-            }
+            // if (const auto assignment = dynamic_cast<IronParser::AssignmentContext *>(child))
+            // {
+            //     visitAssignment(assignment, statement);
+            // }
             if (const auto expression = dynamic_cast<IronParser::ExprContext *>(child))
             {
                 visitExpr(expression, statement);
@@ -167,6 +167,7 @@ namespace hlir
             {
                 visitReturn(returnctx, statement);
             }
+
         }
     }
 
@@ -207,12 +208,18 @@ namespace hlir
         }
         else if (ctx->assignment())
         {
+
             visitAssignment(ctx->assignment(), statement);
         }
     }
 
     void HLIRGenerator::visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement)
     {
+    }
+
+    std::pair<std::string, int> HLIRGenerator::visitBoolExpr(IronParser::BoolExprContext *ctx)
+    {
+
     }
 
     std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement)
@@ -428,12 +435,15 @@ namespace hlir
                 //*sb << util::format("{}:{} = {}", argName, argType, literalValue);
             }
 
+
+
             // Caso 2: a atribuição está sendo feita a uma variável declarada
             if (auto varDecl = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
             {
                 std::string varName = varDecl->varName->getText();
                 std::string varType = varDecl->varTypes()->getText();
                 std::string literalValue = ctx->dataFormat()->getText();
+
                 // int literalType = tokenMap::determineType(literalValue);
 
                 // if (literalType == tokenMap::REAL_NUMBER) {
@@ -450,8 +460,36 @@ namespace hlir
             }
         }
 
+        if (ctx->varName)
+        {
+
+
+
+
+            if (auto varDecl = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+            {
+
+                const auto anotherVar = ctx->varName->getText();
+                std::string varName = varDecl->varName->getText();
+                std::string varType = varDecl->varTypes()->getText();
+
+                auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
+                if (!currentFunction)
+                {
+                    throw HLIRException("HLIRGenerator::visitAssignment. The current function not found.");
+                }
+
+                const auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
+                const auto [__, anotherVariable] = findVarByScope(currentFunction, anotherVar);
+                auto value = std::make_shared<Value>()->set(anotherVariable, anotherVariable->getVarType());
+                auto assign = std::make_shared<Assign>()->set(variable, value);
+                statement->addStatement(assign);
+            }
+        }
+
         if (ctx->expr())
         {
+
             const auto strRightVarName = visitExpr(ctx->expr(), statement);
             auto variable = findVarByScope(currentFunction, strRightVarName);
             auto rightVar = variable.second;

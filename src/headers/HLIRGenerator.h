@@ -44,6 +44,8 @@ namespace hlir
                                      const std::shared_ptr<Statement> &statement);
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Statement> &statement);
 
+        std::pair<std::string, int> visitBoolExpr(IronParser::BoolExprContext *ctx);
+
 
     public:
         // std::string generateCode();

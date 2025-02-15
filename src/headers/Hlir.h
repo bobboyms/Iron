@@ -570,6 +570,89 @@ namespace hlir
         }
     };
 
+    class CMP final : public BinaryOperation
+    {
+    protected:
+        std::shared_ptr<Type> opType;
+    public:
+        explicit CMP(int op);
+
+        /**
+         * @brief Destructor for Plus.
+         */
+        ~CMP() override;
+
+        std::shared_ptr<Type> getOpType();
+
+        /**
+         * @brief Generates a textual representation of the addition operation.
+         * @return A string representing the addition, e.g., "PLUS a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    class AND final : public BinaryOperation
+    {
+
+    public:
+        AND();
+
+        /**
+         * @brief Destructor for Plus.
+         */
+        ~AND() override;
+
+        /**
+         * @brief Generates a textual representation of the addition operation.
+         * @return A string representing the addition, e.g., "PLUS a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    class OR final : public BinaryOperation
+    {
+
+    public:
+        OR();
+
+        /**
+         * @brief Destructor for Plus.
+         */
+        ~OR() override;
+
+        /**
+         * @brief Generates a textual representation of the addition operation.
+         * @return A string representing the addition, e.g., "PLUS a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
+    class NOT final : public BinaryOperation
+    {
+
+    public:
+        NOT();
+
+        /**
+         * @brief Destructor for Plus.
+         */
+        ~NOT() override;
+
+        /**
+         * @brief Generates a textual representation of the addition operation.
+         * @return A string representing the addition, e.g., "PLUS a, b".
+         *
+         * @throws HLIRException If `varLeft` or `varRight` is nullptr.
+         */
+        std::string getText() override;
+    };
+
     /**
      * @class Plus
      * @brief Represents an addition operation between two variables in the HLIR.

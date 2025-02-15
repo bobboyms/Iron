@@ -41,7 +41,6 @@ namespace tokenMap
 
         // Palavras reservadas
         FUNCTION,
-
         LET,
         PUBLIC,
         IMPORT,
@@ -62,7 +61,7 @@ namespace tokenMap
         PTR_TYPE_BOOLEAN,
         PTR_TYPE_DOUBLE,
 
-        // tipos de controle
+        // Tipos de controle
         FUNCTION_PTR,
         FUNCTION_CALL,
         VARIABLE,
@@ -72,65 +71,82 @@ namespace tokenMap
         REAL_NUMBER,
         PRIVATE,
         ARGUMENT,
+
+        // Operadores Lógicos e Relacionais
+        OR, // Representa "||"
+        AND, // Representa "&&"
+        EQEQ, // Representa "=="
+        NEQ, // Representa "!="
+        LT, // Representa "<"
+        LTE, // Representa "<="
+        GT, // Representa ">"
+        GTE // Representa ">="
     };
 
-    inline const std::unordered_map<int, std::string> tokenText = {
-            {COLON, ":"},
-            {EQ, "="},
-            {SEMICOLON, ";"},
-            {DOT, "."},
-            {STAR, "*"},
-            {L_CURLY, "{"},
-            {R_CURLY, "}"},
-            {L_PAREN, "("},
-            {R_PAREN, ")"},
-            {PLUS, "+"},
-            {MINUS, "-"},
-            {DIV, "/"},
-            {L_BRACKET, "["},
-            {R_BRACKET, "]"},
-            {ARROW, "->"},
+    inline const std::unordered_map<int, std::string> tokenText = {{COLON, ":"},
+                                                                   {EQ, "="},
+                                                                   {SEMICOLON, ";"},
+                                                                   {DOT, "."},
+                                                                   {STAR, "*"},
+                                                                   {L_CURLY, "{"},
+                                                                   {R_CURLY, "}"},
+                                                                   {L_PAREN, "("},
+                                                                   {R_PAREN, ")"},
+                                                                   {PLUS, "+"},
+                                                                   {MINUS, "-"},
+                                                                   {DIV, "/"},
+                                                                   {L_BRACKET, "["},
+                                                                   {R_BRACKET, "]"},
+                                                                   {ARROW, "->"},
 
-            {FUNCTION, "fn"},
-            {LET, "let"},
-            {PUBLIC, "public"},
-            {IMPORT, "import"},
-            {RETURN, "return"},
+                                                                   {FUNCTION, "fn"},
+                                                                   {LET, "let"},
+                                                                   {PUBLIC, "public"},
+                                                                   {IMPORT, "import"},
+                                                                   {RETURN, "return"},
 
-            {TRUE, "true"},
-            {FALSE, "false"},
+                                                                   {TRUE, "true"},
+                                                                   {FALSE, "false"},
 
-            // Tipos de dados
-            {TYPE_INT, "int"},
-            {TYPE_CHAR, "char"},
-            {TYPE_FLOAT, "float"},
-            {TYPE_STRING, "string"},
-            {TYPE_BOOLEAN, "boolean"},
-            {TYPE_DOUBLE, "double"},
+                                                                   // Tipos de dados
+                                                                   {TYPE_INT, "int"},
+                                                                   {TYPE_CHAR, "char"},
+                                                                   {TYPE_FLOAT, "float"},
+                                                                   {TYPE_STRING, "string"},
+                                                                   {TYPE_BOOLEAN, "boolean"},
+                                                                   {TYPE_DOUBLE, "double"},
 
-            {PTR_TYPE_INT, "ptr int"},
-            {PTR_TYPE_CHAR, "ptr char"},
-            {PTR_TYPE_FLOAT, "ptr float"},
-            {PTR_TYPE_BOOLEAN, "ptr boolean"},
-            {PTR_TYPE_DOUBLE, "ptr double"},
+                                                                   {PTR_TYPE_INT, "ptr int"},
+                                                                   {PTR_TYPE_CHAR, "ptr char"},
+                                                                   {PTR_TYPE_FLOAT, "ptr float"},
+                                                                   {PTR_TYPE_BOOLEAN, "ptr boolean"},
+                                                                   {PTR_TYPE_DOUBLE, "ptr double"},
 
-            // Linguagens suportadas
-            {C_LANG, "C"},
-            {IRON_LANG, "IRON"},
+                                                                   // Linguagens suportadas
+                                                                   {C_LANG, "C"},
+                                                                   {IRON_LANG, "IRON"},
 
-            // tipos de controle
-            {GLOBAL, "global"},
-            {VARIABLE, "variable"},
-            {VOID, "void"},
-            {NUMBER, "number"},
-            {NO_REAL_NUMBER, "not_is_a_real_number"},
-            {REAL_NUMBER, "real_number"},
-            {PRIVATE, "private"},
-            {ARGUMENT, "arg"},
-            {FUNCTION_PTR, "fptr"},
-            {FUNCTION_CALL, "fn_call"},
+                                                                   // Tipos de controle
+                                                                   {GLOBAL, "global"},
+                                                                   {VARIABLE, "variable"},
+                                                                   {VOID, "void"},
+                                                                   {NUMBER, "number"},
+                                                                   {NO_REAL_NUMBER, "not_is_a_real_number"},
+                                                                   {REAL_NUMBER, "real_number"},
+                                                                   {PRIVATE, "private"},
+                                                                   {ARGUMENT, "arg"},
+                                                                   {FUNCTION_PTR, "fptr"},
+                                                                   {FUNCTION_CALL, "fn_call"},
 
-    };
+                                                                   // Operadores Lógicos e Relacionais
+                                                                   {OR, "||"},
+                                                                   {AND, "&&"},
+                                                                   {EQEQ, "=="},
+                                                                   {NEQ, "!="},
+                                                                   {LT, "<"},
+                                                                   {LTE, "<="},
+                                                                   {GT, ">"},
+                                                                   {GTE, ">="}};
 
     inline std::string getTokenText(const int tokenType)
     {
@@ -285,12 +301,11 @@ namespace tokenMap
         }
     }
 
-    inline int getHigherPrecedenceType(int type1, int type2)
+    inline int getHigherPrecedenceType(const int type1, const int type2)
     {
-        int precedence1 = getTypePrecedence(type1);
-        int precedence2 = getTypePrecedence(type2);
+        const int precedence1 = getTypePrecedence(type1);
 
-        if (precedence1 >= precedence2)
+        if (const int precedence2 = getTypePrecedence(type2); precedence1 >= precedence2)
         {
             return type1;
         }

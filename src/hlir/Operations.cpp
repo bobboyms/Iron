@@ -12,7 +12,8 @@ namespace hlir
         return value;
     }
 
-    std::shared_ptr<Assign> Assign::set(const std::shared_ptr<Variable>& newVariable, const std::shared_ptr<Value>& newValue)
+    std::shared_ptr<Assign> Assign::set(const std::shared_ptr<Variable> &newVariable,
+                                        const std::shared_ptr<Value> &newValue)
     {
         if (!newVariable)
         {
@@ -104,25 +105,27 @@ namespace hlir
 
     /**
      * @brief Constructs a Minus operation with two variables.
+     * @param newVarLeft
+     * @param newVarRight
      * @param varLeft Shared pointer to the left-hand side variable.
      * @param varRight Shared pointer to the right-hand side variable.
      *
      * @throws HLIRException If `varLeft` or `varRight` is nullptr.
      */
-    std::shared_ptr<BinaryOperation> BinaryOperation::set(const std::shared_ptr<Variable>& newVarLeft,
-                                                          const std::shared_ptr<Variable>& newVarRight)
+    std::shared_ptr<BinaryOperation> BinaryOperation::set(const std::shared_ptr<Variable> &varLeft,
+                                                          const std::shared_ptr<Variable> &varRight)
     {
-        if (!newVarLeft)
+        if (!varLeft)
         {
             throw HLIRException("Minus::set failed: newVarLeft is null.");
         }
 
-        if (!newVarRight)
+        if (!varRight)
         {
             throw HLIRException("Minus::set failed: newVarRight is null.");
         }
 
-        if (newVarLeft->getVarType()->getType() != newVarRight->getVarType()->getType())
+        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
         {
             throw HLIRException("Minus::set failed: The variables must be of the same type.");
         }
@@ -133,11 +136,11 @@ namespace hlir
             throw HLIRException("Minus::set failed: shared_from_this() returned null.");
         }
 
-        newVarLeft->setParent(parentPtr);
-        newVarRight->setParent(parentPtr);
+        varLeft->setParent(parentPtr);
+        varRight->setParent(parentPtr);
 
-        varLeft = newVarLeft;
-        varRight = newVarRight;
+        this->varLeft = varLeft;
+        this->varRight = varRight;
 
         // Realiza o cast para std::shared_ptr<Minus>
         auto assignPtr = std::dynamic_pointer_cast<BinaryOperation>(parentPtr);
@@ -197,6 +200,62 @@ namespace hlir
         return sb.str();
     }
 
+    AND::AND() = default;
+
+    AND::~AND() = default;
+
+    std::string AND::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("AND {}, {}", varLeft->getVarName(), varRight->getVarName());
+
+        return sb.str();
+    }
+
+    OR::OR() = default;
+
+    OR::~OR() = default;
+
+    std::string OR::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("OR {}, {}", varLeft->getVarName(), varRight->getVarName());
+
+        return sb.str();
+    }
+
+    std::string NOT::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("NOT {}, {}", varLeft->getVarName(), varRight->getVarName());
+
+        return sb.str();
+    }
+
+    CMP::CMP(int op)
+    {
+        opType = std::make_shared<Type>(op);
+    }
+
+    CMP::~CMP() = default;
+
+    std::shared_ptr<Type> CMP::getOpType()
+    {
+        return opType;
+    }
+
+    std::string CMP::getText()
+    {
+        sb.str("");
+        sb.clear();
+        sb << util::format("cmp {} {}, {}", opType->getText(), varLeft->getVarName(), varRight->getVarName());
+
+        return sb.str();
+    }
+
     std::shared_ptr<Expression> Expr::getExpr()
     {
         return validExpr;
@@ -208,7 +267,7 @@ namespace hlir
         return variable;
     }
 
-    std::shared_ptr<Expr> Expr::set(const std::shared_ptr<Variable>& newVariable,
+    std::shared_ptr<Expr> Expr::set(const std::shared_ptr<Variable> &newVariable,
                                     const std::shared_ptr<Expression> &newValidExpr)
     {
         if (!newVariable)
@@ -254,7 +313,8 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<Cast> Cast::apply(const std::shared_ptr<Variable>& newVariable, const std::shared_ptr<Type>& newType)
+    std::shared_ptr<Cast> Cast::apply(const std::shared_ptr<Variable> &newVariable,
+                                      const std::shared_ptr<Type> &newType)
     {
         if (!newVariable)
         {
@@ -324,7 +384,7 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<FunctionPtr> FunctionPtr::set(const std::shared_ptr<Function>& function)
+    std::shared_ptr<FunctionPtr> FunctionPtr::set(const std::shared_ptr<Function> &function)
     {
         if (!function)
         {
@@ -388,8 +448,6 @@ namespace hlir
         {
             functions.push_back(function);
         }
-
-
     }
 
     void Context::addFunction(const std::shared_ptr<Function> &function)
@@ -426,7 +484,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        for (const auto& function: functions)
+        for (const auto &function: functions)
         {
             sb << util::format("{}\n", function->getText());
         }
