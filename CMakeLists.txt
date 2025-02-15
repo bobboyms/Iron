@@ -163,6 +163,8 @@ set(SRC_COMMON
 #        src/hlir/WriterCodeHLIR.cpp
         src/utils/Colors.cpp
         src/semantic/SemanticAnalysis.cpp
+        src/semantic/BoolExpr.cpp
+        src/semantic/IFElse.cpp
         src/semantic/Functions.cpp
         src/semantic/Expr.cpp
         src/semantic/Extern.cpp
@@ -179,7 +181,7 @@ set(SRC_COMMON
 
 set(TEST_SRC
         tests/test_semantic_analysis.cpp
-#        tests/test_hlir_code.cpp
+        tests/test_hlir_code.cpp
 #        tests/test_llvm_code.cpp
 )
 

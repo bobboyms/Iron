@@ -15,13 +15,13 @@ public:
     T__0 = 1, T__1 = 2, T__2 = 3, LINE_COMMENT = 4, BLOCK_COMMENT = 5, COMMA = 6, 
     COLON = 7, EQ = 8, SEMICOLON = 9, DOT = 10, STAR = 11, L_CURLY = 12, 
     R_CURLY = 13, L_PAREN = 14, R_PAREN = 15, PLUS = 16, MINUS = 17, DIV = 18, 
-    L_BRACKET = 19, R_BRACKET = 20, ARROW = 21, FUNCTION = 22, LET = 23, 
-    PUBLIC = 24, IMPORT = 25, RETURN = 26, TYPE_INT = 27, TYPE_CHAR = 28, 
-    TYPE_FLOAT = 29, TYPE_STRING = 30, TYPE_BOOLEAN = 31, TYPE_DOUBLE = 32, 
-    TYPE_VOID = 33, PTR_TYPE_INT = 34, PTR_TYPE_CHAR = 35, PTR_TYPE_FLOAT = 36, 
-    PTR_TYPE_BOOLEAN = 37, PTR_TYPE_DOUBLE = 38, REAL_NUMBER = 39, INT_NUMBER = 40, 
-    BOOLEAN_VALUE = 41, STRING_LITERAL = 42, IDENTIFIER = 43, NEWLINE = 44, 
-    WS = 45
+    L_BRACKET = 19, R_BRACKET = 20, ARROW = 21, AND = 22, OR = 23, NOT = 24, 
+    EQEQ = 25, NEQ = 26, LT = 27, LTE = 28, GT = 29, GTE = 30, IF = 31, 
+    FUNCTION = 32, LET = 33, ELSE = 34, PUBLIC = 35, IMPORT = 36, RETURN = 37, 
+    TYPE_INT = 38, TYPE_CHAR = 39, TYPE_FLOAT = 40, TYPE_STRING = 41, TYPE_BOOLEAN = 42, 
+    TYPE_DOUBLE = 43, TYPE_VOID = 44, REAL_NUMBER = 45, INT_NUMBER = 46, 
+    BOOLEAN_VALUE = 47, STRING_LITERAL = 48, IDENTIFIER = 49, NEWLINE = 50, 
+    WS = 51
   };
 
   enum {
@@ -33,8 +33,9 @@ public:
     RuleFunctionSignature = 16, RuleFunctionReturnType = 17, RuleFunctionArgs = 18, 
     RuleFunctionArg = 19, RuleFunctionCall = 20, RuleFunctionCallArgs = 21, 
     RuleFunctionCallArg = 22, RuleVarDeclaration = 23, RuleAssignment = 24, 
-    RuleVarAssignment = 25, RuleExpr = 26, RuleNumber = 27, RuleDataFormat = 28, 
-    RuleVarTypes = 29
+    RuleVarAssignment = 25, RuleIfBlock = 26, RuleIfStatement = 27, RuleElseStatement = 28, 
+    RuleBoolExpr = 29, RuleExpr = 30, RuleNumber = 31, RuleDataFormat = 32, 
+    RuleVarTypes = 33
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -80,6 +81,10 @@ public:
   class VarDeclarationContext;
   class AssignmentContext;
   class VarAssignmentContext;
+  class IfBlockContext;
+  class IfStatementContext;
+  class ElseStatementContext;
+  class BoolExprContext;
   class ExprContext;
   class NumberContext;
   class DataFormatContext;
@@ -147,6 +152,10 @@ public:
     VarAssignmentContext* varAssignment(size_t i);
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
+    std::vector<BoolExprContext *> boolExpr();
+    BoolExprContext* boolExpr(size_t i);
+    std::vector<IfStatementContext *> ifStatement();
+    IfStatementContext* ifStatement(size_t i);
     std::vector<ReturnStatementContext *> returnStatement();
     ReturnStatementContext* returnStatement(size_t i);
 
@@ -165,7 +174,6 @@ public:
     antlr4::tree::TerminalNode *RETURN();
     DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
-    FormatStatementContext *formatStatement();
     ExprContext *expr();
     antlr4::tree::TerminalNode *IDENTIFIER();
 
@@ -508,14 +516,17 @@ public:
 
   class  AssignmentContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *varName = nullptr;
     AssignmentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EQ();
     ArrowFunctionInlineContext *arrowFunctionInline();
     ArrowFunctionBlockContext *arrowFunctionBlock();
     DataFormatContext *dataFormat();
+    FunctionCallContext *functionCall();
     ExprContext *expr();
-    FormatStatementContext *formatStatement();
+    BoolExprContext *boolExpr();
+    antlr4::tree::TerminalNode *IDENTIFIER();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -543,6 +554,90 @@ public:
 
   VarAssignmentContext* varAssignment();
 
+  class  IfBlockContext : public antlr4::ParserRuleContext {
+  public:
+    IfBlockContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *L_CURLY();
+    antlr4::tree::TerminalNode *R_CURLY();
+    StatementListContext *statementList();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  IfBlockContext* ifBlock();
+
+  class  IfStatementContext : public antlr4::ParserRuleContext {
+  public:
+    IfStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *IF();
+    antlr4::tree::TerminalNode *L_PAREN();
+    BoolExprContext *boolExpr();
+    antlr4::tree::TerminalNode *R_PAREN();
+    IfBlockContext *ifBlock();
+    antlr4::tree::TerminalNode *ELSE();
+    ElseStatementContext *elseStatement();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  IfStatementContext* ifStatement();
+
+  class  ElseStatementContext : public antlr4::ParserRuleContext {
+  public:
+    ElseStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    IfStatementContext *ifStatement();
+    IfBlockContext *ifBlock();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  ElseStatementContext* elseStatement();
+
+  class  BoolExprContext : public antlr4::ParserRuleContext {
+  public:
+    IronParser::BoolExprContext *left = nullptr;
+    antlr4::Token *varName = nullptr;
+    antlr4::Token *not_ = nullptr;
+    antlr4::Token *booleanValue = nullptr;
+    antlr4::Token *op = nullptr;
+    IronParser::BoolExprContext *right = nullptr;
+    BoolExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    NumberContext *number();
+    antlr4::tree::TerminalNode *IDENTIFIER();
+    antlr4::tree::TerminalNode *L_PAREN();
+    std::vector<BoolExprContext *> boolExpr();
+    BoolExprContext* boolExpr(size_t i);
+    antlr4::tree::TerminalNode *R_PAREN();
+    antlr4::tree::TerminalNode *NOT();
+    antlr4::tree::TerminalNode *BOOLEAN_VALUE();
+    FunctionCallContext *functionCall();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *OR();
+    antlr4::tree::TerminalNode *AND();
+    antlr4::tree::TerminalNode *EQEQ();
+    antlr4::tree::TerminalNode *NEQ();
+    antlr4::tree::TerminalNode *LT();
+    antlr4::tree::TerminalNode *LTE();
+    antlr4::tree::TerminalNode *GT();
+    antlr4::tree::TerminalNode *GTE();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  BoolExprContext* boolExpr();
+  BoolExprContext* boolExpr(int precedence);
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
     IronParser::ExprContext *left = nullptr;
@@ -625,6 +720,7 @@ public:
 
   bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) override;
 
+  bool boolExprSempred(BoolExprContext *_localctx, size_t predicateIndex);
   bool exprSempred(ExprContext *_localctx, size_t predicateIndex);
 
   // By default the static state used to implement the parser is lazily initialized during the first

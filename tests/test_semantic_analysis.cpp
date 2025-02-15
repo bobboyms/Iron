@@ -1123,7 +1123,7 @@ TEST_F(SemanticAnalysisTest, T72)
 // Teste 1: Redeclaração de variáveis em escopos aninhados
 TEST_F(SemanticAnalysisTest, T73)
 {
-    std::string input = R"(
+    const std::string input = R"(
         fn soma(n:float): int {
             let x: float = 25.32
             let block:fn = (a:int, b:float):int -> {
@@ -1512,78 +1512,107 @@ TEST_F(SemanticAnalysisTest, T105)
     EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
 }
 
+// Testes para expressões booleanas
+
+// Caso 1: Literal booleano simples
+TEST_F(SemanticAnalysisTest, BooleanLiteral)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = true
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Caso 2: Operador not com literal booleano
+TEST_F(SemanticAnalysisTest, BooleanNot)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = not false
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Caso 3: Operadores and e or combinados
+TEST_F(SemanticAnalysisTest, BooleanAndOr)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = true and false or true
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Caso 4: Expressão relacional que resulta em booleano
+TEST_F(SemanticAnalysisTest, RelationalExpression)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = 5 < 10
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Caso 5: Expressão com parênteses misturando booleanos e relacionais
+TEST_F(SemanticAnalysisTest, BooleanWithParentheses)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = (true or false) and (5 == 5)
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+// Caso 6: Uso de variável não definida na expressão booleana
+TEST_F(SemanticAnalysisTest, BooleanVariableNotDefined)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = x and true
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
+
+// Caso 7: Mistura de tipos – operador booleano aplicado a número e booleano
+TEST_F(SemanticAnalysisTest, BooleanTypeMismatch)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = 5 and false
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
 
 
-// TEST_F(SemanticAnalysisTest, T101)
-// {
-//     const std::string input = R"(
-//         fn main():int {
-//             let age:string = "32"
-//             let value:int = f'("Age: %s", age)
-//             return 0
-//         }
-//     )";
-//
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
-//
-// TEST_F(SemanticAnalysisTest, T102)
-// {
-//     const std::string input = R"(
-//         fn main():int {
-//             let age:string = "32"
-//             let value:string = f'("Age: %p", age)
-//             return 0
-//         }
-//     )";
-//
-//     EXPECT_THROW(runAnalysis(input), iron::UnrecognizedIdentifierException);
-// }
-//
-// TEST_F(SemanticAnalysisTest, T103)
-// {
-//     const std::string input = R"(
-//         fn main():int {
-//             let value:string = f'("Age: %u", 32, 12)
-//             return 0
-//         }
-//     )";
-//
-//     EXPECT_THROW(runAnalysis(input), iron::ArgumentCountMismatchException);
-// }
-//
-// TEST_F(SemanticAnalysisTest, T104)
-// {
-//     const std::string input = R"(
-//         fn pi():float {
-//             return 3.398
-//         }
-//
-//         fn main():int {
-//             let idade:string = "25"
-//             let value:string = f'("Age: %u", pi())
-//             return 0
-//         }
-//     )";
-//
-//     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
-// }
-//
-// TEST_F(SemanticAnalysisTest, T105)
-// {
-//     const std::string input = R"(
-//         fn getSalary():double {
-//             return 1500.0D
-//         }
-//
-//         fn main():int {
-//             let name:string = f'("Nome: %s Idade: %d anos Salário: R$ %.2f\n", "Thiago", 12, 1500.0)
-//
-//             let idade:int = 32
-//             let result:string = f'("Nome: %s Idade: %d anos Salário: R$ %.2f\n", "Thiago", idade, getSalary())
-//             return 0
-//         }
-//     )";
-//
-//     EXPECT_NO_THROW(runAnalysis(input));
-// }
+// Caso 9: Chamada de função que retorna um tipo não booleano em contexto booleano
+TEST_F(SemanticAnalysisTest, BooleanFunctionCallTypeMismatch)
+{
+    const std::string input = R"(
+        fn getNumber():int {
+            return 5
+        }
+        fn main() {
+            let b:boolean = getNumber()
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+// Caso 10: Expressão booleana complexa com not e operadores relacionais
+TEST_F(SemanticAnalysisTest, ComplexBooleanExpression)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = not (5 > 3 and (10 <= 10 or false))
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}

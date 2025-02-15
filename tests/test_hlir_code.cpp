@@ -78,26 +78,31 @@ protected:
         return lines;
     }
 
-    std::string getHighLevelCode(const std::string& input)
+    static std::string getHighLevelCode(const std::string& input)
     {
+        auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
+
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
-        auto parser = std::make_shared<IronParser>(&tokens);
+        auto const parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()), loadStringAsLines(input));
-        analysis.analyze();
+        iron::SemanticAnalysis analysis(parser, std::make_unique<scope::ScopeManager>(),
+                                        loadStringAsLines(input), config);
 
         // Rewind
         tokens.seek(0);
         parser->reset();
 
-        auto context = std::make_shared<hlir::Context>();
-        hlir::HLIRGenerator hightLevelCodeGenerator(parser, context);
-        const auto hlirCode = hightLevelCodeGenerator.generateCode();
-        return hlirCode;
+        const auto exportContexts = std::make_shared<std::map<std::string, std::shared_ptr<hlir::Context>>>();
+        const auto context = std::make_shared<hlir::Context>();
+        hlir::HLIRGenerator highLevelCodeGenerator(parser, context, config, exportContexts);
+        highLevelCodeGenerator.getContext();
+        return context->getText();
     }
+
+
 };
 
 //-----------------------------------------------------------
@@ -106,7 +111,7 @@ protected:
 
 TEST_F(HlIrTestCode, T1)
 {
-    std::string output = R"(
+    const std::string output = R"(
         fn soma(n:float,j:int):int {
          let var_1:int = call int gfn_soma_block(j:j)
          return int var_1
@@ -124,7 +129,8 @@ TEST_F(HlIrTestCode, T1)
          let var_3:int = MULT var_2, x
          let r:int = var_3
          let x:float = 25.25
-         let var_4:int = call int gfn_gfn_gfn_soma_block_block_block(n:14524.25D,j:j,x:x)
+         let var_5:double = 14524.25D
+         let var_4:int = call int gfn_gfn_gfn_soma_block_block_block(n:var_5,j:j,x:x)
          return int var_4
         }
 
@@ -166,7 +172,7 @@ TEST_F(HlIrTestCode, T1)
 
 TEST_F(HlIrTestCode, T2)
 {
-    std::string output = R"(
+    const std::string output = R"(
         fn soma():void { 
             let b:int = 12
             let x:int = b
@@ -278,9 +284,12 @@ TEST_F(HlIrTestCode, T6)
 
         fn soma():void {
          let var_1:float = 32.25
-         let var_2:int = call int sub(ax:1,bx:32,nx:25)
-         let var_3:float = var_2 int to float
-         let var_4:float = MULT var_1, var_3
+         let var_3:int = 1
+         let var_4:int = 32
+         let var_5:int = 25
+         let var_2:int = call int sub(ax:var_3,bx:var_4,nx:var_5)
+         let var_6:float = var_2 int to float
+         let var_7:float = MULT var_1, var_6
         }
 
     )";
@@ -298,7 +307,7 @@ TEST_F(HlIrTestCode, T6)
 
 TEST_F(HlIrTestCode, T7)
 {
-    std::string output = R"(
+    const std::string output = R"(
         fn mult(n:int,p:float):float {
          let var_1:float = 0.0
          return float var_1
@@ -312,15 +321,16 @@ TEST_F(HlIrTestCode, T7)
         fn soma():void {
          let x:float = 25.00
          let var_1:float = 32.25
-         let var_3:float = call float mult(n:22,p:x)
-         let var_2:int = call int sub(ax:1,bx:var_3)
-         let var_4:float = var_2 int to float
-         let var_5:float = MULT var_1, var_4
+         let var_3:int = 1
+         let var_4:int = 22
+         let var_5:float = call float mult(n:var_4,p:x)
+         let var_2:int = call int sub(ax:var_3,bx:var_5)
+         let var_6:float = var_2 int to float
+         let var_7:float = MULT var_1, var_6
         }
-
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
         fn sub(ax:int, bx:float): int { return 0 }
@@ -350,12 +360,15 @@ TEST_F(HlIrTestCode, T8)
         fn soma():float {
          let x:float = 25.00
          let var_1:float = 32.25
-         let var_3:float = call float gfn_soma_inline(a:25,x:x)
-         let var_4:float = call float mult(n:22,p:var_3)
-         let var_2:int = call int sub(ax:1,bx:var_4)
-         let var_5:float = var_2 int to float
-         let var_6:float = MULT var_1, var_5
-         return float var_6
+         let var_3:int = 1
+         let var_4:int = 22
+         let var_5:int = 25
+         let var_6:float = call float gfn_soma_inline(a:var_5,x:x)
+         let var_7:float = call float mult(n:var_4,p:var_6)
+         let var_2:int = call int sub(ax:var_3,bx:var_7)
+         let var_8:float = var_2 int to float
+         let var_9:float = MULT var_1, var_8
+         return float var_9
         }
 
         fn gfn_soma_inline(a:int,x:float):float {
@@ -363,10 +376,9 @@ TEST_F(HlIrTestCode, T8)
          let var_2:float = MULT var_1, x
          return float var_2
         }
-
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0}
 
         fn sub(ax:int, bx:float): int {return 0 }
@@ -397,12 +409,15 @@ TEST_F(HlIrTestCode, T9)
         fn soma():void {
          let x:float = 25.00
          let var_1:float = 32.25
-         let var_3:int = call int gfn_soma_block(a:25,x:x)
-         let var_4:float = call float gfn_soma_inline(a:var_3,x:x)
-         let var_5:float = call float mult(n:22,p:var_4)
-         let var_2:int = call int sub(ax:1,bx:var_5)
-         let var_6:float = var_2 int to float
-         let var_7:float = MULT var_1, var_6
+         let var_3:int = 1
+         let var_4:int = 22
+         let var_5:int = 25
+         let var_6:int = call int gfn_soma_block(a:var_5,x:x)
+         let var_7:float = call float gfn_soma_inline(a:var_6,x:x)
+         let var_8:float = call float mult(n:var_4,p:var_7)
+         let var_2:int = call int sub(ax:var_3,bx:var_8)
+         let var_9:float = var_2 int to float
+         let var_10:float = MULT var_1, var_9
         }
 
         fn gfn_soma_block(a:int,x:float):int {
@@ -418,7 +433,7 @@ TEST_F(HlIrTestCode, T9)
 
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(n:int, p:float): float {return 0.0 }
         fn sub (ax:int, bx:float): int {return 0 }
 
@@ -440,15 +455,19 @@ TEST_F(HlIrTestCode, T9)
 
 TEST_F(HlIrTestCode, T10)
 {
-    std::string output = R"(
-        fn main():void { 
+    const std::string output = R"(
+        fn main():void {
          let xb:int = 36
-         let var_1:int = call int gfn_main_inline(a:12,b:14,xb:xb)
-         let var_2:float = 5.22
-         let var_3:float = call float gfn_main_sum(x:2,y:3.26F)
-         let var_4:float = DIV var_2, var_3
-         let var_5:float = var_1 int to float
-         let var_6:float = PLUS var_5, var_4
+         let var_2:int = 12
+         let var_3:int = 14
+         let var_1:int = call int gfn_main_inline(a:var_2,b:var_3,xb:xb)
+         let var_4:float = 5.22
+         let var_6:int = 2
+         let var_7:float = 3.26F
+         let var_5:float = call float gfn_main_sum(x:var_6,y:var_7)
+         let var_8:float = DIV var_4, var_5
+         let var_9:float = var_1 int to float
+         let var_10:float = PLUS var_9, var_8
         }
 
         fn gfn_main_inline(a:int,b:int,xb:int):int {
@@ -465,7 +484,7 @@ TEST_F(HlIrTestCode, T10)
 
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn main() {
             let xb: int = 36
             let inline:fn = (a: int, b: int):int -> (xb + b) * a
@@ -495,16 +514,21 @@ TEST_F(HlIrTestCode, T11)
         fn main():void {
          let xb:int = 36
          let var_1:float = 5.22
-         let var_2:int = call int gfn_main_inline(a:12,b:14,xb:xb)
-         let var_3:float = call float gfn_main_sum(x:12,y:87)
-         let var_4:float = var_2 int to float
-         let var_5:float = MULT var_4, var_3
-         let var_6:float = PLUS var_1, var_5
-         let var_8:float = call float mult(pp:12.00F)
-         let var_7:int = call int xptc(z:var_8)
-         let var_9:int = DIV var_7, xb
-         let var_10:float = var_9 int to float
-         let var_11:float = MINUS var_6, var_10
+         let var_3:int = 12
+         let var_4:int = 14
+         let var_2:int = call int gfn_main_inline(a:var_3,b:var_4,xb:xb)
+         let var_6:int = 12
+         let var_7:int = 87
+         let var_5:float = call float gfn_main_sum(x:var_6,y:var_7)
+         let var_8:float = var_2 int to float
+         let var_9:float = MULT var_8, var_5
+         let var_10:float = PLUS var_1, var_9
+         let var_12:float = 12.00F
+         let var_13:float = call float mult(pp:var_12)
+         let var_11:int = call int xptc(z:var_13)
+         let var_14:int = DIV var_11, xb
+         let var_15:float = var_14 int to float
+         let var_16:float = MINUS var_10, var_15
         }
 
         fn gfn_main_inline(a:int,b:int,xb:int):int {
