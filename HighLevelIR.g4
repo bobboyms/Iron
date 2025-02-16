@@ -23,6 +23,18 @@ AT: '@';
 ARROW: '->';
 UNDERSCORE: '_';
 
+// Tokens para operadores lógicos e relacionais (adicione esses tokens se ainda não existirem)
+AND: 'AND';
+OR: 'OR';
+NOT: 'NOT';
+EQEQ: 'EQEQ';
+NEQ: 'NEQ';
+LT: 'LT';
+LTE: 'LTE';
+GT: 'GT';
+GTE: 'GTE';
+
+
 //LANGUAGES
 C_LANG: 'C';
 IRON_LANG: 'IRON';
@@ -44,6 +56,8 @@ TYPE_STRING: 'string';
 TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
 VOID: 'void';
+
+CMP: 'cmp';
 
 CAST: 'cast';
 CALL: 'call';
@@ -140,10 +154,15 @@ typeLeft: varTypes;
 cast: anotherVarName = IDENTIFIER typeLeft TO typeRight;
 
 mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
+booleanCmpOp: CMP (EQEQ | NEQ | LT | LTE | GT | GTE) opLeft COMMA opRight;
+booleanAndOrOp: (CMP | AND) opLeft COMMA opRight;
+booleanNotOp:  NOT opLeft COMMA opRight;
+
 
 expr:
 	LET varName = IDENTIFIER COLON varTypes EQ (
 		mathOp
+		| booleanCmpOp | booleanAndOrOp  | booleanNotOp
 		| assignment
 		| functionCall
 		| cast

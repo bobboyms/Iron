@@ -4,6 +4,8 @@
 #include "Configuration.h"
 #include "Hlir.h"
 
+#include <tuple>
+
 namespace hlir
 {
     class HLIRGenerator
@@ -21,6 +23,13 @@ namespace hlir
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement);
 
         std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement);
+        std::string visitBoolExpr(IronParser::BoolExprContext *ctx, const std::shared_ptr<Statement> &statement);
+        std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
+        initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,
+                                 const std::shared_ptr<Statement> &statement);
+        std::shared_ptr<Expr> castVariable(int higherType, const std::string &varName,
+                                           const std::shared_ptr<Variable> &variable);
+
         void visitAssignment(IronParser::AssignmentContext *ctx, std::shared_ptr<Statement> statement);
 
         void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx,
@@ -30,7 +39,7 @@ namespace hlir
         void visitFunctionArg(IronParser::FunctionArgContext *ctx, std::shared_ptr<FunctionArgs> functionArgs);
 
         std::shared_ptr<FunctionCall> visitFunctionCall(IronParser::FunctionCallContext *ctx,
-                                                        std::shared_ptr<Statement> statement);
+                                                        const std::shared_ptr<Statement>& statement);
         void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx,
                                    const std::shared_ptr<FunctionCallArgs> &callArgs,
                                    const std::shared_ptr<Statement> &statement);
@@ -43,6 +52,13 @@ namespace hlir
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
                                      const std::shared_ptr<Statement> &statement);
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Statement> &statement);
+
+
+        std::pair<int, std::shared_ptr<Variable>> findVarByScope(const std::shared_ptr<Statement> &Statement,
+                                                                 const std::string &varName);
+
+        static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);
+        static bool hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName);
 
 
     public:

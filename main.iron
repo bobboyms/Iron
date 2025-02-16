@@ -1,7 +1,4 @@
-fn getNumber(a:int):int {
-            return 5
-        }
-        fn main() {
-            let x:int = 2
-            let b:float = x x x x != 3
-        }
+fn main() {
+   let b:int = 5
+   let exprBool:boolean = 2 > 3.0
+}

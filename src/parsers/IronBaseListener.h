@@ -106,6 +106,9 @@ public:
   virtual void enterBoolExpr(IronParser::BoolExprContext * /*ctx*/) override { }
   virtual void exitBoolExpr(IronParser::BoolExprContext * /*ctx*/) override { }
 
+  virtual void enterPrimary(IronParser::PrimaryContext * /*ctx*/) override { }
+  virtual void exitPrimary(IronParser::PrimaryContext * /*ctx*/) override { }
+
   virtual void enterExpr(IronParser::ExprContext * /*ctx*/) override { }
   virtual void exitExpr(IronParser::ExprContext * /*ctx*/) override { }
 

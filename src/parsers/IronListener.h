@@ -104,6 +104,9 @@ public:
   virtual void enterBoolExpr(IronParser::BoolExprContext *ctx) = 0;
   virtual void exitBoolExpr(IronParser::BoolExprContext *ctx) = 0;
 
+  virtual void enterPrimary(IronParser::PrimaryContext *ctx) = 0;
+  virtual void exitPrimary(IronParser::PrimaryContext *ctx) = 0;
+
   virtual void enterExpr(IronParser::ExprContext *ctx) = 0;
   virtual void exitExpr(IronParser::ExprContext *ctx) = 0;
 

@@ -1,5 +1,5 @@
-#include "../headers/Hlir.h"
-#include "../headers/Utils.h"
+#include "../../headers/Hlir.h"
+#include "../../headers/Utils.h"
 
 namespace hlir
 {
@@ -21,6 +21,14 @@ namespace hlir
             case tokenMap::PTR_TYPE_CHAR:
             case tokenMap::PTR_TYPE_BOOLEAN:
             case tokenMap::PTR_TYPE_DOUBLE:
+            case tokenMap::OR:
+            case tokenMap::AND:
+            case tokenMap::EQEQ:
+            case tokenMap::NEQ:
+            case tokenMap::LT:
+            case tokenMap::LTE:
+            case tokenMap::GT:
+            case tokenMap::GTE:
             case tokenMap::VOID:
                 return true;
 
@@ -30,8 +38,7 @@ namespace hlir
         }
     }
 
-    Type::Type()
-    = default;
+    Type::Type() = default;
 
     Type::Type(const int type) : type(type)
     {
@@ -45,8 +52,7 @@ namespace hlir
         this->type = type;
     }
 
-    Type::~Type()
-    = default;
+    Type::~Type() = default;
 
     int Type::getType() const
     {

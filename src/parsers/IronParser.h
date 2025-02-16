@@ -34,8 +34,8 @@ public:
     RuleFunctionArg = 19, RuleFunctionCall = 20, RuleFunctionCallArgs = 21, 
     RuleFunctionCallArg = 22, RuleVarDeclaration = 23, RuleAssignment = 24, 
     RuleVarAssignment = 25, RuleIfBlock = 26, RuleIfStatement = 27, RuleElseStatement = 28, 
-    RuleBoolExpr = 29, RuleExpr = 30, RuleNumber = 31, RuleDataFormat = 32, 
-    RuleVarTypes = 33
+    RuleBoolExpr = 29, RulePrimary = 30, RuleExpr = 31, RuleNumber = 32, 
+    RuleDataFormat = 33, RuleVarTypes = 34
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -85,6 +85,7 @@ public:
   class IfStatementContext;
   class ElseStatementContext;
   class BoolExprContext;
+  class PrimaryContext;
   class ExprContext;
   class NumberContext;
   class DataFormatContext;
@@ -146,14 +147,12 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
-    std::vector<FunctionCallContext *> functionCall();
-    FunctionCallContext* functionCall(size_t i);
     std::vector<VarAssignmentContext *> varAssignment();
     VarAssignmentContext* varAssignment(size_t i);
+    std::vector<FunctionCallContext *> functionCall();
+    FunctionCallContext* functionCall(size_t i);
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
-    std::vector<BoolExprContext *> boolExpr();
-    BoolExprContext* boolExpr(size_t i);
     std::vector<IfStatementContext *> ifStatement();
     IfStatementContext* ifStatement(size_t i);
     std::vector<ReturnStatementContext *> returnStatement();
@@ -605,21 +604,21 @@ public:
   class  BoolExprContext : public antlr4::ParserRuleContext {
   public:
     IronParser::BoolExprContext *left = nullptr;
-    antlr4::Token *varName = nullptr;
     antlr4::Token *not_ = nullptr;
     antlr4::Token *booleanValue = nullptr;
+    antlr4::Token *varName = nullptr;
     antlr4::Token *op = nullptr;
     IronParser::BoolExprContext *right = nullptr;
     BoolExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    NumberContext *number();
-    antlr4::tree::TerminalNode *IDENTIFIER();
     antlr4::tree::TerminalNode *L_PAREN();
     std::vector<BoolExprContext *> boolExpr();
     BoolExprContext* boolExpr(size_t i);
     antlr4::tree::TerminalNode *R_PAREN();
     antlr4::tree::TerminalNode *NOT();
     antlr4::tree::TerminalNode *BOOLEAN_VALUE();
+    NumberContext *number();
+    antlr4::tree::TerminalNode *IDENTIFIER();
     FunctionCallContext *functionCall();
     ExprContext *expr();
     antlr4::tree::TerminalNode *OR();
@@ -638,6 +637,26 @@ public:
 
   BoolExprContext* boolExpr();
   BoolExprContext* boolExpr(int precedence);
+  class  PrimaryContext : public antlr4::ParserRuleContext {
+  public:
+    PrimaryContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    NumberContext *number();
+    antlr4::tree::TerminalNode *IDENTIFIER();
+    antlr4::tree::TerminalNode *BOOLEAN_VALUE();
+    FunctionCallContext *functionCall();
+    antlr4::tree::TerminalNode *L_PAREN();
+    BoolExprContext *boolExpr();
+    antlr4::tree::TerminalNode *R_PAREN();
+    ExprContext *expr();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  PrimaryContext* primary();
+
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
     IronParser::ExprContext *left = nullptr;
