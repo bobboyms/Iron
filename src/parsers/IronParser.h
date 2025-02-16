@@ -147,14 +147,12 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
-    std::vector<FunctionCallContext *> functionCall();
-    FunctionCallContext* functionCall(size_t i);
     std::vector<VarAssignmentContext *> varAssignment();
     VarAssignmentContext* varAssignment(size_t i);
+    std::vector<FunctionCallContext *> functionCall();
+    FunctionCallContext* functionCall(size_t i);
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
-    std::vector<BoolExprContext *> boolExpr();
-    BoolExprContext* boolExpr(size_t i);
     std::vector<IfStatementContext *> ifStatement();
     IfStatementContext* ifStatement(size_t i);
     std::vector<ReturnStatementContext *> returnStatement();

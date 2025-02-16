@@ -146,12 +146,12 @@ set(SRC_MAIN
 )
 
 set(SRC_COMMON
-        src/hlir/Type.cpp
-        src/hlir/FunctionArgs.cpp
-        src/hlir/Function.cpp
-        src/hlir/Variable.cpp
-        src/hlir/Operations.cpp
-        src/hlir/HLIRGenerator.cpp
+        src/hlir/scope/Type.cpp
+        src/hlir/scope/FunctionArgs.cpp
+        src/hlir/scope/Function.cpp
+        src/hlir/scope/Variable.cpp
+        src/hlir/scope/Operations.cpp
+        src/hlir/generator/HLIRGenerator.cpp
         src/scope/ScopeManager.cpp
         src/llvm/Types.cpp
         src/llvm/LLVM.cpp
@@ -177,6 +177,7 @@ set(SRC_COMMON
         src/analyser/Analyser.cpp
         src/headers/Analyser.h
         src/utils/Path.cpp
+        src/hlir/generator/Expr.cpp
 )
 
 set(TEST_SRC

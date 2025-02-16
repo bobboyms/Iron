@@ -575,7 +575,7 @@ namespace hlir
     protected:
         std::shared_ptr<Type> opType;
     public:
-        explicit CMP(int op);
+        CMP(int op);
 
         /**
          * @brief Destructor for Plus.

@@ -89,7 +89,7 @@ statementList: (
 		| varAssignment
 		| functionCall
 		| expr
-		| boolExpr
+//		| boolExpr
 		| ifStatement
 		| returnStatement
 	)*;

@@ -1,5 +1,3 @@
-fn soma():int {
-   let b:int = 12
-   let x:int = b
-   return 28 * x + b
-}
+        fn main() {
+            let exprBool:boolean =
+        }

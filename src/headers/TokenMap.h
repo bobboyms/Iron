@@ -139,14 +139,14 @@ namespace tokenMap
                                                                    {FUNCTION_CALL, "fn_call"},
 
                                                                    // Operadores Lógicos e Relacionais
-                                                                   {OR, "||"},
-                                                                   {AND, "&&"},
-                                                                   {EQEQ, "=="},
-                                                                   {NEQ, "!="},
-                                                                   {LT, "<"},
-                                                                   {LTE, "<="},
-                                                                   {GT, ">"},
-                                                                   {GTE, ">="}};
+                                                                   {OR, "OR"},
+                                                                   {AND, "AND"},
+                                                                   {EQEQ, "EQEQ"},
+                                                                   {NEQ, "NEQ"},
+                                                                   {LT, "LT"},
+                                                                   {LTE, "LTE"},
+                                                                   {GT, "GT"},
+                                                                   {GTE, "GTE"}};
 
     inline std::string getTokenText(const int tokenType)
     {
@@ -181,6 +181,50 @@ namespace tokenMap
                 return true;
             default:
                 return false;
+        }
+    }
+
+    inline std::string getBoolOpText(const int type)
+    {
+        switch (type)
+        {
+
+            case OR:
+                return "OR";
+            case AND:
+                return "AND";
+            case EQEQ:
+                return "EQEQ";
+            case NEQ:
+                return "NEQ";
+            case LT:
+                return "LT";
+            case LTE:
+                return "LTE";
+            case GT:
+                return "GT";
+            case GTE:
+                return "GTE";
+            default:
+                throw TokenException("Isn't impossible determine the boolean token type of " + type);
+        }
+    }
+
+    inline bool isBooleanOp(const int type)
+    {
+        switch (type)
+        {
+            case OR:
+            case AND:
+            case EQEQ:
+            case NEQ:
+            case LT:
+            case LTE:
+            case GT:
+            case GTE:
+                return true;
+            default:
+                throw TokenException("Isn't impossible determine the boolean token type of " + type);
         }
     }
 
