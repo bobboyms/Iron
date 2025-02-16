@@ -1,3 +1,4 @@
-        fn main() {
-            let exprBool:boolean =
-        }
+fn main() {
+   let b:int = 5
+   let exprBool:boolean = 2 > 3.0
+}

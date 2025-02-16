@@ -24,8 +24,8 @@ namespace hlir
 
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
-            std::string strLeftVar = visitExpr(ctx->left, statement);
-            std::string strRightVar = visitExpr(ctx->right, statement);
+            std::string strLeftVar = visitBoolExpr(ctx->left, statement);
+            std::string strRightVar = visitBoolExpr(ctx->right, statement);
 
             const auto [higherType, leftVar, rightVar] =  initializerExprVariables(strLeftVar, strRightVar, statement);
 
@@ -51,13 +51,13 @@ namespace hlir
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
             auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
 
-            std::string tempVarStr = statement->getNewVarName();
-            auto type = std::make_shared<Type>(tokenMap::TYPE_BOOLEAN);
-            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, type);
+            // std::string tempVarStr = statement->getNewVarName();
+            // auto type = std::make_shared<Type>(tokenMap::TYPE_BOOLEAN);
+            // auto tempVar = std::make_shared<Variable>()->set(tempVarStr, type);
 
             if (ctx->GT())
             {
-                auto operation = std::make_shared<CMP>(tokenMap::GT)->set(rightVar, leftVar);
+                auto operation = std::make_shared<CMP>(tokenMap::GT)->set(newLeftVar, newRightVar);
                 auto expr = std::make_shared<Expr>()->set(tempVar, operation);
                 statement->addStatement(expr);
             }
