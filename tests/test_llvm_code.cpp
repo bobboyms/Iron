@@ -1,27 +1,30 @@
+#include <algorithm>
+#include <cctype>
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
-#include <algorithm>
 #include <sstream>
+#include <string>
 #include <vector>
-#include <cctype>
 
 #include "antlr4-runtime.h"
 
-#include "../src/parsers/IronLexer.h"
-#include "../src/parsers/IronParser.h"
+#include "../src/headers/Files.h"
+#include "../src/headers/HLIRGenerator.h"
 #include "../src/headers/Hlir.h"
 #include "../src/headers/LLVMIR.h"
-#include "../src/headers/Files.h"
 #include "../src/headers/SemanticAnalysis.h"
-#include "../src/headers/HLIRGenerator.h"
+#include "../src/parsers/IronLexer.h"
+#include "../src/parsers/IronParser.h"
 
 // Certifique-se de que os namespaces utilizados (ex.: config, iron, scope, util, hlir, llvm)
 // estejam devidamente definidos e que os headers correspondentes sejam incluídos.
 
-class LLVMTestCode : public ::testing::Test {
+
+class LLVMTestCode : public ::testing::Test
+{
 protected:
-    void SetUp() override {
+    void SetUp() override
+    {
         // Inicializações necessárias antes de cada teste.
     }
 
@@ -30,7 +33,8 @@ protected:
      * @param str A string de entrada.
      * @return Uma nova string sem espaços em branco.
      */
-    static std::string removeWhitespace(const std::string &str) {
+    static std::string removeWhitespace(const std::string &str)
+    {
         std::string result;
         result.reserve(str.size());
 
@@ -38,6 +42,15 @@ protected:
                      [](unsigned char c) { return !std::isspace(c); });
         return result;
     }
+
+    static std::string llvmCode(const std::unique_ptr<llvm::Module> &module)
+    {
+        std::string irStr;
+        llvm::raw_string_ostream irStream(irStr);
+        module->print(irStream, nullptr);
+        return irStr;
+    }
+
 
     /**
      * @brief Compara duas strings ignorando diferenças de espaçamento.
@@ -48,28 +61,40 @@ protected:
      * @param input A string gerada pelo teste.
      * @param expectedOutput A string esperada para comparação.
      */
-    void runAnalysis(const std::string &input, const std::string &expectedOutput) {
+    void runAnalysis(const std::string &input, const std::string &expectedOutput)
+    {
         auto hlirOutPut = getHighLevelCode(input);
         const auto cleanInput = removeWhitespace(hlirOutPut);
         const auto cleanExpected = removeWhitespace(expectedOutput);
-        if (cleanInput == cleanExpected) {
+        if (cleanInput == cleanExpected)
+        {
             // Teste passou.
             return;
-        } else {
+        }
+        else
+        {
             FAIL() << "Generated code does not match the expected code.\n"
                    << "Got (cleaned):      " << cleanInput << "\n"
                    << "Expected (cleaned): " << cleanExpected << "\n";
         }
     }
 
-    static std::vector<std::string> loadStringAsLines(const std::string &code) {
+    static std::vector<std::string> loadStringAsLines(const std::string &code)
+    {
         std::vector<std::string> lines;
         std::stringstream ss(code);
         std::string line;
-        while (std::getline(ss, line)) {
+        while (std::getline(ss, line))
+        {
             lines.push_back(line);
         }
         return lines;
+    }
+
+    static std::string getFileNameWithoutExtension(const std::string &filePath)
+    {
+        const std::filesystem::path path(filePath); // Cria um objeto 'path' a partir do caminho do arquivo
+        return path.stem().string() + ".o";
     }
 
     /**
@@ -78,7 +103,8 @@ protected:
      * @param input A string de código de entrada.
      * @return Uma string contendo o código de alto nível gerado.
      */
-    static std::string getHighLevelCode(const std::string& input) {
+    static std::string getHighLevelCode(const std::string &input)
+    {
         // Cria uma configuração a partir de um arquivo YAML
         auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
 
@@ -88,9 +114,7 @@ protected:
         auto parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticAnalysis analysis(parser,
-                                        std::make_unique<scope::ScopeManager>(),
-                                        loadStringAsLines(input),
+        iron::SemanticAnalysis analysis(parser, std::make_unique<scope::ScopeManager>(), loadStringAsLines(input),
                                         config);
 
         // Reposiciona o token stream para reiniciar a análise
@@ -101,18 +125,38 @@ protected:
         auto hlirContext = std::make_shared<hlir::Context>();
         hlir::HLIRGenerator highLevelCodeGenerator(parser, hlirContext, config, exportContexts);
         highLevelCodeGenerator.getContext();
+        exportContexts->emplace("main", hlirContext);
 
         // Salva o código HLIR em arquivo
         const auto hlirPath = util::format("{}", config->outputHLIR());
         const auto pathAndFile = iron::saveToFile(hlirContext->getText(), hlirPath, "main.hlir");
 
-        // Geração do código LLVM (caso necessário para análise)
+        std::vector<std::unique_ptr<llvm::Module>> modules;
+        std::vector<std::string> objectFiles;
         llvm::LLVMContext llvmContext;
-        iron::LLVM llvm(hlirContext, llvmContext, pathAndFile);
-        auto module = llvm.generateCode();
+
+        for (const auto &[path, hlirCont]: *exportContexts)
+        {
+            // printf("%s\n", "******************************");
+            printf("%s\n", path.c_str());
+            const auto filename = getFileNameWithoutExtension(path);
+            objectFiles.push_back(filename);
+
+            iron::LLVM llvm(hlirCont, llvmContext, filename);
+            auto module = llvm.generateCode();
+
+            if (!module)
+            {
+                std::cerr << "Erro: llvm.generateCode() retornou um ponteiro nulo." << std::endl;
+            }
+
+            modules.push_back(std::move(module));
+        }
+
+        auto mainModule = iron::LLVM::mergeModules(std::move(modules));
 
         // Retorna o código de alto nível gerado
-        return hlirContext->getText();
+        return llvmCode(mainModule);
     }
 };
 
@@ -124,14 +168,12 @@ protected:
 TEST_F(LLVMTestCode, T1)
 {
     const std::string output = R"(
-        ; ModuleID = 'file_1'
-        source_filename = "file_1"
-        target triple = "arm64-apple-macosx15.0.0"
+        ; ModuleID = 'main.o'
+        source_filename = "main.o"
 
-        define i32 @main() {
+        define void @main() {
         entry:
-          %r = alloca i32, align 4
-          %var_9 = alloca i32, align 4
+          %r = alloca float, align 4
           %var_8 = alloca float, align 4
           %var_7 = alloca float, align 4
           %var_6 = alloca i32, align 4
@@ -168,22 +210,17 @@ TEST_F(LLVMTestCode, T1)
           %rmult = fmul float %load_var_5, %load_var_7
           store float %rmult, ptr %var_8, align 4
           %load_var_8 = load float, ptr %var_8, align 4
-          %cast_var_8 = fptosi float %load_var_8 to i32
-          store i32 %cast_var_8, ptr %var_9, align 4
-          %load_var_9 = load i32, ptr %var_9, align 4
-          store i32 %load_var_9, ptr %r, align 4
-          %load_r = load i32, ptr %r, align 4
-          ret i32 %load_r
+          store float %load_var_8, ptr %r, align 4
+          ret void
         }
     )";
 
     const std::string input = R"(
-        fn main(): int {
+        fn main() {
             let a:int = 10
             let b:float = 20.5
 
-            let r:int = (a + b / 2) * 3
-            return r
+            let r:float = (a + b / 2) * 3
         }
     )";
 
@@ -193,85 +230,76 @@ TEST_F(LLVMTestCode, T1)
 TEST_F(LLVMTestCode, T2)
 {
     const std::string output = R"(
-        ; ModuleID = 'file_1'
-        source_filename = "file_1"
-        target triple = "arm64-apple-macosx15.0.0"
+; ModuleID = 'main.o'
+source_filename = "main.o"
 
-        define void @main() {
-        entry:
-          %r2 = alloca float, align 4
-          %var_15 = alloca float, align 4
-          %var_14 = alloca double, align 8
-          %var_13 = alloca double, align 8
-          %var_12 = alloca double, align 8
-          %var_11 = alloca double, align 8
-          %var_10 = alloca float, align 4
-          %r = alloca i32, align 4
-          %var_9 = alloca i32, align 4
-          %var_8 = alloca float, align 4
-          %var_7 = alloca float, align 4
-          %var_6 = alloca i32, align 4
-          %var_5 = alloca float, align 4
-          %var_4 = alloca float, align 4
-          %var_3 = alloca float, align 4
-          %var_2 = alloca float, align 4
-          %var_1 = alloca i32, align 4
-          %d = alloca double, align 8
-          %b = alloca float, align 4
-          %a = alloca i32, align 4
-          store i32 10, ptr %a, align 4
-          store float 0x4026B851E0000000, ptr %b, align 4
-          store double 2.050000e+01, ptr %d, align 8
-          store i32 2, ptr %var_1, align 4
-          %load_var_1 = load i32, ptr %var_1, align 4
-          %cast_var_1 = sitofp i32 %load_var_1 to float
-          store float %cast_var_1, ptr %var_2, align 4
-          %load_b = load float, ptr %b, align 4
-          %load_var_2 = load float, ptr %var_2, align 4
-          %rdiv = fdiv float %load_b, %load_var_2
-          store float %rdiv, ptr %var_3, align 4
-          %load_a = load i32, ptr %a, align 4
-          %cast_a = sitofp i32 %load_a to float
-          store float %cast_a, ptr %var_4, align 4
-          %load_var_4 = load float, ptr %var_4, align 4
-          %load_var_3 = load float, ptr %var_3, align 4
-          %rplus = fadd float %load_var_4, %load_var_3
-          store float %rplus, ptr %var_5, align 4
-          store i32 3, ptr %var_6, align 4
-          %load_var_6 = load i32, ptr %var_6, align 4
-          %cast_var_6 = sitofp i32 %load_var_6 to float
-          store float %cast_var_6, ptr %var_7, align 4
-          %load_var_5 = load float, ptr %var_5, align 4
-          %load_var_7 = load float, ptr %var_7, align 4
-          %rmult = fmul float %load_var_5, %load_var_7
-          store float %rmult, ptr %var_8, align 4
-          %load_var_8 = load float, ptr %var_8, align 4
-          %cast_var_8 = fptosi float %load_var_8 to i32
-          store i32 %cast_var_8, ptr %var_9, align 4
-          %load_var_9 = load i32, ptr %var_9, align 4
-          store i32 %load_var_9, ptr %r, align 4
-          store float 2.500000e+00, ptr %var_10, align 4
-          %load_var_10 = load float, ptr %var_10, align 4
-          %cast_var_10 = fpext float %load_var_10 to double
-          store double %cast_var_10, ptr %var_11, align 8
-          %load_var_11 = load double, ptr %var_11, align 8
-          %load_d = load double, ptr %d, align 8
-          %rdiv1 = fdiv double %load_var_11, %load_d
-          store double %rdiv1, ptr %var_12, align 8
-          %load_r = load i32, ptr %r, align 4
-          %cast_r = sitofp i32 %load_r to double
-          store double %cast_r, ptr %var_13, align 8
-          %load_var_13 = load double, ptr %var_13, align 8
-          %load_var_12 = load double, ptr %var_12, align 8
-          %rminus = fsub double %load_var_13, %load_var_12
-          store double %rminus, ptr %var_14, align 8
-          %load_var_14 = load double, ptr %var_14, align 8
-          %cast_var_14 = fptrunc double %load_var_14 to float
-          store float %cast_var_14, ptr %var_15, align 4
-          %load_var_15 = load float, ptr %var_15, align 4
-          store float %load_var_15, ptr %r2, align 4
-          ret void
-        }
+define void @main() {
+entry:
+  %r2 = alloca double, align 8
+  %var_13 = alloca double, align 8
+  %var_12 = alloca double, align 8
+  %var_11 = alloca double, align 8
+  %var_10 = alloca double, align 8
+  %var_9 = alloca float, align 4
+  %r = alloca float, align 4
+  %var_8 = alloca float, align 4
+  %var_7 = alloca float, align 4
+  %var_6 = alloca i32, align 4
+  %var_5 = alloca float, align 4
+  %var_4 = alloca float, align 4
+  %var_3 = alloca float, align 4
+  %var_2 = alloca float, align 4
+  %var_1 = alloca i32, align 4
+  %d = alloca double, align 8
+  %b = alloca float, align 4
+  %a = alloca i32, align 4
+  store i32 10, ptr %a, align 4
+  store float 0x4026B851E0000000, ptr %b, align 4
+  store double 2.050000e+01, ptr %d, align 8
+  store i32 2, ptr %var_1, align 4
+  %load_var_1 = load i32, ptr %var_1, align 4
+  %cast_var_1 = sitofp i32 %load_var_1 to float
+  store float %cast_var_1, ptr %var_2, align 4
+  %load_b = load float, ptr %b, align 4
+  %load_var_2 = load float, ptr %var_2, align 4
+  %rdiv = fdiv float %load_b, %load_var_2
+  store float %rdiv, ptr %var_3, align 4
+  %load_a = load i32, ptr %a, align 4
+  %cast_a = sitofp i32 %load_a to float
+  store float %cast_a, ptr %var_4, align 4
+  %load_var_4 = load float, ptr %var_4, align 4
+  %load_var_3 = load float, ptr %var_3, align 4
+  %rplus = fadd float %load_var_4, %load_var_3
+  store float %rplus, ptr %var_5, align 4
+  store i32 3, ptr %var_6, align 4
+  %load_var_6 = load i32, ptr %var_6, align 4
+  %cast_var_6 = sitofp i32 %load_var_6 to float
+  store float %cast_var_6, ptr %var_7, align 4
+  %load_var_5 = load float, ptr %var_5, align 4
+  %load_var_7 = load float, ptr %var_7, align 4
+  %rmult = fmul float %load_var_5, %load_var_7
+  store float %rmult, ptr %var_8, align 4
+  %load_var_8 = load float, ptr %var_8, align 4
+  store float %load_var_8, ptr %r, align 4
+  store float 2.500000e+00, ptr %var_9, align 4
+  %load_var_9 = load float, ptr %var_9, align 4
+  %cast_var_9 = fpext float %load_var_9 to double
+  store double %cast_var_9, ptr %var_10, align 8
+  %load_var_10 = load double, ptr %var_10, align 8
+  %load_d = load double, ptr %d, align 8
+  %rdiv1 = fdiv double %load_var_10, %load_d
+  store double %rdiv1, ptr %var_11, align 8
+  %load_r = load float, ptr %r, align 4
+  %cast_r = fpext float %load_r to double
+  store double %cast_r, ptr %var_12, align 8
+  %load_var_12 = load double, ptr %var_12, align 8
+  %load_var_11 = load double, ptr %var_11, align 8
+  %rminus = fsub double %load_var_12, %load_var_11
+  store double %rminus, ptr %var_13, align 8
+  %load_var_13 = load double, ptr %var_13, align 8
+  store double %load_var_13, ptr %r2, align 8
+  ret void
+}
     )";
 
     const std::string input = R"(
@@ -280,8 +308,8 @@ TEST_F(LLVMTestCode, T2)
             let b:float = 11.36
             let d:double = 20.5D
 
-            let r:int = (a + b / 2) * 3
-            let r2:float = r - 2.5 / d
+            let r:float = (a + b / 2) * 3
+            let r2:double = r - 2.5 / d
         }
     )";
 
@@ -291,60 +319,59 @@ TEST_F(LLVMTestCode, T2)
 TEST_F(LLVMTestCode, T3)
 {
     const std::string output = R"(
-    ; ModuleID = 'file_1'
-    source_filename = "file_1"
-    target triple = "arm64-apple-macosx15.0.0"
+; ModuleID = 'main.o'
+source_filename = "main.o"
 
-    define i32 @main() {
-    entry:
-      %var_10 = alloca i32, align 4
-      %var_9 = alloca float, align 4
-      %var_8 = alloca float, align 4
-      %var_7 = alloca float, align 4
-      %var_6 = alloca float, align 4
-      %var_5 = alloca float, align 4
-      %var_4 = alloca float, align 4
-      %var_3 = alloca float, align 4
-      %var_2 = alloca float, align 4
-      %var_1 = alloca float, align 4
-      %b = alloca i32, align 4
-      %a = alloca i32, align 4
-      store i32 25, ptr %a, align 4
-      store i32 32, ptr %b, align 4
-      store float 1.250000e+00, ptr %var_1, align 4
-      %load_a = load i32, ptr %a, align 4
-      %cast_a = sitofp i32 %load_a to float
-      store float %cast_a, ptr %var_2, align 4
-      %load_var_2 = load float, ptr %var_2, align 4
-      %load_var_1 = load float, ptr %var_1, align 4
-      %rplus = fadd float %load_var_2, %load_var_1
-      store float %rplus, ptr %var_3, align 4
-      store float 0x4002E147A0000000, ptr %var_4, align 4
-      %load_b = load i32, ptr %b, align 4
-      %cast_b = sitofp i32 %load_b to float
-      store float %cast_b, ptr %var_5, align 4
-      %load_var_5 = load float, ptr %var_5, align 4
-      %load_var_4 = load float, ptr %var_4, align 4
-      %rmult = fmul float %load_var_5, %load_var_4
-      store float %rmult, ptr %var_6, align 4
-      %load_var_3 = load float, ptr %var_3, align 4
-      %load_var_6 = load float, ptr %var_6, align 4
-      %rplus1 = fadd float %load_var_3, %load_var_6
-      store float %rplus1, ptr %var_7, align 4
-      %load_a2 = load i32, ptr %a, align 4
-      %cast_a3 = sitofp i32 %load_a2 to float
-      store float %cast_a3, ptr %var_8, align 4
-      %load_var_7 = load float, ptr %var_7, align 4
-      %load_var_8 = load float, ptr %var_8, align 4
-      %rminus = fsub float %load_var_7, %load_var_8
-      store float %rminus, ptr %var_9, align 4
-      store i32 0, ptr %var_10, align 4
-      %load_var_10 = load i32, ptr %var_10, align 4
-      ret i32 %load_var_10
-    }
+define i32 @main() {
+entry:
+  %var_10 = alloca i32, align 4
+  %var_9 = alloca float, align 4
+  %var_8 = alloca float, align 4
+  %var_7 = alloca float, align 4
+  %var_6 = alloca float, align 4
+  %var_5 = alloca float, align 4
+  %var_4 = alloca float, align 4
+  %var_3 = alloca float, align 4
+  %var_2 = alloca float, align 4
+  %var_1 = alloca float, align 4
+  %b = alloca i32, align 4
+  %a = alloca i32, align 4
+  store i32 25, ptr %a, align 4
+  store i32 32, ptr %b, align 4
+  store float 1.250000e+00, ptr %var_1, align 4
+  %load_a = load i32, ptr %a, align 4
+  %cast_a = sitofp i32 %load_a to float
+  store float %cast_a, ptr %var_2, align 4
+  %load_var_2 = load float, ptr %var_2, align 4
+  %load_var_1 = load float, ptr %var_1, align 4
+  %rplus = fadd float %load_var_2, %load_var_1
+  store float %rplus, ptr %var_3, align 4
+  store float 0x4002E147A0000000, ptr %var_4, align 4
+  %load_b = load i32, ptr %b, align 4
+  %cast_b = sitofp i32 %load_b to float
+  store float %cast_b, ptr %var_5, align 4
+  %load_var_5 = load float, ptr %var_5, align 4
+  %load_var_4 = load float, ptr %var_4, align 4
+  %rmult = fmul float %load_var_5, %load_var_4
+  store float %rmult, ptr %var_6, align 4
+  %load_var_3 = load float, ptr %var_3, align 4
+  %load_var_6 = load float, ptr %var_6, align 4
+  %rplus1 = fadd float %load_var_3, %load_var_6
+  store float %rplus1, ptr %var_7, align 4
+  %load_a2 = load i32, ptr %a, align 4
+  %cast_a3 = sitofp i32 %load_a2 to float
+  store float %cast_a3, ptr %var_8, align 4
+  %load_var_7 = load float, ptr %var_7, align 4
+  %load_var_8 = load float, ptr %var_8, align 4
+  %rminus = fsub float %load_var_7, %load_var_8
+  store float %rminus, ptr %var_9, align 4
+  store i32 0, ptr %var_10, align 4
+  %load_var_10 = load i32, ptr %var_10, align 4
+  ret i32 %load_var_10
+}
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn main():int {
             let a:int = 25
             let b:int = 32
@@ -359,43 +386,46 @@ TEST_F(LLVMTestCode, T3)
 TEST_F(LLVMTestCode, T4)
 {
     const std::string output = R"(
-    ; ModuleID = 'file_1'
-    source_filename = "file_1"
-    target triple = "arm64-apple-macosx15.0.0"
+; ModuleID = 'main.o'
+source_filename = "main.o"
 
-    define void @soma(i32 %x, i32 %b) {
-    entry:
-    %var_5 = alloca float, align 4
-    %x_alloca = alloca i32, align 4
-    %var_4 = alloca float, align 4
-    %var_3 = alloca float, align 4
-    %b_alloca = alloca i32, align 4
-    %var_2 = alloca float, align 4
-    %var_1 = alloca float, align 4
-    store float 0x3FF251EB80000000, ptr %var_1, align 4
-    store i32 %b, ptr %b_alloca, align 4
-    %load_b = load i32, ptr %b_alloca, align 4
-    %cast_b = sitofp i32 %load_b to float
-    store float %cast_b, ptr %var_2, align 4
-    %load_var_2 = load float, ptr %var_2, align 4
-    %load_var_1 = load float, ptr %var_1, align 4
-    %rmult = fmul float %load_var_2, %load_var_1
-    store float %rmult, ptr %var_3, align 4
-    store i32 %x, ptr %x_alloca, align 4
-    %load_x = load i32, ptr %x_alloca, align 4
-    %cast_x = sitofp i32 %load_x to float
-    store float %cast_x, ptr %var_4, align 4
-    %load_var_4 = load float, ptr %var_4, align 4
-    %load_var_3 = load float, ptr %var_3, align 4
-    %rplus = fadd float %load_var_4, %load_var_3
-    store float %rplus, ptr %var_5, align 4
-    ret void
-    }
+define void @main(i32 %x, i32 %b) {
+entry:
+  %r = alloca float, align 4
+  %var_5 = alloca float, align 4
+  %x_alloca = alloca i32, align 4
+  %var_4 = alloca float, align 4
+  %var_3 = alloca float, align 4
+  %b_alloca = alloca i32, align 4
+  %var_2 = alloca float, align 4
+  %var_1 = alloca float, align 4
+  store float 0x3FF251EB80000000, ptr %var_1, align 4
+  store i32 %b, ptr %b_alloca, align 4
+  %load_b = load i32, ptr %b_alloca, align 4
+  %cast_b = sitofp i32 %load_b to float
+  store float %cast_b, ptr %var_2, align 4
+  %load_var_2 = load float, ptr %var_2, align 4
+  %load_var_1 = load float, ptr %var_1, align 4
+  %rmult = fmul float %load_var_2, %load_var_1
+  store float %rmult, ptr %var_3, align 4
+  store i32 %x, ptr %x_alloca, align 4
+  %load_x = load i32, ptr %x_alloca, align 4
+  %cast_x = sitofp i32 %load_x to float
+  store float %cast_x, ptr %var_4, align 4
+  %load_var_4 = load float, ptr %var_4, align 4
+  %load_var_3 = load float, ptr %var_3, align 4
+  %rplus = fadd float %load_var_4, %load_var_3
+  store float %rplus, ptr %var_5, align 4
+  %load_var_5 = load float, ptr %var_5, align 4
+  store float %load_var_5, ptr %r, align 4
+  ret void
+}
+
     )";
 
     const std::string input = R"(
-        fn soma(x:int, b:int) {
-            x + b * 1.145
+        fn main(x:int, b:int) {
+            let r:float = x + b * 1.145
         }
     )";
 
@@ -464,7 +494,7 @@ TEST_F(LLVMTestCode, T5)
         }
 
         fn soma() {
-            32.25 * sub(ax: 1, bx: 32, nx: 25)
+            let r:float = 32.25 * sub(ax: 1, bx: 32, nx: 25)
         }
     )";
 

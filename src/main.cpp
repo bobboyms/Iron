@@ -23,6 +23,14 @@ std::string getFileNameWithoutExtension(const std::string &filePath)
     return path.stem().string() + ".o";
 }
 
+void printLLVMmodule(const std::unique_ptr<llvm::Module> &module)
+{
+    std::string irStr;
+    llvm::raw_string_ostream irStream(irStr);
+    module->print(irStream, nullptr);
+    printf("%s\n", irStr.c_str());
+}
+
 void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
 {
     try
@@ -56,11 +64,14 @@ void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
                 return;
             }
 
+            printLLVMmodule(module);
             modules.push_back(std::move(module));
             // iron::LLVM::emitObjectFile(std::move(module).get(), filename);
         }
 
-        iron::LLVM::mergeModulesAndExecute(std::move(modules));
+        auto mainModule = iron::LLVM::mergeModules(std::move(modules));
+
+        iron::LLVM::executeModule(std::move(mainModule));
     }
     catch (const iron::SemanticException &e)
     {

@@ -33,10 +33,12 @@ namespace hlir
         void visitAssignment(IronParser::AssignmentContext *ctx, const std::shared_ptr<Statement> &statement);
 
         static void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx,
-                                    const std::shared_ptr<FunctionArgs> &functionArgs,
-                                    const std::shared_ptr<Type> &functionReturnType);
-        static void visitFunctionArgs(const IronParser::FunctionArgsContext *ctx, const std::shared_ptr<FunctionArgs> &functionArgs);
-        static void visitFunctionArg(IronParser::FunctionArgContext *ctx, const std::shared_ptr<FunctionArgs> &functionArgs);
+                                           const std::shared_ptr<FunctionArgs> &functionArgs,
+                                           const std::shared_ptr<Type> &functionReturnType);
+        static void visitFunctionArgs(const IronParser::FunctionArgsContext *ctx,
+                                      const std::shared_ptr<FunctionArgs> &functionArgs);
+        static void visitFunctionArg(IronParser::FunctionArgContext *ctx,
+                                     const std::shared_ptr<FunctionArgs> &functionArgs);
 
         std::shared_ptr<FunctionCall> visitFunctionCall(IronParser::FunctionCallContext *ctx,
                                                         const std::shared_ptr<Statement> &statement);
@@ -55,7 +57,10 @@ namespace hlir
 
 
         static std::pair<int, std::shared_ptr<Variable>> findVarByScope(const std::shared_ptr<Statement> &Statement,
-                                                                 const std::string &varName);
+                                                                        const std::string &varName);
+
+        std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Statement> &Statement,
+                                                   const std::string &varName);
 
         static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);
         static bool hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName);
@@ -68,6 +73,9 @@ namespace hlir
                                             const std::shared_ptr<FunctionArgs> &argsList);
         static void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
                                            const std::shared_ptr<FunctionArgs> &argsList);
+
+        std::shared_ptr<Function> gatArrowFunction(const std::shared_ptr<Statement> &statement,
+                                                   const std::string &functionName);
 
 
     public:

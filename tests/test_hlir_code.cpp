@@ -112,54 +112,56 @@ protected:
 TEST_F(HlIrTestCode, T1)
 {
     const std::string output = R"(
-        fn soma(n:float,j:int):int {
-         let var_1:int = call int gfn_soma_block(j:j)
+        fn main(n:float,j:int):int {
+         let block:fn = gfn_main_block
+         let var_1:int = call int gfn_main_block(j:j)
          return int var_1
         }
 
-        fn gfn_soma_block(j:int):int {
+        fn gfn_main_block(j:int):int {
          let x:int = 25
-         let var_1:int = call int gfn_gfn_soma_block_block(j:j,x:x)
+         let block:fn = gfn_gfn_main_block_block
+         let var_1:int = call int gfn_gfn_main_block_block(j:j,x:x)
          return int var_1
         }
 
-        fn gfn_gfn_soma_block_block(j:int,x:int):int {
+        fn gfn_gfn_main_block_block(j:int,x:int):int {
          let var_1:int = 2
          let var_2:int = MULT var_1, j
          let var_3:int = MULT var_2, x
          let r:int = var_3
-         let x:float = 25.25
-         let var_5:double = 14524.25D
-         let var_4:int = call int gfn_gfn_gfn_soma_block_block_block(n:var_5,j:j,x:x)
+         let x:int = 25
+         let block:fn = gfn_gfn_gfn_main_block_block_block
+         let var_5:int = 14524
+         let var_4:int = call int gfn_gfn_gfn_main_block_block_block(n:var_5,j:j,x:x)
          return int var_4
         }
 
-        fn gfn_gfn_gfn_soma_block_block_block(n:double,j:int,x:float):int {
+        fn gfn_gfn_gfn_main_block_block_block(n:int,j:int,x:int):int {
          let var_1:int = 2
          let var_2:int = MULT var_1, j
-         let var_3:float = var_2 int to float
-         let var_4:float = MULT var_3, x
-         let var_5:int = var_4 float to int
-         let r:int = var_5
+         let var_3:int = MULT var_2, x
+         let var_4:int = MULT var_3, n
+         let r:int = var_4
          return int r
         }
     )";
 
     const std::string input = R"(
-        fn soma(n:float, j:int): int {
+        fn main(n:float, j:int): int {
 
             let block:fn = ():int -> {
                    let x:int = 25
                    let block:fn = ():int -> {
                         let r:int = 2 * j * x
-                        let x:float = 25.25
+                        let x:int = 25
 
-                        let block:fn = (n:double):int -> {
-                            let r:int = 2 * j * x
+                        let block:fn = (n:int):int -> {
+                            let r:int = 2 * j * x * n
                             return r
                         }
 
-                        return block(n:14524.25D)
+                        return block(n:14524)
                     }
                     return block()
                 }
@@ -294,7 +296,7 @@ TEST_F(HlIrTestCode, T6)
 
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn sub(ax:int, bx:int, nx:int): int { return 0 }
 
         fn soma() {

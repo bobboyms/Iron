@@ -6,6 +6,8 @@
 #include "TokenMap.h"
 #include "Utils.h"
 
+#include <map>
+
 /**
  * @namespace hlir
  * @brief Contains classes and structures representing a High-Level IR.
@@ -946,6 +948,8 @@ namespace hlir
     private:
         int varId = 0;
         std::vector<ValidStatement> statementList;
+        // std::vector<std::shared_ptr<Variable>> variables;
+        std::map<std::string, std::shared_ptr<Variable>> variableMap;
 
     public:
         bool logged = false;
@@ -956,7 +960,9 @@ namespace hlir
         std::vector<ValidStatement> getStatements();
         std::string getText() override;
         std::string getNewVarName();
-        std::shared_ptr<Variable> findVarByName(std::string varName);
+        void addDeclaredVariable(const std::shared_ptr<Variable> &variable);
+        std::shared_ptr<Variable> findVarByName(const std::string& varName);
+        std::shared_ptr<Value> getVariableValue(std::string varName);
 
         void setParent(const std::shared_ptr<Parent> newParent) override
         {

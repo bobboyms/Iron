@@ -33,9 +33,11 @@ namespace iron
         std::string filename;
 
     public:
-        explicit LLVM(const std::shared_ptr<hlir::Context>& hlirContext, llvm::LLVMContext &context, const std::string &filename);
+        explicit LLVM(const std::shared_ptr<hlir::Context> &hlirContext, llvm::LLVMContext &context,
+                      const std::string &filename);
 
-        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename, const llvm::LLVMContext &context);
+        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename,
+             const llvm::LLVMContext &context);
         ~LLVM();
 
         std::unique_ptr<llvm::Module> generateCode();
@@ -93,11 +95,13 @@ namespace iron
         void visitAssignment(const std::shared_ptr<hlir::Assign> &hlirAssignment);
 
         llvm::Value *visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall);
+
         static void linkExecutable(const std::vector<std::string> &objects, const std::string &exeName,
                                    const std::string &arch, const std::string &macosxVersionMin);
 
+        static std::unique_ptr<llvm::Module> mergeModules(std::vector<std::unique_ptr<llvm::Module>> modules);
         static void emitObjectFile(llvm::Module *module, const std::string &filename);
-        static void mergeModulesAndExecute(std::vector<std::unique_ptr<llvm::Module>> modules);
+        static void executeModule(std::unique_ptr<llvm::Module> mainModule);
     };
 } // namespace iron
 

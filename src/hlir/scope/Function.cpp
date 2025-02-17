@@ -53,6 +53,11 @@ namespace hlir
 
     void Function::setParentFunction(const std::shared_ptr<Function> &function)
     {
+        if (!function)
+        {
+            throw HLIRException("Function::parentFunction is null");
+        }
+
         parentFunction = function;
     }
 
@@ -145,11 +150,11 @@ namespace hlir
             throw HLIRException("Statement cannot be null.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
 
-        functionArgs->setParent(parentPtr);
-        functionReturnType->setParent(parentPtr);
-        statement->setParent(parentPtr);
+        this->functionArgs->setParent(parentPtr);
+        this->functionReturnType->setParent(parentPtr);
+        this->statement->setParent(parentPtr);
 
         auto assignPtr = std::dynamic_pointer_cast<Function>(parentPtr);
         if (!assignPtr)
@@ -362,6 +367,7 @@ namespace hlir
         return util::format("var_{}", varId);
     }
 
+
     void Statement::addStatement(ValidStatement statement)
     {
         if (isValidStatementNull(statement))
@@ -428,41 +434,59 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<Variable> Statement::findVarByName(std::string varName)
+    std::shared_ptr<Value> Statement::getVariableValue(std::string varName)
     {
-        std::shared_ptr<Variable> variable = nullptr;
+        std::shared_ptr<Value> value = nullptr;
         for (auto stmt: statementList)
         {
             std::visit(
-                    [this, varName, &variable](const auto &stmtPtr)
+                    [this, varName, &value](const auto &stmtPtr)
                     {
-
                         using T = std::decay_t<decltype(*stmtPtr)>;
                         if constexpr (std::is_same_v<T, Assign>)
                         {
                             if (stmtPtr->getVariable()->getVarName() == varName)
                             {
-                                variable = stmtPtr->getVariable();
-                            }
-                        }
-                        else if constexpr (std::is_same_v<T, Expr>)
-                        {
-                            if (stmtPtr->getVariable()->getVarName() == varName)
-                            {
-                                variable = stmtPtr->getVariable();
+                                value = stmtPtr->getValue();
                             }
                         }
                     },
                     stmt);
 
-            if (variable != nullptr)
+            if (value != nullptr)
             {
-                return variable;
+                return value;
             }
         }
 
         return nullptr;
     }
+
+    void Statement::addDeclaredVariable(const std::shared_ptr<Variable> &variable)
+    {
+        if (!variable)
+        {
+            throw HLIRException("Statement::addDeclaredVariable. Attempted to add a nullptr variable in addDeclaredVariable method.");
+        }
+
+
+
+
+        variableMap.insert({variable->getVarName(), variable});
+    }
+
+    std::shared_ptr<Variable> Statement::findVarByName(const std::string& varName)
+    {
+
+        if (const auto it = variableMap.find(varName); it != variableMap.end())
+        {
+            return it->second;
+        }
+
+        return nullptr;
+
+    }
+
 
     // Function Return
     FuncReturn::FuncReturn(const std::shared_ptr<Function> &function, const std::shared_ptr<Variable> &variable)

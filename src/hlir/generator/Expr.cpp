@@ -28,7 +28,9 @@ namespace hlir
             std::string strLeftVar = visitBoolExpr(ctx->left, statement);
             std::string strRightVar = visitBoolExpr(ctx->right, statement);
 
-            const auto [higherType, leftVar, rightVar] =  initializerExprVariables(strLeftVar, strRightVar, statement);
+
+
+            const auto [higherType, leftVar, rightVar] = initializerExprVariables(strLeftVar, strRightVar, statement);
 
             if (leftVar->getVarType()->getType() != higherType)
             {
@@ -49,8 +51,12 @@ namespace hlir
             std::string tempVarStr = statement->getNewVarName();
 
             auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
+            statement->addDeclaredVariable(newLeftVar);
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
-            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            statement->addDeclaredVariable(newRightVar);
+            auto tempVar =
+                    std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            statement->addDeclaredVariable(tempVar);
 
             if (ctx->EQEQ())
             {
@@ -114,9 +120,11 @@ namespace hlir
         if (ctx->BOOLEAN_VALUE())
         {
             std::string tempVarStr = statement->getNewVarName();
-            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
-
-            const auto value = std::make_shared<Value>()->set(ctx->BOOLEAN_VALUE()->getText(), std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            auto tempVar =
+                    std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            statement->addDeclaredVariable(tempVar);
+            const auto value = std::make_shared<Value>()->set(ctx->BOOLEAN_VALUE()->getText(),
+                                                              std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             const auto assign = std::make_shared<Assign>()->set(tempVar, value);
             statement->addStatement(assign);
             return tempVarStr;
@@ -125,8 +133,9 @@ namespace hlir
         if (ctx->NOT())
         {
             std::string tempRightVarStr = statement->getNewVarName();
-            auto newRightVar = std::make_shared<Variable>()->set(tempRightVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
-
+            auto newRightVar =
+                    std::make_shared<Variable>()->set(tempRightVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            statement->addDeclaredVariable(newRightVar);
             const auto value = std::make_shared<Value>()->set("true", std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             const auto assign = std::make_shared<Assign>()->set(newRightVar, value);
             statement->addStatement(assign);
@@ -135,8 +144,9 @@ namespace hlir
             const auto [_, newLeftVar] = findVarByScope(statement, varName);
 
             std::string tempVarStr = statement->getNewVarName();
-            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
-
+            auto tempVar =
+                    std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            statement->addDeclaredVariable(tempVar);
             auto operation = std::make_shared<_NOT>()->set(newLeftVar, newRightVar);
             auto expr = std::make_shared<Expr>()->set(tempVar, operation);
             statement->addStatement(expr);
@@ -168,6 +178,7 @@ namespace hlir
 
             auto type = std::make_shared<Type>(dataType);
             auto tempVar = std::make_shared<Variable>()->set(tempVarStr, type);
+            statement->addDeclaredVariable(tempVar);
             auto value = std::make_shared<Value>()->set(numberLiteral, type);
             auto assign = std::make_shared<Assign>()->set(tempVar, value);
 
@@ -181,19 +192,16 @@ namespace hlir
 
     std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
     HLIRGenerator::initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,
-                                  const std::shared_ptr<Statement> &statement)
+                                            const std::shared_ptr<Statement> &statement)
     {
         const auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
         if (!currentFunction)
         {
-            throw HLIRException("std::dynamic_pointer_cast<Function>(statement->getParent())");
+            throw HLIRException("HLIRGenerator::initializerExprVariables. std::dynamic_pointer_cast<Function>(statement->getParent())");
         }
 
         auto [_, rightVar] = findVarByScope(statement, strRightVar);
-        auto [__, leftVar] = findVarByScope(statement, strLeftVar);
-
-        // auto rightVar = right;
-        // auto leftVar = left;
+        auto [scope, leftVar] = findVarByScope(statement, strLeftVar);
 
         if (!rightVar)
         {
@@ -217,19 +225,22 @@ namespace hlir
         }
 
         int higherType;
-        if (rightVar->getVarType()->getType() == tokenMap::TYPE_BOOLEAN || leftVar->getVarType()->getType() == tokenMap::TYPE_BOOLEAN)
+        if (rightVar->getVarType()->getType() == tokenMap::TYPE_BOOLEAN ||
+            leftVar->getVarType()->getType() == tokenMap::TYPE_BOOLEAN)
         {
             higherType = tokenMap::TYPE_BOOLEAN;
-        } else
+        }
+        else
         {
-            higherType = tokenMap::getHigherPrecedenceType(leftVar->getVarType()->getType(), rightVar->getVarType()->getType());
+            higherType = tokenMap::getHigherPrecedenceType(leftVar->getVarType()->getType(),
+                                                           rightVar->getVarType()->getType());
         }
 
         return std::make_tuple(higherType, leftVar, rightVar);
-
     }
 
-    std::shared_ptr<Expr> HLIRGenerator::castVariable(int higherType, const std::string &varName, const std::shared_ptr<Variable> &variable)
+    std::shared_ptr<Expr> HLIRGenerator::castVariable(int higherType, const std::string &varName,
+                                                      const std::shared_ptr<Variable> &variable)
     {
         const auto tempVar = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(higherType));
         const auto cast = std::make_shared<Cast>()->apply(variable, std::make_shared<Type>(higherType));
@@ -238,6 +249,12 @@ namespace hlir
 
     std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement)
     {
+
+        if (!statement)
+        {
+            throw HLIRException("HLIRGenerator::visitExpr. statement is null");
+        }
+
         const uint line = ctx->getStart()->getLine();
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
@@ -256,7 +273,7 @@ namespace hlir
             std::string strLeftVar = visitExpr(ctx->left, statement);
             std::string strRightVar = visitExpr(ctx->right, statement);
 
-            const auto [higherType, leftVar, rightVar] =  initializerExprVariables(strLeftVar, strRightVar, statement);
+            const auto [higherType, leftVar, rightVar] = initializerExprVariables(strLeftVar, strRightVar, statement);
 
             if (leftVar->getVarType()->getType() != higherType)
             {
@@ -277,8 +294,11 @@ namespace hlir
             std::string tempVarStr = statement->getNewVarName();
 
             auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
+            // statement->addDeclaredVariable(newLeftVar);
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
+            // statement->addDeclaredVariable(newRightVar);
             auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
+            statement->addDeclaredVariable(tempVar);
 
             if (ctx->mult)
             {
@@ -316,8 +336,8 @@ namespace hlir
 
         if (ctx->number())
         {
-            std::string tempVarStr = statement->getNewVarName();
-            std::string numberLiteral = ctx->number()->getText();
+            const auto tempVarStr = statement->getNewVarName();
+            const auto numberLiteral = ctx->number()->getText();
             int dataType = tokenMap::determineType(numberLiteral);
 
             if (dataType == tokenMap::REAL_NUMBER)
@@ -327,6 +347,7 @@ namespace hlir
 
             auto type = std::make_shared<Type>(dataType);
             auto tempVar = std::make_shared<Variable>()->set(tempVarStr, type);
+            statement->addDeclaredVariable(tempVar);
             auto value = std::make_shared<Value>()->set(numberLiteral, type);
             auto assign = std::make_shared<Assign>()->set(tempVar, value);
 
@@ -337,44 +358,38 @@ namespace hlir
 
         if (ctx->functionCall())
         {
-            auto functionName = ctx->functionCall()->functionName->getText();
+            auto const functionName = ctx->functionCall()->functionName->getText();
 
-            auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
-            if (!currentFunction)
+            if (auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent()); !currentFunction)
             {
                 throw HLIRException("std::dynamic_pointer_cast<Function>(statement->getParent())");
             }
 
             if (auto globalFunction = context->getFunctionByName(functionName))
             {
+
                 std::string strTempVar = statement->getNewVarName();
 
-                auto tempVar = std::make_shared<Variable>()->set(
+                const auto tempVar = std::make_shared<Variable>()->set(
                         strTempVar, std::make_shared<Type>(globalFunction->getFunctionReturnType()->getType()));
+                statement->addDeclaredVariable(tempVar);
 
-                auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
-                auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
+                const auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
+                const auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
                 statement->addStatement(expr);
 
                 return strTempVar;
             }
-            const std::string localFunctionName =
-                    iron::createFunctionName(currentFunction->getFunctionName(), functionName);
 
-            auto localFunction = context->getFunctionByName(localFunctionName);
-
-            if (!localFunction)
-            {
-                throw HLIRException("hlir::visitExpr. function not found");
-            }
-
+            const auto localFunction = gatArrowFunction(statement, functionName);
             std::string strTempVar = statement->getNewVarName();
-
-            auto tempVar = std::make_shared<Variable>()->set(
+            const auto tempVar = std::make_shared<Variable>()->set(
                     strTempVar, std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));
+            statement->addDeclaredVariable(tempVar);
 
-            auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
-            auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
+            const auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
+
+            const auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
             statement->addStatement(expr);
 
             return strTempVar;

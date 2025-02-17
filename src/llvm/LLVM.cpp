@@ -224,9 +224,9 @@ namespace iron
                                  errorStream.str()));
         }
 
-        std::string irStr;
-        llvm::raw_string_ostream irStream(irStr);
-        module->print(irStream, nullptr);
+        // std::string irStr;
+        // llvm::raw_string_ostream irStream(irStr);
+        // module->print(irStream, nullptr);
 
         return std::move(module);
     }

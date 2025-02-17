@@ -92,14 +92,7 @@ namespace iron
 
         for (const auto &arg: functionCall->getCallArgs()->getCallArgs())
         {
-            functionCall->getFunction()->getStatement()->findVarByName(arg->argument);
-
-            if (auto var = functionCall->getFunction()->getStatement()->findVarByName(arg->argument))
-            {
-                throw LLVMException(util::format("LLVM::visitFunctionCall. Variable {} found", arg->argument));
-            }
-
-            auto value = createConstValue(arg->value->getValueType(), arg->value);
+            const auto value = createConstValue(arg->value->getValueType(), arg->value);
             args.push_back(value);
         }
 

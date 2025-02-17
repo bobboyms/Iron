@@ -12,10 +12,12 @@
 #include <string>
 
 namespace iron {
-    void LLVM::mergeModulesAndExecute(std::vector<std::unique_ptr<llvm::Module>> modules) {
+
+    std::unique_ptr<llvm::Module> LLVM::mergeModules(std::vector<std::unique_ptr<llvm::Module>> modules)
+    {
         if (modules.empty()) {
             llvm::errs() << "No modules provided.\n";
-            return;
+            return nullptr;
         }
 
         // Usa o primeiro módulo como módulo principal.
@@ -26,13 +28,16 @@ namespace iron {
 
         // Linka os demais módulos ao módulo principal.
         for (size_t i = 1; i < modules.size(); ++i) {
-            // O método linkInModule espera um unique_ptr para transferir a propriedade.
             if (linker.linkInModule(std::move(modules[i]))) {
                 llvm::errs() << "Error linking module " << i << "\n";
-                return;
+                return nullptr;
             }
         }
+        return mainModule;
+    }
 
+
+    void LLVM::executeModule(std::unique_ptr<llvm::Module> mainModule) {
         // Inicializa o target nativo.
         llvm::InitializeNativeTarget();
         llvm::InitializeNativeTargetAsmPrinter();

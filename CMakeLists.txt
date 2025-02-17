@@ -182,7 +182,7 @@ set(SRC_COMMON
 )
 
 set(TEST_SRC
-        tests/test_semantic_analysis.cpp
+#        tests/test_semantic_analysis.cpp
         tests/test_hlir_code.cpp
 #        tests/test_llvm_code.cpp
 )

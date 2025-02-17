@@ -1,8 +1,24 @@
 import std.output.printf
 
-fn main() {
+fn main(n:float, j:int): int {
 
-   let x:int = 3*3
-   printf(format:"%s: %u\n\n\n", ff:"Idade", r:x)
+            let block:fn = ():int -> {
+                   let x:int = 25
+                   let block:fn = ():int -> {
+                        let r:int = 2 * j * x
+                        let x:int = 25
 
-}
+                        let block:fn = (n:int):int -> {
+                            let r:int = 2 * j * x * n
+                            return r
+                        }
+
+                        return block(n:14524) / 2
+                    }
+                    return block()
+                }
+                let r:int = block()
+                printf(format:"r: %u\n", r:r)
+
+            return r
+        }
