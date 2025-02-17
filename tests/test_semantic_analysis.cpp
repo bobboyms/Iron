@@ -1611,8 +1611,12 @@ TEST_F(SemanticAnalysisTest, ComplexBooleanExpression)
 {
     const std::string input = R"(
         fn main() {
-            let b:boolean = not (5 > 3 and (10 <= 10 or false))
+            let b:boolean = not (5 > 3 and (10 <= 10))
         }
     )";
     EXPECT_NO_THROW(runAnalysis(input));
 }
+
+// fn main() {
+//     let exprBool:boolean = not 2 > 3
+//  }

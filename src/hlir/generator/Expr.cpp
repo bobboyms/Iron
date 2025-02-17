@@ -9,7 +9,7 @@ namespace hlir
     std::string HLIRGenerator::visitBoolExpr(IronParser::BoolExprContext *ctx,
                                              const std::shared_ptr<Statement> &statement)
     {
-        const int line = ctx->getStart()->getLine();
+        const uint line = ctx->getStart()->getLine();
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
@@ -21,6 +21,7 @@ namespace hlir
                 }
             }
         }
+
 
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
@@ -49,11 +50,35 @@ namespace hlir
 
             auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
-            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
+            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
 
-            // std::string tempVarStr = statement->getNewVarName();
-            // auto type = std::make_shared<Type>(tokenMap::TYPE_BOOLEAN);
-            // auto tempVar = std::make_shared<Variable>()->set(tempVarStr, type);
+            if (ctx->EQEQ())
+            {
+                auto operation = std::make_shared<CMP>(tokenMap::EQEQ)->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
+
+            if (ctx->NEQ())
+            {
+                auto operation = std::make_shared<CMP>(tokenMap::NEQ)->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
+
+            if (ctx->LT())
+            {
+                auto operation = std::make_shared<CMP>(tokenMap::LT)->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
+
+            if (ctx->LTE())
+            {
+                auto operation = std::make_shared<CMP>(tokenMap::LTE)->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
 
             if (ctx->GT())
             {
@@ -62,7 +87,66 @@ namespace hlir
                 statement->addStatement(expr);
             }
 
+            if (ctx->GTE())
+            {
+                auto operation = std::make_shared<CMP>(tokenMap::GTE)->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
+
+            if (ctx->OR())
+            {
+                auto operation = std::make_shared<OR>()->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
+
+            if (ctx->AND())
+            {
+                auto operation = std::make_shared<AND>()->set(newLeftVar, newRightVar);
+                auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+                statement->addStatement(expr);
+            }
+
             return tempVarStr;
+        }
+
+        if (ctx->BOOLEAN_VALUE())
+        {
+            std::string tempVarStr = statement->getNewVarName();
+            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+
+            const auto value = std::make_shared<Value>()->set(ctx->BOOLEAN_VALUE()->getText(), std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            const auto assign = std::make_shared<Assign>()->set(tempVar, value);
+            statement->addStatement(assign);
+            return tempVarStr;
+        }
+
+        if (ctx->NOT())
+        {
+            std::string tempRightVarStr = statement->getNewVarName();
+            auto newRightVar = std::make_shared<Variable>()->set(tempRightVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+
+            const auto value = std::make_shared<Value>()->set("true", std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+            const auto assign = std::make_shared<Assign>()->set(newRightVar, value);
+            statement->addStatement(assign);
+
+            const auto varName = visitBoolExpr(ctx->boolExpr().front(), statement);
+            const auto [_, newLeftVar] = findVarByScope(statement, varName);
+
+            std::string tempVarStr = statement->getNewVarName();
+            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
+
+            auto operation = std::make_shared<_NOT>()->set(newLeftVar, newRightVar);
+            auto expr = std::make_shared<Expr>()->set(tempVar, operation);
+            statement->addStatement(expr);
+
+            return tempVarStr;
+        }
+
+        if (ctx->expr())
+        {
+            return visitExpr(ctx->expr(), statement);
         }
 
         if (ctx->varName)
@@ -92,7 +176,7 @@ namespace hlir
             return tempVarStr;
         }
 
-        throw HLIRException(util::format("Invalid expression. Line: {}", line));
+        throw HLIRException(util::format("Invalid boolean expression. Line: {}", line));
     }
 
     std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
@@ -132,8 +216,14 @@ namespace hlir
             ensureVariableCaptured(currentFunction, leftVar);
         }
 
-        int higherType =
-                tokenMap::getHigherPrecedenceType(leftVar->getVarType()->getType(), rightVar->getVarType()->getType());
+        int higherType;
+        if (rightVar->getVarType()->getType() == tokenMap::TYPE_BOOLEAN || leftVar->getVarType()->getType() == tokenMap::TYPE_BOOLEAN)
+        {
+            higherType = tokenMap::TYPE_BOOLEAN;
+        } else
+        {
+            higherType = tokenMap::getHigherPrecedenceType(leftVar->getVarType()->getType(), rightVar->getVarType()->getType());
+        }
 
         return std::make_tuple(higherType, leftVar, rightVar);
 
@@ -148,7 +238,7 @@ namespace hlir
 
     std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement)
     {
-        const int line = ctx->getStart()->getLine();
+        const uint line = ctx->getStart()->getLine();
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {

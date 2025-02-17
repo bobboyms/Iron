@@ -8,7 +8,7 @@
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
+// #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
@@ -35,23 +35,11 @@ namespace iron
     public:
         explicit LLVM(const std::shared_ptr<hlir::Context>& hlirContext, llvm::LLVMContext &context, const std::string &filename);
 
-        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename,
-             const llvm::LLVMContext &context);
+        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename, const llvm::LLVMContext &context);
         ~LLVM();
 
         std::unique_ptr<llvm::Module> generateCode();
 
-        /**
-         * @brief Maps a custom type from the HLIR to the corresponding LLVM Type.
-         *
-         * Converts types defined in TokenMap (e.g., TYPE_INT, TYPE_FLOAT) to their equivalent LLVM
-         * Type representations. Throws an exception if the type is unknown.
-         *
-         * @param type The integer representation of the type from TokenMap.
-         * @return Pointer to the corresponding LLVM Type.
-         *
-         * @throws LLVMException If the provided type is unknown or unsupported.
-         */
         llvm::Type *mapType(int type);
 
         void generateTerminator(llvm::Type *functionReturnType);

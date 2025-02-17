@@ -4,7 +4,8 @@
 // namespace iron
 // {
 //
-//     void SemanticAnalysis::visitFormatStatement(IronParser::FormatStatementContext *ctx)
+//     void SemanticAnalysis::
+//     visitFormatStatement(IronParser::FormatStatementContext *ctx)
 //     {
 //         const uint line = ctx->getStart()->getLine();
 //         const uint col = ctx->getStart()->getCharPositionInLine();

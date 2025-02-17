@@ -178,6 +178,7 @@ set(SRC_COMMON
         src/headers/Analyser.h
         src/utils/Path.cpp
         src/hlir/generator/Expr.cpp
+        src/hlir/generator/Function.cpp
 )
 
 set(TEST_SRC

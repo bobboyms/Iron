@@ -3,7 +3,6 @@
 
 #include <exception>
 #include <string>
-#include <utility>
 namespace hlir
 {
     class HLIRException final : public std::exception

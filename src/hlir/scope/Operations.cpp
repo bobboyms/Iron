@@ -117,23 +117,24 @@ namespace hlir
     {
         if (!varLeft)
         {
-            throw HLIRException("Minus::set failed: newVarLeft is null.");
+            throw HLIRException("BinaryOperation::set failed: newVarLeft is null.");
         }
 
         if (!varRight)
         {
-            throw HLIRException("Minus::set failed: newVarRight is null.");
+            throw HLIRException("BinaryOperation::set failed: newVarRight is null.");
         }
 
         if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
         {
-            throw HLIRException("Minus::set failed: The variables must be of the same type.");
+            throw HLIRException("BinaryOperation::set failed: The variables must be of the same type.");
+
         }
 
         std::shared_ptr<Parent> parentPtr = shared_from_this();
         if (!parentPtr)
         {
-            throw HLIRException("Minus::set failed: shared_from_this() returned null.");
+            throw HLIRException("BinaryOperation::set  failed: shared_from_this() returned null.");
         }
 
         varLeft->setParent(parentPtr);
@@ -146,7 +147,7 @@ namespace hlir
         auto assignPtr = std::dynamic_pointer_cast<BinaryOperation>(parentPtr);
         if (!assignPtr)
         {
-            throw HLIRException("Minus::set failed: Unable to cast Parent to Minus.");
+            throw HLIRException("BinaryOperation::set  failed: Unable to cast Parent to Minus.");
         }
         return assignPtr;
     }
@@ -226,7 +227,11 @@ namespace hlir
         return sb.str();
     }
 
-    std::string NOT::getText()
+    _NOT::_NOT() = default;
+
+    _NOT::~_NOT() = default;
+
+    std::string _NOT::getText()
     {
         sb.str("");
         sb.clear();

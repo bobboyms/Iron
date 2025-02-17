@@ -5,7 +5,6 @@
 #include "Exceptions.h"
 #include "TokenMap.h"
 #include "Utils.h"
-#include "WriterCodeHLIR.h"
 
 /**
  * @namespace hlir
@@ -282,7 +281,7 @@ namespace hlir
      * bool).
      */
     using Data =
-            std::variant<std::shared_ptr<Function>, std::shared_ptr<Variable>, std::string, int, float, double, bool>;
+            std::variant<std::shared_ptr<Function>, std::shared_ptr<Variable>, std::string>; //, int, float, double, bool
 
     /**
      * @class Value
@@ -575,7 +574,7 @@ namespace hlir
     protected:
         std::shared_ptr<Type> opType;
     public:
-        CMP(int op);
+        explicit CMP(int op);
 
         /**
          * @brief Destructor for Plus.
@@ -633,16 +632,16 @@ namespace hlir
         std::string getText() override;
     };
 
-    class NOT final : public BinaryOperation
+    class _NOT final : public BinaryOperation
     {
 
     public:
-        NOT();
+        _NOT();
 
         /**
          * @brief Destructor for Plus.
          */
-        ~NOT() override;
+        ~_NOT() override;
 
         /**
          * @brief Generates a textual representation of the addition operation.

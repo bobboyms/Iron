@@ -145,7 +145,7 @@ TEST_F(HlIrTestCode, T1)
         }
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn soma(n:float, j:int): int {
 
             let block:fn = ():int -> {
@@ -678,6 +678,238 @@ TEST_F(HlIrTestCode, T17)
 }
 
 TEST_F(HlIrTestCode, T18)
+{
+    const std::string output = R"(
+        fn main():void {
+         let var_1:boolean = true
+         let var_2:int = 3
+         let var_3:int = 1
+         let var_4:boolean = cmp GT var_2, var_3
+         let var_5:boolean = NOT var_4, var_1
+         let exprBool1:boolean = var_5
+         let var_6:int = 3
+         let var_7:int = 1
+         let var_8:boolean = cmp GT var_6, var_7
+         let exprBool2:boolean = var_8
+         let var_9:int = 3
+         let var_10:int = 1
+         let var_11:boolean = cmp NEQ var_9, var_10
+         let exprBool3:boolean = var_11
+         let var_12:int = 3
+         let var_13:int = 1
+         let var_14:boolean = cmp EQEQ var_12, var_13
+         let exprBool4:boolean = var_14
+         let var_15:int = 5
+         let var_16:int = 3
+         let var_17:boolean = cmp GT var_15, var_16
+         let var_18:int = 25
+         let var_19:int = 6
+         let var_20:int = MULT var_18, var_19
+         let var_21:boolean = var_20 int to boolean
+         let var_22:boolean = cmp NEQ var_17, var_21
+         let var_23:int = 5
+         let var_24:boolean = var_23 int to boolean
+         let var_25:boolean = cmp LT var_22, var_24
+         let var_26:int = 25
+         let var_27:int = 25
+         let var_28:boolean = cmp EQEQ var_26, var_27
+         let var_29:boolean = cmp NEQ var_25, var_28
+         let exprBool5:boolean = var_29
+         let var_30:int = 5
+         let var_31:int = 3
+         let var_32:boolean = cmp GT var_30, var_31
+         let var_33:int = 25
+         let var_34:int = 6
+         let var_35:int = MULT var_33, var_34
+         let var_36:boolean = var_35 int to boolean
+         let var_37:boolean = cmp NEQ var_32, var_36
+         let var_38:int = 5
+         let var_39:boolean = var_38 int to boolean
+         let var_40:boolean = cmp LT var_37, var_39
+         let var_41:int = 25
+         let var_42:int = 25
+         let var_43:boolean = cmp EQEQ var_41, var_42
+         let var_44:boolean = cmp NEQ var_40, var_43
+         let var_45:int = 32
+         let var_46:int = 2
+         let var_47:int = DIV var_45, var_46
+         let var_48:int = 5
+         let var_49:boolean = cmp GT var_47, var_48
+         let var_50:boolean = OR var_44, var_49
+         let exprBool6:boolean = var_50
+         let a:int = 12
+         let b:float = 1.6
+         let var_51:int = 5
+         let var_52:int = 3
+         let var_53:boolean = cmp GT var_51, var_52
+         let var_54:int = 6
+         let var_55:int = MULT a, var_54
+         let var_56:boolean = var_55 int to boolean
+         let var_57:boolean = cmp NEQ var_53, var_56
+         let var_58:int = 5
+         let var_59:boolean = var_58 int to boolean
+         let var_60:boolean = cmp LT var_57, var_59
+         let var_61:int = 25
+         let var_62:float = var_61 int to float
+         let var_63:boolean = cmp EQEQ var_62, b
+         let var_64:boolean = cmp NEQ var_60, var_63
+         let var_65:int = 32
+         let var_66:int = 2
+         let var_67:int = DIV var_65, var_66
+         let var_68:boolean = cmp GT var_67, a
+         let var_69:int = 2
+         let var_70:int = 2
+         let var_71:boolean = cmp GT var_69, var_70
+         let var_72:boolean = AND var_68, var_71
+         let var_73:boolean = OR var_64, var_72
+         let exprBool7:boolean = var_73
+         let var_74:int = 5
+         let var_75:boolean = cmp GT var_74, a
+         let var_76:int = 25
+         let var_77:int = 6
+         let var_78:int = MULT var_76, var_77
+         let var_79:boolean = cmp LT var_78, a
+         let var_80:int = 2
+         let var_81:boolean = var_80 int to boolean
+         let var_82:boolean = cmp NEQ var_79, var_81
+         let var_83:boolean = cmp NEQ var_75, var_82
+         let var_84:boolean = true
+         let var_85:int = 25
+         let var_86:int = 25
+         let var_87:boolean = cmp EQEQ var_85, var_86
+         let var_88:boolean = NOT var_87, var_84
+         let var_89:boolean = cmp EQEQ var_83, var_88
+         let exprBool8:boolean = var_89
+        }
+
+    )";
+
+    const std::string input = R"(
+        fn main() {
+           //false ok
+           let exprBool1:boolean = not 3 > 1
+
+           //true ok
+           let exprBool2:boolean = 3 > 1
+
+           //true ok
+           let exprBool3:boolean = 3 != 1
+
+           //false
+           let exprBool4:boolean = 3 == 1
+
+           //false ok
+           let exprBool5:boolean = 5 > 3 != (25 * 6) < 5 != (25 == 25)
+
+           //true true ok
+           let exprBool6:boolean = 5 > 3 != (25 * 6) < 5 != (25 == 25) or (32 /2) > 5
+
+           let a:int = 12
+           let b:float = 1.6
+
+           //true ok
+           let exprBool7:boolean = 5 > 3 != (a * 6) < 5 != (25 == b) or (32 /2) > a and 2 > 2
+
+           // false ok
+           let exprBool8:boolean = 5 > a != ((25 * 6) < a != 2) == (not (25 == 25))
+        }
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T19)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T21)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T22)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T23)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T24)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T25)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T26)
 {
     const std::string output = R"(
 

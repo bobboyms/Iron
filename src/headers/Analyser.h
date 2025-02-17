@@ -27,7 +27,7 @@ namespace iron
     public:
         explicit Analyser(const std::shared_ptr<config::Configuration> &config);
         ~Analyser();
-        std::vector<std::shared_ptr<scope::Function>> semantic(const std::string &fileName) const;
+        [[nodiscard]] std::vector<std::shared_ptr<scope::Function>> semantic(const std::string &fileName) const;
         static std::vector<std::string> loadStringAsLines(const std::string &code);
         std::shared_ptr<hlir::Context>
         hlir(const std::string &fileName,

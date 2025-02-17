@@ -20,27 +20,27 @@ namespace hlir
         void visitStatementList(const IronParser::StatementListContext *ctx,
                                 const std::shared_ptr<Statement> &statement);
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx, const std::shared_ptr<Statement> &statement);
-        void visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement);
+        static void visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement);
 
         std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement);
         std::string visitBoolExpr(IronParser::BoolExprContext *ctx, const std::shared_ptr<Statement> &statement);
-        std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
+        static std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
         initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,
                                  const std::shared_ptr<Statement> &statement);
-        std::shared_ptr<Expr> castVariable(int higherType, const std::string &varName,
-                                           const std::shared_ptr<Variable> &variable);
+        static std::shared_ptr<Expr> castVariable(int higherType, const std::string &varName,
+                                                  const std::shared_ptr<Variable> &variable);
 
-        void visitAssignment(IronParser::AssignmentContext *ctx, std::shared_ptr<Statement> statement);
+        void visitAssignment(IronParser::AssignmentContext *ctx, const std::shared_ptr<Statement> &statement);
 
-        void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx,
-                                    std::shared_ptr<FunctionArgs> functionArgs,
-                                    std::shared_ptr<Type> functionReturnType);
-        void visitFunctionArgs(IronParser::FunctionArgsContext *ctx, std::shared_ptr<FunctionArgs> functionArgs);
-        void visitFunctionArg(IronParser::FunctionArgContext *ctx, std::shared_ptr<FunctionArgs> functionArgs);
+        static void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx,
+                                    const std::shared_ptr<FunctionArgs> &functionArgs,
+                                    const std::shared_ptr<Type> &functionReturnType);
+        static void visitFunctionArgs(const IronParser::FunctionArgsContext *ctx, const std::shared_ptr<FunctionArgs> &functionArgs);
+        static void visitFunctionArg(IronParser::FunctionArgContext *ctx, const std::shared_ptr<FunctionArgs> &functionArgs);
 
         std::shared_ptr<FunctionCall> visitFunctionCall(IronParser::FunctionCallContext *ctx,
-                                                        const std::shared_ptr<Statement>& statement);
-        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx,
+                                                        const std::shared_ptr<Statement> &statement);
+        void visitFunctionCallArgs(const IronParser::FunctionCallArgsContext *ctx,
                                    const std::shared_ptr<FunctionCallArgs> &callArgs,
                                    const std::shared_ptr<Statement> &statement);
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
@@ -54,24 +54,26 @@ namespace hlir
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Statement> &statement);
 
 
-        std::pair<int, std::shared_ptr<Variable>> findVarByScope(const std::shared_ptr<Statement> &Statement,
+        static std::pair<int, std::shared_ptr<Variable>> findVarByScope(const std::shared_ptr<Statement> &Statement,
                                                                  const std::string &varName);
 
         static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);
         static bool hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName);
 
+        void visitImportStatement(IronParser::ImportStatementContext *ctx) const;
+        void registerExternalFunction(const std::shared_ptr<Function> &function) const;
+        void visitExternBlock(const IronParser::ExternBlockContext *ctx) const;
+        void visitExternFunctionDeclaration(IronParser::ExternFunctionDeclarationContext *ctx) const;
+        static void visitExternFunctionArgs(IronParser::ExternFunctionArgsContext *ctx,
+                                            const std::shared_ptr<FunctionArgs> &argsList);
+        static void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
+                                           const std::shared_ptr<FunctionArgs> &argsList);
+
 
     public:
         // std::string generateCode();
         std::shared_ptr<Context> getContext();
-        void visitImportStatement(IronParser::ImportStatementContext *ctx);
-        void registerExternalFunction(const std::shared_ptr<Function> &function) const;
-        void visitExternBlock(IronParser::ExternBlockContext *ctx);
-        void visitExternFunctionDeclaration(IronParser::ExternFunctionDeclarationContext *ctx);
-        void visitExternFunctionArgs(IronParser::ExternFunctionArgsContext *ctx,
-                                     const std::shared_ptr<FunctionArgs> &argsList);
-        void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
-                                    const std::shared_ptr<FunctionArgs> &argsList);
+
         // HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context);
         HLIRGenerator(const std::shared_ptr<IronParser> &parser, const std::__1::shared_ptr<Context> &context,
                       const std::shared_ptr<config::Configuration> &config,

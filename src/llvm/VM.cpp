@@ -66,7 +66,7 @@ namespace iron {
         std::vector<llvm::GenericValue> args;
 
         // Executa a função "main".
-        llvm::GenericValue result = engine->runFunction(mainFunc, args);
+        const llvm::GenericValue result = engine->runFunction(mainFunc, args);
 
         // Imprime o resultado (por exemplo, se for um int).
         llvm::outs() << "Program exited with code: " << result.IntVal << "\n";
