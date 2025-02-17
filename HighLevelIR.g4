@@ -155,7 +155,7 @@ cast: anotherVarName = IDENTIFIER typeLeft TO typeRight;
 
 mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
 booleanCmpOp: CMP (EQEQ | NEQ | LT | LTE | GT | GTE) opLeft COMMA opRight;
-booleanAndOrOp: (CMP | AND) opLeft COMMA opRight;
+booleanAndOrOp: (OR | AND) opLeft COMMA opRight;
 booleanNotOp:  NOT opLeft COMMA opRight;
 
 
@@ -171,7 +171,7 @@ expr:
 
 	);
 
-assignment: (anotherVarName = IDENTIFIER | STRING_LITERAL);
+assignment: (anotherVarName = IDENTIFIER | STRING_LITERAL | BOOLEAN_VALUE);
 functionPtr: 'ptr' functionName = IDENTIFIER;
 
 number: REAL_NUMBER | INT_NUMBER;

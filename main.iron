@@ -1,4 +1,8 @@
+import std.output.printf
+
 fn main() {
-   let b:int = 5
-   let exprBool:boolean = 2 > 3.0
+
+   let x:int = 3*3
+   printf(format:"%s: %u\n\n\n", ff:"Idade", r:x)
+
 }

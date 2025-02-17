@@ -129,7 +129,7 @@ externFunctionDeclaration:
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
 
 externFunctionArg:
-	varName = IDENTIFIER COLON ptr = '*'? cTypes;
+	varName = IDENTIFIER COLON ptr = STAR? cTypes;
 
 cTypes:
 	TYPE_BOOLEAN
@@ -234,14 +234,17 @@ elseStatement
 // ;
 
 boolExpr
+
    : L_PAREN boolExpr R_PAREN
-   | not = NOT boolExpr
-   | left=boolExpr op= (OR | AND ) right=boolExpr
    | left=boolExpr op= ( EQEQ | NEQ | LT | LTE | GT | GTE) right=boolExpr
+   | left=boolExpr op= AND right=boolExpr
+   | left=boolExpr op= OR right=boolExpr
+   | not = NOT boolExpr
    | booleanValue = BOOLEAN_VALUE
    | number
    | varName = IDENTIFIER
    | functionCall
+
    | expr;
 
 primary
@@ -254,7 +257,7 @@ primary
    ;
 
 expr:
-	left = expr (mult = '*' | div = '/') right = expr
+	left = expr (mult = '*' | mod= '%' | div = '/') right = expr
 	| left = expr (plus = '+' | minus = '-') right = expr
 	| number
 	| functionCall

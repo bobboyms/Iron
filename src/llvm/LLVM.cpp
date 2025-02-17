@@ -4,16 +4,14 @@
 
 namespace iron
 {
-    LLVM::LLVM(const std::shared_ptr<hlir::Context>& hlirContext, llvm::LLVMContext &context, const std::string &filename)
-    : hlirContext(std::move(hlirContext)), llvmContext(context), builder(llvmContext), filename(filename)
+    LLVM::LLVM(const std::shared_ptr<hlir::Context> &hlirContext, llvm::LLVMContext &context,
+               const std::string &filename) :
+        hlirContext(std::move(hlirContext)), llvmContext(context), builder(llvmContext), filename(filename)
     {
         module = std::make_unique<llvm::Module>(filename, llvmContext);
-
     }
 
     LLVM::~LLVM() = default;
-
-
 
     void LLVM::visitStatement(const std::shared_ptr<hlir::Statement> &hlirStatement)
     {
@@ -51,7 +49,6 @@ namespace iron
     }
 
 
-
     void printFunctionInfo(const llvm::Function *function)
     {
         // 1) Obter o nome da função
@@ -72,7 +69,6 @@ namespace iron
         llvm::outs() << "Function Name: " << funcName << "\n";
         llvm::outs() << "Return Type: " << typeStr << "\n";
     }
-
 
 
     void LLVM::visitAssignment(const std::shared_ptr<hlir::Assign> &hlirAssignment)
@@ -114,11 +110,12 @@ namespace iron
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
                     {
-                        llvm::AllocaInst * alloca;
+                        llvm::AllocaInst *alloca;
                         if (variable->getVarType()->getType() == tokenMap::TYPE_STRING)
                         {
                             alloca = allocaVariableStr(hlirAssignment->getVariable(), arg);
-                        } else
+                        }
+                        else
                         {
                             alloca = allocaVariable(hlirAssignment->getVariable());
                         }
@@ -128,8 +125,6 @@ namespace iron
                     }
                 },
                 value);
-
-
     }
 
     void LLVM::visitExpr(const std::shared_ptr<hlir::Expr> &hlirExpr)
@@ -202,7 +197,6 @@ namespace iron
     }
 
 
-
     std::unique_ptr<llvm::Module> LLVM::generateCode()
     {
         for (const auto &function: hlirContext->getFunctions())
@@ -230,9 +224,10 @@ namespace iron
                                  errorStream.str()));
         }
 
-        // std::string irStr;
-        // llvm::raw_string_ostream irStream(irStr);
-        // module->print(irStream, nullptr);
+        std::string irStr;
+        llvm::raw_string_ostream irStream(irStr);
+        module->print(irStream, nullptr);
+
         return std::move(module);
     }
 } // namespace iron

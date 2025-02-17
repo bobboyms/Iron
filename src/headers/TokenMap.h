@@ -158,6 +158,8 @@ namespace tokenMap
         throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
 
+
+
     inline int getTokenType(const std::string &tokenString)
     {
         for (const auto &[fst, snd]: tokenText)
@@ -181,6 +183,27 @@ namespace tokenMap
                 return true;
             default:
                 return false;
+        }
+    }
+
+    inline int getPtrFromType(const int type)
+    {
+        switch (type)
+        {
+            case TYPE_INT:
+                return PTR_TYPE_INT;
+            case TYPE_CHAR:
+                return PTR_TYPE_CHAR;
+            case TYPE_FLOAT:
+                return PTR_TYPE_FLOAT;
+            case TYPE_STRING:
+                return PTR_TYPE_CHAR;
+            case TYPE_BOOLEAN:
+                return PTR_TYPE_BOOLEAN;
+            case TYPE_DOUBLE:
+                return PTR_TYPE_DOUBLE;
+            default:
+                throw TokenException("Isn't impossible determine the ptr token type of " + type);
         }
     }
 
@@ -308,7 +331,7 @@ namespace tokenMap
                                                 : literal;
 
         // Verifica se todos os caracteres na parte numérica são válidos
-        for (char c: numericPart)
+        for (const char c: numericPart)
         {
             if (!isValidFloatChar(c))
             {
@@ -329,16 +352,16 @@ namespace tokenMap
         return type;
     }
 
-    inline int getTypePrecedence(int dataType)
+    inline int getTypePrecedence(const int dataType)
     {
         // Defina a precedência de tipos conforme a sua implementação em TokenMap
         switch (dataType)
         {
-            case tokenMap::TYPE_INT:
+            case TYPE_INT:
                 return 1;
-            case tokenMap::TYPE_FLOAT:
+            case TYPE_FLOAT:
                 return 2;
-            case tokenMap::TYPE_DOUBLE:
+            case TYPE_DOUBLE:
                 return 3;
             default:
                 throw std::runtime_error("TokenMap Error: Invalid type");
@@ -353,10 +376,8 @@ namespace tokenMap
         {
             return type1;
         }
-        else
-        {
-            return type2;
-        }
+
+        return type2;
     }
 
 } // namespace tokenMap

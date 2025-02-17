@@ -81,7 +81,7 @@ void ironParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,51,373,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,51,376,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
   	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,
@@ -105,63 +105,63 @@ void ironParserInitialize() {
   	3,25,283,8,25,1,26,1,26,3,26,287,8,26,1,26,1,26,1,27,1,27,1,27,1,27,1,
   	27,1,27,1,27,3,27,298,8,27,1,28,1,28,3,28,302,8,28,1,29,1,29,1,29,1,29,
   	1,29,1,29,1,29,1,29,1,29,1,29,1,29,1,29,3,29,316,8,29,1,29,1,29,1,29,
-  	1,29,1,29,1,29,5,29,324,8,29,10,29,12,29,327,9,29,1,30,1,30,1,30,1,30,
-  	1,30,1,30,1,30,1,30,1,30,3,30,338,8,30,1,31,1,31,1,31,1,31,1,31,1,31,
-  	1,31,1,31,3,31,348,8,31,1,31,1,31,1,31,3,31,353,8,31,1,31,1,31,1,31,1,
-  	31,3,31,359,8,31,1,31,5,31,362,8,31,10,31,12,31,365,9,31,1,32,1,32,1,
-  	33,1,33,1,34,1,34,1,34,0,2,58,62,35,0,2,4,6,8,10,12,14,16,18,20,22,24,
-  	26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,0,6,
-  	2,0,38,40,42,44,1,0,22,23,1,0,25,30,1,0,45,46,1,0,45,48,2,0,32,32,38,
-  	43,409,0,73,1,0,0,0,2,87,1,0,0,0,4,93,1,0,0,0,6,109,1,0,0,0,8,112,1,0,
-  	0,0,10,119,1,0,0,0,12,125,1,0,0,0,14,138,1,0,0,0,16,140,1,0,0,0,18,155,
-  	1,0,0,0,20,169,1,0,0,0,22,177,1,0,0,0,24,184,1,0,0,0,26,187,1,0,0,0,28,
-  	196,1,0,0,0,30,200,1,0,0,0,32,206,1,0,0,0,34,214,1,0,0,0,36,217,1,0,0,
-  	0,38,225,1,0,0,0,40,234,1,0,0,0,42,241,1,0,0,0,44,249,1,0,0,0,46,259,
-  	1,0,0,0,48,266,1,0,0,0,50,276,1,0,0,0,52,284,1,0,0,0,54,290,1,0,0,0,56,
-  	301,1,0,0,0,58,315,1,0,0,0,60,337,1,0,0,0,62,347,1,0,0,0,64,366,1,0,0,
-  	0,66,368,1,0,0,0,68,370,1,0,0,0,70,72,3,2,1,0,71,70,1,0,0,0,72,75,1,0,
-  	0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,77,1,0,0,0,75,73,1,0,0,0,76,78,3,16,
-  	8,0,77,76,1,0,0,0,77,78,1,0,0,0,78,82,1,0,0,0,79,81,3,26,13,0,80,79,1,
-  	0,0,0,81,84,1,0,0,0,82,80,1,0,0,0,82,83,1,0,0,0,83,85,1,0,0,0,84,82,1,
-  	0,0,0,85,86,5,0,0,1,86,1,1,0,0,0,87,88,5,36,0,0,88,91,3,4,2,0,89,90,5,
-  	10,0,0,90,92,5,11,0,0,91,89,1,0,0,0,91,92,1,0,0,0,92,3,1,0,0,0,93,98,
-  	5,49,0,0,94,95,5,10,0,0,95,97,5,49,0,0,96,94,1,0,0,0,97,100,1,0,0,0,98,
-  	96,1,0,0,0,98,99,1,0,0,0,99,5,1,0,0,0,100,98,1,0,0,0,101,108,3,46,23,
-  	0,102,108,3,50,25,0,103,108,3,40,20,0,104,108,3,62,31,0,105,108,3,54,
-  	27,0,106,108,3,8,4,0,107,101,1,0,0,0,107,102,1,0,0,0,107,103,1,0,0,0,
-  	107,104,1,0,0,0,107,105,1,0,0,0,107,106,1,0,0,0,108,111,1,0,0,0,109,107,
-  	1,0,0,0,109,110,1,0,0,0,110,7,1,0,0,0,111,109,1,0,0,0,112,117,5,37,0,
-  	0,113,118,3,66,33,0,114,118,5,49,0,0,115,118,3,40,20,0,116,118,3,62,31,
-  	0,117,113,1,0,0,0,117,114,1,0,0,0,117,115,1,0,0,0,117,116,1,0,0,0,118,
-  	9,1,0,0,0,119,120,5,1,0,0,120,121,5,48,0,0,121,122,5,6,0,0,122,123,3,
-  	12,6,0,123,124,5,15,0,0,124,11,1,0,0,0,125,130,3,14,7,0,126,127,5,6,0,
-  	0,127,129,3,14,7,0,128,126,1,0,0,0,129,132,1,0,0,0,130,128,1,0,0,0,130,
-  	131,1,0,0,0,131,13,1,0,0,0,132,130,1,0,0,0,133,139,3,66,33,0,134,139,
-  	5,49,0,0,135,139,3,40,20,0,136,139,3,62,31,0,137,139,5,48,0,0,138,133,
-  	1,0,0,0,138,134,1,0,0,0,138,135,1,0,0,0,138,136,1,0,0,0,138,137,1,0,0,
-  	0,139,15,1,0,0,0,140,141,5,2,0,0,141,142,5,49,0,0,142,150,5,12,0,0,143,
-  	145,3,18,9,0,144,143,1,0,0,0,145,146,1,0,0,0,146,144,1,0,0,0,146,147,
-  	1,0,0,0,147,149,1,0,0,0,148,144,1,0,0,0,149,152,1,0,0,0,150,148,1,0,0,
-  	0,150,151,1,0,0,0,151,153,1,0,0,0,152,150,1,0,0,0,153,154,5,13,0,0,154,
-  	17,1,0,0,0,155,156,5,32,0,0,156,157,5,49,0,0,157,159,5,14,0,0,158,160,
-  	3,20,10,0,159,158,1,0,0,0,159,160,1,0,0,0,160,163,1,0,0,0,161,162,5,6,
-  	0,0,162,164,5,3,0,0,163,161,1,0,0,0,163,164,1,0,0,0,164,165,1,0,0,0,165,
-  	167,5,15,0,0,166,168,3,34,17,0,167,166,1,0,0,0,167,168,1,0,0,0,168,19,
-  	1,0,0,0,169,174,3,22,11,0,170,171,5,6,0,0,171,173,3,22,11,0,172,170,1,
-  	0,0,0,173,176,1,0,0,0,174,172,1,0,0,0,174,175,1,0,0,0,175,21,1,0,0,0,
-  	176,174,1,0,0,0,177,178,5,49,0,0,178,180,5,7,0,0,179,181,5,11,0,0,180,
-  	179,1,0,0,0,180,181,1,0,0,0,181,182,1,0,0,0,182,183,3,24,12,0,183,23,
-  	1,0,0,0,184,185,7,0,0,0,185,25,1,0,0,0,186,188,5,35,0,0,187,186,1,0,0,
-  	0,187,188,1,0,0,0,188,189,1,0,0,0,189,190,5,32,0,0,190,191,5,49,0,0,191,
-  	192,3,32,16,0,192,193,5,12,0,0,193,194,3,6,3,0,194,195,5,13,0,0,195,27,
-  	1,0,0,0,196,197,3,32,16,0,197,198,5,21,0,0,198,199,3,62,31,0,199,29,1,
-  	0,0,0,200,201,3,32,16,0,201,202,5,21,0,0,202,203,5,12,0,0,203,204,3,6,
-  	3,0,204,205,5,13,0,0,205,31,1,0,0,0,206,208,5,14,0,0,207,209,3,36,18,
-  	0,208,207,1,0,0,0,208,209,1,0,0,0,209,210,1,0,0,0,210,212,5,15,0,0,211,
-  	213,3,34,17,0,212,211,1,0,0,0,212,213,1,0,0,0,213,33,1,0,0,0,214,215,
-  	5,7,0,0,215,216,3,68,34,0,216,35,1,0,0,0,217,222,3,38,19,0,218,219,5,
-  	6,0,0,219,221,3,38,19,0,220,218,1,0,0,0,221,224,1,0,0,0,222,220,1,0,0,
-  	0,222,223,1,0,0,0,223,37,1,0,0,0,224,222,1,0,0,0,225,226,5,49,0,0,226,
+  	1,29,1,29,1,29,1,29,1,29,1,29,5,29,327,8,29,10,29,12,29,330,9,29,1,30,
+  	1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,3,30,341,8,30,1,31,1,31,1,31,
+  	1,31,1,31,1,31,1,31,1,31,3,31,351,8,31,1,31,1,31,1,31,3,31,356,8,31,1,
+  	31,1,31,1,31,1,31,3,31,362,8,31,1,31,5,31,365,8,31,10,31,12,31,368,9,
+  	31,1,32,1,32,1,33,1,33,1,34,1,34,1,34,0,2,58,62,35,0,2,4,6,8,10,12,14,
+  	16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,
+  	62,64,66,68,0,5,2,0,38,40,42,44,1,0,25,30,1,0,45,46,1,0,45,48,2,0,32,
+  	32,38,43,413,0,73,1,0,0,0,2,87,1,0,0,0,4,93,1,0,0,0,6,109,1,0,0,0,8,112,
+  	1,0,0,0,10,119,1,0,0,0,12,125,1,0,0,0,14,138,1,0,0,0,16,140,1,0,0,0,18,
+  	155,1,0,0,0,20,169,1,0,0,0,22,177,1,0,0,0,24,184,1,0,0,0,26,187,1,0,0,
+  	0,28,196,1,0,0,0,30,200,1,0,0,0,32,206,1,0,0,0,34,214,1,0,0,0,36,217,
+  	1,0,0,0,38,225,1,0,0,0,40,234,1,0,0,0,42,241,1,0,0,0,44,249,1,0,0,0,46,
+  	259,1,0,0,0,48,266,1,0,0,0,50,276,1,0,0,0,52,284,1,0,0,0,54,290,1,0,0,
+  	0,56,301,1,0,0,0,58,315,1,0,0,0,60,340,1,0,0,0,62,350,1,0,0,0,64,369,
+  	1,0,0,0,66,371,1,0,0,0,68,373,1,0,0,0,70,72,3,2,1,0,71,70,1,0,0,0,72,
+  	75,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,77,1,0,0,0,75,73,1,0,0,0,76,
+  	78,3,16,8,0,77,76,1,0,0,0,77,78,1,0,0,0,78,82,1,0,0,0,79,81,3,26,13,0,
+  	80,79,1,0,0,0,81,84,1,0,0,0,82,80,1,0,0,0,82,83,1,0,0,0,83,85,1,0,0,0,
+  	84,82,1,0,0,0,85,86,5,0,0,1,86,1,1,0,0,0,87,88,5,36,0,0,88,91,3,4,2,0,
+  	89,90,5,10,0,0,90,92,5,11,0,0,91,89,1,0,0,0,91,92,1,0,0,0,92,3,1,0,0,
+  	0,93,98,5,49,0,0,94,95,5,10,0,0,95,97,5,49,0,0,96,94,1,0,0,0,97,100,1,
+  	0,0,0,98,96,1,0,0,0,98,99,1,0,0,0,99,5,1,0,0,0,100,98,1,0,0,0,101,108,
+  	3,46,23,0,102,108,3,50,25,0,103,108,3,40,20,0,104,108,3,62,31,0,105,108,
+  	3,54,27,0,106,108,3,8,4,0,107,101,1,0,0,0,107,102,1,0,0,0,107,103,1,0,
+  	0,0,107,104,1,0,0,0,107,105,1,0,0,0,107,106,1,0,0,0,108,111,1,0,0,0,109,
+  	107,1,0,0,0,109,110,1,0,0,0,110,7,1,0,0,0,111,109,1,0,0,0,112,117,5,37,
+  	0,0,113,118,3,66,33,0,114,118,5,49,0,0,115,118,3,40,20,0,116,118,3,62,
+  	31,0,117,113,1,0,0,0,117,114,1,0,0,0,117,115,1,0,0,0,117,116,1,0,0,0,
+  	118,9,1,0,0,0,119,120,5,1,0,0,120,121,5,48,0,0,121,122,5,6,0,0,122,123,
+  	3,12,6,0,123,124,5,15,0,0,124,11,1,0,0,0,125,130,3,14,7,0,126,127,5,6,
+  	0,0,127,129,3,14,7,0,128,126,1,0,0,0,129,132,1,0,0,0,130,128,1,0,0,0,
+  	130,131,1,0,0,0,131,13,1,0,0,0,132,130,1,0,0,0,133,139,3,66,33,0,134,
+  	139,5,49,0,0,135,139,3,40,20,0,136,139,3,62,31,0,137,139,5,48,0,0,138,
+  	133,1,0,0,0,138,134,1,0,0,0,138,135,1,0,0,0,138,136,1,0,0,0,138,137,1,
+  	0,0,0,139,15,1,0,0,0,140,141,5,2,0,0,141,142,5,49,0,0,142,150,5,12,0,
+  	0,143,145,3,18,9,0,144,143,1,0,0,0,145,146,1,0,0,0,146,144,1,0,0,0,146,
+  	147,1,0,0,0,147,149,1,0,0,0,148,144,1,0,0,0,149,152,1,0,0,0,150,148,1,
+  	0,0,0,150,151,1,0,0,0,151,153,1,0,0,0,152,150,1,0,0,0,153,154,5,13,0,
+  	0,154,17,1,0,0,0,155,156,5,32,0,0,156,157,5,49,0,0,157,159,5,14,0,0,158,
+  	160,3,20,10,0,159,158,1,0,0,0,159,160,1,0,0,0,160,163,1,0,0,0,161,162,
+  	5,6,0,0,162,164,5,3,0,0,163,161,1,0,0,0,163,164,1,0,0,0,164,165,1,0,0,
+  	0,165,167,5,15,0,0,166,168,3,34,17,0,167,166,1,0,0,0,167,168,1,0,0,0,
+  	168,19,1,0,0,0,169,174,3,22,11,0,170,171,5,6,0,0,171,173,3,22,11,0,172,
+  	170,1,0,0,0,173,176,1,0,0,0,174,172,1,0,0,0,174,175,1,0,0,0,175,21,1,
+  	0,0,0,176,174,1,0,0,0,177,178,5,49,0,0,178,180,5,7,0,0,179,181,5,11,0,
+  	0,180,179,1,0,0,0,180,181,1,0,0,0,181,182,1,0,0,0,182,183,3,24,12,0,183,
+  	23,1,0,0,0,184,185,7,0,0,0,185,25,1,0,0,0,186,188,5,35,0,0,187,186,1,
+  	0,0,0,187,188,1,0,0,0,188,189,1,0,0,0,189,190,5,32,0,0,190,191,5,49,0,
+  	0,191,192,3,32,16,0,192,193,5,12,0,0,193,194,3,6,3,0,194,195,5,13,0,0,
+  	195,27,1,0,0,0,196,197,3,32,16,0,197,198,5,21,0,0,198,199,3,62,31,0,199,
+  	29,1,0,0,0,200,201,3,32,16,0,201,202,5,21,0,0,202,203,5,12,0,0,203,204,
+  	3,6,3,0,204,205,5,13,0,0,205,31,1,0,0,0,206,208,5,14,0,0,207,209,3,36,
+  	18,0,208,207,1,0,0,0,208,209,1,0,0,0,209,210,1,0,0,0,210,212,5,15,0,0,
+  	211,213,3,34,17,0,212,211,1,0,0,0,212,213,1,0,0,0,213,33,1,0,0,0,214,
+  	215,5,7,0,0,215,216,3,68,34,0,216,35,1,0,0,0,217,222,3,38,19,0,218,219,
+  	5,6,0,0,219,221,3,38,19,0,220,218,1,0,0,0,221,224,1,0,0,0,222,220,1,0,
+  	0,0,222,223,1,0,0,0,223,37,1,0,0,0,224,222,1,0,0,0,225,226,5,49,0,0,226,
   	229,5,7,0,0,227,230,3,68,34,0,228,230,3,32,16,0,229,227,1,0,0,0,229,228,
   	1,0,0,0,230,232,1,0,0,0,231,233,3,48,24,0,232,231,1,0,0,0,232,233,1,0,
   	0,0,233,39,1,0,0,0,234,235,5,49,0,0,235,237,5,14,0,0,236,238,3,42,21,
@@ -187,28 +187,29 @@ void ironParserInitialize() {
   	298,55,1,0,0,0,299,302,3,54,27,0,300,302,3,52,26,0,301,299,1,0,0,0,301,
   	300,1,0,0,0,302,57,1,0,0,0,303,304,6,29,-1,0,304,305,5,14,0,0,305,306,
   	3,58,29,0,306,307,5,15,0,0,307,316,1,0,0,0,308,309,5,24,0,0,309,316,3,
-  	58,29,8,310,316,5,47,0,0,311,316,3,64,32,0,312,316,5,49,0,0,313,316,3,
+  	58,29,6,310,316,5,47,0,0,311,316,3,64,32,0,312,316,5,49,0,0,313,316,3,
   	40,20,0,314,316,3,62,31,0,315,303,1,0,0,0,315,308,1,0,0,0,315,310,1,0,
   	0,0,315,311,1,0,0,0,315,312,1,0,0,0,315,313,1,0,0,0,315,314,1,0,0,0,316,
-  	325,1,0,0,0,317,318,10,7,0,0,318,319,7,1,0,0,319,324,3,58,29,8,320,321,
-  	10,6,0,0,321,322,7,2,0,0,322,324,3,58,29,7,323,317,1,0,0,0,323,320,1,
-  	0,0,0,324,327,1,0,0,0,325,323,1,0,0,0,325,326,1,0,0,0,326,59,1,0,0,0,
-  	327,325,1,0,0,0,328,338,3,64,32,0,329,338,5,49,0,0,330,338,5,47,0,0,331,
-  	338,3,40,20,0,332,333,5,14,0,0,333,334,3,58,29,0,334,335,5,15,0,0,335,
-  	338,1,0,0,0,336,338,3,62,31,0,337,328,1,0,0,0,337,329,1,0,0,0,337,330,
-  	1,0,0,0,337,331,1,0,0,0,337,332,1,0,0,0,337,336,1,0,0,0,338,61,1,0,0,
-  	0,339,340,6,31,-1,0,340,348,3,64,32,0,341,348,3,40,20,0,342,348,5,49,
-  	0,0,343,344,5,14,0,0,344,345,3,62,31,0,345,346,5,15,0,0,346,348,1,0,0,
-  	0,347,339,1,0,0,0,347,341,1,0,0,0,347,342,1,0,0,0,347,343,1,0,0,0,348,
-  	363,1,0,0,0,349,352,10,6,0,0,350,353,5,11,0,0,351,353,5,18,0,0,352,350,
-  	1,0,0,0,352,351,1,0,0,0,353,354,1,0,0,0,354,362,3,62,31,7,355,358,10,
-  	5,0,0,356,359,5,16,0,0,357,359,5,17,0,0,358,356,1,0,0,0,358,357,1,0,0,
-  	0,359,360,1,0,0,0,360,362,3,62,31,6,361,349,1,0,0,0,361,355,1,0,0,0,362,
-  	365,1,0,0,0,363,361,1,0,0,0,363,364,1,0,0,0,364,63,1,0,0,0,365,363,1,
-  	0,0,0,366,367,7,3,0,0,367,65,1,0,0,0,368,369,7,4,0,0,369,67,1,0,0,0,370,
-  	371,7,5,0,0,371,69,1,0,0,0,41,73,77,82,91,98,107,109,117,130,138,146,
+  	328,1,0,0,0,317,318,10,9,0,0,318,319,7,1,0,0,319,327,3,58,29,10,320,321,
+  	10,8,0,0,321,322,5,22,0,0,322,327,3,58,29,9,323,324,10,7,0,0,324,325,
+  	5,23,0,0,325,327,3,58,29,8,326,317,1,0,0,0,326,320,1,0,0,0,326,323,1,
+  	0,0,0,327,330,1,0,0,0,328,326,1,0,0,0,328,329,1,0,0,0,329,59,1,0,0,0,
+  	330,328,1,0,0,0,331,341,3,64,32,0,332,341,5,49,0,0,333,341,5,47,0,0,334,
+  	341,3,40,20,0,335,336,5,14,0,0,336,337,3,58,29,0,337,338,5,15,0,0,338,
+  	341,1,0,0,0,339,341,3,62,31,0,340,331,1,0,0,0,340,332,1,0,0,0,340,333,
+  	1,0,0,0,340,334,1,0,0,0,340,335,1,0,0,0,340,339,1,0,0,0,341,61,1,0,0,
+  	0,342,343,6,31,-1,0,343,351,3,64,32,0,344,351,3,40,20,0,345,351,5,49,
+  	0,0,346,347,5,14,0,0,347,348,3,62,31,0,348,349,5,15,0,0,349,351,1,0,0,
+  	0,350,342,1,0,0,0,350,344,1,0,0,0,350,345,1,0,0,0,350,346,1,0,0,0,351,
+  	366,1,0,0,0,352,355,10,6,0,0,353,356,5,11,0,0,354,356,5,18,0,0,355,353,
+  	1,0,0,0,355,354,1,0,0,0,356,357,1,0,0,0,357,365,3,62,31,7,358,361,10,
+  	5,0,0,359,362,5,16,0,0,360,362,5,17,0,0,361,359,1,0,0,0,361,360,1,0,0,
+  	0,362,363,1,0,0,0,363,365,3,62,31,6,364,352,1,0,0,0,364,358,1,0,0,0,365,
+  	368,1,0,0,0,366,364,1,0,0,0,366,367,1,0,0,0,367,63,1,0,0,0,368,366,1,
+  	0,0,0,369,370,7,2,0,0,370,65,1,0,0,0,371,372,7,3,0,0,372,67,1,0,0,0,373,
+  	374,7,4,0,0,374,69,1,0,0,0,41,73,77,82,91,98,107,109,117,130,138,146,
   	150,159,163,167,174,180,187,208,212,222,229,232,237,246,257,264,274,282,
-  	286,297,301,315,323,325,337,347,352,358,361,363
+  	286,297,301,315,326,328,340,350,355,361,364,366
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -2927,14 +2928,6 @@ IronParser::ExprContext* IronParser::BoolExprContext::expr() {
   return getRuleContext<IronParser::ExprContext>(0);
 }
 
-tree::TerminalNode* IronParser::BoolExprContext::OR() {
-  return getToken(IronParser::OR, 0);
-}
-
-tree::TerminalNode* IronParser::BoolExprContext::AND() {
-  return getToken(IronParser::AND, 0);
-}
-
 tree::TerminalNode* IronParser::BoolExprContext::EQEQ() {
   return getToken(IronParser::EQEQ, 0);
 }
@@ -2957,6 +2950,14 @@ tree::TerminalNode* IronParser::BoolExprContext::GT() {
 
 tree::TerminalNode* IronParser::BoolExprContext::GTE() {
   return getToken(IronParser::GTE, 0);
+}
+
+tree::TerminalNode* IronParser::BoolExprContext::AND() {
+  return getToken(IronParser::AND, 0);
+}
+
+tree::TerminalNode* IronParser::BoolExprContext::OR() {
+  return getToken(IronParser::OR, 0);
 }
 
 
@@ -3019,7 +3020,7 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
       setState(308);
       antlrcpp::downCast<BoolExprContext *>(_localctx)->not_ = match(IronParser::NOT);
       setState(309);
-      boolExpr(8);
+      boolExpr(6);
       break;
     }
 
@@ -3057,7 +3058,7 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
       break;
     }
     _ctx->stop = _input->LT(-1);
-    setState(325);
+    setState(328);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 34, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
@@ -3065,7 +3066,7 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        setState(323);
+        setState(326);
         _errHandler->sync(this);
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 33, _ctx)) {
         case 1: {
@@ -3074,32 +3075,8 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
           pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
           setState(317);
 
-          if (!(precpred(_ctx, 7))) throw FailedPredicateException(this, "precpred(_ctx, 7)");
+          if (!(precpred(_ctx, 9))) throw FailedPredicateException(this, "precpred(_ctx, 9)");
           setState(318);
-          antlrcpp::downCast<BoolExprContext *>(_localctx)->op = _input->LT(1);
-          _la = _input->LA(1);
-          if (!(_la == IronParser::AND
-
-          || _la == IronParser::OR)) {
-            antlrcpp::downCast<BoolExprContext *>(_localctx)->op = _errHandler->recoverInline(this);
-          }
-          else {
-            _errHandler->reportMatch(this);
-            consume();
-          }
-          setState(319);
-          antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(8);
-          break;
-        }
-
-        case 2: {
-          _localctx = _tracker.createInstance<BoolExprContext>(parentContext, parentState);
-          _localctx->left = previousContext;
-          pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
-          setState(320);
-
-          if (!(precpred(_ctx, 6))) throw FailedPredicateException(this, "precpred(_ctx, 6)");
-          setState(321);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->op = _input->LT(1);
           _la = _input->LA(1);
           if (!((((_la & ~ 0x3fULL) == 0) &&
@@ -3110,8 +3087,36 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
             _errHandler->reportMatch(this);
             consume();
           }
+          setState(319);
+          antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(10);
+          break;
+        }
+
+        case 2: {
+          _localctx = _tracker.createInstance<BoolExprContext>(parentContext, parentState);
+          _localctx->left = previousContext;
+          pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
+          setState(320);
+
+          if (!(precpred(_ctx, 8))) throw FailedPredicateException(this, "precpred(_ctx, 8)");
+          setState(321);
+          antlrcpp::downCast<BoolExprContext *>(_localctx)->op = match(IronParser::AND);
           setState(322);
-          antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(7);
+          antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(9);
+          break;
+        }
+
+        case 3: {
+          _localctx = _tracker.createInstance<BoolExprContext>(parentContext, parentState);
+          _localctx->left = previousContext;
+          pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
+          setState(323);
+
+          if (!(precpred(_ctx, 7))) throw FailedPredicateException(this, "precpred(_ctx, 7)");
+          setState(324);
+          antlrcpp::downCast<BoolExprContext *>(_localctx)->op = match(IronParser::OR);
+          setState(325);
+          antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(8);
           break;
         }
 
@@ -3119,7 +3124,7 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
           break;
         } 
       }
-      setState(327);
+      setState(330);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 34, _ctx);
     }
@@ -3199,51 +3204,51 @@ IronParser::PrimaryContext* IronParser::primary() {
     exitRule();
   });
   try {
-    setState(337);
+    setState(340);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 35, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(328);
+      setState(331);
       number();
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(329);
+      setState(332);
       match(IronParser::IDENTIFIER);
       break;
     }
 
     case 3: {
       enterOuterAlt(_localctx, 3);
-      setState(330);
+      setState(333);
       match(IronParser::BOOLEAN_VALUE);
       break;
     }
 
     case 4: {
       enterOuterAlt(_localctx, 4);
-      setState(331);
+      setState(334);
       functionCall();
       break;
     }
 
     case 5: {
       enterOuterAlt(_localctx, 5);
-      setState(332);
+      setState(335);
       match(IronParser::L_PAREN);
-      setState(333);
+      setState(336);
       boolExpr(0);
-      setState(334);
+      setState(337);
       match(IronParser::R_PAREN);
       break;
     }
 
     case 6: {
       enterOuterAlt(_localctx, 6);
-      setState(336);
+      setState(339);
       expr(0);
       break;
     }
@@ -3355,33 +3360,33 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(347);
+    setState(350);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 36, _ctx)) {
     case 1: {
-      setState(340);
+      setState(343);
       number();
       break;
     }
 
     case 2: {
-      setState(341);
+      setState(344);
       functionCall();
       break;
     }
 
     case 3: {
-      setState(342);
+      setState(345);
       antlrcpp::downCast<ExprContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 4: {
-      setState(343);
+      setState(346);
       match(IronParser::L_PAREN);
-      setState(344);
+      setState(347);
       expr(0);
-      setState(345);
+      setState(348);
       match(IronParser::R_PAREN);
       break;
     }
@@ -3390,7 +3395,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
       break;
     }
     _ctx->stop = _input->LT(-1);
-    setState(363);
+    setState(366);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 40, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
@@ -3398,27 +3403,27 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        setState(361);
+        setState(364);
         _errHandler->sync(this);
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 39, _ctx)) {
         case 1: {
           _localctx = _tracker.createInstance<ExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleExpr);
-          setState(349);
+          setState(352);
 
           if (!(precpred(_ctx, 6))) throw FailedPredicateException(this, "precpred(_ctx, 6)");
-          setState(352);
+          setState(355);
           _errHandler->sync(this);
           switch (_input->LA(1)) {
             case IronParser::STAR: {
-              setState(350);
+              setState(353);
               antlrcpp::downCast<ExprContext *>(_localctx)->mult = match(IronParser::STAR);
               break;
             }
 
             case IronParser::DIV: {
-              setState(351);
+              setState(354);
               antlrcpp::downCast<ExprContext *>(_localctx)->div = match(IronParser::DIV);
               break;
             }
@@ -3426,7 +3431,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           default:
             throw NoViableAltException(this);
           }
-          setState(354);
+          setState(357);
           antlrcpp::downCast<ExprContext *>(_localctx)->right = expr(7);
           break;
         }
@@ -3435,20 +3440,20 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           _localctx = _tracker.createInstance<ExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleExpr);
-          setState(355);
+          setState(358);
 
           if (!(precpred(_ctx, 5))) throw FailedPredicateException(this, "precpred(_ctx, 5)");
-          setState(358);
+          setState(361);
           _errHandler->sync(this);
           switch (_input->LA(1)) {
             case IronParser::PLUS: {
-              setState(356);
+              setState(359);
               antlrcpp::downCast<ExprContext *>(_localctx)->plus = match(IronParser::PLUS);
               break;
             }
 
             case IronParser::MINUS: {
-              setState(357);
+              setState(360);
               antlrcpp::downCast<ExprContext *>(_localctx)->minus = match(IronParser::MINUS);
               break;
             }
@@ -3456,7 +3461,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           default:
             throw NoViableAltException(this);
           }
-          setState(360);
+          setState(363);
           antlrcpp::downCast<ExprContext *>(_localctx)->right = expr(6);
           break;
         }
@@ -3465,7 +3470,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           break;
         } 
       }
-      setState(365);
+      setState(368);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 40, _ctx);
     }
@@ -3523,7 +3528,7 @@ IronParser::NumberContext* IronParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(366);
+    setState(369);
     _la = _input->LA(1);
     if (!(_la == IronParser::REAL_NUMBER
 
@@ -3598,7 +3603,7 @@ IronParser::DataFormatContext* IronParser::dataFormat() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(368);
+    setState(371);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 527765581332480) != 0))) {
@@ -3684,7 +3689,7 @@ IronParser::VarTypesContext* IronParser::varTypes() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(370);
+    setState(373);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 17321603104768) != 0))) {
@@ -3718,8 +3723,9 @@ bool IronParser::sempred(RuleContext *context, size_t ruleIndex, size_t predicat
 
 bool IronParser::boolExprSempred(BoolExprContext *_localctx, size_t predicateIndex) {
   switch (predicateIndex) {
-    case 0: return precpred(_ctx, 7);
-    case 1: return precpred(_ctx, 6);
+    case 0: return precpred(_ctx, 9);
+    case 1: return precpred(_ctx, 8);
+    case 2: return precpred(_ctx, 7);
 
   default:
     break;
@@ -3729,8 +3735,8 @@ bool IronParser::boolExprSempred(BoolExprContext *_localctx, size_t predicateInd
 
 bool IronParser::exprSempred(ExprContext *_localctx, size_t predicateIndex) {
   switch (predicateIndex) {
-    case 2: return precpred(_ctx, 6);
-    case 3: return precpred(_ctx, 5);
+    case 3: return precpred(_ctx, 6);
+    case 4: return precpred(_ctx, 5);
 
   default:
     break;

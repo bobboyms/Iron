@@ -2,107 +2,120 @@
 #include <memory>
 #include <string>
 #include <algorithm>
+#include <sstream>
+#include <vector>
+#include <cctype>
+
 #include "antlr4-runtime.h"
 
 #include "../src/parsers/IronLexer.h"
 #include "../src/parsers/IronParser.h"
 #include "../src/headers/Hlir.h"
 #include "../src/headers/LLVMIR.h"
+#include "../src/headers/Files.h"
 #include "../src/headers/SemanticAnalysis.h"
 #include "../src/headers/HLIRGenerator.h"
 
-// Create a test fixture in the same style
-class LLVMTestCode : public ::testing::Test
-{
+// Certifique-se de que os namespaces utilizados (ex.: config, iron, scope, util, hlir, llvm)
+// estejam devidamente definidos e que os headers correspondentes sejam incluídos.
+
+class LLVMTestCode : public ::testing::Test {
 protected:
-    void SetUp() override
-    {
-        // Initialize anything before each test if necessary.
+    void SetUp() override {
+        // Inicializações necessárias antes de cada teste.
     }
 
     /**
-     * @brief Removes all whitespace characters from a given string.
-     * @param str The input string.
-     * @return A new string without any whitespace characters.
+     * @brief Remove todos os caracteres de espaço em branco de uma string.
+     * @param str A string de entrada.
+     * @return Uma nova string sem espaços em branco.
      */
-    // Função que remove todos os caracteres de espaço em branco
-    // Função que remove todos os caracteres de espaço em branco após aplicar o trim
-    static std::string removeWhitespace(const std::string& str)
-    {
+    static std::string removeWhitespace(const std::string &str) {
         std::string result;
         result.reserve(str.size());
 
         std::copy_if(str.begin(), str.end(), std::back_inserter(result),
-                     [](unsigned char c)
-                     { return !std::isspace(c); });
-
+                     [](unsigned char c) { return !std::isspace(c); });
         return result;
     }
 
     /**
-     * @brief Compares two strings for equality, ignoring any whitespace differences.
-     * @param input The generated string from the test.
-     * @param expectedOutput The expected string to compare against.
+     * @brief Compara duas strings ignorando diferenças de espaçamento.
      *
-     * If the strings match (ignoring whitespace), the test passes.
-     * Otherwise, it fails and outputs the generated and expected strings.
+     * Se as strings coincidirem (desconsiderando espaços em branco), o teste passa.
+     * Caso contrário, falha e exibe as strings geradas e esperadas.
+     *
+     * @param input A string gerada pelo teste.
+     * @param expectedOutput A string esperada para comparação.
      */
-    static void runAnalysis(const std::string& input, const std::string &expectedOutput)
-    {
-        const auto hlirOutPut = getHighLevelCode(input);
+    void runAnalysis(const std::string &input, const std::string &expectedOutput) {
+        auto hlirOutPut = getHighLevelCode(input);
         const auto cleanInput = removeWhitespace(hlirOutPut);
-        if (const auto cleanExpected = removeWhitespace(expectedOutput); cleanInput == cleanExpected)
-        {
+        const auto cleanExpected = removeWhitespace(expectedOutput);
+        if (cleanInput == cleanExpected) {
+            // Teste passou.
             return;
-        }
-        else
-        {
+        } else {
             FAIL() << "Generated code does not match the expected code.\n"
                    << "Got (cleaned):      " << cleanInput << "\n"
                    << "Expected (cleaned): " << cleanExpected << "\n";
         }
     }
 
-    static std::vector<std::string> loadStringAsLines(const std::string &code)
-    {
+    static std::vector<std::string> loadStringAsLines(const std::string &code) {
         std::vector<std::string> lines;
         std::stringstream ss(code);
-
         std::string line;
-        while (std::getline(ss, line))
-        {
+        while (std::getline(ss, line)) {
             lines.push_back(line);
         }
-
         return lines;
     }
 
-    static std::string getHighLevelCode(const std::string& input)
-    {
+    /**
+     * @brief Gera o código de alto nível a partir de uma string de entrada.
+     *
+     * @param input A string de código de entrada.
+     * @return Uma string contendo o código de alto nível gerado.
+     */
+    static std::string getHighLevelCode(const std::string& input) {
+        // Cria uma configuração a partir de um arquivo YAML
+        auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
+
         antlr4::ANTLRInputStream inputStream(input);
         IronLexer lexer(&inputStream);
         antlr4::CommonTokenStream tokens(&lexer);
         auto parser = std::make_shared<IronParser>(&tokens);
 
         // Executa a análise semântica
-        iron::SemanticAnalysis analysis(parser, std::move(std::make_unique<scope::ScopeManager>()),loadStringAsLines(input));
-        analysis.analyze();
+        iron::SemanticAnalysis analysis(parser,
+                                        std::make_unique<scope::ScopeManager>(),
+                                        loadStringAsLines(input),
+                                        config);
 
-        // Rewind
+        // Reposiciona o token stream para reiniciar a análise
         tokens.seek(0);
         parser->reset();
 
-        auto context = std::make_shared<hlir::Context>();
-        hlir::HLIRGenerator hightLevelCodeGenerator(parser, context);
-        const auto hlirCode = hightLevelCodeGenerator.generateCode();
-        // std::cout << hlirCode << std::endl;
+        auto exportContexts = std::make_shared<std::map<std::string, std::shared_ptr<hlir::Context>>>();
+        auto hlirContext = std::make_shared<hlir::Context>();
+        hlir::HLIRGenerator highLevelCodeGenerator(parser, hlirContext, config, exportContexts);
+        highLevelCodeGenerator.getContext();
 
-        iron::LLVM llvm(context);
-        auto llvmCode = llvm.generateCode();
-        // std::cout << llvmCode << std::endl;
-        return llvmCode;
+        // Salva o código HLIR em arquivo
+        const auto hlirPath = util::format("{}", config->outputHLIR());
+        const auto pathAndFile = iron::saveToFile(hlirContext->getText(), hlirPath, "main.hlir");
+
+        // Geração do código LLVM (caso necessário para análise)
+        llvm::LLVMContext llvmContext;
+        iron::LLVM llvm(hlirContext, llvmContext, pathAndFile);
+        auto module = llvm.generateCode();
+
+        // Retorna o código de alto nível gerado
+        return hlirContext->getText();
     }
 };
+
 
 //-----------------------------------------------------------
 // TESTS FOR THE CLASS FunctionArgs

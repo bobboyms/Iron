@@ -621,14 +621,14 @@ public:
     antlr4::tree::TerminalNode *IDENTIFIER();
     FunctionCallContext *functionCall();
     ExprContext *expr();
-    antlr4::tree::TerminalNode *OR();
-    antlr4::tree::TerminalNode *AND();
     antlr4::tree::TerminalNode *EQEQ();
     antlr4::tree::TerminalNode *NEQ();
     antlr4::tree::TerminalNode *LT();
     antlr4::tree::TerminalNode *LTE();
     antlr4::tree::TerminalNode *GT();
     antlr4::tree::TerminalNode *GTE();
+    antlr4::tree::TerminalNode *AND();
+    antlr4::tree::TerminalNode *OR();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

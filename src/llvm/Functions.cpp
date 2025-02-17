@@ -23,7 +23,7 @@ namespace iron
         if (!function)
         {
             throw LLVMException(
-                    util::format("LLVM::visitFunctionCall. Function {} not found", hlirFunction->getFunctionName()));
+                    util::format("LLVM::visitFunction. Function {} not found", hlirFunction->getFunctionName()));
         }
 
         const llvm::Type *functionReturnType = mapType(hlirFunction->getFunctionReturnType()->getType());
@@ -89,6 +89,7 @@ namespace iron
         std::vector<llvm::Value *> args;
         // Iterar sobre os argumentos da chamada
 
+
         for (const auto &arg: functionCall->getCallArgs()->getCallArgs())
         {
             functionCall->getFunction()->getStatement()->findVarByName(arg->argument);
@@ -99,7 +100,6 @@ namespace iron
             }
 
             auto value = createConstValue(arg->value->getValueType(), arg->value);
-
             args.push_back(value);
         }
 
@@ -157,7 +157,9 @@ namespace iron
         llvm::Function *function =
                 llvm::Function::Create(funcType, linkage, hlirFunction->getFunctionName(), module.get());
 
-
+        // printf("Função declarada\n");
+        // function->print(llvm::outs());
+        //
         if (!argTypes.empty())
         {
             unsigned idx = 0;
