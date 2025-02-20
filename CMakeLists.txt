@@ -156,13 +156,13 @@ set(SRC_COMMON
         src/hlir/generator/Function.cpp
         src/hlir/generator/HLIRGenerator.cpp
         src/hlir/generator/IFelse.cpp
-#        src/llvm/Types.cpp
-#        src/llvm/LLVM.cpp
-#        src/llvm/functions.cpp
-#        src/llvm/Operations.cpp
-#        src/llvm/EmitObject.cpp
-#        src/llvm/LLD.cpp
-#        src/llvm/VM.cpp
+        src/llvm/Types.cpp
+        src/llvm/LLVM.cpp
+        src/llvm/functions.cpp
+        src/llvm/Operations.cpp
+        src/llvm/EmitObject.cpp
+        src/llvm/LLD.cpp
+        src/llvm/VM.cpp
         src/utils/Colors.cpp
         src/semantic/SemanticAnalysis.cpp
         src/semantic/BoolExpr.cpp
@@ -183,9 +183,9 @@ set(SRC_COMMON
 )
 
 set(TEST_SRC
-#        tests/test_semantic_analysis.cpp
+        tests/test_semantic_analysis.cpp
         tests/test_hlir_code.cpp
-#        tests/test_llvm_code.cpp
+        tests/test_llvm_code.cpp
 )
 
 # Cópia do arquivo YAML para a pasta de build

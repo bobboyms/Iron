@@ -259,20 +259,34 @@ namespace hlir
         sb.clear();
 
 
-        for (const auto statement: statementList)
+        if (external)
         {
-            if (external)
-            {
-                const auto language = tokenMap::getTokenText(languageType);
-                sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
-                                   functionReturnType->getText());
-            }
-            else
-            {
-                sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
-                           functionReturnType->getText(), statement->getText());
-            }
+            const auto language = tokenMap::getTokenText(languageType);
+            sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
+                               functionReturnType->getText());
         }
+        else
+        {
+
+            sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
+                       functionReturnType->getText(), statementList[0]->getText());
+        }
+
+        // for (const auto statement: statementList)
+        // {
+        //     if (external)
+        //     {
+        //         printf("Function %s\n", function->getFunctionName().c_str());
+        //         const auto language = tokenMap::getTokenText(languageType);
+        //         sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
+        //                            functionReturnType->getText());
+        //     }
+        //     else
+        //     {
+        //         sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
+        //                    functionReturnType->getText(), statement->getText());
+        //     }
+        // }
 
         return sb.str();
     }

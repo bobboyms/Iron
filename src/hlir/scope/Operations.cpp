@@ -491,6 +491,7 @@ namespace hlir
 
         for (const auto &function: functions)
         {
+
             sb << util::format("{}\n", function->getText());
         }
 

@@ -30,7 +30,7 @@ namespace iron
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvmContext, "entry", function);
         builder.SetInsertPoint(entry);
 
-        visitStatement(hlirFunction->getCurrentStatement());
+        visitStatement(hlirFunction->getStatementList()[0]);
         if (functionReturnType->isVoidTy())
         {
             builder.CreateRetVoid();

@@ -1,4 +1,28 @@
-fn teste() {
-            let inline:fn = () -> 12.00D
-            inline()
+fn main() {
+           //false ok
+           let exprBool1:boolean = not 3 > 1
+
+           //true ok
+           let exprBool2:boolean = 3 > 1
+
+           //true ok
+           let exprBool3:boolean = 3 != 1
+
+           //false
+           let exprBool4:boolean = 3 == 1
+
+           //false ok
+           let exprBool5:boolean = 5 > 3 != (25 * 6) < 5 != (25 == 25)
+
+           //true true ok
+           let exprBool6:boolean = 5 > 3 != (25 * 6) < 5 != (25 == 25) or (32 /2) > 5
+
+           let a:int = 12
+           let b:float = 1.6
+
+           //true ok
+           let exprBool7:boolean = 5 > 3 != (a * 6) < 5 != (25 == b) or (32 /2) > a and 2 > 2
+
+           // false ok
+           let exprBool8:boolean = 5 > a != ((25 * 6) < a != 2) == (not (25 == 25))
         }

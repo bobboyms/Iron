@@ -220,7 +220,7 @@ namespace iron
 
 
         // Obtém a função corrente do escopo e verifica se ela é válida
-        auto currentFunction = getCurrentFunction();
+        const auto currentFunction = getCurrentFunction();
 
         // Recupera o nome da função chamada e obtém a função correspondente
 
@@ -229,16 +229,19 @@ namespace iron
         if (functionArgs->size() != argNames.size())
         {
 
-            throw ArgumentCountMismatchException(util::format(
-                    "Function '{}' expects {} arguments, but {} were provided.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n"
-                    "{}\n",
-                    color::colorText(functionCalledName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(functionArgs->size()), color::BOLD_GREEN),
-                    color::colorText(std::to_string(argNames.size()), color::BOLD_BLUE),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            if (!calledFunction->isVariedArguments())
+            {
+                throw ArgumentCountMismatchException(util::format(
+                        "Function '{}' expects {} arguments, but {} were provided.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n",
+                        color::colorText(functionCalledName, color::BOLD_GREEN),
+                        color::colorText(std::to_string(functionArgs->size()), color::BOLD_GREEN),
+                        color::colorText(std::to_string(argNames.size()), color::BOLD_BLUE),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            }
         }
 
         // Verifica se a ordem dos argumentos está correta
@@ -246,16 +249,21 @@ namespace iron
         {
             if (const auto &expectedArg = (*functionArgs)[i]; expectedArg->name != argNames[i])
             {
-                throw ArgumentOrderMismatchException(util::format(
-                        "Argument order mismatch in Function '{}'. Expected '{}', but got '{}'.\n"
-                        "Line: {}, Scope: {}\n\n"
-                        "{}\n"
-                        "{}\n",
-                        color::colorText(functionCalledName, color::BOLD_GREEN),
-                        color::colorText(expectedArg->name, color::BOLD_GREEN),
-                        color::colorText(argNames[i], color::BOLD_BLUE),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+
+                if (!calledFunction->isVariedArguments())
+                {
+                    throw ArgumentOrderMismatchException(
+                            util::format("Argument order mismatch in Function '{}'. Expected '{}', but got '{}'.\n"
+                                         "Line: {}, Scope: {}\n\n"
+                                         "{}\n"
+                                         "{}\n",
+                                         color::colorText(functionCalledName, color::BOLD_GREEN),
+                                         color::colorText(expectedArg->name, color::BOLD_GREEN),
+                                         color::colorText(argNames[i], color::BOLD_BLUE),
+                                         color::colorText(std::to_string(line), color::YELLOW),
+                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                         codeLine, caretLine));
+                }
             }
         }
     }
