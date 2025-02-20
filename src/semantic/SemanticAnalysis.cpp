@@ -87,6 +87,10 @@ namespace iron
             {
                 visitExpr(expression);
             }
+            if (const auto IfStatement = dynamic_cast<IronParser::IfStatementContext *>(child))
+            {
+                visitIfStatement(IfStatement);
+            }
             if (const auto returnctx = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(returnctx);
@@ -364,11 +368,9 @@ namespace iron
                 const std::string varType = varDeclaration->varTypes()->getText();
                 const auto functionName = ctx->functionCall()->functionName->getText();
 
-
-
                 if (const auto variable = getCurrentFunction()->findVarCurrentScopeAndArg(functionName))
                 {
-                    if (variable->function)
+                    if (!variable->function)
                     {
                         throw FunctionNotFoundException(
                                 util::format("Function {} not found.\n"

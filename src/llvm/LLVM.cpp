@@ -13,16 +13,17 @@ namespace iron
 
     LLVM::~LLVM() = default;
 
-    void LLVM::visitStatement(const std::shared_ptr<hlir::Statement> &hlirStatement)
+    void LLVM::visitStatement(const std::shared_ptr<hlir::Statement> &statements)
     {
 
-        if (!hlirStatement)
+        if (!statements)
         {
             throw LLVMException("LLVM::visitStatement. VisitStatement called with null hlirStatement");
         }
 
-        for (auto statement: hlirStatement->getStatements())
+        for (auto &statement: statements->getStatements())
         {
+
             std::visit(
                     [this](auto &&arg)
                     {
@@ -153,11 +154,39 @@ namespace iron
         const auto cast = std::dynamic_pointer_cast<hlir::Cast>(hlirExpr->getExpr());
         const auto assign = std::dynamic_pointer_cast<hlir::Assign>(hlirExpr->getExpr());
         const auto funcCall = std::dynamic_pointer_cast<hlir::FunctionCall>(hlirExpr->getExpr());
+        const auto cmp = std::dynamic_pointer_cast<hlir::CMP>(hlirExpr->getExpr());
+        const auto _and = std::dynamic_pointer_cast<hlir::AND>(hlirExpr->getExpr());
+        const auto _or = std::dynamic_pointer_cast<hlir::OR>(hlirExpr->getExpr());
+        const auto _not = std::dynamic_pointer_cast<hlir::_NOT>(hlirExpr->getExpr());
 
         const auto variable = allocaVariable(hlirExpr->getVariable());
         if (!variable)
         {
             throw LLVMException("visitExpr: variable is null");
+        }
+
+        if (cmp)
+        {
+            const auto result = executeCMP(cmp, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+
+        if (_and)
+        {
+            const auto result = executeAND(_and, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+
+        if (_or)
+        {
+            const auto result = executeOR(_or, currentFunction);
+            builder.CreateStore(result, variable);
+        }
+
+        if (_not)
+        {
+            const auto result = executeNOT(_not, currentFunction);
+            builder.CreateStore(result, variable);
         }
 
         if (mult)

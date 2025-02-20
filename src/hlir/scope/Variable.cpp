@@ -163,13 +163,13 @@ namespace hlir
         varType->setParent(parentPtr);
 
         // Realiza o cast para std::shared_ptr<Variable>
-        auto assignPtr = std::dynamic_pointer_cast<Variable>(parentPtr);
-        if (!assignPtr)
+        auto variablePtr = std::dynamic_pointer_cast<Variable>(parentPtr);
+        if (!variablePtr)
         {
             throw HLIRException("Variable::set failed: Unable to cast Parent to Variable.");
         }
 
-        return assignPtr;
+        return variablePtr;
     }
 
     Variable::Variable() = default;

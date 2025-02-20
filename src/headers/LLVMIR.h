@@ -46,7 +46,7 @@ namespace iron
 
         void generateTerminator(llvm::Type *functionReturnType);
 
-        std::string normalizeUserString(const std::string &input);
+        static std::string normalizeUserString(const std::string &input);
 
         void assignValue(const std::shared_ptr<hlir::Variable> &variable, const std::shared_ptr<hlir::Value> &value,
                          llvm::AllocaInst *allocaVariable);
@@ -73,6 +73,10 @@ namespace iron
 
         std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(std::shared_ptr<hlir::BinaryOperation> op,
                                                                     llvm::Function *currentFunction);
+        llvm::Value *executeAND(const std::shared_ptr<hlir::AND> &_and, llvm::Function *currentFunction);
+        llvm::Value *executeOR(const std::shared_ptr<hlir::OR> &_or, llvm::Function *currentFunction);
+        llvm::Value *executeNOT(const std::shared_ptr<hlir::_NOT> &_not, llvm::Function *currentFunction);
+        llvm::Value *executeCMP(const std::shared_ptr<hlir::CMP> &cmp, llvm::Function *currentFunction);
 
         llvm::AllocaInst *promoteArgumentToAlloca(llvm::Function *function, llvm::Argument *arg);
 
@@ -86,7 +90,7 @@ namespace iron
 
         void visitFunction(const std::shared_ptr<hlir::Function> &hlirFunction);
 
-        void visitStatement(const std::shared_ptr<hlir::Statement> &hlirStatement);
+        void visitStatement(const std::shared_ptr<hlir::Statement> &statements);
 
         void visitFuncReturn(const std::shared_ptr<hlir::FuncReturn> &funcReturn);
 

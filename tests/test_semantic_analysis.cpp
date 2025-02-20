@@ -1512,10 +1512,23 @@ TEST_F(SemanticAnalysisTest, T105)
     EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
 }
 
+TEST_F(SemanticAnalysisTest, T106)
+{
+    const std::string input = R"(
+        fn main():int {
+           let inline:fn = ():int -> 12
+           let r:int = inline()
+           return r
+        }
+    )";
+
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
 // Testes para expressões booleanas
 
 // Caso 1: Literal booleano simples
-TEST_F(SemanticAnalysisTest, BooleanLiteral)
+TEST_F(SemanticAnalysisTest, 107)
 {
     const std::string input = R"(
         fn main() {
@@ -1526,7 +1539,7 @@ TEST_F(SemanticAnalysisTest, BooleanLiteral)
 }
 
 // Caso 2: Operador not com literal booleano
-TEST_F(SemanticAnalysisTest, BooleanNot)
+TEST_F(SemanticAnalysisTest, 108)
 {
     const std::string input = R"(
         fn main() {
@@ -1537,7 +1550,7 @@ TEST_F(SemanticAnalysisTest, BooleanNot)
 }
 
 // Caso 3: Operadores and e or combinados
-TEST_F(SemanticAnalysisTest, BooleanAndOr)
+TEST_F(SemanticAnalysisTest, 109)
 {
     const std::string input = R"(
         fn main() {
@@ -1548,7 +1561,7 @@ TEST_F(SemanticAnalysisTest, BooleanAndOr)
 }
 
 // Caso 4: Expressão relacional que resulta em booleano
-TEST_F(SemanticAnalysisTest, RelationalExpression)
+TEST_F(SemanticAnalysisTest, 110)
 {
     const std::string input = R"(
         fn main() {
@@ -1559,7 +1572,7 @@ TEST_F(SemanticAnalysisTest, RelationalExpression)
 }
 
 // Caso 5: Expressão com parênteses misturando booleanos e relacionais
-TEST_F(SemanticAnalysisTest, BooleanWithParentheses)
+TEST_F(SemanticAnalysisTest, 111)
 {
     const std::string input = R"(
         fn main() {
@@ -1570,7 +1583,7 @@ TEST_F(SemanticAnalysisTest, BooleanWithParentheses)
 }
 
 // Caso 6: Uso de variável não definida na expressão booleana
-TEST_F(SemanticAnalysisTest, BooleanVariableNotDefined)
+TEST_F(SemanticAnalysisTest, 112)
 {
     const std::string input = R"(
         fn main() {
@@ -1581,7 +1594,7 @@ TEST_F(SemanticAnalysisTest, BooleanVariableNotDefined)
 }
 
 // Caso 7: Mistura de tipos – operador booleano aplicado a número e booleano
-TEST_F(SemanticAnalysisTest, BooleanTypeMismatch)
+TEST_F(SemanticAnalysisTest, 113)
 {
     const std::string input = R"(
         fn main() {
@@ -1593,7 +1606,7 @@ TEST_F(SemanticAnalysisTest, BooleanTypeMismatch)
 
 
 // Caso 9: Chamada de função que retorna um tipo não booleano em contexto booleano
-TEST_F(SemanticAnalysisTest, BooleanFunctionCallTypeMismatch)
+TEST_F(SemanticAnalysisTest, 114)
 {
     const std::string input = R"(
         fn getNumber():int {
@@ -1607,7 +1620,17 @@ TEST_F(SemanticAnalysisTest, BooleanFunctionCallTypeMismatch)
 }
 
 // Caso 10: Expressão booleana complexa com not e operadores relacionais
-TEST_F(SemanticAnalysisTest, ComplexBooleanExpression)
+TEST_F(SemanticAnalysisTest, 115)
+{
+    const std::string input = R"(
+        fn main() {
+            let b:boolean = not (5 > 3 and (10 <= 10))
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 106)
 {
     const std::string input = R"(
         fn main() {

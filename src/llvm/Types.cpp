@@ -86,9 +86,19 @@ namespace iron
                 break;
             }
 
+            case tokenMap::TYPE_BOOLEAN:
+            {
+                const bool boolValue = (value->getText() == "true");
+                llvm::Constant *constBool =
+                        llvm::ConstantInt::get(llvm::Type::getInt1Ty(llvmContext), boolValue, false);
+                valueToStore = constBool;
+                break;
+            }
+
             case tokenMap::TYPE_STRING:
             {
-                valueToStore = llvm::ConstantDataArray::getString(llvmContext, normalizeUserString(value->getText()), true);
+                valueToStore =
+                        llvm::ConstantDataArray::getString(llvmContext, normalizeUserString(value->getText()), true);
                 break;
             }
 
@@ -398,7 +408,7 @@ namespace iron
         return localStr;
     }
 
-    llvm::AllocaInst *LLVM::allocaVariable(const std::shared_ptr<hlir::Variable>& variable)
+    llvm::AllocaInst *LLVM::allocaVariable(const std::shared_ptr<hlir::Variable> &variable)
     {
         if (!variable)
         {
@@ -443,14 +453,14 @@ namespace iron
         }
 
         // Check if the variable name is not empty
-        std::string varName = variable->getVarName();
+        const std::string varName = variable->getVarName();
         if (varName.empty())
         {
             throw LLVMException("LLVM::numberCasting: 'variable->getVarName()' is empty.");
         }
 
         // Find the corresponding AllocaInst for the variable
-        auto castVar = getOrPromoteToAlloca(varName, currentFunction);
+        const auto castVar = getOrPromoteToAlloca(varName, currentFunction);
         if (!castVar)
         {
             throw LLVMException(
@@ -484,41 +494,68 @@ namespace iron
         llvm::Value *value = nullptr;
 
         // Check if the variable type is not null before accessing
-        auto varType = variable->getVarType();
+        const auto varType = variable->getVarType();
         if (!varType)
         {
             throw LLVMException(util::format(
                     "LLVM::numberCasting: 'variable->getVarType()' is a null pointer for variable '{}'.", varName));
         }
 
-        int varTypeInt = varType->getType();
-        int desiredTypeInt = type->getType();
+        const int variableType = varType->getType();
+
+
+        // if (variableType == tokenMap::TYPE_BOOLEAN)
+        // {
+        //     printf("%u\n", tokenMap::getTokenText(variable->getVarType()->getType()).c_str());
+        // }
 
         // Perform casting based on types
-        if (varTypeInt == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_INT)
+        if (const int desiredTypeInt = type->getType();
+            variableType == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_INT)
         {
             value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (varTypeInt == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_DOUBLE)
+        else if (variableType == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_DOUBLE)
         {
             value = builder.CreateFPExt(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (varTypeInt == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_FLOAT)
+        else if (variableType == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_FLOAT)
         {
             value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (varTypeInt == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_DOUBLE)
+        else if (variableType == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_DOUBLE)
         {
             value = builder.CreateSIToFP(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (varTypeInt == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_FLOAT)
+        else if (variableType == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_BOOLEAN)
+        {
+            value = builder.CreateICmpNE(loadedVar,
+                             llvm::ConstantInt::get(loadedVar->getType(), 0),
+                             util::format("cast_{}", varName));
+        }
+        else if (variableType == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_FLOAT)
         {
             value = builder.CreateFPTrunc(loadedVar, desiredType, util::format("cast_{}", varName));
         }
-        else if (varTypeInt == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_INT)
+        else if (variableType == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_INT)
         {
             value = builder.CreateFPToSI(loadedVar, desiredType, util::format("cast_{}", varName));
         }
+        else if (variableType == tokenMap::TYPE_BOOLEAN &&
+                 (desiredTypeInt == tokenMap::TYPE_FLOAT || desiredTypeInt == tokenMap::TYPE_DOUBLE))
+        {
+            // Converte bool para float/double: se true retorna 1.0, senão 0.0
+            value = builder.CreateSelect(loadedVar, llvm::ConstantFP::get(desiredType, 1.0),
+                                         llvm::ConstantFP::get(desiredType, 0.0), util::format("cast_{}", varName));
+        }
+        else if ((variableType == tokenMap::TYPE_FLOAT || variableType == tokenMap::TYPE_DOUBLE) &&
+                 desiredTypeInt == tokenMap::TYPE_BOOLEAN)
+        {
+            // Converte float/double para bool: compara se o valor é diferente de 0.0
+            value = builder.CreateFCmpONE(loadedVar, llvm::ConstantFP::get(loadedVar->getType(), 0.0),
+                                          util::format("cast_{}", varName));
+        }
+
         else
         {
             throw LLVMException("LLVM::numberCasting: Type conversion not defined.");
@@ -534,48 +571,55 @@ namespace iron
         return value;
     }
 
-    std::string LLVM::normalizeUserString(const std::string &input) {
+    std::string LLVM::normalizeUserString(const std::string &input)
+    {
         std::string output;
         output.reserve(input.size());
 
         // Se a string começa e termina com aspas, remova-as
         size_t start = 0;
         size_t end = input.size();
-        if (!input.empty() && input.front() == '\"' && input.back() == '\"') {
+        if (!input.empty() && input.front() == '\"' && input.back() == '\"')
+        {
             start = 1;
             end = input.size() - 1;
         }
 
         // Processa a string caractere a caractere, interpretando sequências de escape comuns
-        for (size_t i = start; i < end; ++i) {
-            if (input[i] == '\\' && i + 1 < end) {
-                char next = input[i+1];
-                switch (next) {
+        for (size_t i = start; i < end; ++i)
+        {
+            if (input[i] == '\\' && i + 1 < end)
+            {
+                char next = input[i + 1];
+                switch (next)
+                {
                     case 'n':
                         output.push_back('\n');
-                    i++; // pula o próximo caractere
-                    break;
+                        i++; // pula o próximo caractere
+                        break;
                     case 't':
                         output.push_back('\t');
-                    i++;
-                    break;
+                        i++;
+                        break;
                     case '\"':
                         output.push_back('\"');
-                    i++;
-                    break;
+                        i++;
+                        break;
                     case '\\':
                         output.push_back('\\');
-                    i++;
-                    break;
+                        i++;
+                        break;
                     // Você pode adicionar mais casos, se necessário.
                     default:
                         // Se não for uma sequência conhecida, apenas copia os dois caracteres
-                            output.push_back(input[i]);
-                    // output.push_back(input[i+1]); // opcional, dependendo do que você deseja
-                    i++; // pula o próximo caractere
-                    break;
+                        output.push_back(input[i]);
+                        // output.push_back(input[i+1]); // opcional, dependendo do que você deseja
+                        i++; // pula o próximo caractere
+                        break;
                 }
-            } else {
+            }
+            else
+            {
                 output.push_back(input[i]);
             }
         }

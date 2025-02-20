@@ -64,13 +64,13 @@ void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
                 return;
             }
 
-            printLLVMmodule(module);
+
             modules.push_back(std::move(module));
             // iron::LLVM::emitObjectFile(std::move(module).get(), filename);
         }
 
         auto mainModule = iron::LLVM::mergeModules(std::move(modules));
-
+        printLLVMmodule(mainModule);
         iron::LLVM::executeModule(std::move(mainModule));
     }
     catch (const iron::SemanticException &e)

@@ -27,6 +27,10 @@ namespace hlir
 
     class Statement;
 
+    class Block;
+
+    class Conditional;
+
     /**
      * @class Basic
      * @brief Abstract base class enforcing a getText() method.
@@ -282,8 +286,8 @@ namespace hlir
      * @brief A variant capable of holding several possible data types (Function, std::string, int, float, double,
      * bool).
      */
-    using Data =
-            std::variant<std::shared_ptr<Function>, std::shared_ptr<Variable>, std::string>; //, int, float, double, bool
+    using Data = std::variant<std::shared_ptr<Function>, std::shared_ptr<Variable>,
+                              std::string>; //, int, float, double, bool
 
     /**
      * @class Value
@@ -575,6 +579,7 @@ namespace hlir
     {
     protected:
         std::shared_ptr<Type> opType;
+
     public:
         explicit CMP(int op);
 
@@ -935,7 +940,7 @@ namespace hlir
     };
 
     using ValidStatement = std::variant<std::shared_ptr<Assign>, std::shared_ptr<Expr>, std::shared_ptr<FunctionCall>,
-                                        std::shared_ptr<FuncReturn>>;
+                                        std::shared_ptr<FuncReturn>, std::shared_ptr<Block>, std::shared_ptr<Conditional>>;
 
     inline bool isValidStatementNull(const ValidStatement &statement)
     {
@@ -961,7 +966,7 @@ namespace hlir
         std::string getText() override;
         std::string getNewVarName();
         void addDeclaredVariable(const std::shared_ptr<Variable> &variable);
-        std::shared_ptr<Variable> findVarByName(const std::string& varName);
+        std::shared_ptr<Variable> findVarByName(const std::string &varName);
         std::shared_ptr<Value> getVariableValue(std::string varName);
 
         void setParent(const std::shared_ptr<Parent> newParent) override
@@ -976,106 +981,143 @@ namespace hlir
      *
      * Inherits from Basic to provide a text output like "fn name(args):returnType".
      */
-    class Function final : public Basic, public Parent
-    {
-    private:
-        /**
-         * @brief Name of the function.
-         */
-        std::string functionName;
 
-        /**
-         * @brief Pointer to the function's return Type.
-         */
-        std::shared_ptr<Type> functionReturnType;
-
-        bool external;
-        bool variedArguments;
-
-    protected:
-        /**
-         * @brief Pointer to the function's body (optional).
-         */
-        std::shared_ptr<Statement> statement;
-        std::shared_ptr<Function> parentFunction;
-        int languageType;
-
-        /**
-         * @brief Pointer to the function's argument list.
-         */
-        std::shared_ptr<FunctionArgs> functionArgs;
-
-        bool inlineFunction = false;
-
+    class Block final : public Basic, public Parent {
     public:
-        /**
-         * @brief Retrieves the function's name.
-         * @return A string containing the function name.
-         */
-        std::string getFunctionName();
+        Block();
+        virtual ~Block();
 
-        std::shared_ptr<Type> getFunctionReturnType();
-
-        std::shared_ptr<FunctionArgs> getFunctionArgs();
-
-        std::shared_ptr<Function> getParentFunction();
-
-        void setParentFunction(const std::shared_ptr<Function> &function);
-
-        std::shared_ptr<Statement> getStatement();
-        void setStatement(std::shared_ptr<Statement> statement);
-
+        // Configura o bloco com um label e uma instrução. Lança exceção se o label for vazio ou se a instrução for nula.
+        std::shared_ptr<Block> set(const std::string &label);
+        std::string getLabel();
+        // Retorna a representação textual do bloco.
+        std::string getText() override;
 
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
         }
 
-        /**
-         * @brief Produces a textual representation: "fn functionName(args):returnType".
-         * @return A string with the function definition.
-         */
-        std::string getText() override;
+    private:
+        std::string label;
+        std::shared_ptr<Statement> statement;
+        std::stringstream sb; // Buffer para montagem da string de saída.
+    };
 
-        /**
-         * @brief set a Function object.
-         * @param functionName The function's name.
-         * @param functionArgs Shared pointer to FunctionArgs.
-         * @param functionReturnType Shared pointer to the return Type.
-         */
+
+    class Conditional : public Basic, public Parent {
+    public:
+        Conditional();
+        virtual ~Conditional();
+
+        // Configura a variável de condição. Lança exceção se for nula ou não for booleana.
+        std::shared_ptr<Conditional> set(const std::shared_ptr<Variable> &variable);
+
+        std::string getTrueLabel();
+        std::string getFalseLabel();
+
+        // Define os labels dos ramos verdadeiro e falso. Lança exceção se o label estiver vazio.
+        void setTrueLabel(const std::string &label);
+        void setFalseLabel(const std::string &label);
+
+        // Retorna a representação textual da condição.
+        std::string getText();
+
+        void setParent(const std::shared_ptr<Parent> newParent) override
+        {
+            parent = newParent;
+        }
+
+    private:
+        std::shared_ptr<Variable> variable;
+        std::string trueLabel;
+        std::string falseLabel;
+        std::stringstream sb; // Buffer para montagem da string de saída.
+    };
+
+    class Function final : public Basic, public Parent
+    {
+    public:
+        // Construtor e destrutor
+        Function();
+        ~Function() override;
+
+        // Getters
+        std::string getFunctionName();
+        std::shared_ptr<Type> getFunctionReturnType();
+        std::shared_ptr<FunctionArgs> getFunctionArgs();
+        std::shared_ptr<Function> getParentFunction();
+
+        // Setter para o parentFunction
+        void setParentFunction(const std::shared_ptr<Function> &function);
+
+        // Escopo local
+        // std::shared_ptr<Statement> getCurrentStatement();
+        std::shared_ptr<Statement> getCurrentLocalScope();
+        void enterLocalScope(const std::shared_ptr<Statement> &statement);
+        void exitLocalScope();
+
+        // Busca de variável
+        std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers = 0);
+        std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string &varName);
+        std::shared_ptr<Variable> getArgByName(const std::string &argName) const;
+
+        // Definição da função (nome, argumentos e retorno)
         std::shared_ptr<Function> set(const std::string &functionName,
                                       const std::shared_ptr<FunctionArgs> &functionArgs,
                                       const std::shared_ptr<Type> &functionReturnType);
 
+        // Configura a função com um statement (corpo)
+        // void setStatement(std::shared_ptr<Statement> statement);
+
+        std::vector<std::shared_ptr<Statement>> getStatementList();
+
+        // Métodos de configuração e consulta de flags
         void enableInline();
-        bool isExternal();
-        int getLanguageType();
+        bool isExternal() const;
+        int getLanguageType() const;
         void setLanguageType(int type);
         void changeToExternal();
         void changeToVariedArguments();
-        bool isVariedArguments();
-        bool getInline();
-        // bool getInline() const;
+        bool isVariedArguments() const;
+        bool getInline() const;
 
-        /**
-         * @brief set a Function object with a statement (function body).
-         * @param functionName The function's name.
-         * @param functionArgs Shared pointer to FunctionArgs.
-         * @param functionReturnType Shared pointer to the return Type.
-         * @param statement Shared pointer to the Statement (function body).
-         */
-        std::shared_ptr<Function> set(const std::string &functionName,
-                                      const std::shared_ptr<FunctionArgs> &functionArgs,
-                                      const std::shared_ptr<Type> &functionReturnType,
-                                      const std::shared_ptr<Statement> &statement);
+        // Produz uma representação textual da função
+        std::string getText() override;
 
+        // Cria um clone da função
         std::shared_ptr<Function> clone() const;
 
-        Function();
-        /**
-         * @brief Destructor for Function.
-         */
-        ~Function() override;
+        // Implementação de setParent herdado de Parent
+        void setParent(const std::shared_ptr<Parent> newParent) override
+        {
+            parent = newParent;
+        }
+
+        std::string generateLabel(const std::string &label);
+        std::string generateVarName();
+
+    private:
+        // Dados da função
+        uint labelId{0};
+        uint varId{0};
+        std::string functionName;
+        std::shared_ptr<Type> functionReturnType;
+        bool external;
+        bool variedArguments;
+
+    protected:
+        // Corpo e escopo da função
+        std::vector<std::shared_ptr<Statement>> statementList;
+        std::stack<std::shared_ptr<Statement>> statementStack;
+        std::unordered_map<std::string, std::shared_ptr<Statement>> statementMap;
+        std::shared_ptr<Function> parentFunction;
+        int languageType;
+        std::shared_ptr<FunctionArgs> functionArgs;
+        bool inlineFunction = false;
+
+        // Buffer para montagem de strings
+        mutable std::stringstream sb;
     };
 
     /**
