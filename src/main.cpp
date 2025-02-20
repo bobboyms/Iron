@@ -43,35 +43,35 @@ void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
         const auto hlirContext = analyser.hlir(file, hlirContexts);
         hlirContexts->emplace("main", hlirContext);
 
-        // std::cout << hlirContext->getText() << std::endl;
+        std::cout << hlirContext->getText() << std::endl;
 
-        std::vector<std::unique_ptr<llvm::Module>> modules;
-        std::vector<std::string> objectFiles;
-
-        for (const auto &[path, hlirContext]: *hlirContexts)
-        {
-            // printf("%s\n", "******************************");
-            printf("%s\n", path.c_str());
-            const auto filename = getFileNameWithoutExtension(path);
-            objectFiles.push_back(filename);
-
-            iron::LLVM llvm(hlirContext, llvmContext, filename);
-            auto module = llvm.generateCode();
-
-            if (!module)
-            {
-                std::cerr << "Erro: llvm.generateCode() retornou um ponteiro nulo." << std::endl;
-                return;
-            }
-
-            printLLVMmodule(module);
-            modules.push_back(std::move(module));
-            // iron::LLVM::emitObjectFile(std::move(module).get(), filename);
-        }
-
-        auto mainModule = iron::LLVM::mergeModules(std::move(modules));
-
-        iron::LLVM::executeModule(std::move(mainModule));
+        // std::vector<std::unique_ptr<llvm::Module>> modules;
+        // std::vector<std::string> objectFiles;
+        //
+        // for (const auto &[path, hlirContext]: *hlirContexts)
+        // {
+        //     // printf("%s\n", "******************************");
+        //     printf("%s\n", path.c_str());
+        //     const auto filename = getFileNameWithoutExtension(path);
+        //     objectFiles.push_back(filename);
+        //
+        //     iron::LLVM llvm(hlirContext, llvmContext, filename);
+        //     auto module = llvm.generateCode();
+        //
+        //     if (!module)
+        //     {
+        //         std::cerr << "Erro: llvm.generateCode() retornou um ponteiro nulo." << std::endl;
+        //         return;
+        //     }
+        //
+        //     printLLVMmodule(module);
+        //     modules.push_back(std::move(module));
+        //     // iron::LLVM::emitObjectFile(std::move(module).get(), filename);
+        // }
+        //
+        // auto mainModule = iron::LLVM::mergeModules(std::move(modules));
+        //
+        // iron::LLVM::executeModule(std::move(mainModule));
     }
     catch (const iron::SemanticException &e)
     {

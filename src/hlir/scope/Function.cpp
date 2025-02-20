@@ -16,12 +16,12 @@ namespace hlir
         inlineFunction = true;
     }
 
-    bool Function::isExternal()
+    bool Function::isExternal() const
     {
         return external;
     }
 
-    int Function::getLanguageType()
+    int Function::getLanguageType() const
     {
         return languageType;
     }
@@ -41,12 +41,12 @@ namespace hlir
         variedArguments = true;
     }
 
-    bool Function::isVariedArguments()
+    bool Function::isVariedArguments() const
     {
         return variedArguments;
     }
 
-    bool Function::getInline()
+    bool Function::getInline() const
     {
         return inlineFunction;
     }
@@ -61,44 +61,110 @@ namespace hlir
         parentFunction = function;
     }
 
-    std::shared_ptr<Statement> Function::getStatement()
+    std::shared_ptr<Statement> Function::getCurrentLocalScope()
     {
-        return statement;
-    }
-    void Function::setStatement(std::shared_ptr<Statement> statement)
-    {
-        this->statement = statement;
-    }
-
-    std::shared_ptr<Function> Function::set(const std::string &functionName,
-                                            const std::shared_ptr<FunctionArgs> &newFunctionArgs,
-                                            const std::shared_ptr<Type> &functionReturnType)
-    {
-        this->functionName = functionName;
-        this->functionArgs = newFunctionArgs;
-        this->functionReturnType = functionReturnType;
-
-        if (!functionArgs)
+        if (!statementStack.empty())
         {
-            throw HLIRException("FunctionArgs cannot be null.");
+            return statementStack.top();
         }
-        if (!functionReturnType)
+        return nullptr;
+    }
+
+    void Function::enterLocalScope(const std::shared_ptr<Statement>& statement)
+    {
+        if (!statement)
         {
-            throw HLIRException("FunctionReturnType cannot be null.");
+            throw std::runtime_error(util::format("Function::enterLocalScope. Scope is null", ""));
         }
 
         const std::shared_ptr<Parent> parentPtr = shared_from_this();
+        statement->setParent(parentPtr);
 
-        functionArgs->setParent(parentPtr);
-        functionReturnType->setParent(parentPtr);
-
-        auto assignPtr = std::dynamic_pointer_cast<Function>(parentPtr);
-        if (!assignPtr)
+        if (const auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr); !functionPtr)
         {
-            throw HLIRException("Failed to cast Parent to Function.");
+            throw std::runtime_error("Function::enterLocalScope. Failed to cast Parent to Function.");
         }
 
-        return assignPtr;
+        statementList.push_back(statement);
+        statementStack.push(statement);
+    }
+
+    void Function::exitLocalScope()
+    {
+        if (!statementStack.empty())
+        {
+            statementStack.pop();
+        }
+    }
+
+    std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName)
+    {
+
+        // verifica no escopo local e superiores
+        std::stack<std::shared_ptr<Statement>> tempStack(statementStack);
+        uint scopeNumbers = 0;
+        while (!tempStack.empty())
+        {
+            auto currentScope = tempStack.top();
+            tempStack.pop();
+
+            if (const auto statementsScope = std::dynamic_pointer_cast<Statement>(currentScope))
+            {
+                if (auto variable = statementsScope->findVarByName(varName))
+                {
+                    if (scopeNumbers > 0)
+                    {
+                        variable->changeToAnotherScope();
+                        return variable;
+                    }
+                    return variable;
+                }
+            }
+            scopeNumbers++;
+        }
+
+        // verifica nos argumentos da função
+        if (const auto arg = functionArgs->findArgByName(varName))
+        {
+            return std::make_shared<Variable>()->set(arg->name,arg->type);
+        }
+
+        if (parentFunction)
+        {
+            return parentFunction->findVarAllScopesAndArg(varName);
+        }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<Variable> Function::findVarCurrentScopeAndArg(const std::string &varName)
+    {
+        if (const auto statement = std::dynamic_pointer_cast<Statement>(getCurrentLocalScope()))
+        {
+            if (auto variable = statement->findVarByName(varName))
+            {
+                return variable;
+            }
+        }
+
+        if (const auto arg = functionArgs->findArgByName(varName))
+        {
+            return std::make_shared<Variable>()->set(arg->name,arg->type);
+        }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<Variable> Function::getArgByName(const std::string &argName) const
+    {
+
+        if (const auto arg = functionArgs->findArgByName(argName))
+        {
+            return std::make_shared<Variable>()->set(arg->name,arg->type);
+        }
+
+        return nullptr;
+
     }
 
     std::shared_ptr<FunctionArgs> Function::getFunctionArgs()
@@ -118,7 +184,7 @@ namespace hlir
         newFunction->functionArgs = functionArgs;
         newFunction->functionReturnType = functionReturnType;
         newFunction->parent = parent;
-        newFunction->statement = statement;
+        newFunction->statementStack = statementStack;
         newFunction->languageType = languageType;
         newFunction->external = external;
         newFunction->variedArguments = variedArguments;
@@ -127,15 +193,21 @@ namespace hlir
         return newFunction;
     }
 
+    std::string Function::generateLabel(const std::string &label)
+    {
+        return util::format("{}_{}", label, labelId++);
+    }
+
+    std::string Function::generateVarName()
+    {
+        return util::format("var_{}", varId++);
+    }
+
     std::shared_ptr<Function> Function::set(const std::string &functionName,
                                             const std::shared_ptr<FunctionArgs> &functionArgs,
-                                            const std::shared_ptr<Type> &functionReturnType,
-                                            const std::shared_ptr<Statement> &statement)
+                                            const std::shared_ptr<Type> &functionReturnType)
     {
-        this->functionName = functionName;
-        this->functionArgs = functionArgs;
-        this->functionReturnType = functionReturnType;
-        this->statement = statement;
+
 
         if (!functionArgs)
         {
@@ -145,24 +217,26 @@ namespace hlir
         {
             throw HLIRException("FunctionReturnType cannot be null.");
         }
-        if (!statement)
-        {
-            throw HLIRException("Statement cannot be null.");
-        }
 
         const std::shared_ptr<Parent> parentPtr = shared_from_this();
 
+        this->functionName = functionName;
+        this->functionArgs = functionArgs;
+        this->functionReturnType = functionReturnType;
         this->functionArgs->setParent(parentPtr);
         this->functionReturnType->setParent(parentPtr);
-        this->statement->setParent(parentPtr);
 
-        auto assignPtr = std::dynamic_pointer_cast<Function>(parentPtr);
-        if (!assignPtr)
+        auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr);
+        if (!functionPtr)
         {
             throw HLIRException("Failed to cast Parent to Function.");
         }
 
-        return assignPtr;
+        return functionPtr;
+    }
+    std::vector<std::shared_ptr<Statement>> Function::getStatementList()
+    {
+        return statementList;
     }
 
     std::string Function::getFunctionName()
@@ -179,23 +253,20 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        if (external)
+
+
+        for (const auto statement: statementList)
         {
-            const auto language = tokenMap::getTokenText(languageType);
-            sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
-                               functionReturnType->getText());
-        }
-        else
-        {
-            if (statement && !statement->getStatements().empty())
+            if (external)
             {
-                sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
-                                   functionReturnType->getText(), statement->getText());
+                const auto language = tokenMap::getTokenText(languageType);
+                sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
+                                   functionReturnType->getText());
             }
             else
             {
-                sb << util::format("fn {}({}):{} { }\n", functionName, functionArgs->getText(),
-                                   functionReturnType->getText());
+                sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
+                           functionReturnType->getText(), statement->getText());
             }
         }
 
@@ -424,6 +495,14 @@ namespace hlir
                             sb << util::format(" {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, FuncReturn>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
+                        else if constexpr (std::is_same_v<T, Block>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
+                        else if constexpr (std::is_same_v<T, Conditional>)
                         {
                             sb << util::format(" {}\n", stmtPtr->getText());
                         }

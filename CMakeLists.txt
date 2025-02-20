@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.15)
-#project(IronLang VERSION 1.0 LANGUAGES CXX)
 project(IronLang VERSION 1.0 LANGUAGES C CXX)
 ###############################################################################
 # 1. Configuração do compilador (clang++)
@@ -151,16 +150,19 @@ set(SRC_COMMON
         src/hlir/scope/Function.cpp
         src/hlir/scope/Variable.cpp
         src/hlir/scope/Operations.cpp
-        src/hlir/generator/HLIRGenerator.cpp
+        src/hlir/scope/IFelse.cpp
         src/scope/ScopeManager.cpp
-        src/llvm/Types.cpp
-        src/llvm/LLVM.cpp
-        src/llvm/functions.cpp
-        src/llvm/Operations.cpp
-        src/llvm/EmitObject.cpp
-        src/llvm/LLD.cpp
-        src/llvm/VM.cpp
-#        src/hlir/WriterCodeHLIR.cpp
+        src/hlir/generator/Expr.cpp
+        src/hlir/generator/Function.cpp
+        src/hlir/generator/HLIRGenerator.cpp
+        src/hlir/generator/IFelse.cpp
+#        src/llvm/Types.cpp
+#        src/llvm/LLVM.cpp
+#        src/llvm/functions.cpp
+#        src/llvm/Operations.cpp
+#        src/llvm/EmitObject.cpp
+#        src/llvm/LLD.cpp
+#        src/llvm/VM.cpp
         src/utils/Colors.cpp
         src/semantic/SemanticAnalysis.cpp
         src/semantic/BoolExpr.cpp
@@ -177,8 +179,7 @@ set(SRC_COMMON
         src/analyser/Analyser.cpp
         src/headers/Analyser.h
         src/utils/Path.cpp
-        src/hlir/generator/Expr.cpp
-        src/hlir/generator/Function.cpp
+
 )
 
 set(TEST_SRC

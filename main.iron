@@ -1,24 +1,22 @@
-import std.output.printf
+fn main() {
+    //let x:int = 3
+    let j:int = 6
 
-fn main(n:float, j:int): int {
-
-            let block:fn = ():int -> {
-                   let x:int = 25
-                   let block:fn = ():int -> {
-                        let r:int = 2 * j * x
-                        let x:int = 25
-
-                        let block:fn = (n:int):int -> {
-                            let r:int = 2 * j * x * n
-                            return r
-                        }
-
-                        return block(n:14524) / 2
-                    }
-                    return block()
-                }
-                let r:int = block()
-                printf(format:"r: %u\n", r:r)
-
-            return r
+    if (5 > j) {
+        6 * 5
+    } else if ( 2 != 3) {
+        let x:int = x
+        if (true) {
+            if (true) {
+                let r:int = x * 3
+            } else {
+            }
         }
+    } else {
+    }
+
+}
+
+fn soma(a:int, b:float) {
+    let x:int = 3
+}

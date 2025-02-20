@@ -2,13 +2,15 @@
 #include "../../headers/HLIRGenerator.h"
 #include "../../headers/Hlir.h"
 
-
 namespace hlir
 {
 
     std::string HLIRGenerator::visitBoolExpr(IronParser::BoolExprContext *ctx,
-                                             const std::shared_ptr<Statement> &statement)
+                                             const std::shared_ptr<Function> &currentFunction)
     {
+
+        const auto statement = currentFunction->getCurrentLocalScope();
+
         const uint line = ctx->getStart()->getLine();
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
@@ -17,7 +19,7 @@ namespace hlir
             {
                 if (const auto subExpr = dynamic_cast<IronParser::BoolExprContext *>(child))
                 {
-                    return visitBoolExpr(subExpr, statement);
+                    return visitBoolExpr(subExpr, currentFunction);
                 }
             }
         }
@@ -25,12 +27,11 @@ namespace hlir
 
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
-            std::string strLeftVar = visitBoolExpr(ctx->left, statement);
-            std::string strRightVar = visitBoolExpr(ctx->right, statement);
+            std::string strLeftVar = visitBoolExpr(ctx->left, currentFunction);
+            std::string strRightVar = visitBoolExpr(ctx->right, currentFunction);
 
 
-
-            const auto [higherType, leftVar, rightVar] = initializerExprVariables(strLeftVar, strRightVar, statement);
+            const auto [higherType, leftVar, rightVar] = initializerExprVariables(strLeftVar, strRightVar, currentFunction);
 
             if (leftVar->getVarType()->getType() != higherType)
             {
@@ -140,8 +141,8 @@ namespace hlir
             const auto assign = std::make_shared<Assign>()->set(newRightVar, value);
             statement->addStatement(assign);
 
-            const auto varName = visitBoolExpr(ctx->boolExpr().front(), statement);
-            const auto [_, newLeftVar] = findVarByScope(statement, varName);
+            const auto varName = visitBoolExpr(ctx->boolExpr().front(), currentFunction);
+            const auto [_, newLeftVar] = findVarByScope(currentFunction, varName);
 
             std::string tempVarStr = statement->getNewVarName();
             auto tempVar =
@@ -156,7 +157,7 @@ namespace hlir
 
         if (ctx->expr())
         {
-            return visitExpr(ctx->expr(), statement);
+            return visitExpr(ctx->expr(), currentFunction);
         }
 
         if (ctx->varName)
@@ -191,17 +192,12 @@ namespace hlir
     }
 
     std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
-    HLIRGenerator::initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,
-                                            const std::shared_ptr<Statement> &statement)
+        HLIRGenerator::initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,
+                                 const std::shared_ptr<Function> &currentFunction)
     {
-        const auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
-        if (!currentFunction)
-        {
-            throw HLIRException("HLIRGenerator::initializerExprVariables. std::dynamic_pointer_cast<Function>(statement->getParent())");
-        }
 
-        auto [_, rightVar] = findVarByScope(statement, strRightVar);
-        auto [scope, leftVar] = findVarByScope(statement, strLeftVar);
+        auto rightVar = currentFunction->findVarAllScopesAndArg(strRightVar);
+        auto leftVar = currentFunction->findVarAllScopesAndArg(strLeftVar);
 
         if (!rightVar)
         {
@@ -247,15 +243,13 @@ namespace hlir
         return std::make_shared<Expr>()->set(tempVar, cast);
     }
 
-    std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Statement> &statement)
+
+
+    std::string HLIRGenerator::visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Function> &currentFunction)
     {
 
-        if (!statement)
-        {
-            throw HLIRException("HLIRGenerator::visitExpr. statement is null");
-        }
-
         const uint line = ctx->getStart()->getLine();
+        const auto statement = currentFunction->getCurrentLocalScope();
 
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
@@ -263,17 +257,17 @@ namespace hlir
             {
                 if (auto subExpr = dynamic_cast<IronParser::ExprContext *>(child))
                 {
-                    return visitExpr(subExpr, statement);
+                    return visitExpr(subExpr, currentFunction);
                 }
             }
         }
 
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
-            std::string strLeftVar = visitExpr(ctx->left, statement);
-            std::string strRightVar = visitExpr(ctx->right, statement);
+            std::string strLeftVar = visitExpr(ctx->left, currentFunction);
+            std::string strRightVar = visitExpr(ctx->right, currentFunction);
 
-            const auto [higherType, leftVar, rightVar] = initializerExprVariables(strLeftVar, strRightVar, statement);
+            const auto [higherType, leftVar, rightVar] = initializerExprVariables(strLeftVar, strRightVar, currentFunction);
 
             if (leftVar->getVarType()->getType() != higherType)
             {
@@ -294,9 +288,7 @@ namespace hlir
             std::string tempVarStr = statement->getNewVarName();
 
             auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
-            // statement->addDeclaredVariable(newLeftVar);
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
-            // statement->addDeclaredVariable(newRightVar);
             auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
             statement->addDeclaredVariable(tempVar);
 
@@ -360,11 +352,6 @@ namespace hlir
         {
             auto const functionName = ctx->functionCall()->functionName->getText();
 
-            if (auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent()); !currentFunction)
-            {
-                throw HLIRException("std::dynamic_pointer_cast<Function>(statement->getParent())");
-            }
-
             if (auto globalFunction = context->getFunctionByName(functionName))
             {
 
@@ -374,7 +361,7 @@ namespace hlir
                         strTempVar, std::make_shared<Type>(globalFunction->getFunctionReturnType()->getType()));
                 statement->addDeclaredVariable(tempVar);
 
-                const auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
+                const auto functionCall = visitFunctionCall(ctx->functionCall(), currentFunction);
                 const auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
                 statement->addStatement(expr);
 
@@ -387,7 +374,7 @@ namespace hlir
                     strTempVar, std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));
             statement->addDeclaredVariable(tempVar);
 
-            const auto functionCall = visitFunctionCall(ctx->functionCall(), statement);
+            const auto functionCall = visitFunctionCall(ctx->functionCall(), currentFunction);
 
             const auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
             statement->addStatement(expr);
@@ -397,4 +384,5 @@ namespace hlir
 
         throw HLIRException(util::format("Invalid expression. Line: {}", line));
     }
+
 } // namespace hlir

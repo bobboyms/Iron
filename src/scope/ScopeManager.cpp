@@ -60,7 +60,7 @@ namespace scope
             throw std::runtime_error(util::format("Statements::addFunctionAlias. Function is empty", ""));
         }
 
-        auto variable = getVariable(varName);
+        const auto variable = getVariable(varName);
         if (!variable)
         {
             throw std::runtime_error(util::format("Variable {} not found", varName));
@@ -158,7 +158,7 @@ namespace scope
             throw std::runtime_error(util::format("Function::enterLocalScope. Scope is null", ""));
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
+        const std::shared_ptr<Parent> parentPtr = shared_from_this();
         scope->setParent(parentPtr);
 
         if (const auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr); !functionPtr)

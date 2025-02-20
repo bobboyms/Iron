@@ -87,6 +87,10 @@ namespace iron
             {
                 visitExpr(expression);
             }
+            if (const auto IfStatement = dynamic_cast<IronParser::IfStatementContext *>(child))
+            {
+                visitIfStatement(IfStatement);
+            }
             if (const auto returnctx = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(returnctx);
