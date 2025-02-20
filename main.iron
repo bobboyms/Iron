@@ -1,22 +1,9 @@
-fn main() {
-    //let x:int = 3
-    let j:int = 6
+fn mult(n:int, p:float): float {return 0.0}
 
-    if (5 > j) {
-        6 * 5
-    } else if ( 2 != 3) {
-        let x:int = x
-        if (true) {
-            if (true) {
-                let r:int = x * 3
-            } else {
-            }
+        fn sub(ax:int, bx:float): int {return 0 }
+
+        fn main(): float {
+            let x: float = 25.00
+            let inline:fn = (a:int):float -> a * x
+            return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
         }
-    } else {
-    }
-
-}
-
-fn soma(a:int, b:float) {
-    let x:int = 3
-}

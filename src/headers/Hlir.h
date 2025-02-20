@@ -1058,7 +1058,7 @@ namespace hlir
         void exitLocalScope();
 
         // Busca de variável
-        std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName);
+        std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers = 0);
         std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string &varName);
         std::shared_ptr<Variable> getArgByName(const std::string &argName) const;
 

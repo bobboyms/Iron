@@ -97,17 +97,15 @@ namespace hlir
         }
     }
 
-    std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName)
+    std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers)
     {
 
         // verifica no escopo local e superiores
         std::stack<std::shared_ptr<Statement>> tempStack(statementStack);
-        uint scopeNumbers = 0;
         while (!tempStack.empty())
         {
             auto currentScope = tempStack.top();
             tempStack.pop();
-
             if (const auto statementsScope = std::dynamic_pointer_cast<Statement>(currentScope))
             {
                 if (auto variable = statementsScope->findVarByName(varName))
@@ -120,18 +118,24 @@ namespace hlir
                     return variable;
                 }
             }
-            scopeNumbers++;
+
         }
 
         // verifica nos argumentos da função
         if (const auto arg = functionArgs->findArgByName(varName))
         {
-            return std::make_shared<Variable>()->set(arg->name,arg->type);
+            const auto variable = std::make_shared<Variable>()->set(arg->name,arg->type);
+            if (scopeNumbers > 0)
+            {
+                variable->changeToAnotherScope();
+            }
+            return variable;
         }
 
         if (parentFunction)
         {
-            return parentFunction->findVarAllScopesAndArg(varName);
+            scopeNumbers++;
+            return parentFunction->findVarAllScopesAndArg(varName,scopeNumbers);
         }
 
         return nullptr;
@@ -547,9 +551,6 @@ namespace hlir
         {
             throw HLIRException("Statement::addDeclaredVariable. Attempted to add a nullptr variable in addDeclaredVariable method.");
         }
-
-
-
 
         variableMap.insert({variable->getVarName(), variable});
     }

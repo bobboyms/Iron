@@ -142,7 +142,7 @@ namespace hlir
             statement->addStatement(assign);
 
             const auto varName = visitBoolExpr(ctx->boolExpr().front(), currentFunction);
-            const auto [_, newLeftVar] = findVarByScope(currentFunction, varName);
+            const auto newLeftVar = currentFunction->findVarAllScopesAndArg(varName); //findVarByScope(currentFunction, varName);
 
             std::string tempVarStr = statement->getNewVarName();
             auto tempVar =
@@ -368,7 +368,7 @@ namespace hlir
                 return strTempVar;
             }
 
-            const auto localFunction = gatArrowFunction(statement, functionName);
+            const auto localFunction = gatArrowFunction(currentFunction, functionName);
             std::string strTempVar = statement->getNewVarName();
             const auto tempVar = std::make_shared<Variable>()->set(
                     strTempVar, std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));

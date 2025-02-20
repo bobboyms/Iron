@@ -67,9 +67,6 @@ namespace hlir
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
 
-        static std::pair<int, std::shared_ptr<Variable>> findVarByScope(const std::shared_ptr<Function> &currentFunction,
-                                                                        const std::string &varName);
-
         std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Function> &currentFunction,
                                                    const std::string &varName);
 
@@ -85,7 +82,7 @@ namespace hlir
         static void visitExternFunctionArg(IronParser::ExternFunctionArgContext *ctx,
                                            const std::shared_ptr<FunctionArgs> &argsList);
 
-        std::shared_ptr<Function> gatArrowFunction(const std::shared_ptr<Statement> &statement,
+        std::shared_ptr<Function> gatArrowFunction(const std::shared_ptr<Function> &currentFunction,
                                                    const std::string &functionName);
 
 

@@ -112,32 +112,32 @@ protected:
 TEST_F(HlIrTestCode, T1)
 {
     const std::string output = R"(
-        fn main(n:float,j:int):int {
-         let block:fn = gfn_main_block
-         let var_1:int = call int gfn_main_block(j:j)
-         return int var_1
+        fn soma(n:float,j:int):int {
+         let block1:fn = gfn_soma_block1
+         let var_0:int = call int gfn_soma_block1(j:j)
+         return int var_0
         }
 
-        fn gfn_main_block(j:int):int {
+        fn gfn_soma_block1(j:int):int {
          let x:int = 25
-         let block:fn = gfn_gfn_main_block_block
-         let var_1:int = call int gfn_gfn_main_block_block(j:j,x:x)
-         return int var_1
+         let block2:fn = gfn_gfn_soma_block1_block2
+         let var_0:int = call int gfn_gfn_soma_block1_block2(j:j,x:x)
+         return int var_0
         }
 
-        fn gfn_gfn_main_block_block(j:int,x:int):int {
+        fn gfn_gfn_soma_block1_block2(j:int,x:int):int {
          let var_1:int = 2
          let var_2:int = MULT var_1, j
          let var_3:int = MULT var_2, x
          let r:int = var_3
          let x:int = 25
-         let block:fn = gfn_gfn_gfn_main_block_block_block
-         let var_5:int = 14524
-         let var_4:int = call int gfn_gfn_gfn_main_block_block_block(n:var_5,j:j,x:x)
-         return int var_4
+         let block3:fn = gfn_gfn_gfn_soma_block1_block2_block3
+         let var_4:int = 14524
+         let var_0:int = call int gfn_gfn_gfn_soma_block1_block2_block3(n:var_4,j:j,x:x)
+         return int var_0
         }
 
-        fn gfn_gfn_gfn_main_block_block_block(n:int,j:int,x:int):int {
+        fn gfn_gfn_gfn_soma_block1_block2_block3(n:int,j:int,x:int):int {
          let var_1:int = 2
          let var_2:int = MULT var_1, j
          let var_3:int = MULT var_2, x
@@ -145,27 +145,37 @@ TEST_F(HlIrTestCode, T1)
          let r:int = var_4
          return int r
         }
+
+        fn main():void {
+         let var_1:float = 2.3
+         let var_2:int = 3
+         let r:int = call int soma(n:var_1,j:var_2)
+        }
     )";
 
     const std::string input = R"(
-        fn main(n:float, j:int): int {
+        fn soma(n:float, j:int): int {
 
-            let block:fn = ():int -> {
+            let block1:fn = ():int -> {
                    let x:int = 25
-                   let block:fn = ():int -> {
+                   let block2:fn = ():int -> {
                         let r:int = 2 * j * x
                         let x:int = 25
 
-                        let block:fn = (n:int):int -> {
+                        let block3:fn = (n:int):int -> {
                             let r:int = 2 * j * x * n
                             return r
                         }
 
-                        return block(n:14524)
+                        return block3(n:14524)
                     }
-                    return block()
+                    return block2()
                 }
-            return block()
+            return block1()
+        }
+
+        fn main() {
+            let r:int = soma(n:2.3, j:3)
         }
     )";
 
@@ -348,7 +358,7 @@ TEST_F(HlIrTestCode, T7)
 
 TEST_F(HlIrTestCode, T8)
 {
-    std::string output = R"(
+    const std::string output = R"(
         fn mult(n:int,p:float):float {
          let var_1:float = 0.0
          return float var_1
@@ -359,13 +369,14 @@ TEST_F(HlIrTestCode, T8)
          return int var_1
         }
 
-        fn soma():float {
+        fn main():float {
          let x:float = 25.00
+         let inline:fn = gfn_main_inline
          let var_1:float = 32.25
          let var_3:int = 1
          let var_4:int = 22
          let var_5:int = 25
-         let var_6:float = call float gfn_soma_inline(a:var_5,x:x)
+         let var_6:float = call float gfn_main_inline(a:var_5,x:x)
          let var_7:float = call float mult(n:var_4,p:var_6)
          let var_2:int = call int sub(ax:var_3,bx:var_7)
          let var_8:float = var_2 int to float
@@ -373,7 +384,7 @@ TEST_F(HlIrTestCode, T8)
          return float var_9
         }
 
-        fn gfn_soma_inline(a:int,x:float):float {
+        fn gfn_main_inline(a:int,x:float):float {
          let var_1:float = a int to float
          let var_2:float = MULT var_1, x
          return float var_2
@@ -385,7 +396,7 @@ TEST_F(HlIrTestCode, T8)
 
         fn sub(ax:int, bx:float): int {return 0 }
 
-        fn soma(): float {
+        fn main(): float {
             let x: float = 25.00
             let inline:fn = (a:int):float -> a * x
             return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
