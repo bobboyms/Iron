@@ -409,56 +409,48 @@ TEST_F(HlIrTestCode, T8)
 TEST_F(HlIrTestCode, T9)
 {
     const std::string output = R"(
-        fn mult(n:int,p:float):float {
-         let var_1:float = 0.0
-         return float var_1
-        }
+    fn mult(n:int,p:float):float {
+     let var_1:float = 0.0
+     return float var_1
+    }
 
-        fn sub(ax:int,bx:float):int {
-         let var_1:int = 0
-         return int var_1
-        }
+    fn sub(ax:int,bx:float):int {
+     let var_1:int = 0
+     return int var_1
+    }
 
-        fn soma():void {
-         let x:float = 25.00
-         let var_1:float = 32.25
-         let var_3:int = 1
-         let var_4:int = 22
-         let var_5:int = 25
-         let var_6:int = call int gfn_soma_block(a:var_5,x:x)
-         let var_7:float = call float gfn_soma_inline(a:var_6,x:x)
-         let var_8:float = call float mult(n:var_4,p:var_7)
-         let var_2:int = call int sub(ax:var_3,bx:var_8)
-         let var_9:float = var_2 int to float
-         let var_10:float = MULT var_1, var_9
-        }
+    fn main():float {
+     let x:float = 25.00
+     let inline:fn = gfn_main_inline
+     let var_1:float = 32.25
+     let var_3:int = 1
+     let var_4:int = 22
+     let var_5:int = 25
+     let var_6:float = call float gfn_main_inline(a:var_5,x:x)
+     let var_7:float = call float mult(n:var_4,p:var_6)
+     let var_2:int = call int sub(ax:var_3,bx:var_7)
+     let var_8:float = var_2 int to float
+     let var_9:float = MULT var_1, var_8
+     return float var_9
+    }
 
-        fn gfn_soma_block(a:int,x:float):int {
-         let var_1:int = 0
-         return int var_1
-        }
-
-        fn gfn_soma_inline(a:int,x:float):float {
-         let var_1:float = a int to float
-         let var_2:float = MULT var_1, x
-         return float var_2
-        }
+    fn gfn_main_inline(a:int,x:float):float {
+     let var_1:float = a int to float
+     let var_2:float = MULT var_1, x
+     return float var_2
+    }
 
     )";
 
     const std::string input = R"(
-        fn mult(n:int, p:float): float {return 0.0 }
-        fn sub (ax:int, bx:float): int {return 0 }
+        fn mult(n:int, p:float): float {return 0.0}
 
-        fn soma() {
+        fn sub(ax:int, bx:float): int {return 0 }
+
+        fn main(): float {
             let x: float = 25.00
-
-            let block:fn = (a:int):int -> {
-                return 0
-            }
-
             let inline:fn = (a:int):float -> a * x
-            32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:block(a:25))))
+            return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
         }
 
     )";
@@ -471,6 +463,8 @@ TEST_F(HlIrTestCode, T10)
     const std::string output = R"(
         fn main():void {
          let xb:int = 36
+         let inline:fn = gfn_main_inline
+         let sum:fn = gfn_main_sum
          let var_2:int = 12
          let var_3:int = 14
          let var_1:int = call int gfn_main_inline(a:var_2,b:var_3,xb:xb)
@@ -526,6 +520,8 @@ TEST_F(HlIrTestCode, T11)
 
         fn main():void {
          let xb:int = 36
+         let inline:fn = gfn_main_inline
+         let sum:fn = gfn_main_sum
          let var_1:float = 5.22
          let var_3:int = 12
          let var_4:int = 14
@@ -561,7 +557,7 @@ TEST_F(HlIrTestCode, T11)
 
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn mult(pp:float): float {return 1.0 }
         fn xptc(z:float): int {return 0 }
 
@@ -645,15 +641,15 @@ TEST_F(HlIrTestCode, T16)
 {
     const std::string output = R"(
         fn teste():double {
-            let var_1:double = call double gfn_teste_inline()
-            return double var_1
+         let inline:fn = gfn_teste_inline
+         let var_0:double = call double gfn_teste_inline()
+         return double var_0
         }
 
         fn gfn_teste_inline():double {
-            let var_1:double = 12.00D
-            return double var_1
+         let var_1:double = 12.00D
+         return double var_1
         }
-
     )";
 
     const std::string input = R"(
@@ -671,6 +667,7 @@ TEST_F(HlIrTestCode, T17)
 {
     const std::string output = R"(
         fn teste():void {
+         let inline:fn = gfn_teste_inline
          call void gfn_teste_inline()
         }
 
