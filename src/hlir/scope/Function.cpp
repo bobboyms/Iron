@@ -524,6 +524,10 @@ namespace hlir
                         {
                             sb << util::format(" {}\n", stmtPtr->getText());
                         }
+                        else if constexpr (std::is_same_v<T, Jump>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
                     },
                     stmt);
         }
@@ -558,6 +562,7 @@ namespace hlir
 
         return nullptr;
     }
+
 
     void Statement::addDeclaredVariable(const std::shared_ptr<Variable> &variable)
     {

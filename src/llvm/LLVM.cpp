@@ -40,6 +40,18 @@ namespace iron
                         {
                             this->visitFunctionCall(arg);
                         }
+                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Conditional>>)
+                        {
+                            this->visitConditional(arg);
+                        }
+                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Block>>)
+                        {
+                            this->visitBlock(arg);
+                        }
+                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Jump>>)
+                        {
+                            this->visitJump(arg);
+                        }
                         else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FuncReturn>>)
                         {
                             this->visitFuncReturn(arg);
@@ -122,7 +134,6 @@ namespace iron
                         }
 
                         this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);
-                        // this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);
                     }
                 },
                 value);

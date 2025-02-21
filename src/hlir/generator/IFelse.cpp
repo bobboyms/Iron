@@ -40,6 +40,8 @@ namespace hlir
         statement->addStatement(block);
         visitIfBlock(ctx->ifBlock(), currentFunction);
 
+
+
         if (ctx->elseStatement())
         {
             const auto elseLabel = currentFunction->generateLabel("else");
@@ -51,6 +53,9 @@ namespace hlir
             const auto endLabel = currentFunction->generateLabel("end");
             conditional->setFalseLabel(endLabel);
             const auto block = std::make_shared<Block>()->set(endLabel);
+            const auto endJump = std::make_shared<Jump>(block);
+            statement->addStatement(endJump);
+            block->changeToEndBlock();
             statement->addStatement(block);
         }
     }
