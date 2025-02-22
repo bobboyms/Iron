@@ -18,7 +18,7 @@ namespace hlir
         }
     }
 
-    void HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction)
+    void HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction, const std::string &endLabel)
     {
 
         const auto statement = currentFunction->getCurrentLocalScope();
@@ -32,6 +32,7 @@ namespace hlir
 
         const std::string thenLabel = currentFunction->generateLabel("then");
         const std::string elseLabel = currentFunction->generateLabel("else");
+        // const std::string endLabel = currentFunction->generateLabel("end");
 
         const auto conditional = std::make_shared<Conditional>()->set(variable);
         conditional->setTrueLabel(thenLabel);
@@ -60,16 +61,30 @@ namespace hlir
 
         if (ctx->elseStatement())
         {
-            if (!haveReturn)
+            const auto hasIfStatement = ctx->elseStatement()->ifStatement() != nullptr;
+
+            if (hasIfStatement)
             {
-                const auto elseJump = std::make_shared<Jump>(elseBlock);
-                statement->addStatement(elseJump);
+                if (!haveReturn)
+                {
+                    const auto endBlock = std::make_shared<Block>()->set(endLabel);
+                    const auto endJump = std::make_shared<Jump>(endBlock);
+                    statement->addStatement(endJump);
+                }
+            } else
+            {
+                if (!haveReturn)
+                {
+                    const auto endBlock = std::make_shared<Block>()->set(endLabel);
+                    const auto endJump = std::make_shared<Jump>(endBlock);
+                    statement->addStatement(endJump);
+                }
             }
-            visitElseStatement(ctx->elseStatement(), currentFunction, elseLabel);
+
+            visitElseStatement(ctx->elseStatement(), currentFunction, elseLabel, endLabel);
         }
         else
         {
-            const auto endLabel = currentFunction->generateLabel("end");
             conditional->setFalseLabel(endLabel);
             const auto block = std::make_shared<Block>()->set(endLabel);
             if (!haveReturn)
@@ -84,7 +99,7 @@ namespace hlir
     }
 
     void HLIRGenerator::visitElseStatement(IronParser::ElseStatementContext *ctx,
-                                           const std::shared_ptr<Function> &currentFunction, const std::string &label)
+                                           const std::shared_ptr<Function> &currentFunction, const std::string &label, const std::string &endLabel)
     {
 
         const auto statement = currentFunction->getCurrentLocalScope();
@@ -94,7 +109,7 @@ namespace hlir
 
         if (ctx->ifStatement())
         {
-            visitIfStatement(ctx->ifStatement(), currentFunction);
+            visitIfStatement(ctx->ifStatement(), currentFunction, endLabel);
         }
         else if (ctx->ifBlock())
         {
@@ -109,7 +124,6 @@ namespace hlir
                 currentFunction->exitLocalScope();
             }
 
-            const auto endLabel = currentFunction->generateLabel("end");
             const auto block = std::make_shared<Block>()->set(endLabel);
             if (!haveReturn)
             {

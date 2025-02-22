@@ -1,12 +1,10 @@
 fn main():int {
-            if (false) {
+            let x:int = 2
+            if (x < 1) {
                 let x:int = 3
-            } else if (false) {
-                let z:int = 3
-                return 25
-            } else {
-                let xpo:int = 15
-                return xpo
+            } else if (x < 3){
+                let p:int = x
             }
+
             return 0
         }
