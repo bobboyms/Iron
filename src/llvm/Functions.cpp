@@ -30,7 +30,13 @@ namespace iron
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvmContext, "entry", function);
         builder.SetInsertPoint(entry);
 
-        visitStatement(hlirFunction->getStatementList()[0]);
+        //Cria todos os blocos basicos
+        for (const auto block : hlirFunction->getAllBlocks())
+        {
+            llvm::BasicBlock::Create(llvmContext, block->getLabel(), function);
+        }
+
+        visitStatement(hlirFunction->getRootScope());
         if (functionReturnType->isVoidTy())
         {
             builder.CreateRetVoid();
@@ -52,7 +58,7 @@ namespace iron
         const auto type = mapType(funcReturn->getVariable()->getVarType()->getType());
 
         llvm::Value *varValue = builder.CreateLoad(type, allocaVariable, util::format("load_{}", varName));
-        printf("Criou um retorno tipo: %s\n", tokenMap::getTokenText(funcReturn->getVariable()->getVarType()->getType()).c_str());
+        // printf("Criou um retorno tipo: %s\n", tokenMap::getTokenText(funcReturn->getVariable()->getVarType()->getType()).c_str());
 
         builder.CreateRet(varValue);
     }
@@ -92,15 +98,6 @@ namespace iron
 
         const auto basicBlock = getBasicBlock(block->getLabel(),currentFunction);
         builder.SetInsertPoint(basicBlock);
-        // if (block->isEndBlock())
-        // {
-        //     // printf("builder.CreateBr %s\n", block->getLabel().c_str());
-        //     // builder.CreateBr(basicBlock);
-        // } else
-        // {
-        //     printf("builder.SetInsertPoint %s\n", block->getLabel().c_str());
-        //     builder.SetInsertPoint(basicBlock);
-        // }
 
     }
 
@@ -119,17 +116,20 @@ namespace iron
             throw LLVMException("visitExpr: currentFunction is null");
         }
 
-        llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(llvmContext, conditional->getTrueLabel(), currentFunction);
-        llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(llvmContext, conditional->getFalseLabel(), currentFunction);
+        //  = llvm::BasicBlock::Create(llvmContext, conditional->getTrueLabel(), currentFunction);
+        //  = llvm::BasicBlock::Create(llvmContext, conditional->getFalseLabel(), currentFunction);
 
-        printf("Bloco quando true: %s\n", conditional->getTrueLabel().c_str());
-        printf("Bloco quando false: %s\n", conditional->getFalseLabel().c_str());
+        // printf("Bloco quando true: %s\n", conditional->getTrueLabel().c_str());
+        // printf("Bloco quando false: %s\n", conditional->getFalseLabel().c_str());
 
         const auto variable = getOrPromoteToAlloca(conditional->getVariable()->getVarName() ,currentFunction);
         auto *cond = builder.CreateLoad(builder.getInt1Ty(), variable, "cond_");
 
+        llvm::BasicBlock *thenBB = getBasicBlock(conditional->getTrueLabel(), currentFunction);
+        llvm::BasicBlock *elseBB = getBasicBlock(conditional->getFalseLabel(), currentFunction);
+
         builder.CreateCondBr(cond, thenBB, elseBB);
-        printf("builder.CreateBr: %s\n", conditional->getFalseLabel().c_str());
+        // printf("builder.CreateBr: %s\n", conditional->getFalseLabel().c_str());
         // builder.CreateBr(thenBB);
     }
 

@@ -127,7 +127,7 @@ namespace hlir
     {
         endBlock = true;
     }
-    bool Block::isEndBlock()
+    bool Block::isEndBlock() const
     {
         return endBlock;
     }
@@ -151,8 +151,15 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("jump {}", block->getLabel());
+        if (!disabled)
+        {
+            sb << util::format("jump {}", block->getLabel());
+        }
         return sb.str();
+    }
+    void Jump::disable()
+    {
+        disabled = true;
     }
 
 } // namespace hlir

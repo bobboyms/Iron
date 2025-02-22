@@ -63,7 +63,7 @@ namespace scope
         const auto variable = getVariable(varName);
         if (!variable)
         {
-            throw std::runtime_error(util::format("Variable {} not found", varName));
+            throw std::runtime_error(util::format("Statements::addFunctionAlias. Variable {} not found", varName));
         }
 
         variable->function = function;

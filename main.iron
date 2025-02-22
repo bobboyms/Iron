@@ -1,16 +1,12 @@
-import std.output.printf
-
-fn main():int
-{
-
-           if (2 < 3) {
-                return 0
-           }
-           } else {
-                return 1
-           }
-
-
-    return 0
-
- }
+fn main():int {
+            if (false) {
+                let x:int = 3
+            } else if (false) {
+                let z:int = 3
+                return 25
+            } else {
+                let xpo:int = 15
+                return xpo
+            }
+            return 0
+        }

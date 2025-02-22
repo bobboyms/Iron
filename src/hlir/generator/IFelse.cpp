@@ -31,21 +31,40 @@ namespace hlir
         }
 
         const std::string thenLabel = currentFunction->generateLabel("then");
+        const std::string elseLabel = currentFunction->generateLabel("else");
 
         const auto conditional = std::make_shared<Conditional>()->set(variable);
         conditional->setTrueLabel(thenLabel);
+        conditional->setFalseLabel(elseLabel);
+
         statement->addStatement(conditional);
+        const auto thenBlock = std::make_shared<Block>()->set(thenLabel);
+        statement->addStatement(thenBlock);
 
-        const auto block = std::make_shared<Block>()->set(thenLabel);
-        statement->addStatement(block);
-        visitIfBlock(ctx->ifBlock(), currentFunction);
+        //condicional else
 
+
+
+        const auto elseBlock = std::make_shared<Block>()->set(elseLabel);
+        bool haveReturn{false};
+        {
+            currentFunction->enterLocalScope(std::make_shared<Statement>());
+            visitIfBlock(ctx->ifBlock(), currentFunction);
+            if (currentFunction->getCurrentLocalScope()->haveReturn())
+            {
+                haveReturn = true;
+            }
+            currentFunction->exitLocalScope();
+        }
 
 
         if (ctx->elseStatement())
         {
-            const auto elseLabel = currentFunction->generateLabel("else");
-            conditional->setFalseLabel(elseLabel);
+            if (!haveReturn)
+            {
+                const auto elseJump = std::make_shared<Jump>(elseBlock);
+                statement->addStatement(elseJump);
+            }
             visitElseStatement(ctx->elseStatement(), currentFunction, elseLabel);
         }
         else
@@ -53,8 +72,12 @@ namespace hlir
             const auto endLabel = currentFunction->generateLabel("end");
             conditional->setFalseLabel(endLabel);
             const auto block = std::make_shared<Block>()->set(endLabel);
-            const auto endJump = std::make_shared<Jump>(block);
-            statement->addStatement(endJump);
+            if (!haveReturn)
+            {
+                const auto endJump = std::make_shared<Jump>(block);
+                statement->addStatement(endJump);
+            }
+
             block->changeToEndBlock();
             statement->addStatement(block);
         }
@@ -75,7 +98,27 @@ namespace hlir
         }
         else if (ctx->ifBlock())
         {
-            visitIfBlock(ctx->ifBlock(), currentFunction);
+            bool haveReturn{false};
+            {
+                currentFunction->enterLocalScope(std::make_shared<Statement>());
+                visitIfBlock(ctx->ifBlock(), currentFunction);
+                if (currentFunction->getCurrentLocalScope()->haveReturn())
+                {
+                    haveReturn = true;
+                }
+                currentFunction->exitLocalScope();
+            }
+
+            const auto endLabel = currentFunction->generateLabel("end");
+            const auto block = std::make_shared<Block>()->set(endLabel);
+            if (!haveReturn)
+            {
+                const auto endJump = std::make_shared<Jump>(block);
+                statement->addStatement(endJump);
+            }
+
+            block->changeToEndBlock();
+            statement->addStatement(block);
         }
     }
 
