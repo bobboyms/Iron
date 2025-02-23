@@ -1,8 +1,6 @@
 import std.output.printf
 
-fn main():float {
-            let block:fn = (a:int):float -> {
-                2.5 / a
-            }
-            return block(a:25)
-        }
+fn main() {
+    let inline:fn = (a:int):int -> a * 8
+    printf(format:"%u\n",r:inline(a:20))
+}

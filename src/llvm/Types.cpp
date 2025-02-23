@@ -11,18 +11,29 @@ namespace iron
     {
 
         std::visit(
-                [this, function, allocaVariable](auto &&variable)
+                [this, function, allocaVariable](auto &&value)
                 {
-                    using T = std::decay_t<decltype(variable)>;
+                    using T = std::decay_t<decltype(value)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
-                        if (variable)
+                        if (value)
                         {
-                            auto type = mapType(variable->getVarType()->getType());
-                            auto anotherAlloca = this->findAllocaByName(function, variable->getVarName());
-                            llvm::LoadInst *loadInst = builder.CreateLoad(
-                                    type, anotherAlloca, util::format("load_{}", variable->getVarName()));
+                            auto type = mapType(value->getVarType()->getType());
+                            auto anotherAlloca = this->findAllocaByName(function, value->getVarName());
+                            llvm::LoadInst *loadInst = builder.CreateLoad(type, anotherAlloca,
+                                                                          util::format("load_{}", value->getVarName()));
                             builder.CreateStore(loadInst, allocaVariable);
+                        }
+                    }
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
+                    {
+                        if (value)
+                        {
+                            // auto type = mapType(value->getVarType()->getType());
+                            // auto anotherAlloca = this->findAllocaByName(function, value->getVarName());
+                            // llvm::LoadInst *loadInst = builder.CreateLoad(
+                            //         type, anotherAlloca, util::format("load_{}", value->getVarName()));
+                            // builder.CreateStore(loadInst, allocaVariable);
                         }
                     }
                 },
@@ -408,6 +419,38 @@ namespace iron
         return localStr;
     }
 
+    llvm::AllocaInst *LLVM::allocaVariableFuncPtr(const std::shared_ptr<hlir::Variable> &variable,
+                                                  const std::shared_ptr<hlir::Function> &function)
+    {
+        if (!variable)
+        {
+            throw LLVMException("allocaVariableFuncPtr: variable is null");
+        }
+        if (!function)
+        {
+            throw LLVMException("allocaVariableFuncPtr: function is null");
+        }
+
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("allocaVariableFuncPtr: currentFunction is null");
+        }
+
+        llvm::BasicBlock &entryBlock = currentFunction->getEntryBlock();
+        llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
+
+        const llvm::Function *calledFunction = module->getFunction(function->getFunctionName());
+        if (!calledFunction)
+        {
+            throw LLVMException("allocaVariableFuncPtr: calledFunction is null");
+        }
+
+        llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(calledFunction->getFunctionType());
+        return builder.CreateAlloca(funcPtrType, nullptr, variable->getVarName());
+
+    }
+
     llvm::AllocaInst *LLVM::allocaVariable(const std::shared_ptr<hlir::Variable> &variable)
     {
         if (!variable)
@@ -529,9 +572,8 @@ namespace iron
         }
         else if (variableType == tokenMap::TYPE_INT && desiredTypeInt == tokenMap::TYPE_BOOLEAN)
         {
-            value = builder.CreateICmpNE(loadedVar,
-                             llvm::ConstantInt::get(loadedVar->getType(), 0),
-                             util::format("cast_{}", varName));
+            value = builder.CreateICmpNE(loadedVar, llvm::ConstantInt::get(loadedVar->getType(), 0),
+                                         util::format("cast_{}", varName));
         }
         else if (variableType == tokenMap::TYPE_DOUBLE && desiredTypeInt == tokenMap::TYPE_FLOAT)
         {

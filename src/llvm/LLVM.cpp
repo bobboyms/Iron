@@ -115,6 +115,9 @@ namespace iron
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
                     {
+                        const auto alloca = allocaVariableFuncPtr(hlirAssignment->getVariable(), arg);
+                        llvm::Function *calledFunction = module->getFunction(arg->getFunctionName());
+                        builder.CreateStore(calledFunction, alloca);
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
