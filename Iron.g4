@@ -102,7 +102,31 @@ returnStatement:
 		| expr
 	);
 
-//Format
+
+//forStatement
+//    : 'for' forClause block
+//    ;
+//
+//forClause
+//    : forClassicClause            // Forma clássica com inicialização, condição e pós-execução
+//    | forConditionClause          // Forma com apenas condição
+//    |                             // Forma sem condição (loop infinito)
+//    ;
+//
+//// Forma clássica: inicialização; condição; pós-execução
+//forClassicClause
+//    : '(' (varDeclaration | varAssignment | expr)? ';' expr? ';' expr? ')'
+//    ;
+//
+//// Forma com apenas condição
+//forConditionClause
+//    : '(' boolExpr ')'
+//    ;
+
+// Bloco de código
+//block
+//    : '{' statementList '}'
+//    ;
 
 //printf("Taxa de aprovação: %d%%\n", 90);
 // f"Nome: %s", maria
