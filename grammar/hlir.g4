@@ -6,12 +6,7 @@ grammar Iron;
 LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 // Comentário de bloco: "/*" seguido de qualquer conteúdo até "*/"
-//BLOCK_COMMENT: '/*' .*? '*/' -> skip;
-
-BLOCK_COMMENT_TRIPLE_STAR
-  : '***' .*? '***' -> skip
-  ;
-
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
 
 // Símbolos
 COMMA: ',';
@@ -31,9 +26,22 @@ L_BRACKET: '[';
 R_BRACKET: ']';
 ARROW: '->';
 
+// Tokens para operadores lógicos e relacionais (adicione esses tokens se ainda não existirem)
+AND: 'and';
+OR: 'or';
+NOT: 'not';
+EQEQ: '==';
+NEQ: '!=';
+LT: '<';
+LTE: '<=';
+GT: '>';
+GTE: '>=';
+
 // Palavras reservadas
+IF: 'if';
 FUNCTION: 'fn';
 LET: 'let';
+ELSE: 'else';
 PUBLIC: 'public';
 IMPORT: 'import';
 RETURN: 'return';
@@ -51,9 +59,12 @@ TYPE_VOID: 'void';
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
 INT_NUMBER: '-'? [0-9]+;
 BOOLEAN_VALUE: 'true' | 'false';
+STRING_LITERAL: '"' ~["\r\n]* '"';
+
+// Identificador
 IDENTIFIER: [a-zA-Z_] [a-zA-Z0-9_]*;
 
-STRING_LITERAL: '"' ~["\r\n]* '"';
+// Ignorar espaços em branco e quebras de linha como tokens separados
 NEWLINE: '\r'? '\n' -> skip;
 WS: [ \t]+ -> skip;
 
@@ -69,12 +80,17 @@ importStatement: IMPORT qualifiedName (DOT STAR)?;
 // Nome qualificado para importação (ex.: module.casa.janela)
 qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
+// Ponto de entrada principal entryPoint: '@main' '(' argVar = IDENTIFIER ')' L_CURLY statementList
+// R_CURLY;
+
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
 		varDeclaration
-		| functionCall
 		| varAssignment
+		| functionCall
 		| expr
+//		| boolExpr
+		| ifStatement
 		| returnStatement
 	)*;
 
@@ -88,14 +104,16 @@ returnStatement:
 
 //Format
 
-//formatStatement:
-//    'f\'(' format = STRING_LITERAL COMMA (formatArguments) ')'
-//;
-//
-//formatArguments: formatArgument (COMMA formatArgument)*;
-//
-//formatArgument:
-//	(dataFormat | varName=IDENTIFIER | functionCall | expr);
+//printf("Taxa de aprovação: %d%%\n", 90);
+// f"Nome: %s", maria
+formatStatement:
+    'f\'(' STRING_LITERAL COMMA (formatArguments) ')'
+;
+
+formatArguments: formatArgument (COMMA formatArgument)*;
+
+formatArgument:
+	(dataFormat | varName=IDENTIFIER | functionCall | expr | STRING_LITERAL);
 
 //extern C function
 
@@ -105,13 +123,13 @@ externBlock:
 	)* '}';
 
 externFunctionDeclaration:
-	'fn' IDENTIFIER '(' externFunctionArgs? (',' '...')? ')' functionReturnType?;
+	'fn' exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
 
 // Argumentos da função
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
 
 externFunctionArg:
-	varName = IDENTIFIER COLON cTypes;
+	varName = IDENTIFIER COLON ptr = STAR? cTypes;
 
 cTypes:
 	TYPE_BOOLEAN
@@ -121,6 +139,7 @@ cTypes:
 	| TYPE_INT
 	| TYPE_VOID
 	;
+
 
 //**********************
 
@@ -160,6 +179,7 @@ functionCallArg:
 		dataFormat
 		| anotherVarName = IDENTIFIER
 		| functionCall
+		| formatStatement
 		| arrowFunctionInline
 		| arrowFunctionBlock
 	);
@@ -173,8 +193,11 @@ assignment:
 	EQ (
 		arrowFunctionInline
 		| arrowFunctionBlock
+		| varName = IDENTIFIER
 		| dataFormat
+		| functionCall
 		| expr
+		| boolExpr
 	);
 
 varAssignment:
@@ -185,10 +208,56 @@ varAssignment:
 		| expr
 	);
 
-// Expressão matemática com precedência adequada
+//if e else
+ifBlock
+    : L_CURLY statementList? R_CURLY
+    ;
+
+// ifStatement
+ifStatement
+    : IF L_PAREN boolExpr R_PAREN ifBlock (ELSE elseStatement)?
+    ;
+
+elseStatement
+    : ifStatement
+    | ifBlock
+    ;
+
+//expression
+// : LPAREN expression RPAREN                       #parenExpression
+// | NOT expression                                 #notExpression
+// | left=expression op=comparator right=expression #comparatorExpression
+// | left=expression op=binary right=expression     #binaryExpression
+// | bool                                           #boolExpression
+// | IDENTIFIER                                     #identifierExpression
+// | DECIMAL                                        #decimalExpression
+// ;
+
+boolExpr
+
+   : L_PAREN boolExpr R_PAREN
+   | left=boolExpr op= ( EQEQ | NEQ | LT | LTE | GT | GTE) right=boolExpr
+   | left=boolExpr op= AND right=boolExpr
+   | left=boolExpr op= OR right=boolExpr
+   | not = NOT boolExpr
+   | booleanValue = BOOLEAN_VALUE
+   | number
+   | varName = IDENTIFIER
+   | functionCall
+
+   | expr;
+
+primary
+   : number
+   | IDENTIFIER
+   | BOOLEAN_VALUE
+   | functionCall
+   | L_PAREN boolExpr R_PAREN
+   | expr
+   ;
 
 expr:
-	left = expr (mult = '*' | div = '/') right = expr
+	left = expr (mult = '*' | mod= '%' | div = '/') right = expr
 	| left = expr (plus = '+' | minus = '-') right = expr
 	| number
 	| functionCall

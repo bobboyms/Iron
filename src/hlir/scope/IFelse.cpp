@@ -1,6 +1,9 @@
 //
 // Created by Thiago Rodrigues on 18/02/25.
 //
+#include <__filesystem/file_type.h>
+
+
 #include "../../headers/Hlir.h"
 
 
@@ -68,11 +71,15 @@ namespace hlir
 
     std::string Conditional::getText()
     {
-        //conditional var_3 %then, %ifcont
+        // conditional var_3 %then, %ifcont
         sb.str("");
         sb.clear();
         sb << util::format("cond {} {}, {}", variable->getVarName(), trueLabel, falseLabel);
         return sb.str();
+    }
+    std::shared_ptr<Variable> Conditional::getVariable()
+    {
+        return variable;
     }
 
     Block::Block()
@@ -115,4 +122,44 @@ namespace hlir
         sb << util::format("block {}:", label);
         return sb.str();
     }
+
+    void Block::changeToEndBlock()
+    {
+        endBlock = true;
+    }
+    bool Block::isEndBlock() const
+    {
+        return endBlock;
+    }
+
+    Jump::Jump(const std::shared_ptr<Block> &block):block(block)
+    {
+        if (!block)
+        {
+            throw HLIRException("Jump::Jump. Empty block");
+        }
+    }
+    Jump::~Jump()
+    {
+    }
+    std::shared_ptr<Block> Jump::getBlock()
+    {
+        return block;
+    }
+
+    std::string Jump::getText()
+    {
+        sb.str("");
+        sb.clear();
+        if (!disabled)
+        {
+            sb << util::format("jump {}", block->getLabel());
+        }
+        return sb.str();
+    }
+    void Jump::disable()
+    {
+        disabled = true;
+    }
+
 } // namespace hlir

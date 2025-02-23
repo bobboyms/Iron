@@ -1424,7 +1424,7 @@ TEST_F(SemanticAnalysisTest, T90)
 TEST_F(SemanticAnalysisTest, T100)
 {
     const std::string input = R"(
-        fn teste():float {
+        fn main():float {
             let block:fn = (a:int):float -> {
                 2.5 / a
             }

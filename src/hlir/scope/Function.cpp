@@ -70,7 +70,13 @@ namespace hlir
         return nullptr;
     }
 
-    void Function::enterLocalScope(const std::shared_ptr<Statement>& statement)
+    std::shared_ptr<Statement> Function::getRootScope()
+    {
+        return rootStatement;
+    }
+
+
+    void Function::enterLocalScope(const std::shared_ptr<Statement> &statement)
     {
         if (!statement)
         {
@@ -85,8 +91,15 @@ namespace hlir
             throw std::runtime_error("Function::enterLocalScope. Failed to cast Parent to Function.");
         }
 
-        statementList.push_back(statement);
+        if (!rootStatement)
+        {
+            rootStatement = std::make_shared<Statement>();
+        }
+        statement->rootStatement = rootStatement;
+
         statementStack.push(statement);
+        // // Armazena o índice atual (posição onde o escopo atual começa no rootStatement)
+        // localScopePositions.push(rootStatement->getStatements().size());
     }
 
     void Function::exitLocalScope()
@@ -96,6 +109,41 @@ namespace hlir
             statementStack.pop();
         }
     }
+
+    // void Function::exitLocalScope()
+    // {
+    //     if (!statementStack.empty())
+    //     {
+    //         // Recupera o escopo atual a ser mesclado
+    //         auto tempStatement = statementStack.top();
+    //         statementStack.pop();
+    //
+    //         size_t insertPos = 0;
+    //         if (!localScopePositions.empty())
+    //         {
+    //             insertPos = localScopePositions.top();
+    //             localScopePositions.pop();
+    //         }
+    //
+    //         // Define o escopo pai para inserção: se existir um escopo atual, use-o; caso contrário, use o
+    //         rootStatement auto parentScope = getCurrentLocalScope(); if (!parentScope)
+    //         {
+    //             parentScope = rootStatement;
+    //         }
+    //
+    //         util::printf(">> Exiting local scope. Insert position: {}. Parent scope current size: {}\n",
+    //                      insertPos, parentScope->getStatements().size());
+    //
+    //         const auto stmts = tempStatement->getStatements();
+    //         util::printf(">> Number of statements to insert from local scope: {}\n", stmts.size());
+    //
+    //         // Insere os statements no escopo pai na posição marcada
+    //         parentScope->insertStatementsAt(stmts, insertPos);
+    //
+    //         util::printf(">> After insertion, parent scope size: {}\n", parentScope->getStatements().size());
+    //     }
+    // }
+
 
     std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers)
     {
@@ -118,13 +166,12 @@ namespace hlir
                     return variable;
                 }
             }
-
         }
 
         // verifica nos argumentos da função
         if (const auto arg = functionArgs->findArgByName(varName))
         {
-            const auto variable = std::make_shared<Variable>()->set(arg->name,arg->type);
+            const auto variable = std::make_shared<Variable>()->set(arg->name, arg->type);
             if (scopeNumbers > 0)
             {
                 variable->changeToAnotherScope();
@@ -135,7 +182,7 @@ namespace hlir
         if (parentFunction)
         {
             scopeNumbers++;
-            return parentFunction->findVarAllScopesAndArg(varName,scopeNumbers);
+            return parentFunction->findVarAllScopesAndArg(varName, scopeNumbers);
         }
 
         return nullptr;
@@ -153,7 +200,7 @@ namespace hlir
 
         if (const auto arg = functionArgs->findArgByName(varName))
         {
-            return std::make_shared<Variable>()->set(arg->name,arg->type);
+            return std::make_shared<Variable>()->set(arg->name, arg->type);
         }
 
         return nullptr;
@@ -164,11 +211,30 @@ namespace hlir
 
         if (const auto arg = functionArgs->findArgByName(argName))
         {
-            return std::make_shared<Variable>()->set(arg->name,arg->type);
+            return std::make_shared<Variable>()->set(arg->name, arg->type);
         }
 
         return nullptr;
+    }
 
+    std::vector<std::shared_ptr<Block>> Function::getAllBlocks()
+    {
+        std::vector<std::shared_ptr<Block>> blocks{};
+        for (auto stmt: rootStatement->getStatements())
+        {
+            std::visit(
+                    [this, &blocks](const auto &stmtPtr)
+                    {
+                        using T = std::decay_t<decltype(*stmtPtr)>;
+                        if constexpr (std::is_same_v<T, Block>)
+                        {
+                            blocks.push_back(stmtPtr);
+                        }
+                    },
+                    stmt);
+        }
+
+        return blocks;
     }
 
     std::shared_ptr<FunctionArgs> Function::getFunctionArgs()
@@ -238,10 +304,10 @@ namespace hlir
 
         return functionPtr;
     }
-    std::vector<std::shared_ptr<Statement>> Function::getStatementList()
-    {
-        return statementList;
-    }
+    // std::vector<std::shared_ptr<Statement>> Function::getStatementList()
+    // {
+    //     return statementList;
+    // }
 
     std::string Function::getFunctionName()
     {
@@ -269,24 +335,8 @@ namespace hlir
         {
 
             sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
-                       functionReturnType->getText(), statementList[0]->getText());
+                               functionReturnType->getText(), rootStatement->getText());
         }
-
-        // for (const auto statement: statementList)
-        // {
-        //     if (external)
-        //     {
-        //         printf("Function %s\n", function->getFunctionName().c_str());
-        //         const auto language = tokenMap::getTokenText(languageType);
-        //         sb << util::format("extern {} fn {}({}):{}\n", language, functionName, functionArgs->getText(),
-        //                            functionReturnType->getText());
-        //     }
-        //     else
-        //     {
-        //         sb << util::format("fn {}({}):{} { {}}\n", functionName, functionArgs->getText(),
-        //                    functionReturnType->getText(), statement->getText());
-        //     }
-        // }
 
         return sb.str();
     }
@@ -457,8 +507,31 @@ namespace hlir
     }
 
 
+    void Statement::insertStatementsAt(const std::vector<ValidStatement> &stmts, size_t pos)
+    {
+        // Garante que a posição não exceda o tamanho atual da lista
+        if (pos > statementList.size())
+        {
+            pos = statementList.size();
+        }
+        util::printf(">> Inserting {} statements at position {} (current size: {})\n", stmts.size(), pos,
+                     statementList.size());
+
+        statementList.insert(statementList.begin() + pos, stmts.begin(), stmts.end());
+
+        util::printf(">> New size of statementList after insertion: {}\n", statementList.size());
+    }
+
+
     void Statement::addStatement(ValidStatement statement)
     {
+
+        // const auto function = std::dynamic_pointer_cast<FuncReturn>(statement->getParent());
+        // if (!function)
+        // {
+        //     throw HLIRException("Failed to cast Function to Statement.");
+        // }
+
         if (isValidStatementNull(statement))
         {
             throw HLIRException("Attempted to add a nullptr statement in addStatement method.");
@@ -475,6 +548,10 @@ namespace hlir
                 statement);
 
         statementList.emplace_back(statement);
+        if (rootStatement)
+        {
+            rootStatement->addStatement(statement);
+        }
 
         if (logged)
         {
@@ -524,6 +601,10 @@ namespace hlir
                         {
                             sb << util::format(" {}\n", stmtPtr->getText());
                         }
+                        else if constexpr (std::is_same_v<T, Jump>)
+                        {
+                            sb << util::format(" {}\n", stmtPtr->getText());
+                        }
                     },
                     stmt);
         }
@@ -559,17 +640,44 @@ namespace hlir
         return nullptr;
     }
 
+    bool Statement::haveReturn() const
+    {
+        bool haveReturn{false};
+        for (auto stmt: statementList)
+        {
+            std::visit(
+                    [this, &haveReturn](const auto &stmtPtr)
+                    {
+                        using T = std::decay_t<decltype(*stmtPtr)>;
+                        if constexpr (std::is_same_v<T, FuncReturn>)
+                        {
+                            haveReturn = true;
+                        }
+                    },
+                    stmt);
+
+            if (haveReturn)
+            {
+                break;
+            }
+        }
+
+        return haveReturn;
+    }
+
+
     void Statement::addDeclaredVariable(const std::shared_ptr<Variable> &variable)
     {
         if (!variable)
         {
-            throw HLIRException("Statement::addDeclaredVariable. Attempted to add a nullptr variable in addDeclaredVariable method.");
+            throw HLIRException("Statement::addDeclaredVariable. Attempted to add a nullptr variable in "
+                                "addDeclaredVariable method.");
         }
 
         variableMap.insert({variable->getVarName(), variable});
     }
 
-    std::shared_ptr<Variable> Statement::findVarByName(const std::string& varName)
+    std::shared_ptr<Variable> Statement::findVarByName(const std::string &varName)
     {
 
         if (const auto it = variableMap.find(varName); it != variableMap.end())
@@ -578,7 +686,6 @@ namespace hlir
         }
 
         return nullptr;
-
     }
 
 

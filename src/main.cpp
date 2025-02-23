@@ -2,20 +2,6 @@
 #include <llvm/Support/ManagedStatic.h>
 #include "headers/Analyser.h"
 
-// // #include <iostream>
-// // #include <sstream>
-// // #include <string>
-// // #include <vector>
-// // #include <yaml-cpp/yaml.h>
-// // #include "headers/Configuration.h"
-// // #include "headers/LLVM.h"
-// #include "headers/Analyser.h"
-// // #include "parsers/IronLexer.h"
-// // #include "scope/ScopeManager.h"
-//
-// // Recebe todo o código em uma única string e devolve um vetor de strings,
-// // onde cada elemento corresponde a uma linha.
-
 
 std::string getFileNameWithoutExtension(const std::string &filePath)
 {
@@ -43,7 +29,9 @@ void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
         const auto hlirContext = analyser.hlir(file, hlirContexts);
         hlirContexts->emplace("main", hlirContext);
 
-        // std::cout << hlirContext->getText() << std::endl;
+        std::cout << hlirContext->getText() << std::endl;
+
+        printf("********************************\n");
 
         std::vector<std::unique_ptr<llvm::Module>> modules;
         std::vector<std::string> objectFiles;

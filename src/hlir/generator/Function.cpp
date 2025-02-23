@@ -7,7 +7,6 @@ namespace hlir
     void HLIRGenerator::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
     {
         const auto functionName = ctx->functionName->getText();
-
         const auto functionArgs = std::make_shared<FunctionArgs>();
         const auto functionReturnType = std::make_shared<Type>();
 
@@ -167,7 +166,7 @@ namespace hlir
                 realType = definedType;
             }
 
-            auto strAnotherVar = statement->getNewVarName();
+            auto strAnotherVar = currentFunction->generateVarName();
             auto type = std::make_shared<Type>(realType);
 
             auto anotherVar = std::make_shared<Variable>()->set(strAnotherVar, type);
@@ -246,7 +245,7 @@ namespace hlir
 
             auto localCallFunction = visitFunctionCall(ctx->functionCall(), currentFunction);
 
-            auto strAnotherVar = statement->getNewVarName();
+            auto strAnotherVar = currentFunction->generateVarName();
             auto anotherVar = std::make_shared<Variable>()->set(strAnotherVar, calledFunction->getFunctionReturnType());
             statement->addDeclaredVariable(anotherVar);
             auto expr = std::make_shared<Expr>()->set(anotherVar, localCallFunction);
@@ -419,7 +418,7 @@ namespace hlir
                 valueType = tokenMap::determineFloatType(strValue);
             }
 
-            const auto varName = statement->getNewVarName();
+            const auto varName = currentFunction->generateVarName();
             const auto variable = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(valueType));
             statement->addDeclaredVariable(variable);
 

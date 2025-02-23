@@ -35,7 +35,7 @@ namespace hlir
 
             if (leftVar->getVarType()->getType() != higherType)
             {
-                const std::string tempVarStr = statement->getNewVarName();
+                const std::string tempVarStr = currentFunction->generateVarName();
                 const auto expr = castVariable(higherType, tempVarStr, leftVar);
                 statement->addStatement(expr);
                 strLeftVar = tempVarStr;
@@ -43,18 +43,18 @@ namespace hlir
 
             if (rightVar->getVarType()->getType() != higherType)
             {
-                std::string tempVarStr = statement->getNewVarName();
+                std::string tempVarStr = currentFunction->generateVarName();
                 const auto expr = castVariable(higherType, tempVarStr, rightVar);
                 statement->addStatement(expr);
                 strRightVar = tempVarStr;
             }
 
-            std::string tempVarStr = statement->getNewVarName();
+            std::string tempVarStr = currentFunction->generateVarName();
 
             auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
-            statement->addDeclaredVariable(newLeftVar);
+            // statement->addDeclaredVariable(newLeftVar);
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
-            statement->addDeclaredVariable(newRightVar);
+            // statement->addDeclaredVariable(newRightVar);
             auto tempVar =
                     std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             statement->addDeclaredVariable(tempVar);
@@ -120,7 +120,7 @@ namespace hlir
 
         if (ctx->BOOLEAN_VALUE())
         {
-            std::string tempVarStr = statement->getNewVarName();
+            std::string tempVarStr = currentFunction->generateVarName();
             auto tempVar =
                     std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             statement->addDeclaredVariable(tempVar);
@@ -133,7 +133,7 @@ namespace hlir
 
         if (ctx->NOT())
         {
-            std::string tempRightVarStr = statement->getNewVarName();
+            std::string tempRightVarStr = currentFunction->generateVarName();
             auto newRightVar =
                     std::make_shared<Variable>()->set(tempRightVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             statement->addDeclaredVariable(newRightVar);
@@ -144,7 +144,7 @@ namespace hlir
             const auto varName = visitBoolExpr(ctx->boolExpr().front(), currentFunction);
             const auto newLeftVar = currentFunction->findVarAllScopesAndArg(varName); //findVarByScope(currentFunction, varName);
 
-            std::string tempVarStr = statement->getNewVarName();
+            std::string tempVarStr = currentFunction->generateVarName();
             auto tempVar =
                     std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             statement->addDeclaredVariable(tempVar);
@@ -168,7 +168,7 @@ namespace hlir
 
         if (ctx->number())
         {
-            std::string tempVarStr = statement->getNewVarName();
+            std::string tempVarStr = currentFunction->generateVarName();
             std::string numberLiteral = ctx->number()->getText();
             int dataType = tokenMap::determineType(numberLiteral);
 
@@ -271,7 +271,7 @@ namespace hlir
 
             if (leftVar->getVarType()->getType() != higherType)
             {
-                const std::string tempVarStr = statement->getNewVarName();
+                const std::string tempVarStr = currentFunction->generateVarName();
                 const auto expr = castVariable(higherType, tempVarStr, leftVar);
                 statement->addStatement(expr);
                 strLeftVar = tempVarStr;
@@ -279,13 +279,14 @@ namespace hlir
 
             if (rightVar->getVarType()->getType() != higherType)
             {
-                std::string tempVarStr = statement->getNewVarName();
+                std::string tempVarStr = currentFunction->generateVarName();
                 const auto expr = castVariable(higherType, tempVarStr, rightVar);
                 statement->addStatement(expr);
                 strRightVar = tempVarStr;
             }
 
-            std::string tempVarStr = statement->getNewVarName();
+            std::string tempVarStr = currentFunction->generateVarName();
+
 
             auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
             auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
@@ -328,7 +329,7 @@ namespace hlir
 
         if (ctx->number())
         {
-            const auto tempVarStr = statement->getNewVarName();
+            const auto tempVarStr = currentFunction->generateVarName();
             const auto numberLiteral = ctx->number()->getText();
             int dataType = tokenMap::determineType(numberLiteral);
 
@@ -355,7 +356,7 @@ namespace hlir
             if (auto globalFunction = context->getFunctionByName(functionName))
             {
 
-                std::string strTempVar = statement->getNewVarName();
+                std::string strTempVar = currentFunction->generateVarName();
 
                 const auto tempVar = std::make_shared<Variable>()->set(
                         strTempVar, std::make_shared<Type>(globalFunction->getFunctionReturnType()->getType()));
@@ -369,7 +370,7 @@ namespace hlir
             }
 
             const auto localFunction = gatArrowFunction(currentFunction, functionName);
-            std::string strTempVar = statement->getNewVarName();
+            std::string strTempVar = currentFunction->generateVarName();
             const auto tempVar = std::make_shared<Variable>()->set(
                     strTempVar, std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));
             statement->addDeclaredVariable(tempVar);

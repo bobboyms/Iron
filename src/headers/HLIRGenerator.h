@@ -26,10 +26,16 @@ namespace hlir
 
         std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Function> &currentFunction);
         std::string visitBoolExpr(IronParser::BoolExprContext *ctx, const std::shared_ptr<Function> &currentFunction);
+        bool visitBlockAndCheckReturn(IronParser::IfBlockContext *blockCtx,
+                                      const std::shared_ptr<Function> &currentFunction);
+        static void handleEndBlock(const std::shared_ptr<Function> &currentFunction,
+                            const std::shared_ptr<Statement> &statement, const std::string &endLabel, bool haveReturn);
         void visitIfBlock(IronParser::IfBlockContext *ctx, const std::shared_ptr<Function> &currentFunction);
-        void visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
+
+        void visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction, const std::string &endLabel);
+
         void visitElseStatement(IronParser::ElseStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
-                                const std::string &label);
+                                const std::string &label, const std::string &endLabel);
 
         std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
         initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,

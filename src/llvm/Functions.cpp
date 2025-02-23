@@ -30,7 +30,13 @@ namespace iron
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvmContext, "entry", function);
         builder.SetInsertPoint(entry);
 
-        visitStatement(hlirFunction->getStatementList()[0]);
+        //Cria todos os blocos basicos
+        for (const auto block : hlirFunction->getAllBlocks())
+        {
+            llvm::BasicBlock::Create(llvmContext, block->getLabel(), function);
+        }
+
+        visitStatement(hlirFunction->getRootScope());
         if (functionReturnType->isVoidTy())
         {
             builder.CreateRetVoid();
@@ -50,9 +56,81 @@ namespace iron
         const auto allocaVariable = findAllocaByName(currentFunction, varName);
 
         const auto type = mapType(funcReturn->getVariable()->getVarType()->getType());
+
         llvm::Value *varValue = builder.CreateLoad(type, allocaVariable, util::format("load_{}", varName));
+        // printf("Criou um retorno tipo: %s\n", tokenMap::getTokenText(funcReturn->getVariable()->getVarType()->getType()).c_str());
 
         builder.CreateRet(varValue);
+    }
+
+    llvm::BasicBlock *LLVM::getBasicBlock(const std::string &blockName, llvm::Function *currentFunction)
+    {
+        for (auto &BB : *currentFunction) {
+            if (BB.getName() == blockName) {
+                return &BB;
+            }
+        }
+
+        throw LLVMException(util::format("Block {} not found", blockName));
+
+    }
+
+    void LLVM::visitJump(const std::shared_ptr<hlir::Jump> &jump)
+    {
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitExpr: currentFunction is null");
+        }
+
+        const auto basicBlock = getBasicBlock(jump->getBlock()->getLabel(), currentFunction);
+        builder.CreateBr(basicBlock);
+    }
+
+    void LLVM::visitBlock(const std::shared_ptr<hlir::Block> &block)
+    {
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitExpr: currentFunction is null");
+        }
+
+
+        const auto basicBlock = getBasicBlock(block->getLabel(),currentFunction);
+        builder.SetInsertPoint(basicBlock);
+
+    }
+
+    //cria uma condicional if
+    void LLVM::visitConditional(const std::shared_ptr<hlir::Conditional> &conditional)
+    {
+
+        if (!conditional)
+        {
+            throw LLVMException("visitConditional: conditional is null");
+        }
+        //
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitExpr: currentFunction is null");
+        }
+
+        //  = llvm::BasicBlock::Create(llvmContext, conditional->getTrueLabel(), currentFunction);
+        //  = llvm::BasicBlock::Create(llvmContext, conditional->getFalseLabel(), currentFunction);
+
+        // printf("Bloco quando true: %s\n", conditional->getTrueLabel().c_str());
+        // printf("Bloco quando false: %s\n", conditional->getFalseLabel().c_str());
+
+        const auto variable = getOrPromoteToAlloca(conditional->getVariable()->getVarName() ,currentFunction);
+        auto *cond = builder.CreateLoad(builder.getInt1Ty(), variable, "cond_");
+
+        llvm::BasicBlock *thenBB = getBasicBlock(conditional->getTrueLabel(), currentFunction);
+        llvm::BasicBlock *elseBB = getBasicBlock(conditional->getFalseLabel(), currentFunction);
+
+        builder.CreateCondBr(cond, thenBB, elseBB);
+        // printf("builder.CreateBr: %s\n", conditional->getFalseLabel().c_str());
+        // builder.CreateBr(thenBB);
     }
 
     llvm::Value *LLVM::visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall)

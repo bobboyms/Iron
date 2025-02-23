@@ -69,7 +69,8 @@ namespace hlir
 
             if (const auto IfStatement = dynamic_cast<IronParser::IfStatementContext *>(child))
             {
-                visitIfStatement(IfStatement, currentFunction);
+                const auto endLabel = currentFunction->generateLabel("end");
+                visitIfStatement(IfStatement, currentFunction, endLabel);
             }
 
             if (const auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(child))
@@ -209,7 +210,7 @@ namespace hlir
 
                 if (leftDataTypeType != rightVar->getVarType()->getType())
                 {
-                    std::string strTempVar = statement->getNewVarName();
+                    std::string strTempVar = currentFunction->generateVarName();
 
                     auto cast = std::make_shared<Cast>()->apply(rightVar, std::make_shared<Type>(leftDataTypeType));
                     auto tempVariable =

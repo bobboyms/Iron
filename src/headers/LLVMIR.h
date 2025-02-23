@@ -93,6 +93,10 @@ namespace iron
         void visitStatement(const std::shared_ptr<hlir::Statement> &statements);
 
         void visitFuncReturn(const std::shared_ptr<hlir::FuncReturn> &funcReturn);
+        static llvm::BasicBlock *getBasicBlock(const std::string &blockName, llvm::Function *currentFunction);
+        void visitJump(const std::shared_ptr<hlir::Jump> &jump);
+        void visitBlock(const std::shared_ptr<hlir::Block> &conditional);
+        void visitConditional(const std::shared_ptr<hlir::Conditional> &conditional);
 
         void visitExpr(const std::shared_ptr<hlir::Expr> &hlirExpr);
 

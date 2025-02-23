@@ -31,6 +31,8 @@ namespace hlir
 
     class Conditional;
 
+    class Jump;
+
     /**
      * @class Basic
      * @brief Abstract base class enforcing a getText() method.
@@ -940,7 +942,7 @@ namespace hlir
     };
 
     using ValidStatement = std::variant<std::shared_ptr<Assign>, std::shared_ptr<Expr>, std::shared_ptr<FunctionCall>,
-                                        std::shared_ptr<FuncReturn>, std::shared_ptr<Block>, std::shared_ptr<Conditional>>;
+                                        std::shared_ptr<FuncReturn>, std::shared_ptr<Block>, std::shared_ptr<Jump>, std::shared_ptr<Conditional>>;
 
     inline bool isValidStatementNull(const ValidStatement &statement)
     {
@@ -953,10 +955,12 @@ namespace hlir
     private:
         int varId = 0;
         std::vector<ValidStatement> statementList;
-        // std::vector<std::shared_ptr<Variable>> variables;
         std::map<std::string, std::shared_ptr<Variable>> variableMap;
 
+    protected:
+
     public:
+        std::shared_ptr<Statement> rootStatement;
         bool logged = false;
         std::shared_ptr<Statement> set(ValidStatement statementList);
         Statement();
@@ -968,6 +972,8 @@ namespace hlir
         void addDeclaredVariable(const std::shared_ptr<Variable> &variable);
         std::shared_ptr<Variable> findVarByName(const std::string &varName);
         std::shared_ptr<Value> getVariableValue(std::string varName);
+        void insertStatementsAt(const std::vector<ValidStatement>& stmts, size_t pos);
+        bool haveReturn() const;
 
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
@@ -975,23 +981,33 @@ namespace hlir
         }
     };
 
-    /**
-     * @class Function
-     * @brief Represents a function, including its name, parameters, and return type.
-     *
-     * Inherits from Basic to provide a text output like "fn name(args):returnType".
-     */
+
+    class Jump final : public Basic
+    {
+    public:
+        explicit Jump(const std::shared_ptr<Block> &block);
+        ~Jump() override;
+        std::shared_ptr<Block> getBlock();
+        std::string getText() override;
+        void disable();
+
+    private:
+        bool disabled{false};
+        std::shared_ptr<Block> block;
+    };
 
     class Block final : public Basic, public Parent {
     public:
         Block();
-        virtual ~Block();
+        ~Block() override;
 
         // Configura o bloco com um label e uma instrução. Lança exceção se o label for vazio ou se a instrução for nula.
         std::shared_ptr<Block> set(const std::string &label);
         std::string getLabel();
         // Retorna a representação textual do bloco.
         std::string getText() override;
+        void changeToEndBlock();
+        bool isEndBlock() const;
 
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
@@ -999,6 +1015,7 @@ namespace hlir
         }
 
     private:
+        bool endBlock = false;
         std::string label;
         std::shared_ptr<Statement> statement;
         std::stringstream sb; // Buffer para montagem da string de saída.
@@ -1008,7 +1025,7 @@ namespace hlir
     class Conditional : public Basic, public Parent {
     public:
         Conditional();
-        virtual ~Conditional();
+        ~Conditional() override;
 
         // Configura a variável de condição. Lança exceção se for nula ou não for booleana.
         std::shared_ptr<Conditional> set(const std::shared_ptr<Variable> &variable);
@@ -1021,7 +1038,8 @@ namespace hlir
         void setFalseLabel(const std::string &label);
 
         // Retorna a representação textual da condição.
-        std::string getText();
+        std::string getText() override;
+        std::shared_ptr<Variable> getVariable();
 
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
@@ -1054,6 +1072,7 @@ namespace hlir
         // Escopo local
         // std::shared_ptr<Statement> getCurrentStatement();
         std::shared_ptr<Statement> getCurrentLocalScope();
+        std::shared_ptr<Statement> getRootScope();
         void enterLocalScope(const std::shared_ptr<Statement> &statement);
         void exitLocalScope();
 
@@ -1061,6 +1080,7 @@ namespace hlir
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers = 0);
         std::shared_ptr<Variable> findVarCurrentScopeAndArg(const std::string &varName);
         std::shared_ptr<Variable> getArgByName(const std::string &argName) const;
+        std::vector<std::shared_ptr<Block>> getAllBlocks();
 
         // Definição da função (nome, argumentos e retorno)
         std::shared_ptr<Function> set(const std::string &functionName,
@@ -1070,7 +1090,7 @@ namespace hlir
         // Configura a função com um statement (corpo)
         // void setStatement(std::shared_ptr<Statement> statement);
 
-        std::vector<std::shared_ptr<Statement>> getStatementList();
+        // std::vector<std::shared_ptr<Statement>> getStatementList();
 
         // Métodos de configuração e consulta de flags
         void enableInline();
@@ -1108,7 +1128,8 @@ namespace hlir
 
     protected:
         // Corpo e escopo da função
-        std::vector<std::shared_ptr<Statement>> statementList;
+        std::stack<size_t> localScopePositions;
+        std::shared_ptr<Statement> rootStatement;
         std::stack<std::shared_ptr<Statement>> statementStack;
         std::unordered_map<std::string, std::shared_ptr<Statement>> statementMap;
         std::shared_ptr<Function> parentFunction;

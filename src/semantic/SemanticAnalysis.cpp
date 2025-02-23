@@ -114,15 +114,15 @@ namespace iron
                     upperFunction = upperFunction->getUpperFunction();
                 }
             }
-            throw ReturnNotFoundException(util::format(
-                    "The Function {} returns an {} type. But you are not returning any value in the function body.\n"
-                    "To do this, use the keyword '{}'.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n",
-                    color::colorText(funcName, color::BOLD_GREEN),
-                    color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
-                    color::colorText("return", color::BOLD_BLUE), color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeName, color::BOLD_YELLOW), codeLine));
+            // throw ReturnNotFoundException(util::format(
+            //         "The Function {} returns an {} type. But you are not returning any value in the function body.\n"
+            //         "To do this, use the keyword '{}'.\n"
+            //         "Line: {}, Scope: {}\n\n"
+            //         "{}\n",
+            //         color::colorText(funcName, color::BOLD_GREEN),
+            //         color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
+            //         color::colorText("return", color::BOLD_BLUE), color::colorText(std::to_string(line), color::YELLOW),
+            //         color::colorText(scopeName, color::BOLD_YELLOW), codeLine));
         }
     }
 
