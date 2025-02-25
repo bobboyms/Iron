@@ -12,16 +12,16 @@
 class  IronParser : public antlr4::Parser {
 public:
   enum {
-    T__0 = 1, T__1 = 2, T__2 = 3, LINE_COMMENT = 4, BLOCK_COMMENT = 5, COMMA = 6, 
-    COLON = 7, EQ = 8, SEMICOLON = 9, DOT = 10, STAR = 11, L_CURLY = 12, 
-    R_CURLY = 13, L_PAREN = 14, R_PAREN = 15, PLUS = 16, MINUS = 17, DIV = 18, 
-    L_BRACKET = 19, R_BRACKET = 20, ARROW = 21, AND = 22, OR = 23, NOT = 24, 
-    EQEQ = 25, NEQ = 26, LT = 27, LTE = 28, GT = 29, GTE = 30, IF = 31, 
-    FUNCTION = 32, LET = 33, ELSE = 34, PUBLIC = 35, IMPORT = 36, RETURN = 37, 
-    TYPE_INT = 38, TYPE_CHAR = 39, TYPE_FLOAT = 40, TYPE_STRING = 41, TYPE_BOOLEAN = 42, 
-    TYPE_DOUBLE = 43, TYPE_VOID = 44, REAL_NUMBER = 45, INT_NUMBER = 46, 
-    BOOLEAN_VALUE = 47, STRING_LITERAL = 48, IDENTIFIER = 49, NEWLINE = 50, 
-    WS = 51
+    T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, LINE_COMMENT = 5, BLOCK_COMMENT = 6, 
+    COMMA = 7, COLON = 8, EQ = 9, SEMICOLON = 10, DOT = 11, STAR = 12, L_CURLY = 13, 
+    R_CURLY = 14, L_PAREN = 15, R_PAREN = 16, PLUS = 17, MINUS = 18, DIV = 19, 
+    L_BRACKET = 20, R_BRACKET = 21, ARROW = 22, AND = 23, OR = 24, NOT = 25, 
+    EQEQ = 26, NEQ = 27, LT = 28, LTE = 29, GT = 30, GTE = 31, IF = 32, 
+    FUNCTION = 33, LET = 34, ELSE = 35, PUBLIC = 36, IMPORT = 37, RETURN = 38, 
+    TYPE_INT = 39, TYPE_CHAR = 40, TYPE_FLOAT = 41, TYPE_STRING = 42, TYPE_BOOLEAN = 43, 
+    TYPE_DOUBLE = 44, TYPE_VOID = 45, REAL_NUMBER = 46, INT_NUMBER = 47, 
+    BOOLEAN_VALUE = 48, STRING_LITERAL = 49, IDENTIFIER = 50, NEWLINE = 51, 
+    WS = 52
   };
 
   enum {
@@ -31,11 +31,11 @@ public:
     RuleExternFunctionArgs = 10, RuleExternFunctionArg = 11, RuleCTypes = 12, 
     RuleFunctionDeclaration = 13, RuleArrowFunctionInline = 14, RuleArrowFunctionBlock = 15, 
     RuleFunctionSignature = 16, RuleFunctionReturnType = 17, RuleFunctionArgs = 18, 
-    RuleFunctionArg = 19, RuleFunctionCall = 20, RuleFunctionCallArgs = 21, 
-    RuleFunctionCallArg = 22, RuleVarDeclaration = 23, RuleAssignment = 24, 
-    RuleVarAssignment = 25, RuleIfBlock = 26, RuleIfStatement = 27, RuleElseStatement = 28, 
-    RuleBoolExpr = 29, RulePrimary = 30, RuleExpr = 31, RuleNumber = 32, 
-    RuleDataFormat = 33, RuleVarTypes = 34
+    RuleFunctionArg = 19, RuleFnsignature = 20, RuleFunctionCall = 21, RuleFunctionCallArgs = 22, 
+    RuleFunctionCallArg = 23, RuleVarDeclaration = 24, RuleAssignment = 25, 
+    RuleVarAssignment = 26, RuleIfBlock = 27, RuleIfStatement = 28, RuleElseStatement = 29, 
+    RuleBoolExpr = 30, RulePrimary = 31, RuleExpr = 32, RuleNumber = 33, 
+    RuleDataFormat = 34, RuleVarTypes = 35
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -75,6 +75,7 @@ public:
   class FunctionReturnTypeContext;
   class FunctionArgsContext;
   class FunctionArgContext;
+  class FnsignatureContext;
   class FunctionCallContext;
   class FunctionCallArgsContext;
   class FunctionCallArgContext;
@@ -430,7 +431,7 @@ public:
     antlr4::tree::TerminalNode *COLON();
     antlr4::tree::TerminalNode *IDENTIFIER();
     VarTypesContext *varTypes();
-    FunctionSignatureContext *functionSignature();
+    FnsignatureContext *fnsignature();
     AssignmentContext *assignment();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -439,6 +440,20 @@ public:
   };
 
   FunctionArgContext* functionArg();
+
+  class  FnsignatureContext : public antlr4::ParserRuleContext {
+  public:
+    FnsignatureContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *FUNCTION();
+    FunctionSignatureContext *functionSignature();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  FnsignatureContext* fnsignature();
 
   class  FunctionCallContext : public antlr4::ParserRuleContext {
   public:
@@ -662,6 +677,7 @@ public:
     IronParser::ExprContext *left = nullptr;
     antlr4::Token *varName = nullptr;
     antlr4::Token *mult = nullptr;
+    antlr4::Token *mod = nullptr;
     antlr4::Token *div = nullptr;
     IronParser::ExprContext *right = nullptr;
     antlr4::Token *plus = nullptr;

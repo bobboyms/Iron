@@ -83,6 +83,15 @@ namespace iron
         }
     };
 
+    class SignatureMismatchException final : public SemanticException
+    {
+    public:
+        explicit SignatureMismatchException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
+
     class ModuleRedefinitionException final : public SemanticException
     {
     public:

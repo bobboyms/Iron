@@ -149,8 +149,13 @@ namespace iron
 
         if (!functionCall->getCallArgs())
         {
-            // Se for esperado que getCallArgs() nunca seja nulo, lance exceção
             throw LLVMException("visitFunctionCall: functionCall->getCallArgs() is null");
+        }
+
+        llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitAssignment: currentFunction is null");
         }
 
         // Obter o nome da função a ser chamada
@@ -163,17 +168,14 @@ namespace iron
             throw LLVMException(util::format("LLVM::visitFunctionCall. Function {} not found", functionName));
         }
 
-        // Vetor para armazenar os argumentos LLVM
+        const auto arrowFunction = findAllocaByName(currentFunction, functionCall->getFunctionCallName());
+
         std::vector<llvm::Value *> args;
-        // Iterar sobre os argumentos da chamada
-
-
         for (const auto &arg: functionCall->getCallArgs()->getCallArgs())
         {
             const auto value = createConstValue(arg->value->getValueType(), arg->value);
             args.push_back(value);
         }
-
 
         // Verificar se o número de argumentos corresponde à assinatura da função
         if (!functionCall->getFunction()->isVariedArguments())
@@ -187,9 +189,27 @@ namespace iron
 
         if (function->getReturnType()->isVoidTy())
         {
+            if (arrowFunction)
+            {
+                llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(function->getFunctionType());
+                llvm::Value *arrowLoaded = builder.CreateLoad(funcPtrType, arrowFunction, util::format("arrow_{}_loaded",functionCall->getFunctionCallName()));
+                return builder.CreateCall(function->getFunctionType(), arrowLoaded,
+                                                         args);
+            }
+
             builder.CreateCall(function, args);
             return nullptr;
         }
+
+        if (arrowFunction)
+        {
+            llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(function->getFunctionType());
+            llvm::Value *arrowLoaded = builder.CreateLoad(funcPtrType, arrowFunction, util::format("arrow_{}_loaded",functionCall->getFunctionCallName()));
+            return builder.CreateCall(function->getFunctionType(), arrowLoaded,
+                                                     args,
+                                                     util::format("call_{}",functionCall->getFunctionCallName()));
+        }
+
         return builder.CreateCall(function, args, "call_" + functionName);
     }
 

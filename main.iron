@@ -1,8 +1,9 @@
-import std.output.printf
+fn sum(func:fn(a:int,b:int):int, c:int) {}
 
-fn main():float {
-            let block:fn = (a:int):float -> {
-                2.5 / a
-            }
-            return block(a:25)
-        }
+fn sub(a:int, b:float):int {
+    return 1
+}
+
+fn main() {
+    sum(func:sub, c:2)
+}

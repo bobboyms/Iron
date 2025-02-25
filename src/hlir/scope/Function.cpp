@@ -402,22 +402,29 @@ namespace hlir
         return callArgs;
     }
 
-    std::shared_ptr<FunctionCall> FunctionCall::set(const std::shared_ptr<Function> &newFunction,
+    std::shared_ptr<FunctionCall> FunctionCall::set(const std::string &functionCallName,
+                                                    const std::shared_ptr<Function> &newFunction,
                                                     const std::shared_ptr<FunctionCallArgs> &newCallArgs)
     {
+        if (functionCallName.empty())
+        {
+            throw HLIRException("FunctionCall::set. The functionCallName can't be empty");
+        }
+
         if (!newFunction)
         {
-            throw HLIRException("The function can't be nullptr");
+            throw HLIRException("FunctionCall::set. The function can't be nullptr");
         }
 
         if (!newCallArgs)
         {
-            throw HLIRException("The CallArgs can't be nullptr");
+            throw HLIRException("FunctionCall::set. The CallArgs can't be nullptr");
         }
 
         const std::shared_ptr<Parent> parentPtr = shared_from_this();
         newFunction->setParent(parentPtr);
         newCallArgs->setParent(parentPtr);
+        this->functionCallName = functionCallName;
 
         function = newFunction;
         callArgs = newCallArgs;
@@ -437,11 +444,16 @@ namespace hlir
 
     FunctionCall::~FunctionCall() = default;
 
+    std::string FunctionCall::getFunctionCallName() const
+    {
+        return functionCallName;
+    }
+
     std::string FunctionCall::getText()
     {
         sb.str("");
         sb.clear();
-        sb << util::format("call {} {}({})", function->getFunctionReturnType()->getText(), function->getFunctionName(),
+        sb << util::format("call {} {}({})", function->getFunctionReturnType()->getText(), functionCallName,
                            callArgs->getText());
         return sb.str();
     }

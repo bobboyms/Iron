@@ -38,6 +38,7 @@ namespace iron
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
 
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
+        static std::shared_ptr<scope::Signature> getSignature(IronParser::FunctionSignatureContext *ctx);
 
         void visitStatementList(const IronParser::StatementListContext *ctx);
 
@@ -55,13 +56,16 @@ namespace iron
 
         void visitFunctionArgs(IronParser::FunctionArgsContext *ctx);
 
-        void visitFunctionArg(IronParser::FunctionArgContext *ctx);
+        void visitFunctionArg(IronParser::FunctionArgContext *ctx) const;
 
         void visitFunctionCall(IronParser::FunctionCallContext *ctx);
 
         void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx);
 
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx);
+
+        static bool validateSignature(const std::shared_ptr<scope::Signature> &signature,
+                               const std::shared_ptr<scope::Function> &function);
 
         std::shared_ptr<scope::Function> getCurrentFunction();
 
@@ -73,7 +77,8 @@ namespace iron
 
         std::vector<std::pair<std::string, int>>
 
-        parseFormatSpecifiers(const std::string &format, uint line, const std::string &caretLine, const std::string &codeLine) const;
+        parseFormatSpecifiers(const std::string &format, uint line, const std::string &caretLine,
+                              const std::string &codeLine) const;
 
 
     public:

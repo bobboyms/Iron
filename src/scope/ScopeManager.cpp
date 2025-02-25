@@ -103,6 +103,37 @@ namespace scope
     {
         return name;
     }
+    Signature::Signature(const int returnType, const std::vector<std::shared_ptr<FunctionArg>> &arguments):
+        returnType(returnType),arguments(arguments)
+    {
+
+    }
+    int Signature::getReturnType() const
+    {
+        return returnType;
+    }
+    int Signature::getArgumentCount() const
+    {
+        return arguments.size();
+    }
+
+    std::vector<std::shared_ptr<FunctionArg>> Signature::getArguments()
+    {
+        return arguments;
+    }
+
+    std::shared_ptr<FunctionArg> Signature::getArgumentByName(const std::string &name)
+    {
+        for (auto &arg: arguments)
+        {
+            if (arg->name == name)
+            {
+                return arg;
+            }
+        }
+
+        return nullptr;
+    }
 
     std::shared_ptr<Function> FunctionCall::getFunction()
     {
@@ -307,6 +338,7 @@ namespace scope
         {
             throw std::runtime_error(util::format("ScopeManager::enterScope. Scope is empty", ""));
         }
+
 
         scopeStack.push(scope);
         scopeMap[scope->getName()] = scope;

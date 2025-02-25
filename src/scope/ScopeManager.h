@@ -9,6 +9,8 @@ namespace scope
 
     class Function;
 
+    class FunctionArg;
+
     class Parent : public std::enable_shared_from_this<Parent>
     {
     protected:
@@ -83,7 +85,7 @@ namespace scope
 
     public:
         void addVariable(const std::string &name, int type);
-        void addFunctionAlias(const std::string& varName, const std::shared_ptr<Function>& function);
+        void addFunctionAlias(const std::string &varName, const std::shared_ptr<Function> &function);
         std::shared_ptr<Variable> getVariable(const std::string &name);
 
         Statements();
@@ -99,7 +101,7 @@ namespace scope
         std::string name;
         int type;
 
-        CallArg(std::string  name, const int type) : name(std::move(name)), type(type)
+        CallArg(std::string name, const int type) : name(std::move(name)), type(type)
         {
         }
     };
@@ -120,15 +122,46 @@ namespace scope
         std::string getName();
     };
 
+
+    // struct SignatureArg
+    // {
+    //     int returnType;
+    //     std::vector<int> argTypes;
+    //
+    //
+    // };
+
+
+    class Signature
+    {
+    protected:
+        int returnType;
+        std::vector<std::shared_ptr<FunctionArg>> arguments;
+
+    public:
+        Signature(int returnType, const std::vector<std::shared_ptr<FunctionArg>> &arguments);
+        int getReturnType() const;
+        int getArgumentCount() const;
+        std::vector<std::shared_ptr<FunctionArg>> getArguments();
+        std::shared_ptr<FunctionArg> getArgumentByName(const std::string &name);
+    };
+
     struct FunctionArg
     {
-        std::string name;
         int type;
+        std::string name;
+        std::shared_ptr<Signature> signature;
 
-        FunctionArg(std::string name, const int type) : name(std::move(name)), type(type)
+        FunctionArg(std::string name, const int type) : type(type), name(std::move(name))
+        {
+        }
+
+        FunctionArg(std::string name, const int type, const std::shared_ptr<Signature> &signature) :
+            type(type), name(std::move(name)), signature(signature)
         {
         }
     };
+
 
     class Function final : public GlobalScope
     {
@@ -146,17 +179,18 @@ namespace scope
         int returnType;
 
     public:
-        Function(const std::string &name, const std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> &args, int returnType);
+        Function(const std::string &name, const std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> &args,
+                 int returnType);
         ~Function() override;
         std::string getFunctionName();
         int getReturnType() const;
-        void setUpperFunction(const std::shared_ptr<Function>& function);
-        void enterLocalScope(const std::shared_ptr<LocalScope>& scope);
+        void setUpperFunction(const std::shared_ptr<Function> &function);
+        void enterLocalScope(const std::shared_ptr<LocalScope> &scope);
         std::shared_ptr<LocalScope> getCurrentLocalScope();
         bool isReturnTokenFound() const;
         void updateReturnTokenStatusToFound();
         void exitLocalScope();
-        void setAlias(const std::shared_ptr<Variable>& alias);
+        void setAlias(const std::shared_ptr<Variable> &alias);
         std::shared_ptr<Variable> getAlias();
 
         std::shared_ptr<FunctionArg> getArgByName(const std::string &argName) const;
@@ -184,10 +218,10 @@ namespace scope
         std::unordered_map<std::string, std::shared_ptr<GlobalScope>> scopeMap;
 
     public:
-        void addFunctionDeclaration(const std::shared_ptr<Function>& function);
-        std::shared_ptr<Function> getFunctionDeclarationByName(const std::string& functionName);
+        void addFunctionDeclaration(const std::shared_ptr<Function> &function);
+        std::shared_ptr<Function> getFunctionDeclarationByName(const std::string &functionName);
         std::shared_ptr<Function> currentFunctionDeclaration();
-        void enterScope(const std::shared_ptr<GlobalScope>& scope);
+        void enterScope(const std::shared_ptr<GlobalScope> &scope);
         void exitScope();
         std::string currentScopeName() const;
         std::shared_ptr<GlobalScope> currentScope() const;
@@ -195,7 +229,6 @@ namespace scope
         std::vector<std::shared_ptr<Function>> getFunctionDeclarations();
 
         void setExternDeclaration(const std::shared_ptr<Function> &declarations);
-
     };
 
 } // namespace scope

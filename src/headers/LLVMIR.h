@@ -56,7 +56,7 @@ namespace iron
 
         llvm::AllocaInst *allocaVariable(const std::shared_ptr<hlir::Variable> &variable);
 
-        llvm::AllocaInst *findAllocaByName(llvm::Function *function, const std::string &varName);
+        static llvm::AllocaInst *findAllocaByName(llvm::Function *function, const std::string &varName);
 
         llvm::Argument *findArgByName(llvm::Function *function, const std::string &argName);
 
@@ -85,6 +85,8 @@ namespace iron
         llvm::Value *createConstValue(const std::shared_ptr<hlir::Type> &hlirType,
                                       const std::shared_ptr<hlir::Value> &value);
         llvm::AllocaInst *allocaVariableStr(const std::shared_ptr<hlir::Variable> &variable, const std::string &value);
+        llvm::AllocaInst *allocaVariableFuncPtr(const std::shared_ptr<hlir::Variable> &variable,
+                                                const std::shared_ptr<hlir::Function> &function);
 
         void declareFunction(const std::shared_ptr<hlir::Function> &hlirFunction);
 

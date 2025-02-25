@@ -165,7 +165,6 @@ cTypes:
 	;
 
 
-//**********************
 
 // Declaração de função
 functionDeclaration:
@@ -188,7 +187,11 @@ functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (varTypes | functionSignature) assignment?;
+	varName = IDENTIFIER COLON (varTypes | fnsignature ) assignment?;
+
+fnsignature:
+    FUNCTION functionSignature
+;
 
 // Chamada de função
 functionCall:

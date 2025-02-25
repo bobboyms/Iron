@@ -79,7 +79,7 @@ namespace hlir
         if (const auto globalFunction = context->getFunctionByName(functionName))
         {
             const auto callArgs = std::make_shared<FunctionCallArgs>();
-            auto call = std::make_shared<FunctionCall>()->set(globalFunction, callArgs);
+            auto call = std::make_shared<FunctionCall>()->set(globalFunction->getFunctionName() ,globalFunction, callArgs);
 
             if (ctx->functionCallArgs())
             {
@@ -92,7 +92,7 @@ namespace hlir
         const auto arrowFunction = gatArrowFunction(currentFunction, functionName);
 
         const auto callArgs = std::make_shared<FunctionCallArgs>();
-        auto call = std::make_shared<FunctionCall>()->set(arrowFunction, callArgs);
+        auto call = std::make_shared<FunctionCall>()->set(functionName, arrowFunction, callArgs);
 
         if (ctx->functionCallArgs())
         {

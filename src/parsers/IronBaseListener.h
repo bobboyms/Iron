@@ -76,6 +76,9 @@ public:
   virtual void enterFunctionArg(IronParser::FunctionArgContext * /*ctx*/) override { }
   virtual void exitFunctionArg(IronParser::FunctionArgContext * /*ctx*/) override { }
 
+  virtual void enterFnsignature(IronParser::FnsignatureContext * /*ctx*/) override { }
+  virtual void exitFnsignature(IronParser::FnsignatureContext * /*ctx*/) override { }
+
   virtual void enterFunctionCall(IronParser::FunctionCallContext * /*ctx*/) override { }
   virtual void exitFunctionCall(IronParser::FunctionCallContext * /*ctx*/) override { }
 

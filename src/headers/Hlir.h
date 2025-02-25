@@ -517,6 +517,7 @@ namespace hlir
     private:
         std::shared_ptr<Function> function; ///< Shared pointer to the function being called.
         std::shared_ptr<FunctionCallArgs> callArgs; ///< Shared pointer to the arguments of the function call.
+        std::string functionCallName;
 
     public:
         /**
@@ -526,7 +527,8 @@ namespace hlir
          *
          * @throws HLIRException If `function` or `callArgs` is nullptr.
          */
-        std::shared_ptr<FunctionCall> set(const std::shared_ptr<Function> &function,
+        std::shared_ptr<FunctionCall> set(const std::string &functionCallName,
+                                          const std::shared_ptr<Function> &function,
                                           const std::shared_ptr<FunctionCallArgs> &callArgs);
 
         std::shared_ptr<Function> getFunction();
@@ -537,6 +539,8 @@ namespace hlir
          * @brief Destructor for FunctionCall.
          */
         ~FunctionCall() override;
+
+        std::string getFunctionCallName() const;
 
         /**
          * @brief Generates a textual representation of the function call.
@@ -942,7 +946,8 @@ namespace hlir
     };
 
     using ValidStatement = std::variant<std::shared_ptr<Assign>, std::shared_ptr<Expr>, std::shared_ptr<FunctionCall>,
-                                        std::shared_ptr<FuncReturn>, std::shared_ptr<Block>, std::shared_ptr<Jump>, std::shared_ptr<Conditional>>;
+                                        std::shared_ptr<FuncReturn>, std::shared_ptr<Block>, std::shared_ptr<Jump>,
+                                        std::shared_ptr<Conditional>>;
 
     inline bool isValidStatementNull(const ValidStatement &statement)
     {
@@ -958,7 +963,6 @@ namespace hlir
         std::map<std::string, std::shared_ptr<Variable>> variableMap;
 
     protected:
-
     public:
         std::shared_ptr<Statement> rootStatement;
         bool logged = false;
@@ -972,7 +976,7 @@ namespace hlir
         void addDeclaredVariable(const std::shared_ptr<Variable> &variable);
         std::shared_ptr<Variable> findVarByName(const std::string &varName);
         std::shared_ptr<Value> getVariableValue(std::string varName);
-        void insertStatementsAt(const std::vector<ValidStatement>& stmts, size_t pos);
+        void insertStatementsAt(const std::vector<ValidStatement> &stmts, size_t pos);
         bool haveReturn() const;
 
         void setParent(const std::shared_ptr<Parent> newParent) override
@@ -996,12 +1000,14 @@ namespace hlir
         std::shared_ptr<Block> block;
     };
 
-    class Block final : public Basic, public Parent {
+    class Block final : public Basic, public Parent
+    {
     public:
         Block();
         ~Block() override;
 
-        // Configura o bloco com um label e uma instrução. Lança exceção se o label for vazio ou se a instrução for nula.
+        // Configura o bloco com um label e uma instrução. Lança exceção se o label for vazio ou se a instrução for
+        // nula.
         std::shared_ptr<Block> set(const std::string &label);
         std::string getLabel();
         // Retorna a representação textual do bloco.
@@ -1022,7 +1028,8 @@ namespace hlir
     };
 
 
-    class Conditional : public Basic, public Parent {
+    class Conditional : public Basic, public Parent
+    {
     public:
         Conditional();
         ~Conditional() override;

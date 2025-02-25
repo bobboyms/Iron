@@ -1640,6 +1640,169 @@ TEST_F(SemanticAnalysisTest, 106)
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
+TEST_F(SemanticAnalysisTest, 116)
+{
+    const std::string input = R"(
+        fn main() {
+            let inline:fn = (a:int):int -> a * 8
+            let x:fn = inline
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 117)
+{
+    const std::string input = R"(
+        fn sum(a:int, b:int) {
+            let r:int = a + b
+        }
+
+        fn main() {
+            let inline:fn = (a:int):int -> a * 8
+            let x:fn = sum
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 118)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main() {
+            let inline:fn = (a:int):int -> a * 8
+            let x:fn = printf
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 119)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main() {
+            let x:fn = printf
+            let y:fn = x
+            let z:fn = y
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 120)
+{
+    const std::string input = R"(
+
+        fn main() {
+            let x:fn = printf
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::FunctionNotFoundException);
+}
+
+TEST_F(SemanticAnalysisTest, 121)
+{
+    const std::string input = R"(
+        fn main() {
+            let inline:int = 10
+            let x:fn = inline
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, 122)
+{
+    const std::string input = R"(
+        fn sum(func:fn(a:float):int, c:int) {}
+
+        fn main() {
+            let inline:fn = (a:int):int -> a * 3
+            sum(func:inline, c:2)
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::SignatureMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, 123)
+{
+    const std::string input = R"(
+        fn sum(func:fn(a:int):float, c:int) {}
+
+        fn main() {
+            let inline:fn = (a:int):int -> a * 3
+            sum(func:inline, c:2)
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::SignatureMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, 124)
+{
+    const std::string input = R"(
+        fn sum(func:fn(a:int,b:int,c:float):int, c:int) {}
+
+        fn main() {
+            let inline:fn = (a:int,b:int,c:float):int -> a * 3
+            sum(func:inline, c:2)
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 125)
+{
+    const std::string input = R"(
+        fn sum(func:fn(a:int,b:int):int, c:int) {}
+
+        fn sub(a:int, b:float):int {
+            return 1
+        }
+
+        fn main() {
+            sum(func:sub, c:2)
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::SignatureMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, 126)
+{
+    const std::string input = R"(
+        fn sum(func:fn(a:int,b:int):int, c:int) {}
+
+        fn sub(a:int):int {
+            return 1
+        }
+
+        fn main() {
+            sum(func:sub, c:2)
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::SignatureMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, 127)
+{
+    const std::string input = R"(
+        fn sum(func:fn(a:int,b:int):int, c:int) {}
+
+        fn sub(a:int,b:int):int {
+            return 1
+        }
+
+        fn main() {
+            sum(func:sub, c:2)
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+
 // fn main() {
 //     let exprBool:boolean = not 2 > 3
 //  }
