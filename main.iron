@@ -1,6 +1,9 @@
-import std.output.printf
+fn sum(func:fn(a:int,b:int):int, c:int) {}
+
+fn sub(a:int, b:float):int {
+    return 1
+}
 
 fn main() {
-    let inline:fn = (a:int):int -> a * 8
-    printf(format:"%u\n",r:inline(a:20))
+    sum(func:sub, c:2)
 }

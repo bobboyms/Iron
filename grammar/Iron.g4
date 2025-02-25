@@ -85,14 +85,13 @@ qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
-		: returnStatement
-		|varDeclaration
+		varDeclaration
 		| varAssignment
 		| functionCall
 		| expr
 //		| boolExpr
 		| ifStatement
-
+		| returnStatement
 	)*;
 
 returnStatement:
@@ -103,7 +102,31 @@ returnStatement:
 		| expr
 	);
 
-//Format
+
+//forStatement
+//    : 'for' forClause block
+//    ;
+//
+//forClause
+//    : forClassicClause            // Forma clássica com inicialização, condição e pós-execução
+//    | forConditionClause          // Forma com apenas condição
+//    |                             // Forma sem condição (loop infinito)
+//    ;
+//
+//// Forma clássica: inicialização; condição; pós-execução
+//forClassicClause
+//    : '(' (varDeclaration | varAssignment | expr)? ';' expr? ';' expr? ')'
+//    ;
+//
+//// Forma com apenas condição
+//forConditionClause
+//    : '(' boolExpr ')'
+//    ;
+
+// Bloco de código
+//block
+//    : '{' statementList '}'
+//    ;
 
 //printf("Taxa de aprovação: %d%%\n", 90);
 // f"Nome: %s", maria
@@ -143,6 +166,10 @@ cTypes:
 
 
 //**********************
+funcSignatureArgs: varTypes (COMMA varTypes)*;
+
+
+/////
 
 // Declaração de função
 functionDeclaration:
@@ -165,7 +192,7 @@ functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (varTypes | functionSignature) assignment?;
+	varName = IDENTIFIER COLON (varTypes | FUNCTION functionSignature ) assignment?;
 
 // Chamada de função
 functionCall:

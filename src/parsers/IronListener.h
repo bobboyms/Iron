@@ -74,6 +74,9 @@ public:
   virtual void enterFunctionArg(IronParser::FunctionArgContext *ctx) = 0;
   virtual void exitFunctionArg(IronParser::FunctionArgContext *ctx) = 0;
 
+  virtual void enterFnsignature(IronParser::FnsignatureContext *ctx) = 0;
+  virtual void exitFnsignature(IronParser::FnsignatureContext *ctx) = 0;
+
   virtual void enterFunctionCall(IronParser::FunctionCallContext *ctx) = 0;
   virtual void exitFunctionCall(IronParser::FunctionCallContext *ctx) = 0;
 

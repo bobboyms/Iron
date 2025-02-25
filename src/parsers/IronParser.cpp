@@ -57,20 +57,21 @@ void ironParserInitialize() {
       "externFunctionDeclaration", "externFunctionArgs", "externFunctionArg", 
       "cTypes", "functionDeclaration", "arrowFunctionInline", "arrowFunctionBlock", 
       "functionSignature", "functionReturnType", "functionArgs", "functionArg", 
-      "functionCall", "functionCallArgs", "functionCallArg", "varDeclaration", 
-      "assignment", "varAssignment", "ifBlock", "ifStatement", "elseStatement", 
-      "boolExpr", "primary", "expr", "number", "dataFormat", "varTypes"
+      "fnsignature", "functionCall", "functionCallArgs", "functionCallArg", 
+      "varDeclaration", "assignment", "varAssignment", "ifBlock", "ifStatement", 
+      "elseStatement", "boolExpr", "primary", "expr", "number", "dataFormat", 
+      "varTypes"
     },
     std::vector<std::string>{
-      "", "'f'('", "'extern'", "'...'", "", "", "','", "':'", "'='", "';'", 
-      "'.'", "'*'", "'{'", "'}'", "'('", "')'", "'+'", "'-'", "'/'", "'['", 
-      "']'", "'->'", "'and'", "'or'", "'not'", "'=='", "'!='", "'<'", "'<='", 
-      "'>'", "'>='", "'if'", "'fn'", "'let'", "'else'", "'public'", "'import'", 
-      "'return'", "'int'", "'char'", "'float'", "'string'", "'boolean'", 
-      "'double'", "'void'"
+      "", "'f'('", "'extern'", "'...'", "'%'", "", "", "','", "':'", "'='", 
+      "';'", "'.'", "'*'", "'{'", "'}'", "'('", "')'", "'+'", "'-'", "'/'", 
+      "'['", "']'", "'->'", "'and'", "'or'", "'not'", "'=='", "'!='", "'<'", 
+      "'<='", "'>'", "'>='", "'if'", "'fn'", "'let'", "'else'", "'public'", 
+      "'import'", "'return'", "'int'", "'char'", "'float'", "'string'", 
+      "'boolean'", "'double'", "'void'"
     },
     std::vector<std::string>{
-      "", "", "", "", "LINE_COMMENT", "BLOCK_COMMENT", "COMMA", "COLON", 
+      "", "", "", "", "", "LINE_COMMENT", "BLOCK_COMMENT", "COMMA", "COLON", 
       "EQ", "SEMICOLON", "DOT", "STAR", "L_CURLY", "R_CURLY", "L_PAREN", 
       "R_PAREN", "PLUS", "MINUS", "DIV", "L_BRACKET", "R_BRACKET", "ARROW", 
       "AND", "OR", "NOT", "EQEQ", "NEQ", "LT", "LTE", "GT", "GTE", "IF", 
@@ -81,135 +82,137 @@ void ironParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,51,376,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,52,382,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
   	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,
-  	28,2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,2,33,7,33,2,34,7,34,1,0,5,
-  	0,72,8,0,10,0,12,0,75,9,0,1,0,3,0,78,8,0,1,0,5,0,81,8,0,10,0,12,0,84,
-  	9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,92,8,1,1,2,1,2,1,2,5,2,97,8,2,10,2,12,
-  	2,100,9,2,1,3,1,3,1,3,1,3,1,3,1,3,5,3,108,8,3,10,3,12,3,111,9,3,1,4,1,
-  	4,1,4,1,4,1,4,3,4,118,8,4,1,5,1,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,5,6,129,
-  	8,6,10,6,12,6,132,9,6,1,7,1,7,1,7,1,7,1,7,3,7,139,8,7,1,8,1,8,1,8,1,8,
-  	4,8,145,8,8,11,8,12,8,146,5,8,149,8,8,10,8,12,8,152,9,8,1,8,1,8,1,9,1,
-  	9,1,9,1,9,3,9,160,8,9,1,9,1,9,3,9,164,8,9,1,9,1,9,3,9,168,8,9,1,10,1,
-  	10,1,10,5,10,173,8,10,10,10,12,10,176,9,10,1,11,1,11,1,11,3,11,181,8,
-  	11,1,11,1,11,1,12,1,12,1,13,3,13,188,8,13,1,13,1,13,1,13,1,13,1,13,1,
-  	13,1,13,1,14,1,14,1,14,1,14,1,15,1,15,1,15,1,15,1,15,1,15,1,16,1,16,3,
-  	16,209,8,16,1,16,1,16,3,16,213,8,16,1,17,1,17,1,17,1,18,1,18,1,18,5,18,
-  	221,8,18,10,18,12,18,224,9,18,1,19,1,19,1,19,1,19,3,19,230,8,19,1,19,
-  	3,19,233,8,19,1,20,1,20,1,20,3,20,238,8,20,1,20,1,20,1,21,1,21,1,21,5,
-  	21,245,8,21,10,21,12,21,248,9,21,1,22,1,22,1,22,1,22,1,22,1,22,1,22,1,
-  	22,3,22,258,8,22,1,23,1,23,1,23,1,23,1,23,3,23,265,8,23,1,24,1,24,1,24,
-  	1,24,1,24,1,24,1,24,1,24,3,24,275,8,24,1,25,1,25,1,25,1,25,1,25,1,25,
-  	3,25,283,8,25,1,26,1,26,3,26,287,8,26,1,26,1,26,1,27,1,27,1,27,1,27,1,
-  	27,1,27,1,27,3,27,298,8,27,1,28,1,28,3,28,302,8,28,1,29,1,29,1,29,1,29,
-  	1,29,1,29,1,29,1,29,1,29,1,29,1,29,1,29,3,29,316,8,29,1,29,1,29,1,29,
-  	1,29,1,29,1,29,1,29,1,29,1,29,5,29,327,8,29,10,29,12,29,330,9,29,1,30,
-  	1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,3,30,341,8,30,1,31,1,31,1,31,
-  	1,31,1,31,1,31,1,31,1,31,3,31,351,8,31,1,31,1,31,1,31,3,31,356,8,31,1,
-  	31,1,31,1,31,1,31,3,31,362,8,31,1,31,5,31,365,8,31,10,31,12,31,368,9,
-  	31,1,32,1,32,1,33,1,33,1,34,1,34,1,34,0,2,58,62,35,0,2,4,6,8,10,12,14,
-  	16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,
-  	62,64,66,68,0,5,2,0,38,40,42,44,1,0,25,30,1,0,45,46,1,0,45,48,2,0,32,
-  	32,38,43,413,0,73,1,0,0,0,2,87,1,0,0,0,4,93,1,0,0,0,6,109,1,0,0,0,8,112,
-  	1,0,0,0,10,119,1,0,0,0,12,125,1,0,0,0,14,138,1,0,0,0,16,140,1,0,0,0,18,
-  	155,1,0,0,0,20,169,1,0,0,0,22,177,1,0,0,0,24,184,1,0,0,0,26,187,1,0,0,
-  	0,28,196,1,0,0,0,30,200,1,0,0,0,32,206,1,0,0,0,34,214,1,0,0,0,36,217,
-  	1,0,0,0,38,225,1,0,0,0,40,234,1,0,0,0,42,241,1,0,0,0,44,249,1,0,0,0,46,
-  	259,1,0,0,0,48,266,1,0,0,0,50,276,1,0,0,0,52,284,1,0,0,0,54,290,1,0,0,
-  	0,56,301,1,0,0,0,58,315,1,0,0,0,60,340,1,0,0,0,62,350,1,0,0,0,64,369,
-  	1,0,0,0,66,371,1,0,0,0,68,373,1,0,0,0,70,72,3,2,1,0,71,70,1,0,0,0,72,
-  	75,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,77,1,0,0,0,75,73,1,0,0,0,76,
-  	78,3,16,8,0,77,76,1,0,0,0,77,78,1,0,0,0,78,82,1,0,0,0,79,81,3,26,13,0,
-  	80,79,1,0,0,0,81,84,1,0,0,0,82,80,1,0,0,0,82,83,1,0,0,0,83,85,1,0,0,0,
-  	84,82,1,0,0,0,85,86,5,0,0,1,86,1,1,0,0,0,87,88,5,36,0,0,88,91,3,4,2,0,
-  	89,90,5,10,0,0,90,92,5,11,0,0,91,89,1,0,0,0,91,92,1,0,0,0,92,3,1,0,0,
-  	0,93,98,5,49,0,0,94,95,5,10,0,0,95,97,5,49,0,0,96,94,1,0,0,0,97,100,1,
-  	0,0,0,98,96,1,0,0,0,98,99,1,0,0,0,99,5,1,0,0,0,100,98,1,0,0,0,101,108,
-  	3,46,23,0,102,108,3,50,25,0,103,108,3,40,20,0,104,108,3,62,31,0,105,108,
-  	3,54,27,0,106,108,3,8,4,0,107,101,1,0,0,0,107,102,1,0,0,0,107,103,1,0,
-  	0,0,107,104,1,0,0,0,107,105,1,0,0,0,107,106,1,0,0,0,108,111,1,0,0,0,109,
-  	107,1,0,0,0,109,110,1,0,0,0,110,7,1,0,0,0,111,109,1,0,0,0,112,117,5,37,
-  	0,0,113,118,3,66,33,0,114,118,5,49,0,0,115,118,3,40,20,0,116,118,3,62,
-  	31,0,117,113,1,0,0,0,117,114,1,0,0,0,117,115,1,0,0,0,117,116,1,0,0,0,
-  	118,9,1,0,0,0,119,120,5,1,0,0,120,121,5,48,0,0,121,122,5,6,0,0,122,123,
-  	3,12,6,0,123,124,5,15,0,0,124,11,1,0,0,0,125,130,3,14,7,0,126,127,5,6,
-  	0,0,127,129,3,14,7,0,128,126,1,0,0,0,129,132,1,0,0,0,130,128,1,0,0,0,
-  	130,131,1,0,0,0,131,13,1,0,0,0,132,130,1,0,0,0,133,139,3,66,33,0,134,
-  	139,5,49,0,0,135,139,3,40,20,0,136,139,3,62,31,0,137,139,5,48,0,0,138,
-  	133,1,0,0,0,138,134,1,0,0,0,138,135,1,0,0,0,138,136,1,0,0,0,138,137,1,
-  	0,0,0,139,15,1,0,0,0,140,141,5,2,0,0,141,142,5,49,0,0,142,150,5,12,0,
-  	0,143,145,3,18,9,0,144,143,1,0,0,0,145,146,1,0,0,0,146,144,1,0,0,0,146,
-  	147,1,0,0,0,147,149,1,0,0,0,148,144,1,0,0,0,149,152,1,0,0,0,150,148,1,
-  	0,0,0,150,151,1,0,0,0,151,153,1,0,0,0,152,150,1,0,0,0,153,154,5,13,0,
-  	0,154,17,1,0,0,0,155,156,5,32,0,0,156,157,5,49,0,0,157,159,5,14,0,0,158,
-  	160,3,20,10,0,159,158,1,0,0,0,159,160,1,0,0,0,160,163,1,0,0,0,161,162,
-  	5,6,0,0,162,164,5,3,0,0,163,161,1,0,0,0,163,164,1,0,0,0,164,165,1,0,0,
-  	0,165,167,5,15,0,0,166,168,3,34,17,0,167,166,1,0,0,0,167,168,1,0,0,0,
-  	168,19,1,0,0,0,169,174,3,22,11,0,170,171,5,6,0,0,171,173,3,22,11,0,172,
-  	170,1,0,0,0,173,176,1,0,0,0,174,172,1,0,0,0,174,175,1,0,0,0,175,21,1,
-  	0,0,0,176,174,1,0,0,0,177,178,5,49,0,0,178,180,5,7,0,0,179,181,5,11,0,
-  	0,180,179,1,0,0,0,180,181,1,0,0,0,181,182,1,0,0,0,182,183,3,24,12,0,183,
-  	23,1,0,0,0,184,185,7,0,0,0,185,25,1,0,0,0,186,188,5,35,0,0,187,186,1,
-  	0,0,0,187,188,1,0,0,0,188,189,1,0,0,0,189,190,5,32,0,0,190,191,5,49,0,
-  	0,191,192,3,32,16,0,192,193,5,12,0,0,193,194,3,6,3,0,194,195,5,13,0,0,
-  	195,27,1,0,0,0,196,197,3,32,16,0,197,198,5,21,0,0,198,199,3,62,31,0,199,
-  	29,1,0,0,0,200,201,3,32,16,0,201,202,5,21,0,0,202,203,5,12,0,0,203,204,
-  	3,6,3,0,204,205,5,13,0,0,205,31,1,0,0,0,206,208,5,14,0,0,207,209,3,36,
-  	18,0,208,207,1,0,0,0,208,209,1,0,0,0,209,210,1,0,0,0,210,212,5,15,0,0,
-  	211,213,3,34,17,0,212,211,1,0,0,0,212,213,1,0,0,0,213,33,1,0,0,0,214,
-  	215,5,7,0,0,215,216,3,68,34,0,216,35,1,0,0,0,217,222,3,38,19,0,218,219,
-  	5,6,0,0,219,221,3,38,19,0,220,218,1,0,0,0,221,224,1,0,0,0,222,220,1,0,
-  	0,0,222,223,1,0,0,0,223,37,1,0,0,0,224,222,1,0,0,0,225,226,5,49,0,0,226,
-  	229,5,7,0,0,227,230,3,68,34,0,228,230,3,32,16,0,229,227,1,0,0,0,229,228,
-  	1,0,0,0,230,232,1,0,0,0,231,233,3,48,24,0,232,231,1,0,0,0,232,233,1,0,
-  	0,0,233,39,1,0,0,0,234,235,5,49,0,0,235,237,5,14,0,0,236,238,3,42,21,
-  	0,237,236,1,0,0,0,237,238,1,0,0,0,238,239,1,0,0,0,239,240,5,15,0,0,240,
-  	41,1,0,0,0,241,246,3,44,22,0,242,243,5,6,0,0,243,245,3,44,22,0,244,242,
-  	1,0,0,0,245,248,1,0,0,0,246,244,1,0,0,0,246,247,1,0,0,0,247,43,1,0,0,
-  	0,248,246,1,0,0,0,249,250,5,49,0,0,250,257,5,7,0,0,251,258,3,66,33,0,
-  	252,258,5,49,0,0,253,258,3,40,20,0,254,258,3,10,5,0,255,258,3,28,14,0,
-  	256,258,3,30,15,0,257,251,1,0,0,0,257,252,1,0,0,0,257,253,1,0,0,0,257,
-  	254,1,0,0,0,257,255,1,0,0,0,257,256,1,0,0,0,258,45,1,0,0,0,259,260,5,
-  	33,0,0,260,261,5,49,0,0,261,262,5,7,0,0,262,264,3,68,34,0,263,265,3,48,
-  	24,0,264,263,1,0,0,0,264,265,1,0,0,0,265,47,1,0,0,0,266,274,5,8,0,0,267,
-  	275,3,28,14,0,268,275,3,30,15,0,269,275,5,49,0,0,270,275,3,66,33,0,271,
-  	275,3,40,20,0,272,275,3,62,31,0,273,275,3,58,29,0,274,267,1,0,0,0,274,
-  	268,1,0,0,0,274,269,1,0,0,0,274,270,1,0,0,0,274,271,1,0,0,0,274,272,1,
-  	0,0,0,274,273,1,0,0,0,275,49,1,0,0,0,276,277,5,49,0,0,277,282,5,8,0,0,
-  	278,283,3,28,14,0,279,283,3,30,15,0,280,283,3,66,33,0,281,283,3,62,31,
-  	0,282,278,1,0,0,0,282,279,1,0,0,0,282,280,1,0,0,0,282,281,1,0,0,0,283,
-  	51,1,0,0,0,284,286,5,12,0,0,285,287,3,6,3,0,286,285,1,0,0,0,286,287,1,
-  	0,0,0,287,288,1,0,0,0,288,289,5,13,0,0,289,53,1,0,0,0,290,291,5,31,0,
-  	0,291,292,5,14,0,0,292,293,3,58,29,0,293,294,5,15,0,0,294,297,3,52,26,
-  	0,295,296,5,34,0,0,296,298,3,56,28,0,297,295,1,0,0,0,297,298,1,0,0,0,
-  	298,55,1,0,0,0,299,302,3,54,27,0,300,302,3,52,26,0,301,299,1,0,0,0,301,
-  	300,1,0,0,0,302,57,1,0,0,0,303,304,6,29,-1,0,304,305,5,14,0,0,305,306,
-  	3,58,29,0,306,307,5,15,0,0,307,316,1,0,0,0,308,309,5,24,0,0,309,316,3,
-  	58,29,6,310,316,5,47,0,0,311,316,3,64,32,0,312,316,5,49,0,0,313,316,3,
-  	40,20,0,314,316,3,62,31,0,315,303,1,0,0,0,315,308,1,0,0,0,315,310,1,0,
-  	0,0,315,311,1,0,0,0,315,312,1,0,0,0,315,313,1,0,0,0,315,314,1,0,0,0,316,
-  	328,1,0,0,0,317,318,10,9,0,0,318,319,7,1,0,0,319,327,3,58,29,10,320,321,
-  	10,8,0,0,321,322,5,22,0,0,322,327,3,58,29,9,323,324,10,7,0,0,324,325,
-  	5,23,0,0,325,327,3,58,29,8,326,317,1,0,0,0,326,320,1,0,0,0,326,323,1,
-  	0,0,0,327,330,1,0,0,0,328,326,1,0,0,0,328,329,1,0,0,0,329,59,1,0,0,0,
-  	330,328,1,0,0,0,331,341,3,64,32,0,332,341,5,49,0,0,333,341,5,47,0,0,334,
-  	341,3,40,20,0,335,336,5,14,0,0,336,337,3,58,29,0,337,338,5,15,0,0,338,
-  	341,1,0,0,0,339,341,3,62,31,0,340,331,1,0,0,0,340,332,1,0,0,0,340,333,
-  	1,0,0,0,340,334,1,0,0,0,340,335,1,0,0,0,340,339,1,0,0,0,341,61,1,0,0,
-  	0,342,343,6,31,-1,0,343,351,3,64,32,0,344,351,3,40,20,0,345,351,5,49,
-  	0,0,346,347,5,14,0,0,347,348,3,62,31,0,348,349,5,15,0,0,349,351,1,0,0,
-  	0,350,342,1,0,0,0,350,344,1,0,0,0,350,345,1,0,0,0,350,346,1,0,0,0,351,
-  	366,1,0,0,0,352,355,10,6,0,0,353,356,5,11,0,0,354,356,5,18,0,0,355,353,
-  	1,0,0,0,355,354,1,0,0,0,356,357,1,0,0,0,357,365,3,62,31,7,358,361,10,
-  	5,0,0,359,362,5,16,0,0,360,362,5,17,0,0,361,359,1,0,0,0,361,360,1,0,0,
-  	0,362,363,1,0,0,0,363,365,3,62,31,6,364,352,1,0,0,0,364,358,1,0,0,0,365,
-  	368,1,0,0,0,366,364,1,0,0,0,366,367,1,0,0,0,367,63,1,0,0,0,368,366,1,
-  	0,0,0,369,370,7,2,0,0,370,65,1,0,0,0,371,372,7,3,0,0,372,67,1,0,0,0,373,
-  	374,7,4,0,0,374,69,1,0,0,0,41,73,77,82,91,98,107,109,117,130,138,146,
-  	150,159,163,167,174,180,187,208,212,222,229,232,237,246,257,264,274,282,
-  	286,297,301,315,326,328,340,350,355,361,364,366
+  	28,2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,2,33,7,33,2,34,7,34,2,35,7,
+  	35,1,0,5,0,74,8,0,10,0,12,0,77,9,0,1,0,3,0,80,8,0,1,0,5,0,83,8,0,10,0,
+  	12,0,86,9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,94,8,1,1,2,1,2,1,2,5,2,99,8,2,
+  	10,2,12,2,102,9,2,1,3,1,3,1,3,1,3,1,3,1,3,5,3,110,8,3,10,3,12,3,113,9,
+  	3,1,4,1,4,1,4,1,4,1,4,3,4,120,8,4,1,5,1,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,
+  	5,6,131,8,6,10,6,12,6,134,9,6,1,7,1,7,1,7,1,7,1,7,3,7,141,8,7,1,8,1,8,
+  	1,8,1,8,4,8,147,8,8,11,8,12,8,148,5,8,151,8,8,10,8,12,8,154,9,8,1,8,1,
+  	8,1,9,1,9,1,9,1,9,3,9,162,8,9,1,9,1,9,3,9,166,8,9,1,9,1,9,3,9,170,8,9,
+  	1,10,1,10,1,10,5,10,175,8,10,10,10,12,10,178,9,10,1,11,1,11,1,11,3,11,
+  	183,8,11,1,11,1,11,1,12,1,12,1,13,3,13,190,8,13,1,13,1,13,1,13,1,13,1,
+  	13,1,13,1,13,1,14,1,14,1,14,1,14,1,15,1,15,1,15,1,15,1,15,1,15,1,16,1,
+  	16,3,16,211,8,16,1,16,1,16,3,16,215,8,16,1,17,1,17,1,17,1,18,1,18,1,18,
+  	5,18,223,8,18,10,18,12,18,226,9,18,1,19,1,19,1,19,1,19,3,19,232,8,19,
+  	1,19,3,19,235,8,19,1,20,1,20,1,20,1,21,1,21,1,21,3,21,243,8,21,1,21,1,
+  	21,1,22,1,22,1,22,5,22,250,8,22,10,22,12,22,253,9,22,1,23,1,23,1,23,1,
+  	23,1,23,1,23,1,23,1,23,3,23,263,8,23,1,24,1,24,1,24,1,24,1,24,3,24,270,
+  	8,24,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,3,25,280,8,25,1,26,1,26,
+  	1,26,1,26,1,26,1,26,3,26,288,8,26,1,27,1,27,3,27,292,8,27,1,27,1,27,1,
+  	28,1,28,1,28,1,28,1,28,1,28,1,28,3,28,303,8,28,1,29,1,29,3,29,307,8,29,
+  	1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,3,30,321,
+  	8,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,5,30,332,8,30,10,30,
+  	12,30,335,9,30,1,31,1,31,1,31,1,31,1,31,1,31,1,31,1,31,1,31,3,31,346,
+  	8,31,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,3,32,356,8,32,1,32,1,32,
+  	1,32,1,32,3,32,362,8,32,1,32,1,32,1,32,1,32,3,32,368,8,32,1,32,5,32,371,
+  	8,32,10,32,12,32,374,9,32,1,33,1,33,1,34,1,34,1,35,1,35,1,35,0,2,60,64,
+  	36,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,
+  	48,50,52,54,56,58,60,62,64,66,68,70,0,5,2,0,39,41,43,45,1,0,26,31,1,0,
+  	46,47,1,0,46,49,2,0,33,33,39,44,419,0,75,1,0,0,0,2,89,1,0,0,0,4,95,1,
+  	0,0,0,6,111,1,0,0,0,8,114,1,0,0,0,10,121,1,0,0,0,12,127,1,0,0,0,14,140,
+  	1,0,0,0,16,142,1,0,0,0,18,157,1,0,0,0,20,171,1,0,0,0,22,179,1,0,0,0,24,
+  	186,1,0,0,0,26,189,1,0,0,0,28,198,1,0,0,0,30,202,1,0,0,0,32,208,1,0,0,
+  	0,34,216,1,0,0,0,36,219,1,0,0,0,38,227,1,0,0,0,40,236,1,0,0,0,42,239,
+  	1,0,0,0,44,246,1,0,0,0,46,254,1,0,0,0,48,264,1,0,0,0,50,271,1,0,0,0,52,
+  	281,1,0,0,0,54,289,1,0,0,0,56,295,1,0,0,0,58,306,1,0,0,0,60,320,1,0,0,
+  	0,62,345,1,0,0,0,64,355,1,0,0,0,66,375,1,0,0,0,68,377,1,0,0,0,70,379,
+  	1,0,0,0,72,74,3,2,1,0,73,72,1,0,0,0,74,77,1,0,0,0,75,73,1,0,0,0,75,76,
+  	1,0,0,0,76,79,1,0,0,0,77,75,1,0,0,0,78,80,3,16,8,0,79,78,1,0,0,0,79,80,
+  	1,0,0,0,80,84,1,0,0,0,81,83,3,26,13,0,82,81,1,0,0,0,83,86,1,0,0,0,84,
+  	82,1,0,0,0,84,85,1,0,0,0,85,87,1,0,0,0,86,84,1,0,0,0,87,88,5,0,0,1,88,
+  	1,1,0,0,0,89,90,5,37,0,0,90,93,3,4,2,0,91,92,5,11,0,0,92,94,5,12,0,0,
+  	93,91,1,0,0,0,93,94,1,0,0,0,94,3,1,0,0,0,95,100,5,50,0,0,96,97,5,11,0,
+  	0,97,99,5,50,0,0,98,96,1,0,0,0,99,102,1,0,0,0,100,98,1,0,0,0,100,101,
+  	1,0,0,0,101,5,1,0,0,0,102,100,1,0,0,0,103,110,3,48,24,0,104,110,3,52,
+  	26,0,105,110,3,42,21,0,106,110,3,64,32,0,107,110,3,56,28,0,108,110,3,
+  	8,4,0,109,103,1,0,0,0,109,104,1,0,0,0,109,105,1,0,0,0,109,106,1,0,0,0,
+  	109,107,1,0,0,0,109,108,1,0,0,0,110,113,1,0,0,0,111,109,1,0,0,0,111,112,
+  	1,0,0,0,112,7,1,0,0,0,113,111,1,0,0,0,114,119,5,38,0,0,115,120,3,68,34,
+  	0,116,120,5,50,0,0,117,120,3,42,21,0,118,120,3,64,32,0,119,115,1,0,0,
+  	0,119,116,1,0,0,0,119,117,1,0,0,0,119,118,1,0,0,0,120,9,1,0,0,0,121,122,
+  	5,1,0,0,122,123,5,49,0,0,123,124,5,7,0,0,124,125,3,12,6,0,125,126,5,16,
+  	0,0,126,11,1,0,0,0,127,132,3,14,7,0,128,129,5,7,0,0,129,131,3,14,7,0,
+  	130,128,1,0,0,0,131,134,1,0,0,0,132,130,1,0,0,0,132,133,1,0,0,0,133,13,
+  	1,0,0,0,134,132,1,0,0,0,135,141,3,68,34,0,136,141,5,50,0,0,137,141,3,
+  	42,21,0,138,141,3,64,32,0,139,141,5,49,0,0,140,135,1,0,0,0,140,136,1,
+  	0,0,0,140,137,1,0,0,0,140,138,1,0,0,0,140,139,1,0,0,0,141,15,1,0,0,0,
+  	142,143,5,2,0,0,143,144,5,50,0,0,144,152,5,13,0,0,145,147,3,18,9,0,146,
+  	145,1,0,0,0,147,148,1,0,0,0,148,146,1,0,0,0,148,149,1,0,0,0,149,151,1,
+  	0,0,0,150,146,1,0,0,0,151,154,1,0,0,0,152,150,1,0,0,0,152,153,1,0,0,0,
+  	153,155,1,0,0,0,154,152,1,0,0,0,155,156,5,14,0,0,156,17,1,0,0,0,157,158,
+  	5,33,0,0,158,159,5,50,0,0,159,161,5,15,0,0,160,162,3,20,10,0,161,160,
+  	1,0,0,0,161,162,1,0,0,0,162,165,1,0,0,0,163,164,5,7,0,0,164,166,5,3,0,
+  	0,165,163,1,0,0,0,165,166,1,0,0,0,166,167,1,0,0,0,167,169,5,16,0,0,168,
+  	170,3,34,17,0,169,168,1,0,0,0,169,170,1,0,0,0,170,19,1,0,0,0,171,176,
+  	3,22,11,0,172,173,5,7,0,0,173,175,3,22,11,0,174,172,1,0,0,0,175,178,1,
+  	0,0,0,176,174,1,0,0,0,176,177,1,0,0,0,177,21,1,0,0,0,178,176,1,0,0,0,
+  	179,180,5,50,0,0,180,182,5,8,0,0,181,183,5,12,0,0,182,181,1,0,0,0,182,
+  	183,1,0,0,0,183,184,1,0,0,0,184,185,3,24,12,0,185,23,1,0,0,0,186,187,
+  	7,0,0,0,187,25,1,0,0,0,188,190,5,36,0,0,189,188,1,0,0,0,189,190,1,0,0,
+  	0,190,191,1,0,0,0,191,192,5,33,0,0,192,193,5,50,0,0,193,194,3,32,16,0,
+  	194,195,5,13,0,0,195,196,3,6,3,0,196,197,5,14,0,0,197,27,1,0,0,0,198,
+  	199,3,32,16,0,199,200,5,22,0,0,200,201,3,64,32,0,201,29,1,0,0,0,202,203,
+  	3,32,16,0,203,204,5,22,0,0,204,205,5,13,0,0,205,206,3,6,3,0,206,207,5,
+  	14,0,0,207,31,1,0,0,0,208,210,5,15,0,0,209,211,3,36,18,0,210,209,1,0,
+  	0,0,210,211,1,0,0,0,211,212,1,0,0,0,212,214,5,16,0,0,213,215,3,34,17,
+  	0,214,213,1,0,0,0,214,215,1,0,0,0,215,33,1,0,0,0,216,217,5,8,0,0,217,
+  	218,3,70,35,0,218,35,1,0,0,0,219,224,3,38,19,0,220,221,5,7,0,0,221,223,
+  	3,38,19,0,222,220,1,0,0,0,223,226,1,0,0,0,224,222,1,0,0,0,224,225,1,0,
+  	0,0,225,37,1,0,0,0,226,224,1,0,0,0,227,228,5,50,0,0,228,231,5,8,0,0,229,
+  	232,3,70,35,0,230,232,3,40,20,0,231,229,1,0,0,0,231,230,1,0,0,0,232,234,
+  	1,0,0,0,233,235,3,50,25,0,234,233,1,0,0,0,234,235,1,0,0,0,235,39,1,0,
+  	0,0,236,237,5,33,0,0,237,238,3,32,16,0,238,41,1,0,0,0,239,240,5,50,0,
+  	0,240,242,5,15,0,0,241,243,3,44,22,0,242,241,1,0,0,0,242,243,1,0,0,0,
+  	243,244,1,0,0,0,244,245,5,16,0,0,245,43,1,0,0,0,246,251,3,46,23,0,247,
+  	248,5,7,0,0,248,250,3,46,23,0,249,247,1,0,0,0,250,253,1,0,0,0,251,249,
+  	1,0,0,0,251,252,1,0,0,0,252,45,1,0,0,0,253,251,1,0,0,0,254,255,5,50,0,
+  	0,255,262,5,8,0,0,256,263,3,68,34,0,257,263,5,50,0,0,258,263,3,42,21,
+  	0,259,263,3,10,5,0,260,263,3,28,14,0,261,263,3,30,15,0,262,256,1,0,0,
+  	0,262,257,1,0,0,0,262,258,1,0,0,0,262,259,1,0,0,0,262,260,1,0,0,0,262,
+  	261,1,0,0,0,263,47,1,0,0,0,264,265,5,34,0,0,265,266,5,50,0,0,266,267,
+  	5,8,0,0,267,269,3,70,35,0,268,270,3,50,25,0,269,268,1,0,0,0,269,270,1,
+  	0,0,0,270,49,1,0,0,0,271,279,5,9,0,0,272,280,3,28,14,0,273,280,3,30,15,
+  	0,274,280,5,50,0,0,275,280,3,68,34,0,276,280,3,42,21,0,277,280,3,64,32,
+  	0,278,280,3,60,30,0,279,272,1,0,0,0,279,273,1,0,0,0,279,274,1,0,0,0,279,
+  	275,1,0,0,0,279,276,1,0,0,0,279,277,1,0,0,0,279,278,1,0,0,0,280,51,1,
+  	0,0,0,281,282,5,50,0,0,282,287,5,9,0,0,283,288,3,28,14,0,284,288,3,30,
+  	15,0,285,288,3,68,34,0,286,288,3,64,32,0,287,283,1,0,0,0,287,284,1,0,
+  	0,0,287,285,1,0,0,0,287,286,1,0,0,0,288,53,1,0,0,0,289,291,5,13,0,0,290,
+  	292,3,6,3,0,291,290,1,0,0,0,291,292,1,0,0,0,292,293,1,0,0,0,293,294,5,
+  	14,0,0,294,55,1,0,0,0,295,296,5,32,0,0,296,297,5,15,0,0,297,298,3,60,
+  	30,0,298,299,5,16,0,0,299,302,3,54,27,0,300,301,5,35,0,0,301,303,3,58,
+  	29,0,302,300,1,0,0,0,302,303,1,0,0,0,303,57,1,0,0,0,304,307,3,56,28,0,
+  	305,307,3,54,27,0,306,304,1,0,0,0,306,305,1,0,0,0,307,59,1,0,0,0,308,
+  	309,6,30,-1,0,309,310,5,15,0,0,310,311,3,60,30,0,311,312,5,16,0,0,312,
+  	321,1,0,0,0,313,314,5,25,0,0,314,321,3,60,30,6,315,321,5,48,0,0,316,321,
+  	3,66,33,0,317,321,5,50,0,0,318,321,3,42,21,0,319,321,3,64,32,0,320,308,
+  	1,0,0,0,320,313,1,0,0,0,320,315,1,0,0,0,320,316,1,0,0,0,320,317,1,0,0,
+  	0,320,318,1,0,0,0,320,319,1,0,0,0,321,333,1,0,0,0,322,323,10,9,0,0,323,
+  	324,7,1,0,0,324,332,3,60,30,10,325,326,10,8,0,0,326,327,5,23,0,0,327,
+  	332,3,60,30,9,328,329,10,7,0,0,329,330,5,24,0,0,330,332,3,60,30,8,331,
+  	322,1,0,0,0,331,325,1,0,0,0,331,328,1,0,0,0,332,335,1,0,0,0,333,331,1,
+  	0,0,0,333,334,1,0,0,0,334,61,1,0,0,0,335,333,1,0,0,0,336,346,3,66,33,
+  	0,337,346,5,50,0,0,338,346,5,48,0,0,339,346,3,42,21,0,340,341,5,15,0,
+  	0,341,342,3,60,30,0,342,343,5,16,0,0,343,346,1,0,0,0,344,346,3,64,32,
+  	0,345,336,1,0,0,0,345,337,1,0,0,0,345,338,1,0,0,0,345,339,1,0,0,0,345,
+  	340,1,0,0,0,345,344,1,0,0,0,346,63,1,0,0,0,347,348,6,32,-1,0,348,356,
+  	3,66,33,0,349,356,3,42,21,0,350,356,5,50,0,0,351,352,5,15,0,0,352,353,
+  	3,64,32,0,353,354,5,16,0,0,354,356,1,0,0,0,355,347,1,0,0,0,355,349,1,
+  	0,0,0,355,350,1,0,0,0,355,351,1,0,0,0,356,372,1,0,0,0,357,361,10,6,0,
+  	0,358,362,5,12,0,0,359,362,5,4,0,0,360,362,5,19,0,0,361,358,1,0,0,0,361,
+  	359,1,0,0,0,361,360,1,0,0,0,362,363,1,0,0,0,363,371,3,64,32,7,364,367,
+  	10,5,0,0,365,368,5,17,0,0,366,368,5,18,0,0,367,365,1,0,0,0,367,366,1,
+  	0,0,0,368,369,1,0,0,0,369,371,3,64,32,6,370,357,1,0,0,0,370,364,1,0,0,
+  	0,371,374,1,0,0,0,372,370,1,0,0,0,372,373,1,0,0,0,373,65,1,0,0,0,374,
+  	372,1,0,0,0,375,376,7,2,0,0,376,67,1,0,0,0,377,378,7,3,0,0,378,69,1,0,
+  	0,0,379,380,7,4,0,0,380,71,1,0,0,0,41,75,79,84,93,100,109,111,119,132,
+  	140,148,152,161,165,169,176,182,189,210,214,224,231,234,242,251,262,269,
+  	279,287,291,302,306,320,331,333,345,355,361,367,370,372
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -319,37 +322,37 @@ IronParser::ProgramContext* IronParser::program() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(73);
+    setState(75);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == IronParser::IMPORT) {
-      setState(70);
+      setState(72);
       importStatement();
-      setState(75);
+      setState(77);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(77);
+    setState(79);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::T__1) {
-      setState(76);
+      setState(78);
       externBlock();
     }
-    setState(82);
+    setState(84);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == IronParser::FUNCTION
 
     || _la == IronParser::PUBLIC) {
-      setState(79);
+      setState(81);
       functionDeclaration();
-      setState(84);
+      setState(86);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(85);
+    setState(87);
     match(IronParser::EOF);
    
   }
@@ -415,18 +418,18 @@ IronParser::ImportStatementContext* IronParser::importStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(87);
+    setState(89);
     match(IronParser::IMPORT);
-    setState(88);
+    setState(90);
     qualifiedName();
-    setState(91);
+    setState(93);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::DOT) {
-      setState(89);
+      setState(91);
       match(IronParser::DOT);
-      setState(90);
+      setState(92);
       match(IronParser::STAR);
     }
    
@@ -493,19 +496,19 @@ IronParser::QualifiedNameContext* IronParser::qualifiedName() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(93);
+    setState(95);
     match(IronParser::IDENTIFIER);
-    setState(98);
+    setState(100);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 4, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
       if (alt == 1) {
-        setState(94);
+        setState(96);
         match(IronParser::DOT);
-        setState(95);
+        setState(97);
         match(IronParser::IDENTIFIER); 
       }
-      setState(100);
+      setState(102);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 4, _ctx);
     }
@@ -605,46 +608,46 @@ IronParser::StatementListContext* IronParser::statementList() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(109);
+    setState(111);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 668651246075904) != 0)) {
-      setState(107);
+      ((1ULL << _la) & 1337302492151808) != 0)) {
+      setState(109);
       _errHandler->sync(this);
       switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 5, _ctx)) {
       case 1: {
-        setState(101);
+        setState(103);
         varDeclaration();
         break;
       }
 
       case 2: {
-        setState(102);
+        setState(104);
         varAssignment();
         break;
       }
 
       case 3: {
-        setState(103);
+        setState(105);
         functionCall();
         break;
       }
 
       case 4: {
-        setState(104);
+        setState(106);
         expr(0);
         break;
       }
 
       case 5: {
-        setState(105);
+        setState(107);
         ifStatement();
         break;
       }
 
       case 6: {
-        setState(106);
+        setState(108);
         returnStatement();
         break;
       }
@@ -652,7 +655,7 @@ IronParser::StatementListContext* IronParser::statementList() {
       default:
         break;
       }
-      setState(111);
+      setState(113);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -723,31 +726,31 @@ IronParser::ReturnStatementContext* IronParser::returnStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(112);
+    setState(114);
     match(IronParser::RETURN);
-    setState(117);
+    setState(119);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 7, _ctx)) {
     case 1: {
-      setState(113);
+      setState(115);
       dataFormat();
       break;
     }
 
     case 2: {
-      setState(114);
+      setState(116);
       antlrcpp::downCast<ReturnStatementContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 3: {
-      setState(115);
+      setState(117);
       functionCall();
       break;
     }
 
     case 4: {
-      setState(116);
+      setState(118);
       expr(0);
       break;
     }
@@ -818,16 +821,16 @@ IronParser::FormatStatementContext* IronParser::formatStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(119);
-    match(IronParser::T__0);
-    setState(120);
-    match(IronParser::STRING_LITERAL);
     setState(121);
+    match(IronParser::T__0);
+    setState(122);
+    match(IronParser::STRING_LITERAL);
+    setState(123);
     match(IronParser::COMMA);
 
-    setState(122);
+    setState(124);
     formatArguments();
-    setState(123);
+    setState(125);
     match(IronParser::R_PAREN);
    
   }
@@ -893,17 +896,17 @@ IronParser::FormatArgumentsContext* IronParser::formatArguments() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(125);
+    setState(127);
     formatArgument();
-    setState(130);
+    setState(132);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == IronParser::COMMA) {
-      setState(126);
+      setState(128);
       match(IronParser::COMMA);
-      setState(127);
+      setState(129);
       formatArgument();
-      setState(132);
+      setState(134);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -974,35 +977,35 @@ IronParser::FormatArgumentContext* IronParser::formatArgument() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(138);
+    setState(140);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx)) {
     case 1: {
-      setState(133);
+      setState(135);
       dataFormat();
       break;
     }
 
     case 2: {
-      setState(134);
+      setState(136);
       antlrcpp::downCast<FormatArgumentContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 3: {
-      setState(135);
+      setState(137);
       functionCall();
       break;
     }
 
     case 4: {
-      setState(136);
+      setState(138);
       expr(0);
       break;
     }
 
     case 5: {
-      setState(137);
+      setState(139);
       match(IronParser::STRING_LITERAL);
       break;
     }
@@ -1079,23 +1082,23 @@ IronParser::ExternBlockContext* IronParser::externBlock() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(140);
-    match(IronParser::T__1);
-    setState(141);
-    antlrcpp::downCast<ExternBlockContext *>(_localctx)->language = match(IronParser::IDENTIFIER);
     setState(142);
+    match(IronParser::T__1);
+    setState(143);
+    antlrcpp::downCast<ExternBlockContext *>(_localctx)->language = match(IronParser::IDENTIFIER);
+    setState(144);
     match(IronParser::L_CURLY);
-    setState(150);
+    setState(152);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == IronParser::FUNCTION) {
-      setState(144); 
+      setState(146); 
       _errHandler->sync(this);
       alt = 1;
       do {
         switch (alt) {
           case 1: {
-                setState(143);
+                setState(145);
                 externFunctionDeclaration();
                 break;
               }
@@ -1103,15 +1106,15 @@ IronParser::ExternBlockContext* IronParser::externBlock() {
         default:
           throw NoViableAltException(this);
         }
-        setState(146); 
+        setState(148); 
         _errHandler->sync(this);
         alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 10, _ctx);
       } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
-      setState(152);
+      setState(154);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(153);
+    setState(155);
     match(IronParser::R_CURLY);
    
   }
@@ -1189,38 +1192,38 @@ IronParser::ExternFunctionDeclarationContext* IronParser::externFunctionDeclarat
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(155);
-    match(IronParser::FUNCTION);
-    setState(156);
-    antlrcpp::downCast<ExternFunctionDeclarationContext *>(_localctx)->exterFunctionName = match(IronParser::IDENTIFIER);
     setState(157);
-    match(IronParser::L_PAREN);
+    match(IronParser::FUNCTION);
+    setState(158);
+    antlrcpp::downCast<ExternFunctionDeclarationContext *>(_localctx)->exterFunctionName = match(IronParser::IDENTIFIER);
     setState(159);
+    match(IronParser::L_PAREN);
+    setState(161);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::IDENTIFIER) {
-      setState(158);
+      setState(160);
       externFunctionArgs();
     }
-    setState(163);
+    setState(165);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::COMMA) {
-      setState(161);
+      setState(163);
       match(IronParser::COMMA);
-      setState(162);
+      setState(164);
       antlrcpp::downCast<ExternFunctionDeclarationContext *>(_localctx)->varied = match(IronParser::T__2);
     }
-    setState(165);
-    match(IronParser::R_PAREN);
     setState(167);
+    match(IronParser::R_PAREN);
+    setState(169);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::COLON) {
-      setState(166);
+      setState(168);
       functionReturnType();
     }
    
@@ -1287,19 +1290,19 @@ IronParser::ExternFunctionArgsContext* IronParser::externFunctionArgs() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(169);
+    setState(171);
     externFunctionArg();
-    setState(174);
+    setState(176);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
       if (alt == 1) {
-        setState(170);
+        setState(172);
         match(IronParser::COMMA);
-        setState(171);
+        setState(173);
         externFunctionArg(); 
       }
-      setState(176);
+      setState(178);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx);
     }
@@ -1367,19 +1370,19 @@ IronParser::ExternFunctionArgContext* IronParser::externFunctionArg() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(177);
+    setState(179);
     antlrcpp::downCast<ExternFunctionArgContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
-    setState(178);
-    match(IronParser::COLON);
     setState(180);
+    match(IronParser::COLON);
+    setState(182);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::STAR) {
-      setState(179);
+      setState(181);
       antlrcpp::downCast<ExternFunctionArgContext *>(_localctx)->ptr = match(IronParser::STAR);
     }
-    setState(182);
+    setState(184);
     cTypes();
    
   }
@@ -1453,10 +1456,10 @@ IronParser::CTypesContext* IronParser::cTypes() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(184);
+    setState(186);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 32710470926336) != 0))) {
+      ((1ULL << _la) & 65420941852672) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -1539,25 +1542,25 @@ IronParser::FunctionDeclarationContext* IronParser::functionDeclaration() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(187);
+    setState(189);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::PUBLIC) {
-      setState(186);
+      setState(188);
       match(IronParser::PUBLIC);
     }
-    setState(189);
-    match(IronParser::FUNCTION);
-    setState(190);
-    antlrcpp::downCast<FunctionDeclarationContext *>(_localctx)->functionName = match(IronParser::IDENTIFIER);
     setState(191);
-    functionSignature();
+    match(IronParser::FUNCTION);
     setState(192);
-    match(IronParser::L_CURLY);
+    antlrcpp::downCast<FunctionDeclarationContext *>(_localctx)->functionName = match(IronParser::IDENTIFIER);
     setState(193);
-    statementList();
+    functionSignature();
     setState(194);
+    match(IronParser::L_CURLY);
+    setState(195);
+    statementList();
+    setState(196);
     match(IronParser::R_CURLY);
    
   }
@@ -1618,11 +1621,11 @@ IronParser::ArrowFunctionInlineContext* IronParser::arrowFunctionInline() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(196);
-    functionSignature();
-    setState(197);
-    match(IronParser::ARROW);
     setState(198);
+    functionSignature();
+    setState(199);
+    match(IronParser::ARROW);
+    setState(200);
     expr(0);
    
   }
@@ -1691,15 +1694,15 @@ IronParser::ArrowFunctionBlockContext* IronParser::arrowFunctionBlock() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(200);
-    functionSignature();
-    setState(201);
-    match(IronParser::ARROW);
     setState(202);
-    match(IronParser::L_CURLY);
+    functionSignature();
     setState(203);
-    statementList();
+    match(IronParser::ARROW);
     setState(204);
+    match(IronParser::L_CURLY);
+    setState(205);
+    statementList();
+    setState(206);
     match(IronParser::R_CURLY);
    
   }
@@ -1765,24 +1768,24 @@ IronParser::FunctionSignatureContext* IronParser::functionSignature() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(206);
-    match(IronParser::L_PAREN);
     setState(208);
+    match(IronParser::L_PAREN);
+    setState(210);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::IDENTIFIER) {
-      setState(207);
+      setState(209);
       functionArgs();
     }
-    setState(210);
-    match(IronParser::R_PAREN);
     setState(212);
+    match(IronParser::R_PAREN);
+    setState(214);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::COLON) {
-      setState(211);
+      setState(213);
       functionReturnType();
     }
    
@@ -1840,9 +1843,9 @@ IronParser::FunctionReturnTypeContext* IronParser::functionReturnType() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(214);
+    setState(216);
     match(IronParser::COLON);
-    setState(215);
+    setState(217);
     varTypes();
    
   }
@@ -1908,17 +1911,17 @@ IronParser::FunctionArgsContext* IronParser::functionArgs() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(217);
+    setState(219);
     functionArg();
-    setState(222);
+    setState(224);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == IronParser::COMMA) {
-      setState(218);
+      setState(220);
       match(IronParser::COMMA);
-      setState(219);
+      setState(221);
       functionArg();
-      setState(224);
+      setState(226);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1951,8 +1954,8 @@ IronParser::VarTypesContext* IronParser::FunctionArgContext::varTypes() {
   return getRuleContext<IronParser::VarTypesContext>(0);
 }
 
-IronParser::FunctionSignatureContext* IronParser::FunctionArgContext::functionSignature() {
-  return getRuleContext<IronParser::FunctionSignatureContext>(0);
+IronParser::FnsignatureContext* IronParser::FunctionArgContext::fnsignature() {
+  return getRuleContext<IronParser::FnsignatureContext>(0);
 }
 
 IronParser::AssignmentContext* IronParser::FunctionArgContext::assignment() {
@@ -1990,42 +1993,95 @@ IronParser::FunctionArgContext* IronParser::functionArg() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(225);
+    setState(227);
     antlrcpp::downCast<FunctionArgContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
-    setState(226);
+    setState(228);
     match(IronParser::COLON);
-    setState(229);
+    setState(231);
     _errHandler->sync(this);
-    switch (_input->LA(1)) {
-      case IronParser::FUNCTION:
-      case IronParser::TYPE_INT:
-      case IronParser::TYPE_CHAR:
-      case IronParser::TYPE_FLOAT:
-      case IronParser::TYPE_STRING:
-      case IronParser::TYPE_BOOLEAN:
-      case IronParser::TYPE_DOUBLE: {
-        setState(227);
-        varTypes();
-        break;
-      }
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 21, _ctx)) {
+    case 1: {
+      setState(229);
+      varTypes();
+      break;
+    }
 
-      case IronParser::L_PAREN: {
-        setState(228);
-        functionSignature();
-        break;
-      }
+    case 2: {
+      setState(230);
+      fnsignature();
+      break;
+    }
 
     default:
-      throw NoViableAltException(this);
+      break;
     }
-    setState(232);
+    setState(234);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::EQ) {
-      setState(231);
+      setState(233);
       assignment();
     }
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- FnsignatureContext ------------------------------------------------------------------
+
+IronParser::FnsignatureContext::FnsignatureContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* IronParser::FnsignatureContext::FUNCTION() {
+  return getToken(IronParser::FUNCTION, 0);
+}
+
+IronParser::FunctionSignatureContext* IronParser::FnsignatureContext::functionSignature() {
+  return getRuleContext<IronParser::FunctionSignatureContext>(0);
+}
+
+
+size_t IronParser::FnsignatureContext::getRuleIndex() const {
+  return IronParser::RuleFnsignature;
+}
+
+void IronParser::FnsignatureContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<IronListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterFnsignature(this);
+}
+
+void IronParser::FnsignatureContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<IronListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitFnsignature(this);
+}
+
+IronParser::FnsignatureContext* IronParser::fnsignature() {
+  FnsignatureContext *_localctx = _tracker.createInstance<FnsignatureContext>(_ctx, getState());
+  enterRule(_localctx, 40, IronParser::RuleFnsignature);
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(236);
+    match(IronParser::FUNCTION);
+    setState(237);
+    functionSignature();
    
   }
   catch (RecognitionException &e) {
@@ -2078,7 +2134,7 @@ void IronParser::FunctionCallContext::exitRule(tree::ParseTreeListener *listener
 
 IronParser::FunctionCallContext* IronParser::functionCall() {
   FunctionCallContext *_localctx = _tracker.createInstance<FunctionCallContext>(_ctx, getState());
-  enterRule(_localctx, 40, IronParser::RuleFunctionCall);
+  enterRule(_localctx, 42, IronParser::RuleFunctionCall);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2090,19 +2146,19 @@ IronParser::FunctionCallContext* IronParser::functionCall() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(234);
+    setState(239);
     antlrcpp::downCast<FunctionCallContext *>(_localctx)->functionName = match(IronParser::IDENTIFIER);
-    setState(235);
+    setState(240);
     match(IronParser::L_PAREN);
-    setState(237);
+    setState(242);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::IDENTIFIER) {
-      setState(236);
+      setState(241);
       functionCallArgs();
     }
-    setState(239);
+    setState(244);
     match(IronParser::R_PAREN);
    
   }
@@ -2156,7 +2212,7 @@ void IronParser::FunctionCallArgsContext::exitRule(tree::ParseTreeListener *list
 
 IronParser::FunctionCallArgsContext* IronParser::functionCallArgs() {
   FunctionCallArgsContext *_localctx = _tracker.createInstance<FunctionCallArgsContext>(_ctx, getState());
-  enterRule(_localctx, 42, IronParser::RuleFunctionCallArgs);
+  enterRule(_localctx, 44, IronParser::RuleFunctionCallArgs);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2168,17 +2224,17 @@ IronParser::FunctionCallArgsContext* IronParser::functionCallArgs() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(241);
-    functionCallArg();
     setState(246);
+    functionCallArg();
+    setState(251);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == IronParser::COMMA) {
-      setState(242);
+      setState(247);
       match(IronParser::COMMA);
-      setState(243);
-      functionCallArg();
       setState(248);
+      functionCallArg();
+      setState(253);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -2250,7 +2306,7 @@ void IronParser::FunctionCallArgContext::exitRule(tree::ParseTreeListener *liste
 
 IronParser::FunctionCallArgContext* IronParser::functionCallArg() {
   FunctionCallArgContext *_localctx = _tracker.createInstance<FunctionCallArgContext>(_ctx, getState());
-  enterRule(_localctx, 44, IronParser::RuleFunctionCallArg);
+  enterRule(_localctx, 46, IronParser::RuleFunctionCallArg);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2261,45 +2317,45 @@ IronParser::FunctionCallArgContext* IronParser::functionCallArg() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(249);
+    setState(254);
     antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
-    setState(250);
+    setState(255);
     match(IronParser::COLON);
-    setState(257);
+    setState(262);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 25, _ctx)) {
     case 1: {
-      setState(251);
+      setState(256);
       dataFormat();
       break;
     }
 
     case 2: {
-      setState(252);
+      setState(257);
       antlrcpp::downCast<FunctionCallArgContext *>(_localctx)->anotherVarName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 3: {
-      setState(253);
+      setState(258);
       functionCall();
       break;
     }
 
     case 4: {
-      setState(254);
+      setState(259);
       formatStatement();
       break;
     }
 
     case 5: {
-      setState(255);
+      setState(260);
       arrowFunctionInline();
       break;
     }
 
     case 6: {
-      setState(256);
+      setState(261);
       arrowFunctionBlock();
       break;
     }
@@ -2363,7 +2419,7 @@ void IronParser::VarDeclarationContext::exitRule(tree::ParseTreeListener *listen
 
 IronParser::VarDeclarationContext* IronParser::varDeclaration() {
   VarDeclarationContext *_localctx = _tracker.createInstance<VarDeclarationContext>(_ctx, getState());
-  enterRule(_localctx, 46, IronParser::RuleVarDeclaration);
+  enterRule(_localctx, 48, IronParser::RuleVarDeclaration);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2375,20 +2431,20 @@ IronParser::VarDeclarationContext* IronParser::varDeclaration() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(259);
-    match(IronParser::LET);
-    setState(260);
-    antlrcpp::downCast<VarDeclarationContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
-    setState(261);
-    match(IronParser::COLON);
-    setState(262);
-    varTypes();
     setState(264);
+    match(IronParser::LET);
+    setState(265);
+    antlrcpp::downCast<VarDeclarationContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
+    setState(266);
+    match(IronParser::COLON);
+    setState(267);
+    varTypes();
+    setState(269);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::EQ) {
-      setState(263);
+      setState(268);
       assignment();
     }
    
@@ -2459,7 +2515,7 @@ void IronParser::AssignmentContext::exitRule(tree::ParseTreeListener *listener) 
 
 IronParser::AssignmentContext* IronParser::assignment() {
   AssignmentContext *_localctx = _tracker.createInstance<AssignmentContext>(_ctx, getState());
-  enterRule(_localctx, 48, IronParser::RuleAssignment);
+  enterRule(_localctx, 50, IronParser::RuleAssignment);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2470,49 +2526,49 @@ IronParser::AssignmentContext* IronParser::assignment() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(266);
+    setState(271);
     match(IronParser::EQ);
-    setState(274);
+    setState(279);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 27, _ctx)) {
     case 1: {
-      setState(267);
+      setState(272);
       arrowFunctionInline();
       break;
     }
 
     case 2: {
-      setState(268);
+      setState(273);
       arrowFunctionBlock();
       break;
     }
 
     case 3: {
-      setState(269);
+      setState(274);
       antlrcpp::downCast<AssignmentContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 4: {
-      setState(270);
+      setState(275);
       dataFormat();
       break;
     }
 
     case 5: {
-      setState(271);
+      setState(276);
       functionCall();
       break;
     }
 
     case 6: {
-      setState(272);
+      setState(277);
       expr(0);
       break;
     }
 
     case 7: {
-      setState(273);
+      setState(278);
       boolExpr(0);
       break;
     }
@@ -2580,7 +2636,7 @@ void IronParser::VarAssignmentContext::exitRule(tree::ParseTreeListener *listene
 
 IronParser::VarAssignmentContext* IronParser::varAssignment() {
   VarAssignmentContext *_localctx = _tracker.createInstance<VarAssignmentContext>(_ctx, getState());
-  enterRule(_localctx, 50, IronParser::RuleVarAssignment);
+  enterRule(_localctx, 52, IronParser::RuleVarAssignment);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2591,33 +2647,33 @@ IronParser::VarAssignmentContext* IronParser::varAssignment() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(276);
+    setState(281);
     antlrcpp::downCast<VarAssignmentContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
-    setState(277);
-    match(IronParser::EQ);
     setState(282);
+    match(IronParser::EQ);
+    setState(287);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 28, _ctx)) {
     case 1: {
-      setState(278);
+      setState(283);
       arrowFunctionInline();
       break;
     }
 
     case 2: {
-      setState(279);
+      setState(284);
       arrowFunctionBlock();
       break;
     }
 
     case 3: {
-      setState(280);
+      setState(285);
       dataFormat();
       break;
     }
 
     case 4: {
-      setState(281);
+      setState(286);
       expr(0);
       break;
     }
@@ -2673,7 +2729,7 @@ void IronParser::IfBlockContext::exitRule(tree::ParseTreeListener *listener) {
 
 IronParser::IfBlockContext* IronParser::ifBlock() {
   IfBlockContext *_localctx = _tracker.createInstance<IfBlockContext>(_ctx, getState());
-  enterRule(_localctx, 52, IronParser::RuleIfBlock);
+  enterRule(_localctx, 54, IronParser::RuleIfBlock);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2684,14 +2740,14 @@ IronParser::IfBlockContext* IronParser::ifBlock() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(284);
+    setState(289);
     match(IronParser::L_CURLY);
-    setState(286);
+    setState(291);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 29, _ctx)) {
     case 1: {
-      setState(285);
+      setState(290);
       statementList();
       break;
     }
@@ -2699,7 +2755,7 @@ IronParser::IfBlockContext* IronParser::ifBlock() {
     default:
       break;
     }
-    setState(288);
+    setState(293);
     match(IronParser::R_CURLY);
    
   }
@@ -2765,7 +2821,7 @@ void IronParser::IfStatementContext::exitRule(tree::ParseTreeListener *listener)
 
 IronParser::IfStatementContext* IronParser::ifStatement() {
   IfStatementContext *_localctx = _tracker.createInstance<IfStatementContext>(_ctx, getState());
-  enterRule(_localctx, 54, IronParser::RuleIfStatement);
+  enterRule(_localctx, 56, IronParser::RuleIfStatement);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2777,24 +2833,24 @@ IronParser::IfStatementContext* IronParser::ifStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(290);
+    setState(295);
     match(IronParser::IF);
-    setState(291);
+    setState(296);
     match(IronParser::L_PAREN);
-    setState(292);
-    boolExpr(0);
-    setState(293);
-    match(IronParser::R_PAREN);
-    setState(294);
-    ifBlock();
     setState(297);
+    boolExpr(0);
+    setState(298);
+    match(IronParser::R_PAREN);
+    setState(299);
+    ifBlock();
+    setState(302);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == IronParser::ELSE) {
-      setState(295);
+      setState(300);
       match(IronParser::ELSE);
-      setState(296);
+      setState(301);
       elseStatement();
     }
    
@@ -2841,7 +2897,7 @@ void IronParser::ElseStatementContext::exitRule(tree::ParseTreeListener *listene
 
 IronParser::ElseStatementContext* IronParser::elseStatement() {
   ElseStatementContext *_localctx = _tracker.createInstance<ElseStatementContext>(_ctx, getState());
-  enterRule(_localctx, 56, IronParser::RuleElseStatement);
+  enterRule(_localctx, 58, IronParser::RuleElseStatement);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2851,19 +2907,19 @@ IronParser::ElseStatementContext* IronParser::elseStatement() {
     exitRule();
   });
   try {
-    setState(301);
+    setState(306);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case IronParser::IF: {
         enterOuterAlt(_localctx, 1);
-        setState(299);
+        setState(304);
         ifStatement();
         break;
       }
 
       case IronParser::L_CURLY: {
         enterOuterAlt(_localctx, 2);
-        setState(300);
+        setState(305);
         ifBlock();
         break;
       }
@@ -2988,8 +3044,8 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
   IronParser::BoolExprContext *_localctx = _tracker.createInstance<BoolExprContext>(_ctx, parentState);
   IronParser::BoolExprContext *previousContext = _localctx;
   (void)previousContext; // Silence compiler, in case the context is not used by generated code.
-  size_t startState = 58;
-  enterRecursionRule(_localctx, 58, IronParser::RuleBoolExpr, precedence);
+  size_t startState = 60;
+  enterRecursionRule(_localctx, 60, IronParser::RuleBoolExpr, precedence);
 
     size_t _la = 0;
 
@@ -3003,53 +3059,53 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(315);
+    setState(320);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 32, _ctx)) {
     case 1: {
-      setState(304);
+      setState(309);
       match(IronParser::L_PAREN);
-      setState(305);
+      setState(310);
       boolExpr(0);
-      setState(306);
+      setState(311);
       match(IronParser::R_PAREN);
       break;
     }
 
     case 2: {
-      setState(308);
+      setState(313);
       antlrcpp::downCast<BoolExprContext *>(_localctx)->not_ = match(IronParser::NOT);
-      setState(309);
+      setState(314);
       boolExpr(6);
       break;
     }
 
     case 3: {
-      setState(310);
+      setState(315);
       antlrcpp::downCast<BoolExprContext *>(_localctx)->booleanValue = match(IronParser::BOOLEAN_VALUE);
       break;
     }
 
     case 4: {
-      setState(311);
+      setState(316);
       number();
       break;
     }
 
     case 5: {
-      setState(312);
+      setState(317);
       antlrcpp::downCast<BoolExprContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 6: {
-      setState(313);
+      setState(318);
       functionCall();
       break;
     }
 
     case 7: {
-      setState(314);
+      setState(319);
       expr(0);
       break;
     }
@@ -3058,7 +3114,7 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
       break;
     }
     _ctx->stop = _input->LT(-1);
-    setState(328);
+    setState(333);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 34, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
@@ -3066,28 +3122,28 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        setState(326);
+        setState(331);
         _errHandler->sync(this);
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 33, _ctx)) {
         case 1: {
           _localctx = _tracker.createInstance<BoolExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
-          setState(317);
+          setState(322);
 
           if (!(precpred(_ctx, 9))) throw FailedPredicateException(this, "precpred(_ctx, 9)");
-          setState(318);
+          setState(323);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->op = _input->LT(1);
           _la = _input->LA(1);
           if (!((((_la & ~ 0x3fULL) == 0) &&
-            ((1ULL << _la) & 2113929216) != 0))) {
+            ((1ULL << _la) & 4227858432) != 0))) {
             antlrcpp::downCast<BoolExprContext *>(_localctx)->op = _errHandler->recoverInline(this);
           }
           else {
             _errHandler->reportMatch(this);
             consume();
           }
-          setState(319);
+          setState(324);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(10);
           break;
         }
@@ -3096,12 +3152,12 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
           _localctx = _tracker.createInstance<BoolExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
-          setState(320);
+          setState(325);
 
           if (!(precpred(_ctx, 8))) throw FailedPredicateException(this, "precpred(_ctx, 8)");
-          setState(321);
+          setState(326);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->op = match(IronParser::AND);
-          setState(322);
+          setState(327);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(9);
           break;
         }
@@ -3110,12 +3166,12 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
           _localctx = _tracker.createInstance<BoolExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleBoolExpr);
-          setState(323);
+          setState(328);
 
           if (!(precpred(_ctx, 7))) throw FailedPredicateException(this, "precpred(_ctx, 7)");
-          setState(324);
+          setState(329);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->op = match(IronParser::OR);
-          setState(325);
+          setState(330);
           antlrcpp::downCast<BoolExprContext *>(_localctx)->right = boolExpr(8);
           break;
         }
@@ -3124,7 +3180,7 @@ IronParser::BoolExprContext* IronParser::boolExpr(int precedence) {
           break;
         } 
       }
-      setState(330);
+      setState(335);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 34, _ctx);
     }
@@ -3194,7 +3250,7 @@ void IronParser::PrimaryContext::exitRule(tree::ParseTreeListener *listener) {
 
 IronParser::PrimaryContext* IronParser::primary() {
   PrimaryContext *_localctx = _tracker.createInstance<PrimaryContext>(_ctx, getState());
-  enterRule(_localctx, 60, IronParser::RulePrimary);
+  enterRule(_localctx, 62, IronParser::RulePrimary);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -3204,51 +3260,51 @@ IronParser::PrimaryContext* IronParser::primary() {
     exitRule();
   });
   try {
-    setState(340);
+    setState(345);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 35, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(331);
+      setState(336);
       number();
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(332);
+      setState(337);
       match(IronParser::IDENTIFIER);
       break;
     }
 
     case 3: {
       enterOuterAlt(_localctx, 3);
-      setState(333);
+      setState(338);
       match(IronParser::BOOLEAN_VALUE);
       break;
     }
 
     case 4: {
       enterOuterAlt(_localctx, 4);
-      setState(334);
+      setState(339);
       functionCall();
       break;
     }
 
     case 5: {
       enterOuterAlt(_localctx, 5);
-      setState(335);
+      setState(340);
       match(IronParser::L_PAREN);
-      setState(336);
+      setState(341);
       boolExpr(0);
-      setState(337);
+      setState(342);
       match(IronParser::R_PAREN);
       break;
     }
 
     case 6: {
       enterOuterAlt(_localctx, 6);
-      setState(339);
+      setState(344);
       expr(0);
       break;
     }
@@ -3345,8 +3401,8 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
   IronParser::ExprContext *_localctx = _tracker.createInstance<ExprContext>(_ctx, parentState);
   IronParser::ExprContext *previousContext = _localctx;
   (void)previousContext; // Silence compiler, in case the context is not used by generated code.
-  size_t startState = 62;
-  enterRecursionRule(_localctx, 62, IronParser::RuleExpr, precedence);
+  size_t startState = 64;
+  enterRecursionRule(_localctx, 64, IronParser::RuleExpr, precedence);
 
     
 
@@ -3360,33 +3416,33 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(350);
+    setState(355);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 36, _ctx)) {
     case 1: {
-      setState(343);
+      setState(348);
       number();
       break;
     }
 
     case 2: {
-      setState(344);
+      setState(349);
       functionCall();
       break;
     }
 
     case 3: {
-      setState(345);
+      setState(350);
       antlrcpp::downCast<ExprContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
       break;
     }
 
     case 4: {
-      setState(346);
+      setState(351);
       match(IronParser::L_PAREN);
-      setState(347);
+      setState(352);
       expr(0);
-      setState(348);
+      setState(353);
       match(IronParser::R_PAREN);
       break;
     }
@@ -3395,7 +3451,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
       break;
     }
     _ctx->stop = _input->LT(-1);
-    setState(366);
+    setState(372);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 40, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
@@ -3403,27 +3459,33 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        setState(364);
+        setState(370);
         _errHandler->sync(this);
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 39, _ctx)) {
         case 1: {
           _localctx = _tracker.createInstance<ExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleExpr);
-          setState(352);
+          setState(357);
 
           if (!(precpred(_ctx, 6))) throw FailedPredicateException(this, "precpred(_ctx, 6)");
-          setState(355);
+          setState(361);
           _errHandler->sync(this);
           switch (_input->LA(1)) {
             case IronParser::STAR: {
-              setState(353);
+              setState(358);
               antlrcpp::downCast<ExprContext *>(_localctx)->mult = match(IronParser::STAR);
               break;
             }
 
+            case IronParser::T__3: {
+              setState(359);
+              antlrcpp::downCast<ExprContext *>(_localctx)->mod = match(IronParser::T__3);
+              break;
+            }
+
             case IronParser::DIV: {
-              setState(354);
+              setState(360);
               antlrcpp::downCast<ExprContext *>(_localctx)->div = match(IronParser::DIV);
               break;
             }
@@ -3431,7 +3493,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           default:
             throw NoViableAltException(this);
           }
-          setState(357);
+          setState(363);
           antlrcpp::downCast<ExprContext *>(_localctx)->right = expr(7);
           break;
         }
@@ -3440,20 +3502,20 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           _localctx = _tracker.createInstance<ExprContext>(parentContext, parentState);
           _localctx->left = previousContext;
           pushNewRecursionContext(_localctx, startState, RuleExpr);
-          setState(358);
+          setState(364);
 
           if (!(precpred(_ctx, 5))) throw FailedPredicateException(this, "precpred(_ctx, 5)");
-          setState(361);
+          setState(367);
           _errHandler->sync(this);
           switch (_input->LA(1)) {
             case IronParser::PLUS: {
-              setState(359);
+              setState(365);
               antlrcpp::downCast<ExprContext *>(_localctx)->plus = match(IronParser::PLUS);
               break;
             }
 
             case IronParser::MINUS: {
-              setState(360);
+              setState(366);
               antlrcpp::downCast<ExprContext *>(_localctx)->minus = match(IronParser::MINUS);
               break;
             }
@@ -3461,7 +3523,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           default:
             throw NoViableAltException(this);
           }
-          setState(363);
+          setState(369);
           antlrcpp::downCast<ExprContext *>(_localctx)->right = expr(6);
           break;
         }
@@ -3470,7 +3532,7 @@ IronParser::ExprContext* IronParser::expr(int precedence) {
           break;
         } 
       }
-      setState(368);
+      setState(374);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 40, _ctx);
     }
@@ -3516,7 +3578,7 @@ void IronParser::NumberContext::exitRule(tree::ParseTreeListener *listener) {
 
 IronParser::NumberContext* IronParser::number() {
   NumberContext *_localctx = _tracker.createInstance<NumberContext>(_ctx, getState());
-  enterRule(_localctx, 64, IronParser::RuleNumber);
+  enterRule(_localctx, 66, IronParser::RuleNumber);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -3528,7 +3590,7 @@ IronParser::NumberContext* IronParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(369);
+    setState(375);
     _la = _input->LA(1);
     if (!(_la == IronParser::REAL_NUMBER
 
@@ -3591,7 +3653,7 @@ void IronParser::DataFormatContext::exitRule(tree::ParseTreeListener *listener) 
 
 IronParser::DataFormatContext* IronParser::dataFormat() {
   DataFormatContext *_localctx = _tracker.createInstance<DataFormatContext>(_ctx, getState());
-  enterRule(_localctx, 66, IronParser::RuleDataFormat);
+  enterRule(_localctx, 68, IronParser::RuleDataFormat);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -3603,10 +3665,10 @@ IronParser::DataFormatContext* IronParser::dataFormat() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(371);
+    setState(377);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 527765581332480) != 0))) {
+      ((1ULL << _la) & 1055531162664960) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -3677,7 +3739,7 @@ void IronParser::VarTypesContext::exitRule(tree::ParseTreeListener *listener) {
 
 IronParser::VarTypesContext* IronParser::varTypes() {
   VarTypesContext *_localctx = _tracker.createInstance<VarTypesContext>(_ctx, getState());
-  enterRule(_localctx, 68, IronParser::RuleVarTypes);
+  enterRule(_localctx, 70, IronParser::RuleVarTypes);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -3689,10 +3751,10 @@ IronParser::VarTypesContext* IronParser::varTypes() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(373);
+    setState(379);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 17321603104768) != 0))) {
+      ((1ULL << _la) & 34643206209536) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -3712,8 +3774,8 @@ IronParser::VarTypesContext* IronParser::varTypes() {
 
 bool IronParser::sempred(RuleContext *context, size_t ruleIndex, size_t predicateIndex) {
   switch (ruleIndex) {
-    case 29: return boolExprSempred(antlrcpp::downCast<BoolExprContext *>(context), predicateIndex);
-    case 31: return exprSempred(antlrcpp::downCast<ExprContext *>(context), predicateIndex);
+    case 30: return boolExprSempred(antlrcpp::downCast<BoolExprContext *>(context), predicateIndex);
+    case 32: return exprSempred(antlrcpp::downCast<ExprContext *>(context), predicateIndex);
 
   default:
     break;

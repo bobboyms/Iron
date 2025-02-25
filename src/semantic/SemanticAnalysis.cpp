@@ -250,19 +250,6 @@ namespace iron
                                                            caretLine));
             }
 
-
-            // if (const uint result = analyser.run(fullPath); result == 1)
-            // {
-            //     util::printf("Line {}\n{}\n {}\n\n{} {}", color::colorText(std::to_string(line), color::BOLD_YELLOW),
-            //                  color::colorText(caretLine, color::BOLD_GREEN),
-            //                  color::colorText(codeLine, color::BOLD_GREEN), color::colorText("File path:",
-            //                  color::BOLD), color::colorText(path, color::BOLD_GREEN));
-            // }
-
-            // for (const auto parentDeclaration : externalDeclarations)
-            // {
-            //     printf("%s\n\n", parentDeclaration->getFunctionName().c_str());
-            // }
         }
     }
 
@@ -298,6 +285,8 @@ namespace iron
         const uint col = ctx->getStart()->getCharPositionInLine();
 
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 2);
+
+        const auto currentFunction = getCurrentFunction();
 
         if (ctx->dataFormat())
         {
@@ -445,6 +434,53 @@ namespace iron
                 const std::string varName = varDeclaration->varName->getText();
                 const std::string varType = varDeclaration->varTypes()->getText();
 
+                if (tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
+                {
+                    std::shared_ptr<scope::Function> functionPtr;
+                    const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);;
+                    if (!anotherVariable)
+                    {
+                        const auto function = scopeManager->getFunctionDeclarationByName(anotherVarName);
+                        if (!function)
+                        {
+                            throw FunctionNotFoundException(
+                                    util::format("Function {} not found.\n"
+                                                 "Line: {}, Scope: {}\n\n"
+                                                 "{}\n"
+                                                 "{}\n",
+                                                 color::colorText(anotherVarName, color::BOLD_GREEN),
+                                                 color::colorText(std::to_string(line), color::YELLOW),
+                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                                 codeLine, caretLine));
+                        }
+                        functionPtr = function;
+                    }
+                    else
+                    {
+                        if (!anotherVariable->function)
+                        {
+                            throw TypeMismatchException(util::format(
+                                    "The variable {} of type {} is incompatible with the variable {} of type {}.\n"
+                                    "Line: {}, Scope: {}\n\n"
+                                    "{}\n"
+                                    "{}\n",
+                                    color::colorText(varName, color::BOLD_GREEN),
+                                    color::colorText(varType, color::BOLD_GREEN),
+                                    color::colorText(anotherVariable->name, color::BOLD_BLUE),
+                                    color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
+                                    color::colorText(std::to_string(line), color::YELLOW),
+                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+                                    caretLine));
+                        }
+
+                        functionPtr = anotherVariable->function;
+
+                    }
+                    const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+                    variable->function = functionPtr;
+                    return;
+                }
+
                 const auto variable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
                 if (!variable)
                 {
@@ -453,7 +489,7 @@ namespace iron
                                          "Line: {}, Scope: {}\n\n"
                                          "{}\n"
                                          "{}\n",
-                                         color::colorText(varName, color::BOLD_GREEN),
+                                         color::colorText(anotherVarName, color::BOLD_GREEN),
                                          color::colorText(std::to_string(line), color::YELLOW),
                                          color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
                                          codeLine, caretLine));
@@ -461,6 +497,7 @@ namespace iron
 
                 if (variable->type != tokenMap::getTokenType(varType))
                 {
+
                     throw TypeMismatchException(util::format(
                             "The variable {} of type {} is incompatible with the variable {} of type {}.\n"
                             "Line: {}, Scope: {}\n\n"

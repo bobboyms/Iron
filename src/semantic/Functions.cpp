@@ -91,6 +91,36 @@ namespace iron
         scopeManager->exitScope();
     }
 
+    std::shared_ptr<scope::Signature> SemanticAnalysis::getSignature(IronParser::FunctionSignatureContext *ctx)
+    {
+        int returnType = tokenMap::VOID;
+        if (ctx->functionReturnType())
+        {
+            returnType = tokenMap::getTokenType(ctx->functionReturnType()->varTypes()->getText());
+        }
+
+        std::vector<std::shared_ptr<scope::FunctionArg>> arguments{};
+        for (const auto child: ctx->children)
+        {
+            if (const auto functionArgs = dynamic_cast<IronParser::FunctionArgsContext *>(child))
+            {
+                for (const auto child: functionArgs->children)
+                {
+                    if (const auto functionArg = dynamic_cast<IronParser::FunctionArgContext *>(child))
+                    {
+                        const std::string argType = functionArg->varTypes()->getText();
+                        const std::string argName = functionArg->varName->getText();
+
+                        const auto arg = std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType));
+                        arguments.push_back(arg);
+                    }
+                }
+            }
+        }
+
+        return std::make_shared<scope::Signature>(returnType, arguments);
+    }
+
     void SemanticAnalysis::visitFunctionSignature(IronParser::FunctionSignatureContext *ctx)
     {
         for (const auto child: ctx->children)
@@ -113,10 +143,9 @@ namespace iron
         }
     }
 
-    void SemanticAnalysis::visitFunctionArg(IronParser::FunctionArgContext *ctx)
+    void SemanticAnalysis::visitFunctionArg(IronParser::FunctionArgContext *ctx) const
     {
-        std::string argName = ctx->varName->getText();
-        const std::string argType = ctx->varTypes()->getText();
+
         const uint line = ctx->getStart()->getLine();
 
         const auto currentFunction = scopeManager->currentFunctionDeclaration();
@@ -126,6 +155,8 @@ namespace iron
                                                       color::colorText(std::to_string(line), color::BOLD_GREEN)));
         }
 
+        const auto argsList = currentFunction->getArgs();
+        std::string argName = ctx->varName->getText();
         if (auto arg = currentFunction->getArgByName(argName))
         {
             throw VariableRedefinitionException(util::format(
@@ -134,12 +165,21 @@ namespace iron
                     color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW)));
         }
 
-        const auto argsList = currentFunction->getArgs();
-        argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType)));
-
-        if (ctx->assignment())
+        if (ctx->fnsignature())
         {
-            visitAssignment(ctx->assignment());
+            // visitFunctionSignature(ctx->fnsignature()->functionSignature());
+            const auto signature = getSignature(ctx->fnsignature()->functionSignature());
+            if (!signature)
+            {
+                throw std::runtime_error("SemanticAnalysis::visitFunctionArg. Function signature is empty.");
+            }
+
+            argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::FUNCTION, signature));
+        }
+        else
+        {
+            const std::string argType = ctx->varTypes()->getText();
+            argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType)));
         }
     }
 
@@ -178,6 +218,7 @@ namespace iron
         {
             return;
         }
+
         const std::string functionCalledName = functionCall->functionName->getText();
         const auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCalledName);
         if (!calledFunction)
@@ -193,9 +234,7 @@ namespace iron
                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
         }
 
-
         const auto functionArgs = calledFunction->getArgs();
-
 
         // Coleta os nomes dos argumentos e processa cada um
         std::vector<std::string> argNames;
@@ -218,12 +257,8 @@ namespace iron
             }
         }
 
-
         // Obtém a função corrente do escopo e verifica se ela é válida
         const auto currentFunction = getCurrentFunction();
-
-        // Recupera o nome da função chamada e obtém a função correspondente
-
 
         // Verifica se a quantidade de argumentos está correta
         if (functionArgs->size() != argNames.size())
@@ -364,24 +399,101 @@ namespace iron
 
             if (ctx->anotherVarName)
             {
-                auto varName = ctx->anotherVarName->getText();
-                auto variable = currentFunction->findVarAllScopesAndArg(varName);
-                if (!variable)
+
+                auto anotherVarName = ctx->anotherVarName->getText();
+                auto anotherVariable = currentFunction->findVarAllScopesAndArg(anotherVarName);
+
+                const auto arg = calledFunction->getArgByName(argName);
+                if (!arg)
+                {
+                    throw std::runtime_error("Argument not found.\n");
+                }
+
+                if (arg->type == tokenMap::FUNCTION)
+                {
+                    if (!funcArg->signature)
+                    {
+                        throw std::runtime_error("The variable need a signature");
+                    }
+
+                    if (!anotherVariable)
+                    {
+                        const auto function = scopeManager->getFunctionDeclarationByName(anotherVarName);
+                        if (!function)
+                        {
+                            throw FunctionNotFoundException(
+                                util::format("Function {} not found.\n"
+                                             "Line: {}, Scope: {}\n\n"
+                                             "{}\n"
+                                             "{}\n",
+                                             color::colorText(anotherVarName, color::BOLD_GREEN),
+                                             color::colorText(std::to_string(line), color::YELLOW),
+                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                             codeLine, caretLine));
+                        }
+
+                        if (!validateSignature(funcArg->signature, function))
+                        {
+                            throw SignatureMismatchException(util::format(
+                                    "The signature of argument {} does not match the signature of "
+                                    "function {}.\n"
+                                    "At line {} in scope {}.\n\n"
+                                    "{}\n"
+                                    "{}\n",
+                                    color::colorText(argName, color::BOLD_GREEN),
+                                    color::colorText(anotherVarName, color::BOLD_BLUE),
+                                    color::colorText(std::to_string(line), color::YELLOW),
+                                    color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
+                        }
+                    } else
+                    {
+                        if (!anotherVariable->function)
+                        {
+                            throw FunctionNotFoundException(
+                                    util::format("Function {} not found.\n"
+                                                 "Line: {}, Scope: {}\n\n"
+                                                 "{}\n"
+                                                 "{}\n",
+                                                 color::colorText(anotherVarName, color::BOLD_GREEN),
+                                                 color::colorText(std::to_string(line), color::YELLOW),
+                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                                 codeLine, caretLine));
+                        }
+
+                        if (!validateSignature(funcArg->signature, anotherVariable->function))
+                        {
+                            throw SignatureMismatchException(util::format(
+                                    "The signature of argument {} does not match the signature of "
+                                    "function {}.\n"
+                                    "At line {} in scope {}.\n\n"
+                                    "{}\n"
+                                    "{}\n",
+                                    color::colorText(argName, color::BOLD_GREEN),
+                                    color::colorText(anotherVarName, color::BOLD_BLUE),
+                                    color::colorText(std::to_string(line), color::YELLOW),
+                                    color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
+                        }
+                    }
+
+                    return;
+                }
+
+
+                if (!anotherVariable)
                 {
                     throw VariableNotFoundException(util::format(
                             "The variable {} not found.\n"
                             "Line: {}, Scope: {}\n\n"
                             "{}\n"
                             "{}\n",
-                            color::colorText(varName, color::BOLD_GREEN),
+                            color::colorText(anotherVarName, color::BOLD_GREEN),
                             color::colorText(std::to_string(line), color::YELLOW),
                             color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                 }
 
-
                 if (!calledFunction->isExternal() && !calledFunction->isVariedArguments())
                 {
-                    if (variable->type != funcArg->type)
+                    if (anotherVariable->type != funcArg->type)
                     {
                         throw TypeMismatchException(util::format(
                                 "The function argument {} type is {} and the variable {} type is {}.\n"
@@ -390,12 +502,20 @@ namespace iron
                                 "{}\n", // Exibe a setinha '^'
                                 color::colorText(argName, color::BOLD_GREEN),
                                 color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
-                                color::colorText(variable->name, color::BOLD_BLUE),
-                                color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
+                                color::colorText(anotherVariable->name, color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
                                 color::colorText(std::to_string(line), color::YELLOW),
                                 color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                     }
                 }
+
+
+
+
+                // if (funcArg->type == tokenMap::FUNCTION)
+                // {
+                //     calledFunction->getArgByName(funcArg->);
+                // }
             }
 
             if (ctx->functionCall())
@@ -445,6 +565,33 @@ namespace iron
                 visitFunctionCall(ctx->functionCall());
             }
         }
+    }
+
+    bool SemanticAnalysis::validateSignature(const std::shared_ptr<scope::Signature> &signature,
+                                             const std::shared_ptr<scope::Function> &function)
+    {
+        if (signature->getArguments().size() != function->getArgs()->size())
+        {
+            return false;
+        }
+
+        const uint size = signature->getArguments().size();
+        const auto signA = signature->getArguments();
+        const auto signB = *function->getArgs();
+        for (uint i = 0; i < size; i++)
+        {
+            if (signA[i]->type != signB[i]->type)
+            {
+                return false;
+            }
+        }
+
+        if (signature->getReturnType() != function->getReturnType())
+        {
+            return false;
+        }
+
+        return true;
     }
 
     std::shared_ptr<scope::Function>
