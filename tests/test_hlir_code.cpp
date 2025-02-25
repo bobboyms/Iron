@@ -194,7 +194,7 @@ TEST_F(HlIrTestCode, T2)
         }
     )";
 
-    std::string input = R"(
+    const std::string input = R"(
         fn soma() {
             let b:int = 12
             let x:int = b

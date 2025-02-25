@@ -1,3 +1,6 @@
+#include <llvm/IR/Function.h>
+
+
 #include "../headers/SemanticAnalysis.h"
 
 namespace iron
@@ -8,7 +11,6 @@ namespace iron
 
         const uint line = ctx->getStart()->getLine();
         const uint col = ctx->getStart()->getCharPositionInLine();
-
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 1);
 
         if (!ctx->functionName)
@@ -16,7 +18,7 @@ namespace iron
             throw std::runtime_error("Function name is missing.");
         }
 
-        std::string functionName = ctx->functionName->getText();
+        const auto functionName = ctx->functionName->getText();
 
         if (auto globalScope = scopeManager->getFunctionDeclarationByName(functionName))
         {
@@ -206,7 +208,122 @@ namespace iron
         }
     }
 
-    void SemanticAnalysis::visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx)
+    void SemanticAnalysis::validateFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
+                                                   const std::shared_ptr<scope::FunctionArg> &arg)
+    {
+        // Obtém informações de linha e coluna para mensagens de erro
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+
+        const auto currentFunctionName = getCurrentFunction()->getFunctionName();
+
+        const auto calledArgName = ctx->varName->getText();
+        // const auto dataFormatName = functionCallArg->dataFormat()->getText();
+        const auto calledArg = arg->signature->getArgumentByName(calledArgName);
+        if (ctx->anotherVarName)
+        {
+            const auto anotherVarName = ctx->anotherVarName->getText();
+            const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
+
+            if (!anotherVariable)
+            {
+                throw VariableNotFoundException(util::format("The variable {} not found.\n"
+                                                             "Line: {}, Scope: {}\n\n"
+                                                             "{}\n"
+                                                             "{}\n",
+                                                             color::colorText(anotherVarName, color::BOLD_GREEN),
+                                                             color::colorText(std::to_string(line), color::YELLOW),
+                                                             color::colorText(currentFunctionName, color::BOLD_YELLOW),
+                                                             codeLine, caretLine));
+            }
+
+            if (anotherVariable->type != calledArg->type)
+            {
+                throw TypeMismatchException(
+                        util::format("The function argument {} type is {} and the variable {} type is {}.\n"
+                                     "Line: {}, Scope: {}\n\n"
+                                     "{}\n" // Exibe a linha de código
+                                     "{}\n", // Exibe a setinha '^'
+                                     color::colorText(calledArgName, color::BOLD_GREEN),
+                                     color::colorText(tokenMap::getTokenText(calledArg->type), color::BOLD_GREEN),
+                                     color::colorText(anotherVarName, color::BOLD_BLUE),
+                                     color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
+                                     color::colorText(std::to_string(line), color::YELLOW),
+                                     color::colorText(currentFunctionName, color::BOLD_YELLOW), codeLine, caretLine));
+            }
+        }
+
+        if (ctx->dataFormat())
+        {
+            const auto value = ctx->dataFormat()->getText();
+            auto valueType = tokenMap::determineType(value);
+            if (valueType == tokenMap::REAL_NUMBER)
+            {
+                valueType = tokenMap::determineFloatType(value);
+            }
+
+            if (valueType != calledArg->type)
+            {
+
+                throw TypeMismatchException(
+                        util::format("The function argument {} type is {} and the value {} type is {}.\n"
+                                     "Line: {}, Scope: {}\n\n"
+                                     "{}\n" // Exibe a linha de código
+                                     "{}\n", // Exibe a setinha '^'
+                                     color::colorText(calledArgName, color::BOLD_GREEN),
+                                     color::colorText(tokenMap::getTokenText(calledArg->type), color::BOLD_GREEN),
+                                     color::colorText(value, color::BOLD_BLUE),
+                                     color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
+                                     color::colorText(std::to_string(line), color::YELLOW),
+                                     color::colorText(currentFunctionName, color::BOLD_YELLOW), codeLine, caretLine));
+            }
+        }
+
+        if (ctx->functionCall())
+        {
+            auto calledFunctionName = ctx->functionCall()->functionName->getText();
+            auto localCalledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
+
+            if (!localCalledFunction)
+            {
+                auto functionPtr = getCurrentFunction()->findVarAllScopesAndArg(calledFunctionName);
+                if (!functionPtr)
+                {
+                    throw FunctionNotFoundException(
+                            util::format("Function {} not found.\n"
+                                         "Line: {}, Scope: {}\n\n"
+                                         "{}\n"
+                                         "{}\n",
+                                         color::colorText(calledFunctionName, color::BOLD_GREEN),
+                                         color::colorText(std::to_string(line), color::YELLOW),
+                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                         codeLine, caretLine));
+                }
+
+                localCalledFunction = functionPtr->function;
+            }
+
+            if (calledArg->type != localCalledFunction->getReturnType())
+            {
+                throw TypeMismatchException(util::format(
+                        "The function argument {} type is {} and the function {} return type is {}.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n" // Exibe a linha de código
+                        "{}\n", // Exibe a setinha '^'
+                        color::colorText(calledArgName, color::BOLD_GREEN),
+                        color::colorText(tokenMap::getTokenText(calledArg->type), color::BOLD_GREEN),
+                        color::colorText(calledFunctionName, color::BOLD_BLUE),
+                        color::colorText(tokenMap::getTokenText(localCalledFunction->getReturnType()), color::BOLD_BLUE),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(currentFunctionName, color::BOLD_YELLOW), codeLine, caretLine));
+            }
+
+            visitFunctionCall(ctx->functionCall());
+        }
+    }
+
+    void SemanticAnalysis::visitFunctionCallArgs(const IronParser::FunctionCallArgsContext *ctx)
     {
         // Obtém informações de linha e coluna para mensagens de erro
         const uint line = ctx->getStart()->getLine();
@@ -223,15 +340,51 @@ namespace iron
         const auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCalledName);
         if (!calledFunction)
         {
+            const auto variable = getCurrentFunction()->findVarAllScopesAndArg(functionCalledName);
+            if (!variable)
+            {
+                throw FunctionNotFoundException(util::format(
+                        "Function {} not found.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n",
+                        color::colorText(functionCalledName, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            }
 
-            throw FunctionNotFoundException(util::format(
-                    "Function {} not found.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n"
-                    "{}\n",
-                    color::colorText(functionCalledName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            if (variable->type != tokenMap::FUNCTION)
+            {
+                throw FunctionNotFoundException(util::format(
+                        "The variable {} is not a function.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n",
+                        color::colorText(functionCalledName, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            }
+
+            const auto arg = getCurrentFunction()->getArgByName(functionCalledName);
+            if (arg->type == tokenMap::FUNCTION && !arg->signature)
+            {
+                throw std::runtime_error("SemanticAnalysis::visitFunctionCallArg. Function signature is empty.");
+            }
+
+            if (functionCall->functionCallArgs())
+            {
+                // visitFunctionCallArgs(functionCall->functionCallArgs());
+
+                for (const auto child: functionCall->functionCallArgs()->children)
+                {
+                    if (const auto functionCallArg = dynamic_cast<IronParser::FunctionCallArgContext *>(child))
+                    {
+                        validateFunctionCallArg(functionCallArg, arg);
+                    }
+                }
+            }
+
+            return;
         }
 
         const auto functionArgs = calledFunction->getArgs();
@@ -310,13 +463,13 @@ namespace iron
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
         auto currentFunction = getCurrentFunction();
-
         auto argName = ctx->varName->getText();
 
         if (auto functionCall = dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
         {
             auto functionCalledName = functionCall->functionName->getText();
             auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCalledName);
+
             if (!calledFunction)
             {
                 throw FunctionNotFoundException(util::format(
@@ -358,10 +511,7 @@ namespace iron
 
                 if (!calledFunction->isExternal() && !calledFunction->isVariedArguments())
                 {
-                    // if (funcArg->type == tokenMap::TYPE_CHAR && valueType == tokenMap::TYPE_STRING)
-                    // {
-                    //     return;
-                    // }
+
                     if (valueType != funcArg->type)
                     {
 
@@ -399,14 +549,18 @@ namespace iron
 
             if (ctx->anotherVarName)
             {
-
                 auto anotherVarName = ctx->anotherVarName->getText();
                 auto anotherVariable = currentFunction->findVarAllScopesAndArg(anotherVarName);
+
+                if (calledFunction->isExternal())
+                {
+                    return;
+                }
 
                 const auto arg = calledFunction->getArgByName(argName);
                 if (!arg)
                 {
-                    throw std::runtime_error("Argument not found.\n");
+                    throw std::runtime_error("SemanticAnalysis::visitFunctionCallArg. Argument not found.\n");
                 }
 
                 if (arg->type == tokenMap::FUNCTION)
@@ -422,14 +576,14 @@ namespace iron
                         if (!function)
                         {
                             throw FunctionNotFoundException(
-                                util::format("Function {} not found.\n"
-                                             "Line: {}, Scope: {}\n\n"
-                                             "{}\n"
-                                             "{}\n",
-                                             color::colorText(anotherVarName, color::BOLD_GREEN),
-                                             color::colorText(std::to_string(line), color::YELLOW),
-                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                             codeLine, caretLine));
+                                    util::format("Function {} not found.\n"
+                                                 "Line: {}, Scope: {}\n\n"
+                                                 "{}\n"
+                                                 "{}\n",
+                                                 color::colorText(anotherVarName, color::BOLD_GREEN),
+                                                 color::colorText(std::to_string(line), color::YELLOW),
+                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                                 codeLine, caretLine));
                         }
 
                         if (!validateSignature(funcArg->signature, function))
@@ -445,7 +599,8 @@ namespace iron
                                     color::colorText(std::to_string(line), color::YELLOW),
                                     color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
                         }
-                    } else
+                    }
+                    else
                     {
                         if (!anotherVariable->function)
                         {
@@ -510,8 +665,6 @@ namespace iron
                 }
 
 
-
-
                 // if (funcArg->type == tokenMap::FUNCTION)
                 // {
                 //     calledFunction->getArgByName(funcArg->);
@@ -520,7 +673,6 @@ namespace iron
 
             if (ctx->functionCall())
             {
-
 
                 auto calledFunctionName = ctx->functionCall()->functionName->getText();
                 auto localCalledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
@@ -602,17 +754,7 @@ namespace iron
         const int col = ctx->getStart()->getCharPositionInLine();
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
-        // auto currentScope = scopeManager->currentScope();
-        // if (!currentScope)
-        // {
-        //     throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current scope not found");
-        // }
-
         const auto currentFunction = getCurrentFunction();
-        // if (!currentFunction)
-        // {
-        //     throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current function not found");
-        // }
 
         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
         {

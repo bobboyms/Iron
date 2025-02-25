@@ -26,11 +26,11 @@ void runAnalysis(const std::string &file, llvm::LLVMContext &llvmContext)
         const auto config = std::make_shared<config::Configuration>("compiler_config.yaml");
         const iron::Analyser analyser(config);
         analyser.semantic(file);
-        // const auto hlirContext = analyser.hlir(file, hlirContexts);
-        // hlirContexts->emplace("main", hlirContext);
-        //
-        // std::cout << hlirContext->getText() << std::endl;
-        //
+        const auto hlirContext = analyser.hlir(file, hlirContexts);
+        hlirContexts->emplace("main", hlirContext);
+
+        std::cout << hlirContext->getText() << std::endl;
+        // //
         // printf("********************************\n");
         //
         // std::vector<std::unique_ptr<llvm::Module>> modules;

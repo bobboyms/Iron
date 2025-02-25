@@ -175,6 +175,21 @@ namespace hlir
     Variable::Variable() = default;
     Variable::~Variable() = default;
 
+    void Variable::setSignature(const std::shared_ptr<Signature> &signature)
+    {
+        if (!signature)
+        {
+            throw HLIRException("Variable::setSignature failed: Signature is null.");
+        }
+
+        this->signature = signature;
+    }
+
+    std::shared_ptr<Signature> Variable::getSignature()
+    {
+        return signature;
+    }
+
     std::string Variable::getVarName()
     {
         return varName;

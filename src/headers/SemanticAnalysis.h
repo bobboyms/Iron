@@ -59,8 +59,10 @@ namespace iron
         void visitFunctionArg(IronParser::FunctionArgContext *ctx) const;
 
         void visitFunctionCall(IronParser::FunctionCallContext *ctx);
+        void validateFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
+                                     const std::shared_ptr<scope::FunctionArg> &arg);
 
-        void visitFunctionCallArgs(IronParser::FunctionCallArgsContext *ctx);
+        void visitFunctionCallArgs(const IronParser::FunctionCallArgsContext *ctx);
 
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx);
 

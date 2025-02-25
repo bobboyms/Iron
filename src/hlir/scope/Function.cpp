@@ -176,6 +176,12 @@ namespace hlir
             {
                 variable->changeToAnotherScope();
             }
+
+            if (arg->signature)
+            {
+                variable->setSignature(arg->signature);
+            }
+
             return variable;
         }
 

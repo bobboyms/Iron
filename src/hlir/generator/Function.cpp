@@ -60,13 +60,59 @@ namespace hlir
         }
     }
 
+    std::shared_ptr<Signature> HLIRGenerator::getSignature(IronParser::FunctionSignatureContext *ctx)
+    {
+        int returnType = tokenMap::VOID;
+        if (ctx->functionReturnType())
+        {
+            returnType = tokenMap::getTokenType(ctx->functionReturnType()->varTypes()->getText());
+        }
+
+        const auto signature = std::make_shared<Signature>(std::make_shared<Type>(returnType));
+
+        for (const auto child: ctx->children)
+        {
+            if (const auto functionArgs = dynamic_cast<IronParser::FunctionArgsContext *>(child))
+            {
+                for (const auto child: functionArgs->children)
+                {
+                    if (const auto functionArg = dynamic_cast<IronParser::FunctionArgContext *>(child))
+                    {
+                        const std::string argType = functionArg->varTypes()->getText();
+                        const std::string argName = functionArg->varName->getText();
+
+                        const auto type = std::make_shared<Type>(tokenMap::getTokenType(argType));
+                        const auto arg = std::make_shared<Arg>()->set(argName, type);
+                        signature->addArg(arg);
+                    }
+                }
+            }
+        }
+
+        return signature;
+    }
+
     void HLIRGenerator::visitFunctionArg(IronParser::FunctionArgContext *ctx,
                                          const std::shared_ptr<FunctionArgs> &functionArgs)
     {
         const auto argName = ctx->varName->getText();
         const auto type = std::make_shared<Type>();
-        type->set(tokenMap::getTokenType(ctx->varTypes()->getText()));
-        functionArgs->addArg(std::make_shared<Arg>()->set(argName, type));
+
+        // printf("argName: %s\n", argName.c_str());
+
+        if (ctx->fnsignature())
+        {
+            const auto signature = getSignature(ctx->fnsignature()->functionSignature());
+            type->set(tokenMap::FUNCTION);
+            functionArgs->addArg(std::make_shared<Arg>()->set(argName, type, signature));
+        } else
+        {
+            type->set(tokenMap::getTokenType(ctx->varTypes()->getText()));
+            functionArgs->addArg(std::make_shared<Arg>()->set(argName, type));
+        }
+
+
+
     }
 
 
@@ -191,11 +237,18 @@ namespace hlir
 
             if (dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
             {
+
+
                 const auto inlineFunctionName = callFunction->getFunction()->getFunctionName();
-                const auto function = context->getFunctionByName(inlineFunctionName);
+                auto function = context->getFunctionByName(inlineFunctionName);
                 if (!function)
                 {
-                    throw HLIRException("HLIRGenerator::visitFunctionCallArg. Function not found");
+                    function = getFunctionValue(currentFunction, inlineFunctionName);
+                    if (!function)
+                    {
+                        throw HLIRException("HLIRGenerator::visitFunctionCallArg. Function not found");
+                    }
+
                 }
 
                 if (auto arg = function->getFunctionArgs()->findArgByName(argName); !arg)
@@ -508,8 +561,36 @@ namespace hlir
             statement = parentFunction->getCurrentLocalScope();
         }
 
-        // 4. Se chegar aqui, não encontrou a variável em nenhum escopo
-        throw HLIRException(util::format("HLIRGenerator::getFunctionValue. Undefined Function: {} in expression", varName));
+        const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+        if (!variable)
+        {
+            throw HLIRException(util::format("HLIRGenerator::getFunctionValue. Undefined Function: '{}' in expression", varName));
+        }
+
+        if (variable->getVarType()->getType() != tokenMap::FUNCTION)
+        {
+            throw HLIRException(util::format("HLIRGenerator::getFunctionValue. Undefined Function: '{}' in expression", varName));
+
+        }
+
+        if (!variable->getSignature())
+        {
+            throw HLIRException(util::format("HLIRGenerator::getFunctionValue. Undefined Function: '{}' in expression", varName));
+
+        }
+
+        const auto functionArgs = std::make_shared<FunctionArgs>();
+
+        for (const auto arg : variable->getSignature()->getArgs())
+        {
+            functionArgs->addArg(arg);
+        }
+
+        return std::make_shared<Function>()->set(variable->getVarName(),
+            functionArgs ,
+            variable->getSignature()->getReturnType());
+
+ 
     }
 
     std::shared_ptr<Function> HLIRGenerator::gatArrowFunction(const std::shared_ptr<Function> &currentFunction,

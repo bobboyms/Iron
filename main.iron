@@ -1,9 +1,3 @@
-fn sum(func:fn(a:int,b:int):int, c:int) {}
-
-fn sub(a:int, b:float):int {
-    return 1
-}
-
-fn main() {
-    sum(func:sub, c:2)
+fn sum(func:fn (a:int):int, p:int) {
+    func(a:p)
 }
