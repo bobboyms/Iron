@@ -78,7 +78,7 @@ namespace hlir
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
 
-        std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Function> &currentFunction,
+        static std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Function> &currentFunction,
                                                    const std::string &varName);
 
         static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);

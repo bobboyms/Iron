@@ -42,7 +42,7 @@ namespace iron
 
         std::unique_ptr<llvm::Module> generateCode();
 
-        llvm::Type *mapType(int type);
+        llvm::Type *mapType(int type) const;
 
         void generateTerminator(llvm::Type *functionReturnType);
 
@@ -88,7 +88,7 @@ namespace iron
         llvm::AllocaInst *allocaVariableFuncPtr(const std::shared_ptr<hlir::Variable> &variable,
                                                 const std::shared_ptr<hlir::Function> &function);
 
-        void declareFunction(const std::shared_ptr<hlir::Function> &hlirFunction);
+        void declareFunction(const std::shared_ptr<hlir::Function> &hlirFunction) const;
 
         void visitFunction(const std::shared_ptr<hlir::Function> &hlirFunction);
 
@@ -104,7 +104,14 @@ namespace iron
 
         void visitAssignment(const std::shared_ptr<hlir::Assign> &hlirAssignment);
 
+        llvm::Value *visitFunctionCallArg(const std::shared_ptr<hlir::FunctionCall> &functionCall,
+                                          llvm::Value *funcArg);
         llvm::Value *visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall);
+        llvm::FunctionType *createFuncType(llvm::Type *functionReturnType, const std::vector<llvm::Type *> &argTypes,
+                                           bool isVariedArguments) const;
+        llvm::FunctionType *createFuncTypeFromSignature(const std::shared_ptr<hlir::Signature>& signature) const;
+        std::pair<std::vector<llvm::Type *>, std::vector<std::string>>
+        createFunctionArgs(const std::vector<std::shared_ptr<hlir::Arg>> &args) const;
 
         static void linkExecutable(const std::vector<std::string> &objects, const std::string &exeName,
                                    const std::string &arch, const std::string &macosxVersionMin);

@@ -279,6 +279,16 @@ namespace hlir
         return util::format("var_{}", varId++);
     }
 
+    bool Function::isArgFunction()
+    {
+        return argFunction;
+    }
+
+    void Function::changeToArgFunction()
+    {
+        argFunction = true;
+    }
+
     std::shared_ptr<Function> Function::set(const std::string &functionName,
                                             const std::shared_ptr<FunctionArgs> &functionArgs,
                                             const std::shared_ptr<Type> &functionReturnType)

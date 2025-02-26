@@ -253,6 +253,20 @@ namespace scope
 
         if (const auto arg = getArgByName(varName))
         {
+            if (arg->signature)
+            {
+                const auto args = std::make_shared<std::vector<std::shared_ptr<FunctionArg>>>();
+                for (auto arg: arg->signature->getArguments())
+                {
+                    args->push_back(arg);
+                }
+
+                const auto function = std::make_shared<Function>(arg->name,args, arg->signature->getReturnType());
+                const auto variable = std::make_shared<Variable>(arg->name, arg->type);
+                variable->function = function;
+                return variable;
+            }
+
             return std::make_shared<Variable>(arg->name, arg->type);
         }
 
@@ -281,6 +295,20 @@ namespace scope
         // verifica nos argumentos da função
         if (const auto arg = getArgByName(varName))
         {
+            if (arg->signature)
+            {
+                const auto args = std::make_shared<std::vector<std::shared_ptr<FunctionArg>>>();
+                for (auto arg: arg->signature->getArguments())
+                {
+                    args->push_back(arg);
+                }
+
+                const auto function = std::make_shared<Function>(arg->name,args, arg->signature->getReturnType());
+                const auto variable = std::make_shared<Variable>(arg->name, arg->type);
+                variable->function = function;
+                return variable;
+            }
+
             return std::make_shared<Variable>(arg->name, arg->type);
         }
 

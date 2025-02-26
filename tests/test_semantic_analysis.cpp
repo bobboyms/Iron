@@ -1957,3 +1957,51 @@ TEST_F(SemanticAnalysisTest, 136)
     )";
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
+
+TEST_F(SemanticAnalysisTest, 137)
+{
+    const std::string input = R"(
+        fn sum(func:fn (a:int):int, p:int):int {
+            return func(a:p)
+        }
+
+        fn main() {
+            let inline:fn = (x:int):int -> x * 3
+            sum(func:inline, p:2)
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 138)
+{
+    const std::string input = R"(
+        fn sum(func:fn (a:int):int, p:int):int {
+            let r:int = func(a:p)
+            return r
+        }
+
+        fn main() {
+            let inline:fn = (x:int):int -> x * 3
+            sum(func:inline, p:2)
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 139)
+{
+    const std::string input = R"(
+        fn sum(func:fn (a:int):int, p:int):int {
+            let inline:fn = (x:int):int -> x * 3
+            return inline(x:func(a:p))
+        }
+
+        fn main() {
+            let inline:fn = (x:int):int -> x * 3
+            sum(func:inline, p:2)
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+

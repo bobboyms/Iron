@@ -173,7 +173,7 @@ namespace iron
     }
 
     // Converte tipos do HighLevelIR para o LLVM Type
-    llvm::Type *LLVM::mapType(const int type)
+    llvm::Type *LLVM::mapType(const int type) const
     {
         if (type == tokenMap::TYPE_INT)
         {

@@ -1,3 +1,9 @@
-fn sum(func:fn (a:int):int, p:int) {
-    func(a:p)
-}
+fn mult(n:int, p:float): float {return 0.0}
+
+        fn sub(ax:int, bx:float): int {return 0 }
+
+        fn main(): float {
+            let x: float = 25.00
+            let inline:fn = (a:int):float -> a * x
+            return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
+        }

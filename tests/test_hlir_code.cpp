@@ -185,17 +185,17 @@ TEST_F(HlIrTestCode, T1)
 TEST_F(HlIrTestCode, T2)
 {
     const std::string output = R"(
-        fn soma():void { 
-            let b:int = 12
-            let x:int = b
-            let var_1:int = 25
-            let var_2:int = MULT x, var_1
-            let var_3:int = PLUS b, var_2
+        fn main():void {
+         let b:int = 12
+         let x:int = b
+         let var_0:int = 25
+         let var_1:int = MULT x, var_0
+         let var_2:int = PLUS b, var_1
         }
     )";
 
     const std::string input = R"(
-        fn soma() {
+        fn main() {
             let b:int = 12
             let x:int = b
             b + x * 25
@@ -207,24 +207,24 @@ TEST_F(HlIrTestCode, T2)
 
 TEST_F(HlIrTestCode, T3)
 {
-    std::string output = R"(
-        fn teste():void { 
-            let a:int = 25
-            let b:int = 32
-            let var_1:float = 1.25
-            let var_2:float = a int to float
-            let var_3:float = PLUS var_2, var_1
-            let var_4:float = 2.36
-            let var_5:float = b int to float
-            let var_6:float = MULT var_5, var_4
-            let var_7:float = PLUS var_3, var_6
-            let var_8:float = a int to float
-            let var_9:float = MINUS var_7, var_8
+    const std::string output = R"(
+        fn main():void {
+         let a:int = 25
+         let b:int = 32
+         let var_0:float = 1.25
+         let var_1:float = a int to float
+         let var_2:float = PLUS var_1, var_0
+         let var_3:float = 2.36
+         let var_4:float = b int to float
+         let var_5:float = MULT var_4, var_3
+         let var_6:float = PLUS var_2, var_5
+         let var_7:float = a int to float
+         let var_8:float = MINUS var_6, var_7
         }
     )";
 
-    std::string input = R"(
-        fn teste() {
+    const std::string input = R"(
+        fn main() {
             let a:int = 25
             let b:int = 32
             a + 1.25 + b * 2.36 - a
@@ -236,24 +236,23 @@ TEST_F(HlIrTestCode, T3)
 
 TEST_F(HlIrTestCode, T4)
 {
-    std::string output = R"(
-        fn teste():void { 
-            let a:int = 10
-            let b:double = 20.00D
-            let c:int = 30
-            let var_1:double = a int to double
-            let var_2:double = PLUS var_1, b
-            let var_3:double = c int to double
-            let var_4:double = MULT var_2, var_3
-            let var_5:double = a int to double
-            let var_6:double = MINUS var_4, var_5
-            let var_7:float = var_6 double to float
-            let r:float = var_7
+    const std::string output = R"(
+        fn main():void {
+         let a:int = 10
+         let b:double = 20.00D
+         let c:int = 30
+         let var_0:double = a int to double
+         let var_1:double = PLUS var_0, b
+         let var_2:double = c int to double
+         let var_3:double = MULT var_1, var_2
+         let var_4:double = a int to double
+         let var_5:double = MINUS var_3, var_4
+         let r:double = var_5
         }
     )";
 
     const std::string input = R"(
-        fn teste() {
+        fn main() {
             let a:int = 10
             let b:double = 20.00D
             let c:int = 30
@@ -266,13 +265,13 @@ TEST_F(HlIrTestCode, T4)
 
 TEST_F(HlIrTestCode, T5)
 {
-    std::string output = R"(
+    const std::string output = R"(
         fn soma(x:int,b:int):void { 
-            let var_1:float = 1.145
-            let var_2:float = b int to float
-            let var_3:float = MULT var_2, var_1
-            let var_4:float = x int to float
-            let var_5:float = PLUS var_4, var_3
+         let var_0:float = 1.145
+         let var_1:float = b int to float
+         let var_2:float = MULT var_1, var_0
+         let var_3:float = x int to float
+         let var_4:float = PLUS var_3, var_2
         }
     )";
 
@@ -290,18 +289,18 @@ TEST_F(HlIrTestCode, T6)
 {
     const std::string output = R"(
         fn sub(ax:int,bx:int,nx:int):int {
-         let var_1:int = 0
-         return int var_1
+         let var_0:int = 0
+         return int var_0
         }
 
-        fn soma():void {
-         let var_1:float = 32.25
-         let var_3:int = 1
-         let var_4:int = 32
-         let var_5:int = 25
-         let var_2:int = call int sub(ax:var_3,bx:var_4,nx:var_5)
-         let var_6:float = var_2 int to float
-         let var_7:float = MULT var_1, var_6
+        fn main():void {
+         let var_0:float = 32.25
+         let var_2:int = 1
+         let var_3:int = 32
+         let var_4:int = 25
+         let var_1:int = call int sub(ax:var_2,bx:var_3,nx:var_4)
+         let var_5:float = var_1 int to float
+         let var_6:float = MULT var_0, var_5
         }
 
     )";
@@ -309,7 +308,7 @@ TEST_F(HlIrTestCode, T6)
     const std::string input = R"(
         fn sub(ax:int, bx:int, nx:int): int { return 0 }
 
-        fn soma() {
+        fn main() {
             32.25 * sub(ax: 1, bx: 32, nx: 25)
         }
     )";
@@ -320,25 +319,25 @@ TEST_F(HlIrTestCode, T6)
 TEST_F(HlIrTestCode, T7)
 {
     const std::string output = R"(
-        fn mult(n:int,p:float):float {
-         let var_1:float = 0.0
-         return float var_1
+       fn mult(n:int,p:float):float {
+         let var_0:float = 0.0
+         return float var_0
         }
 
         fn sub(ax:int,bx:float):int {
-         let var_1:int = 0
-         return int var_1
+         let var_0:int = 0
+         return int var_0
         }
 
-        fn soma():void {
+        fn main():void {
          let x:float = 25.00
-         let var_1:float = 32.25
-         let var_3:int = 1
-         let var_4:int = 22
-         let var_5:float = call float mult(n:var_4,p:x)
-         let var_2:int = call int sub(ax:var_3,bx:var_5)
-         let var_6:float = var_2 int to float
-         let var_7:float = MULT var_1, var_6
+         let var_0:float = 32.25
+         let var_2:int = 1
+         let var_3:int = 22
+         let var_4:float = call float mult(n:var_3,p:x)
+         let var_1:int = call int sub(ax:var_2,bx:var_4)
+         let var_5:float = var_1 int to float
+         let var_6:float = MULT var_0, var_5
         }
     )";
 
@@ -347,7 +346,7 @@ TEST_F(HlIrTestCode, T7)
 
         fn sub(ax:int, bx:float): int { return 0 }
 
-        fn soma() {
+        fn main() {
             let x: float = 25.00
             32.25 * sub(ax: 1, bx: mult(n:22, p:x))
         }
@@ -360,34 +359,34 @@ TEST_F(HlIrTestCode, T8)
 {
     const std::string output = R"(
         fn mult(n:int,p:float):float {
-         let var_1:float = 0.0
-         return float var_1
+         let var_0:float = 0.0
+         return float var_0
         }
 
         fn sub(ax:int,bx:float):int {
-         let var_1:int = 0
-         return int var_1
+         let var_0:int = 0
+         return int var_0
         }
 
         fn main():float {
          let x:float = 25.00
          let inline:fn = gfn_main_inline
-         let var_1:float = 32.25
-         let var_3:int = 1
-         let var_4:int = 22
-         let var_5:int = 25
-         let var_6:float = call float gfn_main_inline(a:var_5,x:x)
-         let var_7:float = call float mult(n:var_4,p:var_6)
-         let var_2:int = call int sub(ax:var_3,bx:var_7)
-         let var_8:float = var_2 int to float
-         let var_9:float = MULT var_1, var_8
-         return float var_9
+         let var_0:float = 32.25
+         let var_2:int = 1
+         let var_3:int = 22
+         let var_4:int = 25
+         let var_5:float = call float inline(a:var_4,x:x)
+         let var_6:float = call float mult(n:var_3,p:var_5)
+         let var_1:int = call int sub(ax:var_2,bx:var_6)
+         let var_7:float = var_1 int to float
+         let var_8:float = MULT var_0, var_7
+         return float var_8
         }
 
         fn gfn_main_inline(a:int,x:float):float {
-         let var_1:float = a int to float
-         let var_2:float = MULT var_1, x
-         return float var_2
+         let var_0:float = a int to float
+         let var_1:float = MULT var_0, x
+         return float var_1
         }
     )";
 
@@ -409,36 +408,36 @@ TEST_F(HlIrTestCode, T8)
 TEST_F(HlIrTestCode, T9)
 {
     const std::string output = R"(
-    fn mult(n:int,p:float):float {
-     let var_1:float = 0.0
-     return float var_1
-    }
+        fn mult(n:int,p:float):float {
+         let var_0:float = 0.0
+         return float var_0
+        }
 
-    fn sub(ax:int,bx:float):int {
-     let var_1:int = 0
-     return int var_1
-    }
+        fn sub(ax:int,bx:float):int {
+         let var_0:int = 0
+         return int var_0
+        }
 
-    fn main():float {
-     let x:float = 25.00
-     let inline:fn = gfn_main_inline
-     let var_1:float = 32.25
-     let var_3:int = 1
-     let var_4:int = 22
-     let var_5:int = 25
-     let var_6:float = call float gfn_main_inline(a:var_5,x:x)
-     let var_7:float = call float mult(n:var_4,p:var_6)
-     let var_2:int = call int sub(ax:var_3,bx:var_7)
-     let var_8:float = var_2 int to float
-     let var_9:float = MULT var_1, var_8
-     return float var_9
-    }
+        fn main():float {
+         let x:float = 25.00
+         let inline:fn = gfn_main_inline
+         let var_0:float = 32.25
+         let var_2:int = 1
+         let var_3:int = 22
+         let var_4:int = 25
+         let var_5:float = call float inline(a:var_4,x:x)
+         let var_6:float = call float mult(n:var_3,p:var_5)
+         let var_1:int = call int sub(ax:var_2,bx:var_6)
+         let var_7:float = var_1 int to float
+         let var_8:float = MULT var_0, var_7
+         return float var_8
+        }
 
-    fn gfn_main_inline(a:int,x:float):float {
-     let var_1:float = a int to float
-     let var_2:float = MULT var_1, x
-     return float var_2
-    }
+        fn gfn_main_inline(a:int,x:float):float {
+         let var_0:float = a int to float
+         let var_1:float = MULT var_0, x
+         return float var_1
+        }
 
     )";
 

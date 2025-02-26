@@ -223,11 +223,13 @@ namespace iron
         const auto calledArg = arg->signature->getArgumentByName(calledArgName);
         if (ctx->anotherVarName)
         {
+
             const auto anotherVarName = ctx->anotherVarName->getText();
             const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
 
             if (!anotherVariable)
             {
+
                 throw VariableNotFoundException(util::format("The variable {} not found.\n"
                                                              "Line: {}, Scope: {}\n\n"
                                                              "{}\n"
@@ -481,6 +483,7 @@ namespace iron
                         color::colorText(std::to_string(line), color::YELLOW),
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
+
             auto funcArg = calledFunction->getArgByName(argName);
             if (!funcArg)
             {
@@ -557,13 +560,14 @@ namespace iron
                     return;
                 }
 
+
                 const auto arg = calledFunction->getArgByName(argName);
                 if (!arg)
                 {
                     throw std::runtime_error("SemanticAnalysis::visitFunctionCallArg. Argument not found.\n");
                 }
 
-                if (arg->type == tokenMap::FUNCTION)
+                if (arg->type == tokenMap::FUNCTION && funcArg->signature)
                 {
                     if (!funcArg->signature)
                     {
@@ -636,6 +640,7 @@ namespace iron
 
                 if (!anotherVariable)
                 {
+                    printf("Arg argName %s\n", anotherVarName.c_str());
                     throw VariableNotFoundException(util::format(
                             "The variable {} not found.\n"
                             "Line: {}, Scope: {}\n\n"
@@ -706,8 +711,8 @@ namespace iron
                                 "{}\n", // Exibe a setinha '^'
                                 color::colorText(argName, color::BOLD_GREEN),
                                 color::colorText(tokenMap::getTokenText(funcArg->type), color::BOLD_GREEN),
-                                color::colorText(calledFunction->getName(), color::BOLD_BLUE),
-                                color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()),
+                                color::colorText(localCalledFunction->getFunctionName(), color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(localCalledFunction->getReturnType()),
                                                  color::BOLD_BLUE),
                                 color::colorText(std::to_string(line), color::YELLOW),
                                 color::colorText(functionCalledName, color::BOLD_YELLOW), codeLine, caretLine));
@@ -770,6 +775,7 @@ namespace iron
 
             const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
             auto arrowFunction = std::make_shared<scope::Function>(functionName, funcArgs, returnType);
+            variable->function = arrowFunction;
             arrowFunction->setAlias(variable);
 
             scopeManager->addFunctionDeclaration(arrowFunction);
@@ -779,7 +785,7 @@ namespace iron
                 visitFunctionSignature(ctx->functionSignature());
             }
 
-            auto currentStatement =
+            const auto currentStatement =
                     std::dynamic_pointer_cast<scope::Statements>(currentFunction->getCurrentLocalScope());
             if (!currentStatement)
             {

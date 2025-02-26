@@ -164,7 +164,8 @@ namespace hlir
                     if (!anotherVariable)
                     {
                         localFunction = context->getFunctionByName(anotherVarName);
-                    } else
+                    }
+                    else
                     {
                         localFunction = getFunctionValue(currentFunction, anotherVariable->getVarName());
                     }
@@ -178,14 +179,13 @@ namespace hlir
                     auto value = std::make_shared<Value>()->set(localFunction, type);
                     auto assign = std::make_shared<Assign>()->set(variable, value);
                     statement->addStatement(assign);
-
-                } else
+                }
+                else
                 {
                     auto value = std::make_shared<Value>()->set(anotherVariable, anotherVariable->getVarType());
                     auto assign = std::make_shared<Assign>()->set(variable, value);
                     statement->addStatement(assign);
                 }
-
             }
         }
 
@@ -272,11 +272,9 @@ namespace hlir
                 const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
 
                 const auto calledFunction = visitFunctionCall(ctx->functionCall(), currentFunction);
-                const auto expr = std::make_shared<Expr>()->set(variable,calledFunction);
+                const auto expr = std::make_shared<Expr>()->set(variable, calledFunction);
                 statement->addStatement(expr);
             }
-
-
         }
 
         if (ctx->arrowFunctionBlock())

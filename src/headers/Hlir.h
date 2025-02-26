@@ -1182,6 +1182,9 @@ namespace hlir
         std::string generateLabel(const std::string &label);
         std::string generateVarName();
 
+        bool isArgFunction();
+        void changeToArgFunction();
+
     private:
         // Dados da função
         uint labelId{0};
@@ -1190,6 +1193,7 @@ namespace hlir
         std::shared_ptr<Type> functionReturnType;
         bool external;
         bool variedArguments;
+        bool argFunction{false};
 
     protected:
         // Corpo e escopo da função
