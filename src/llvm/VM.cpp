@@ -68,7 +68,7 @@ namespace iron {
         }
 
         // Prepara os argumentos (aqui, assumindo que não há argumentos).
-        std::vector<llvm::GenericValue> args;
+        const std::vector<llvm::GenericValue> args;
 
         // Executa a função "main".
         const llvm::GenericValue result = engine->runFunction(mainFunc, args);

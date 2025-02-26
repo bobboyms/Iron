@@ -30,8 +30,8 @@ namespace iron
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvmContext, "entry", function);
         builder.SetInsertPoint(entry);
 
-        //Cria todos os blocos basicos
-        for (const auto block : hlirFunction->getAllBlocks())
+        // Cria todos os blocos basicos
+        for (const auto block: hlirFunction->getAllBlocks())
         {
             llvm::BasicBlock::Create(llvmContext, block->getLabel(), function);
         }
@@ -41,7 +41,6 @@ namespace iron
         {
             builder.CreateRetVoid();
         }
-
     }
 
     void LLVM::visitFuncReturn(const std::shared_ptr<hlir::FuncReturn> &funcReturn)
@@ -58,21 +57,23 @@ namespace iron
         const auto type = mapType(funcReturn->getVariable()->getVarType()->getType());
 
         llvm::Value *varValue = builder.CreateLoad(type, allocaVariable, util::format("load_{}", varName));
-        // printf("Criou um retorno tipo: %s\n", tokenMap::getTokenText(funcReturn->getVariable()->getVarType()->getType()).c_str());
+        // printf("Criou um retorno tipo: %s\n",
+        // tokenMap::getTokenText(funcReturn->getVariable()->getVarType()->getType()).c_str());
 
         builder.CreateRet(varValue);
     }
 
     llvm::BasicBlock *LLVM::getBasicBlock(const std::string &blockName, llvm::Function *currentFunction)
     {
-        for (auto &BB : *currentFunction) {
-            if (BB.getName() == blockName) {
+        for (auto &BB: *currentFunction)
+        {
+            if (BB.getName() == blockName)
+            {
                 return &BB;
             }
         }
 
         throw LLVMException(util::format("Block {} not found", blockName));
-
     }
 
     void LLVM::visitJump(const std::shared_ptr<hlir::Jump> &jump)
@@ -96,12 +97,11 @@ namespace iron
         }
 
 
-        const auto basicBlock = getBasicBlock(block->getLabel(),currentFunction);
+        const auto basicBlock = getBasicBlock(block->getLabel(), currentFunction);
         builder.SetInsertPoint(basicBlock);
-
     }
 
-    //cria uma condicional if
+    // cria uma condicional if
     void LLVM::visitConditional(const std::shared_ptr<hlir::Conditional> &conditional)
     {
 
@@ -116,21 +116,66 @@ namespace iron
             throw LLVMException("visitExpr: currentFunction is null");
         }
 
-        //  = llvm::BasicBlock::Create(llvmContext, conditional->getTrueLabel(), currentFunction);
-        //  = llvm::BasicBlock::Create(llvmContext, conditional->getFalseLabel(), currentFunction);
-
-        // printf("Bloco quando true: %s\n", conditional->getTrueLabel().c_str());
-        // printf("Bloco quando false: %s\n", conditional->getFalseLabel().c_str());
-
-        const auto variable = getOrPromoteToAlloca(conditional->getVariable()->getVarName() ,currentFunction);
+        const auto variable = getOrPromoteToAlloca(conditional->getVariable()->getVarName(), currentFunction);
         auto *cond = builder.CreateLoad(builder.getInt1Ty(), variable, "cond_");
 
         llvm::BasicBlock *thenBB = getBasicBlock(conditional->getTrueLabel(), currentFunction);
         llvm::BasicBlock *elseBB = getBasicBlock(conditional->getFalseLabel(), currentFunction);
 
         builder.CreateCondBr(cond, thenBB, elseBB);
-        // printf("builder.CreateBr: %s\n", conditional->getFalseLabel().c_str());
-        // builder.CreateBr(thenBB);
+    }
+
+    llvm::Value *getArgumentByName(llvm::Function *F, const llvm::StringRef name)
+    {
+        for (auto &Arg: F->args())
+        {
+            if (Arg.getName() == name)
+                return &Arg;
+        }
+        return nullptr; // Retorna nullptr se não encontrar o argumento
+    }
+
+    llvm::Value *LLVM::visitFunctionCallArg(const std::shared_ptr<hlir::FunctionCall> &functionCall,
+                                            llvm::Value *funcArg)
+    {
+
+        const llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
+        if (!currentFunction)
+        {
+            throw LLVMException("visitAssignment: currentFunction is null");
+        }
+
+        const auto parentFunctionName = currentFunction->getName().str();
+        const auto functionCallName = functionCall->getFunctionCallName();
+
+        const auto parentFunction = hlirContext->getFunctionByName(parentFunctionName);
+        if (!parentFunction)
+        {
+            throw LLVMException("LLVM::visitFunctionCallArg. parentFunction is null");
+        }
+
+        const auto variable = parentFunction->findVarAllScopesAndArg(functionCallName);
+        if (!parentFunction)
+        {
+            throw LLVMException("LLVM::visitFunctionCallArg. variable is null");
+        }
+
+        if (!variable->getSignature())
+        {
+            throw LLVMException("LLVM::visitFunctionCallArg. Signature is null");
+        }
+
+        const auto targetFuncType = createFuncTypeFromSignature(variable->getSignature());
+
+        std::vector<llvm::Value *> args;
+        for (const auto &arg: functionCall->getCallArgs()->getCallArgs())
+        {
+            const auto value = createConstValue(arg->value->getValueType(), arg->value);
+            args.push_back(value);
+        }
+
+        return builder.CreateCall(targetFuncType, funcArg, args, "call_func_arg");
+
     }
 
     llvm::Value *LLVM::visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall)
@@ -165,7 +210,13 @@ namespace iron
         llvm::Function *function = module->getFunction(functionName);
         if (!function)
         {
-            throw LLVMException(util::format("LLVM::visitFunctionCall. Function {} not found", functionName));
+            const auto funcArg = getArgumentByName(currentFunction, functionName);
+            if (!funcArg)
+            {
+                throw LLVMException(util::format("LLVM::visitFunctionCall. Function {} not found", functionName));
+            }
+
+            return visitFunctionCallArg(functionCall, funcArg);
         }
 
         const auto arrowFunction = findAllocaByName(currentFunction, functionCall->getFunctionCallName());
@@ -182,8 +233,8 @@ namespace iron
         {
             if (function->arg_size() != args.size())
             {
-                throw LLVMException(
-                        util::format("LLVM::visitFunctionCall. Argument count mismatch for function {}.", functionName));
+                throw LLVMException(util::format("LLVM::visitFunctionCall. Argument count mismatch for function {}.",
+                                                 functionName));
             }
         }
 
@@ -192,9 +243,10 @@ namespace iron
             if (arrowFunction)
             {
                 llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(function->getFunctionType());
-                llvm::Value *arrowLoaded = builder.CreateLoad(funcPtrType, arrowFunction, util::format("arrow_{}_loaded",functionCall->getFunctionCallName()));
-                return builder.CreateCall(function->getFunctionType(), arrowLoaded,
-                                                         args);
+                llvm::Value *arrowLoaded =
+                        builder.CreateLoad(funcPtrType, arrowFunction,
+                                           util::format("arrow_{}_loaded", functionCall->getFunctionCallName()));
+                return builder.CreateCall(function->getFunctionType(), arrowLoaded, args);
             }
 
             builder.CreateCall(function, args);
@@ -204,42 +256,79 @@ namespace iron
         if (arrowFunction)
         {
             llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(function->getFunctionType());
-            llvm::Value *arrowLoaded = builder.CreateLoad(funcPtrType, arrowFunction, util::format("arrow_{}_loaded",functionCall->getFunctionCallName()));
-            return builder.CreateCall(function->getFunctionType(), arrowLoaded,
-                                                     args,
-                                                     util::format("call_{}",functionCall->getFunctionCallName()));
+            llvm::Value *arrowLoaded = builder.CreateLoad(
+                    funcPtrType, arrowFunction, util::format("arrow_{}_loaded", functionCall->getFunctionCallName()));
+            return builder.CreateCall(function->getFunctionType(), arrowLoaded, args,
+                                      util::format("call_{}", functionCall->getFunctionCallName()));
         }
 
         return builder.CreateCall(function, args, "call_" + functionName);
     }
 
-    void LLVM::declareFunction(const std::shared_ptr<hlir::Function> &hlirFunction)
+    llvm::FunctionType *LLVM::createFuncType(llvm::Type *functionReturnType, const std::vector<llvm::Type *> &argTypes,
+                                             const bool isVariedArguments) const
     {
-
-        if (module->getFunction(hlirFunction->getFunctionName())) {
-            return;
-        }
-
-        llvm::Type *functionReturnType = mapType(hlirFunction->getFunctionReturnType()->getType());
-        std::vector<llvm::Type *> argTypes;
-        std::vector<std::string> argNames;
-
-        for (const auto &arg: hlirFunction->getFunctionArgs()->getArgs())
-        {
-            argTypes.push_back(mapType(arg->type->getType()));
-            argNames.push_back(arg->name);
-        }
-
         llvm::FunctionType *funcType;
         if (!argTypes.empty())
         {
-            funcType = llvm::FunctionType::get(functionReturnType, argTypes, hlirFunction->isVariedArguments());
+            funcType = llvm::FunctionType::get(functionReturnType, argTypes, isVariedArguments);
         }
         else
         {
             // Definir o tipo da função
-            funcType = llvm::FunctionType::get(functionReturnType, llvm::ArrayRef<llvm::Type *>(), hlirFunction->isVariedArguments());
+            funcType = llvm::FunctionType::get(functionReturnType, llvm::ArrayRef<llvm::Type *>(), isVariedArguments);
         }
+
+        return funcType;
+    }
+
+    llvm::FunctionType *LLVM::createFuncTypeFromSignature(const std::shared_ptr<hlir::Signature>& signature) const
+    {
+        llvm::Type *functionReturnType = mapType(signature->getReturnType()->getType());
+        const auto [innerArgTypes, _] = createFunctionArgs(signature->getArgs());
+        return createFuncType(functionReturnType, innerArgTypes, false);
+    }
+
+    std::pair<std::vector<llvm::Type *>, std::vector<std::string>>
+    LLVM::createFunctionArgs(const std::vector<std::shared_ptr<hlir::Arg>> &args) const
+    {
+        std::vector<llvm::Type *> argTypes{};
+        std::vector<std::string> argNames{};
+
+        for (const auto &arg: args)
+        {
+
+            if (arg->type->getType() == tokenMap::FUNCTION)
+            {
+                if (arg->signature)
+                {
+                    const llvm::FunctionType *funcType = createFuncTypeFromSignature(arg->signature);
+                    argTypes.push_back(funcType->getPointerTo());
+                    argNames.push_back(arg->name);
+                }
+            }
+            else
+            {
+                argTypes.push_back(mapType(arg->type->getType()));
+                argNames.push_back(arg->name);
+            }
+        }
+
+        return std::make_pair(argTypes, argNames);
+    }
+
+    void LLVM::declareFunction(const std::shared_ptr<hlir::Function> &hlirFunction) const
+    {
+
+        if (module->getFunction(hlirFunction->getFunctionName()))
+        {
+            return;
+        }
+
+        llvm::Type *functionReturnType = mapType(hlirFunction->getFunctionReturnType()->getType());
+        const auto [argTypes, argNames] = createFunctionArgs(hlirFunction->getFunctionArgs()->getArgs());
+
+        llvm::FunctionType *funcType = createFuncType(functionReturnType, argTypes, hlirFunction->isVariedArguments());
 
         // Definir a linkage baseada na visibilidade
         constexpr llvm::Function::LinkageTypes linkage = llvm::Function::ExternalLinkage;
@@ -248,9 +337,6 @@ namespace iron
         llvm::Function *function =
                 llvm::Function::Create(funcType, linkage, hlirFunction->getFunctionName(), module.get());
 
-        // printf("Função declarada\n");
-        // function->print(llvm::outs());
-        //
         if (!argTypes.empty())
         {
             unsigned idx = 0;
@@ -264,4 +350,4 @@ namespace iron
             }
         }
     }
-}
+} // namespace iron

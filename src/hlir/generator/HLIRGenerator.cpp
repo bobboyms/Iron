@@ -142,20 +142,50 @@ namespace hlir
                     throw HLIRException("HLIRGenerator::visitAssignment. Variable not found");
                 }
 
+                const auto isVariableFunction = variable->getVarType()->getType() == tokenMap::FUNCTION;
                 const auto anotherVariable = currentFunction->findVarAllScopesAndArg(anotherVarName);
-                if (!anotherVariable)
+                if (!anotherVariable && !isVariableFunction)
                 {
-                    throw HLIRException("HLIRGenerator::visitAssignment. Another Variable not found");
+                    throw HLIRException("HLIRGenerator::visitAssignment. Variable not found");
                 }
 
-                if (anotherVariable->isAnotherScope())
+                if (anotherVariable)
                 {
-                    ensureVariableCaptured(currentFunction, anotherVariable);
+                    if (anotherVariable->isAnotherScope())
+                    {
+                        ensureVariableCaptured(currentFunction, anotherVariable);
+                    }
                 }
-                //
-                auto value = std::make_shared<Value>()->set(anotherVariable, anotherVariable->getVarType());
-                auto assign = std::make_shared<Assign>()->set(variable, value);
-                statement->addStatement(assign);
+
+                if (isVariableFunction)
+                {
+
+                    std::shared_ptr<Function> localFunction;
+                    if (!anotherVariable)
+                    {
+                        localFunction = context->getFunctionByName(anotherVarName);
+                    }
+                    else
+                    {
+                        localFunction = getFunctionValue(currentFunction, anotherVariable->getVarName());
+                    }
+
+                    if (!localFunction)
+                    {
+                        throw HLIRException("HLIRGenerator::visitAssignment. Function not found");
+                    }
+
+                    const auto type = std::make_shared<Type>(tokenMap::FUNCTION);
+                    auto value = std::make_shared<Value>()->set(localFunction, type);
+                    auto assign = std::make_shared<Assign>()->set(variable, value);
+                    statement->addStatement(assign);
+                }
+                else
+                {
+                    auto value = std::make_shared<Value>()->set(anotherVariable, anotherVariable->getVarType());
+                    auto assign = std::make_shared<Assign>()->set(variable, value);
+                    statement->addStatement(assign);
+                }
             }
         }
 
@@ -242,11 +272,9 @@ namespace hlir
                 const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
 
                 const auto calledFunction = visitFunctionCall(ctx->functionCall(), currentFunction);
-                const auto expr = std::make_shared<Expr>()->set(variable,calledFunction);
+                const auto expr = std::make_shared<Expr>()->set(variable, calledFunction);
                 statement->addStatement(expr);
             }
-
-
         }
 
         if (ctx->arrowFunctionBlock())

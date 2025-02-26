@@ -33,6 +33,10 @@ namespace hlir
 
     class Jump;
 
+    struct Arg;
+
+
+
     /**
      * @class Basic
      * @brief Abstract base class enforcing a getText() method.
@@ -135,6 +139,37 @@ namespace hlir
         }
     };
 
+    class Signature final : public Basic, public Parent
+    {
+    private:
+        std::shared_ptr<Type> returnType;
+        std::vector<std::shared_ptr<Arg>> args;
+
+    public:
+        /**
+         * @brief Adds a new Arg to the internal list.
+         * @param arg A shared pointer to an Arg.
+         */
+        void addArg(const std::shared_ptr<Arg> &arg);
+
+        std::string getText() override;
+
+        std::shared_ptr<Arg> findArgByName(const std::string &argName) const;
+
+        std::vector<std::shared_ptr<Arg>> getArgs();
+
+        std::shared_ptr<Type> getReturnType();
+
+        explicit Signature(const std::shared_ptr<Type> &returnType);
+
+        ~Signature() override;
+
+        void setParent(const std::shared_ptr<Parent> newParent) override
+        {
+            parent = newParent;
+        }
+    };
+
     /**
      * @struct Arg
      * @brief Represents a single argument with a name and an associated Type.
@@ -150,6 +185,7 @@ namespace hlir
          * @brief Shared pointer to a Type for this argument.
          */
         std::shared_ptr<Type> type;
+        std::shared_ptr<Signature> signature;
 
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
@@ -162,6 +198,24 @@ namespace hlir
             type = newType;
             const std::shared_ptr<Parent> parentPtr = shared_from_this();
             newType->setParent(parentPtr);
+
+            auto assignPtr = std::dynamic_pointer_cast<Arg>(parentPtr);
+            if (!assignPtr)
+            {
+                throw HLIRException("Failed to cast Parent");
+            }
+
+            return assignPtr;
+        }
+
+        std::shared_ptr<Arg> set(const std::string &name, const std::shared_ptr<Type> &type, const std::shared_ptr<Signature> &signature)
+        {
+            this->name = name;
+            this->type = type;
+            this->signature = signature;
+
+            const std::shared_ptr<Parent> parentPtr = shared_from_this();
+            this->type->setParent(parentPtr);
 
             auto assignPtr = std::dynamic_pointer_cast<Arg>(parentPtr);
             if (!assignPtr)
@@ -239,9 +293,13 @@ namespace hlir
          */
         std::shared_ptr<Type> varType;
 
+        std::shared_ptr<Signature> signature;
         bool anotherScope = false;
 
     public:
+
+        void setSignature(const std::shared_ptr<Signature> &signature);
+        std::shared_ptr<Signature> getSignature();
         /**
          * @brief Retrieves the variable's name.
          * @return A string with the name.
@@ -1124,6 +1182,9 @@ namespace hlir
         std::string generateLabel(const std::string &label);
         std::string generateVarName();
 
+        bool isArgFunction();
+        void changeToArgFunction();
+
     private:
         // Dados da função
         uint labelId{0};
@@ -1132,6 +1193,7 @@ namespace hlir
         std::shared_ptr<Type> functionReturnType;
         bool external;
         bool variedArguments;
+        bool argFunction{false};
 
     protected:
         // Corpo e escopo da função

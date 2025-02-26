@@ -29,10 +29,12 @@ namespace hlir
         bool visitBlockAndCheckReturn(IronParser::IfBlockContext *blockCtx,
                                       const std::shared_ptr<Function> &currentFunction);
         static void handleEndBlock(const std::shared_ptr<Function> &currentFunction,
-                            const std::shared_ptr<Statement> &statement, const std::string &endLabel, bool haveReturn);
+                                   const std::shared_ptr<Statement> &statement, const std::string &endLabel,
+                                   bool haveReturn);
         void visitIfBlock(IronParser::IfBlockContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
-        void visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction, const std::string &endLabel);
+        void visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
+                              const std::string &endLabel);
 
         void visitElseStatement(IronParser::ElseStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
                                 const std::string &label, const std::string &endLabel);
@@ -43,6 +45,9 @@ namespace hlir
 
         static std::shared_ptr<Expr> castVariable(int higherType, const std::string &varName,
                                                   const std::shared_ptr<Variable> &variable);
+
+
+        static std::shared_ptr<Signature> getSignature(IronParser::FunctionSignatureContext *ctx);
 
         void visitAssignment(IronParser::AssignmentContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
@@ -73,7 +78,7 @@ namespace hlir
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
 
-        std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Function> &currentFunction,
+        static std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Function> &currentFunction,
                                                    const std::string &varName);
 
         static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);

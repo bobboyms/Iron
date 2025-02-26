@@ -54,6 +54,46 @@ namespace hlir
 
     Type::~Type() = default;
 
+    void Signature::addArg(const std::shared_ptr<Arg> &arg)
+    {
+        if (!arg)
+        {
+            throw HLIRException("Signature::addArg. Arg is nullptr");
+        }
+        args.push_back(arg);
+    }
+
+    std::string Signature::getText()
+    {
+        throw std::runtime_error("Signature::findArgByName not implemented");
+    }
+
+    std::shared_ptr<Arg> Signature::findArgByName(const std::string &argName) const
+    {
+        throw std::runtime_error("Signature::findArgByName not implemented");
+    }
+
+    std::vector<std::shared_ptr<Arg>> Signature::getArgs()
+    {
+        return args;
+    }
+
+    Signature::Signature(const std::shared_ptr<Type> &returnType) : returnType(returnType)
+    {
+        if (!returnType)
+        {
+            throw HLIRException("Signature::Signature. returnType is null");
+        }
+    }
+    Signature::~Signature()
+    {
+    }
+
+    std::shared_ptr<Type> Signature::getReturnType()
+    {
+        return returnType;
+    }
+
     int Type::getType() const
     {
         return type;

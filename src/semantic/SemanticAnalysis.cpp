@@ -357,10 +357,50 @@ namespace iron
                 const std::string varType = varDeclaration->varTypes()->getText();
                 const auto functionName = ctx->functionCall()->functionName->getText();
 
-                if (const auto variable = getCurrentFunction()->findVarCurrentScopeAndArg(functionName))
+                if (const auto variable = getCurrentFunction()->findVarAllScopesAndArg(functionName))
                 {
+
+                    if (variable->type == tokenMap::FUNCTION && !variable->function)
+                    {
+                        const auto arg = currentFunction->getArgByName(functionName);
+                        if (!arg || !arg->signature)
+                        {
+                            throw FunctionNotFoundException(
+                                util::format("Function {} not found.\n"
+                                             "Line: {}, Scope: {}\n\n"
+                                             "{}\n"
+                                             "{}\n",
+                                             color::colorText(functionName, color::BOLD_GREEN),
+                                             color::colorText(std::to_string(line), color::YELLOW),
+                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                             codeLine, caretLine));
+                        }
+
+                        if (arg->signature->getReturnType() != tokenMap::getTokenType(varType))
+                        {
+                            throw TypeMismatchException(util::format(
+                                    "The variable {} of type {} is incompatible with the function {} return of type {}.\n"
+                                    "Line: {}, Scope: {}\n\n"
+                                    "{}\n"
+                                    "{}\n",
+                                    color::colorText(varName, color::BOLD_GREEN),
+                                    color::colorText(varType, color::BOLD_GREEN),
+                                    color::colorText(functionName, color::BOLD_BLUE),
+                                    color::colorText(tokenMap::getTokenText(variable->function->getReturnType()),
+                                                     color::BOLD_BLUE),
+                                    color::colorText(std::to_string(line), color::YELLOW),
+                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+                                    caretLine));
+                        }
+
+                        visitFunctionCall(ctx->functionCall());
+
+                        return;
+                    }
+
                     if (!variable->function)
                     {
+
                         throw FunctionNotFoundException(
                                 util::format("Function {} not found.\n"
                                              "Line: {}, Scope: {}\n\n"
@@ -437,8 +477,8 @@ namespace iron
                 if (tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
                 {
                     std::shared_ptr<scope::Function> functionPtr;
-                    const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);;
-                    if (!anotherVariable)
+                    if (const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
+                        !anotherVariable)
                     {
                         const auto function = scopeManager->getFunctionDeclarationByName(anotherVarName);
                         if (!function)
@@ -670,6 +710,32 @@ namespace iron
         else if (ctx->functionCall())
         {
             const auto functionCallName = ctx->functionCall()->functionName->getText();
+
+            const auto arg = currentFunction->getArgByName(functionCallName);
+            if (arg && arg->signature)
+            {
+
+                if (arg->signature->getReturnType() != currentFunction->getReturnType())
+                {
+                    throw TypeMismatchException(util::format(
+                            "The Function {} return type {} is incompatible with the Function {} return type {}.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n",
+                            color::colorText(currentFunction->getFunctionName(), color::BOLD_GREEN),
+                            color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
+                            color::colorText(functionCallName, color::BOLD_BLUE),
+                            color::colorText(tokenMap::getTokenText(arg->signature->getReturnType()), color::BOLD_BLUE),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+                }
+
+                visitFunctionCall(ctx->functionCall());
+                currentFunction->updateReturnTokenStatusToFound();
+                return;
+
+            }
+
             const auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCallName);
             if (!calledFunction)
             {

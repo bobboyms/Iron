@@ -206,7 +206,7 @@ functionCallArg:
 		dataFormat
 		| anotherVarName = IDENTIFIER
 		| functionCall
-		| formatStatement
+//		| formatStatement
 		| arrowFunctionInline
 		| arrowFunctionBlock
 	);
