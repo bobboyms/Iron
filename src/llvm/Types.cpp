@@ -310,11 +310,11 @@ namespace iron
                     using T = std::decay_t<decltype(argValue)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
                     {
-                        throw LLVMException("LLVM::createConstValue. Function type arguments not yet implemented.");
+                        return module->getFunction(argValue->getFunctionName());
                     }
+
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
-
                         if (argValue->getVarName().empty())
                         {
                             throw std::invalid_argument("Variable name is empty");
@@ -383,10 +383,7 @@ namespace iron
                         // {
                         //
                         // }
-                        else
-                        {
-                            throw LLVMException("LLVM::createConstValue. Unsupported argument type.");
-                        }
+                        throw LLVMException("LLVM::createConstValue. Unsupported argument type.");
                     }
                     else
                     {

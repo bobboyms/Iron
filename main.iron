@@ -1,9 +1,15 @@
-fn mult(n:int, p:float): float {return 0.0}
+        import std.output.printf
 
-        fn sub(ax:int, bx:float): int {return 0 }
+        fn sum(sub:fn (a:int):int, p:int):int {
 
-        fn main(): float {
-            let x: float = 25.00
-            let inline:fn = (a:int):float -> a * x
-            return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
+            let block:fn = (x:int):int -> {
+                return sub(a:p) * x
+            }
+
+            return block(x:3)
+        }
+
+        fn main() {
+           let inline:fn = (a:int):int -> a - 2
+           printf(format: "resutl: %u\n", r:sum(sub:inline,p:3))
         }

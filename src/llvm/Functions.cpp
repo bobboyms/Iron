@@ -165,6 +165,8 @@ namespace iron
             throw LLVMException("LLVM::visitFunctionCallArg. Signature is null");
         }
 
+
+
         const auto targetFuncType = createFuncTypeFromSignature(variable->getSignature());
 
         std::vector<llvm::Value *> args;

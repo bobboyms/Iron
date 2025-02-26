@@ -352,12 +352,38 @@ namespace hlir
 
         if (ctx->functionCall())
         {
+
+            std::string strTempVar = currentFunction->generateVarName();
             auto const functionName = ctx->functionCall()->functionName->getText();
+
+            if (const auto variable = currentFunction->findVarAllScopesAndArg(functionName);
+                variable && variable->getSignature())
+            {
+
+                if (variable->isAnotherScope())
+                {
+                    ensureVariableCaptured(currentFunction,variable);
+                    printf("ensureVariableCaptured %s\n", variable->getText().c_str());
+                }
+
+                printf("functionName %s\n", functionName.c_str());
+
+                const auto tempVar = std::make_shared<Variable>()->set(
+                        strTempVar, std::make_shared<Type>(variable->getSignature()->getReturnType()->getType()));
+                statement->addDeclaredVariable(tempVar);
+
+                const auto functionCall = visitFunctionCall(ctx->functionCall(), currentFunction);
+                const auto expr = std::make_shared<Expr>()->set(tempVar, functionCall);
+                statement->addStatement(expr);
+
+                return strTempVar;
+            }
+
+            //
 
             if (auto globalFunction = context->getFunctionByName(functionName))
             {
 
-                std::string strTempVar = currentFunction->generateVarName();
 
                 const auto tempVar = std::make_shared<Variable>()->set(
                         strTempVar, std::make_shared<Type>(globalFunction->getFunctionReturnType()->getType()));
@@ -371,7 +397,6 @@ namespace hlir
             }
 
             const auto localFunction = gatArrowFunction(currentFunction, functionName);
-            std::string strTempVar = currentFunction->generateVarName();
             const auto tempVar = std::make_shared<Variable>()->set(
                     strTempVar, std::make_shared<Type>(localFunction->getFunctionReturnType()->getType()));
             statement->addDeclaredVariable(tempVar);

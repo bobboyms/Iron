@@ -206,7 +206,14 @@ namespace hlir
 
         if (const auto arg = functionArgs->findArgByName(varName))
         {
-            return std::make_shared<Variable>()->set(arg->name, arg->type);
+            const auto variable = std::make_shared<Variable>()->set(arg->name, arg->type);
+
+            if (arg->signature)
+            {
+                variable->setSignature(arg->signature);
+            }
+
+            return variable;
         }
 
         return nullptr;
