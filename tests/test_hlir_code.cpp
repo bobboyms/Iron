@@ -1019,6 +1019,60 @@ TEST_F(HlIrTestCode, T24)
 TEST_F(HlIrTestCode, T25)
 {
     const std::string output = R"(
+    extern C fn printf(format:ptr char, ...):int
+
+    fn sum(sub:fn,p:int):int {
+     let block:fn = gfn_sum_block
+     let var_1:int = 3
+     let var_0:int = call int block(x:var_1,sub:sub,p:p)
+     return int var_0
+    }
+
+    fn gfn_sum_block(x:int,sub:fn,p:int):int {
+     let var_0:int = call int sub(a:p)
+     let var_1:int = MULT var_0, x
+     return int var_1
+    }
+
+    fn main():void {
+     let inline:fn = gfn_main_inline
+     let var_0:string = "resutl: %u\n"
+     let var_1:int = 3
+     let var_2:int = call int sum(sub:inline,p:var_1)
+     call int printf(format:var_0,r:var_2)
+    }
+
+    fn gfn_main_inline(a:int):int {
+     let var_0:int = 2
+     let var_1:int = MINUS a, var_0
+     return int var_1
+    }
+    )";
+
+    const std::string input = R"(
+        import std.output.printf
+
+        fn sum(sub:fn (a:int):int, p:int):int {
+
+            let block:fn = (x:int):int -> {
+                return sub(a:p) * x
+            }
+
+            return block(x:3)
+        }
+
+        fn main() {
+           let inline:fn = (a:int):int -> a - 2
+           printf(format: "resutl: %u\n", r:sum(sub:inline,p:3))
+        }
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T26)
+{
+    const std::string output = R"(
 
 
     )";
@@ -1031,7 +1085,52 @@ TEST_F(HlIrTestCode, T25)
     runAnalysis(input, output);
 }
 
-TEST_F(HlIrTestCode, T26)
+TEST_F(HlIrTestCode, T27)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T28)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T29)
+{
+    const std::string output = R"(
+
+
+    )";
+
+    const std::string input = R"(
+
+
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(HlIrTestCode, T30)
 {
     const std::string output = R"(
 

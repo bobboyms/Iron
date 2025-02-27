@@ -51,6 +51,37 @@ namespace iron
         }
     }
 
+    void SemanticAnalysis::validateFunctionReturn(const std::string &codeLine, const int line, std::shared_ptr<scope::Function> function)
+    {
+
+        if (function->getReturnType() != tokenMap::VOID && !function->isReturnFound())
+        {
+
+            auto funcName = function->getName();
+            auto scopeName = function->getName();
+            if (function->getAlias())
+            {
+                funcName = function->getAlias()->name;
+                auto upperFunction = function->getUpperFunction();
+                while (upperFunction)
+                {
+                    scopeName = upperFunction->getName();
+                    upperFunction = upperFunction->getUpperFunction();
+                }
+            }
+            throw ReturnNotFoundException(util::format(
+                    "The Function {} returns an {} type. But you are not returning any value in the function body.\n"
+                    "To do this, use the keyword '{}'.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n",
+                    color::colorText(funcName, color::BOLD_GREEN),
+                    color::colorText(tokenMap::getTokenText(function->getReturnType()), color::BOLD_GREEN),
+                    color::colorText("return", color::BOLD_BLUE), color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(scopeName, color::BOLD_YELLOW), codeLine));
+        }
+
+    }
+
     void SemanticAnalysis::visitFunctionBody(IronParser::FunctionDeclarationContext *ctx)
     {
 
@@ -80,7 +111,6 @@ namespace iron
 
         scopeManager->enterScope(function);
 
-
         for (const auto child: ctx->children)
         {
             if (const auto statementList = dynamic_cast<IronParser::StatementListContext *>(child))
@@ -88,9 +118,9 @@ namespace iron
                 visitStatementList(statementList);
             }
         }
-
-
         scopeManager->exitScope();
+
+        validateFunctionReturn(codeLine, line, function);
     }
 
     std::shared_ptr<scope::Signature> SemanticAnalysis::getSignature(IronParser::FunctionSignatureContext *ctx)
@@ -640,7 +670,6 @@ namespace iron
 
                 if (!anotherVariable)
                 {
-                    printf("Arg argName %s\n", anotherVarName.c_str());
                     throw VariableNotFoundException(util::format(
                             "The variable {} not found.\n"
                             "Line: {}, Scope: {}\n\n"
@@ -856,7 +885,7 @@ namespace iron
                 visitStatementList(ctx->statementList());
             }
             scopeManager->exitScope();
-
+            validateFunctionReturn(codeLine, line, arrowFunction);
 
             return arrowFunction;
         }

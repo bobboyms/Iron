@@ -2005,3 +2005,108 @@ TEST_F(SemanticAnalysisTest, 139)
     EXPECT_NO_THROW(runAnalysis(input));
 }
 
+TEST_F(SemanticAnalysisTest, 140)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn sum(sub:fn (a:int):int, p:int):int {
+
+            let block:fn = (x:int):int -> {
+                return sub(a:p) * x
+            }
+
+            return block(x:3)
+        }
+
+        fn main() {
+           let inline:fn = (a:int):int -> a - 2
+           printf(format: "resutl: %u\n", r:sum(sub:inline,p:3))
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+
+TEST_F(SemanticAnalysisTest, 141)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main():int {
+
+            let x:float = 3.1
+            let y:int = 3
+
+            if (x > y) {
+                printf(format:"X > Y\n")
+                if (true) {
+                    printf(format:"É true\n")
+                }
+            } else {
+                printf(format:"X < Y\n")
+            }
+
+            printf(format:"Terminou\n")
+
+            return 0
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 142)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main():int {
+
+            let x:float = 3.1
+            let y:int = 30
+
+            if (x > y) {
+                printf(format:"X > Y\n")
+                if (true) {
+                    printf(format:"É true\n")
+                }
+            } else if (x < y) {
+                printf(format:"X < Y\n")
+            }
+
+            printf(format:"Terminou\n")
+
+            return 0
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 143)
+{
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main():int {
+
+            let x:float = 3.1
+            let y:int = 30
+
+            if (x > y) {
+                printf(format:"X > Y\n")
+                if (true) {
+                    printf(format:"É true\n")
+                }
+            } else if (false) {
+                printf(format:"X < Y\n")
+            } else {
+                printf(format:"Entrou no else\n")
+            }
+
+            printf(format:"Terminou\n")
+
+            return 0
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}

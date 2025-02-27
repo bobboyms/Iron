@@ -165,8 +165,6 @@ namespace iron
             throw LLVMException("LLVM::visitFunctionCallArg. Signature is null");
         }
 
-
-
         const auto targetFuncType = createFuncTypeFromSignature(variable->getSignature());
 
         std::vector<llvm::Value *> args;
@@ -177,7 +175,6 @@ namespace iron
         }
 
         return builder.CreateCall(targetFuncType, funcArg, args, "call_func_arg");
-
     }
 
     llvm::Value *LLVM::visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall)
@@ -284,7 +281,7 @@ namespace iron
         return funcType;
     }
 
-    llvm::FunctionType *LLVM::createFuncTypeFromSignature(const std::shared_ptr<hlir::Signature>& signature) const
+    llvm::FunctionType *LLVM::createFuncTypeFromSignature(const std::shared_ptr<hlir::Signature> &signature) const
     {
         llvm::Type *functionReturnType = mapType(signature->getReturnType()->getType());
         const auto [innerArgTypes, _] = createFunctionArgs(signature->getArgs());

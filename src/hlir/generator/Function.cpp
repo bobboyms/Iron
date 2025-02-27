@@ -24,6 +24,7 @@ namespace hlir
             visitStatementList(ctx->statementList(), function);
         }
         function->exitLocalScope();
+
     }
 
 
@@ -145,8 +146,6 @@ namespace hlir
 
             return call;
         }
-
-        printf("currentFunction: %s\n", currentFunction->getText().c_str());
 
         if (const auto variable = currentFunction->findVarCurrentScopeAndArg(functionName);
             variable && variable->getSignature())

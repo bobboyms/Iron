@@ -94,36 +94,9 @@ namespace iron
             if (const auto returnctx = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(returnctx);
-                hasReturn = true;
             }
         }
         currentFunction->exitLocalScope();
-
-        if (currentFunction->getReturnType() != tokenMap::VOID && !hasReturn)
-        {
-
-            auto funcName = currentFunction->getName();
-            auto scopeName = currentFunction->getName();
-            if (currentFunction->getAlias())
-            {
-                funcName = currentFunction->getAlias()->name;
-                auto upperFunction = currentFunction->getUpperFunction();
-                while (upperFunction)
-                {
-                    scopeName = upperFunction->getName();
-                    upperFunction = upperFunction->getUpperFunction();
-                }
-            }
-            throw ReturnNotFoundException(util::format(
-                    "The Function {} returns an {} type. But you are not returning any value in the function body.\n"
-                    "To do this, use the keyword '{}'.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n",
-                    color::colorText(funcName, color::BOLD_GREEN),
-                    color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
-                    color::colorText("return", color::BOLD_BLUE), color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeName, color::BOLD_YELLOW), codeLine));
-        }
     }
 
     void SemanticAnalysis::visitVarDeclaration(IronParser::VarDeclarationContext *ctx)
@@ -610,6 +583,7 @@ namespace iron
         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
 
         const auto currentFunction = getCurrentFunction();
+        currentFunction->changeToReturnFound();
 
         if (ctx->dataFormat())
         {

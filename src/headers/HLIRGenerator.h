@@ -82,7 +82,6 @@ namespace hlir
                                                    const std::string &varName);
 
         static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);
-        static bool hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName);
 
         void visitImportStatement(IronParser::ImportStatementContext *ctx) const;
         void registerExternalFunction(const std::shared_ptr<Function> &function) const;

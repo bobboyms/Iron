@@ -1,15 +1,22 @@
-        import std.output.printf
+import std.output.printf
 
-        fn sum(sub:fn (a:int):int, p:int):int {
+        fn main():int {
 
-            let block:fn = (x:int):int -> {
-                return sub(a:p) * x
+            let x:float = 3.1
+            let y:int = 30
+
+            if (x > y) {
+                printf(format:"X > Y\n")
+                if (true) {
+                    printf(format:"É true\n")
+                }
+            } else if (false) {
+                printf(format:"X < Y\n")
+            } else {
+                printf(format:"Entrou no else\n")
             }
 
-            return block(x:3)
-        }
+            printf(format:"Terminou\n")
 
-        fn main() {
-           let inline:fn = (a:int):int -> a - 2
-           printf(format: "resutl: %u\n", r:sum(sub:inline,p:3))
+            return 0
         }

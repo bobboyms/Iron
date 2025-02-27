@@ -287,21 +287,6 @@ namespace hlir
         }
     }
 
-    bool HLIRGenerator::hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName)
-    {
-        // if (auto v = F->fin)
-        // {
-        //     return true;
-        // }
-        //
-        // if (auto a = F->getFunctionArgs()->findArgByName(varName))
-        // {
-        //     return true;
-        // }
-
-        return false;
-    }
-
     void HLIRGenerator::ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var)
     {
 
@@ -312,7 +297,6 @@ namespace hlir
 
         if (!F->findVarCurrentScopeAndArg(var->getVarName()))
         {
-            printf("var->getVarName() %s\n", var->getVarName().c_str());
             const auto functionArgs = F->getFunctionArgs();
             const auto newArg = std::make_shared<Arg>()->set(var->getVarName(), var->getVarType(), var->getSignature());
             functionArgs->addArg(newArg);

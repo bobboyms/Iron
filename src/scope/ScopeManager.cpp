@@ -329,6 +329,15 @@ namespace scope
     {
         return upperFunction;
     }
+    bool Function::isReturnFound()
+    {
+        return returnFound;
+    }
+
+    void Function::changeToReturnFound()
+    {
+        returnFound = true;
+    }
 
     bool Function::isExternal() const
     {
