@@ -24,7 +24,6 @@ namespace hlir
             visitStatementList(ctx->statementList(), function);
         }
         function->exitLocalScope();
-
     }
 
 
@@ -98,8 +97,6 @@ namespace hlir
         const auto argName = ctx->varName->getText();
         const auto type = std::make_shared<Type>();
 
-        // printf("argName: %s\n", argName.c_str());
-
         if (ctx->fnsignature())
         {
             const auto signature = getSignature(ctx->fnsignature()->functionSignature());
@@ -123,8 +120,8 @@ namespace hlir
             functionArgs->addArg(arg);
         }
 
-        return  std::make_shared<Function>()->set(variable->getVarName(), functionArgs,
-                                                                   variable->getSignature()->getReturnType());
+        return std::make_shared<Function>()->set(variable->getVarName(), functionArgs,
+                                                 variable->getSignature()->getReturnType());
     }
 
     std::shared_ptr<FunctionCall> HLIRGenerator::visitFunctionCall(IronParser::FunctionCallContext *ctx,
@@ -266,14 +263,14 @@ namespace hlir
             if (dynamic_cast<IronParser::FunctionCallContext *>(ctx->parent->parent))
             {
 
-
                 std::shared_ptr<Function> function;
                 const auto inlineFunctionName = callFunction->getFunction()->getFunctionName();
                 if (const auto variable = currentFunction->findVarCurrentScopeAndArg(inlineFunctionName);
                     variable && variable->getSignature())
                 {
-                    function =callFunction->getFunction();
-                } else
+                    function = callFunction->getFunction();
+                }
+                else
                 {
                     function = context->getFunctionByName(inlineFunctionName);
                     if (!function)
@@ -285,9 +282,6 @@ namespace hlir
                         }
                     }
                 }
-
-
-
 
                 const auto arg = function->getFunctionArgs()->findArgByName(argName);
                 if (!arg)
@@ -302,7 +296,6 @@ namespace hlir
                 auto anotherVar = currentFunction->findVarAllScopesAndArg(anotherVarName);
                 if (!anotherVar)
                 {
-
                     if (arg->type->getType() == tokenMap::FUNCTION)
                     {
                         const auto function = context->getFunctionByName(anotherVarName);
@@ -399,8 +392,12 @@ namespace hlir
         {
             const auto arrowFuncName = varDeclaration->varName->getText();
             const auto type = std::make_shared<Type>(tokenMap::FUNCTION);
-            const auto variable = std::make_shared<Variable>()->set(arrowFuncName, type);
-            currentStatement->addDeclaredVariable(variable);
+            const auto variable = currentFunction->findVarAllScopesAndArg(arrowFuncName);
+            if (!variable)
+            {
+                throw HLIRException("HLIRGenerator::visitArrowFunctionInline. Variable not found");
+            }
+
 
             // Cria um nome único para a função no escopo global
             const auto inlineFunctionName = iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
@@ -435,11 +432,6 @@ namespace hlir
                 visitFunctionSignature(ctx->functionSignature(), functionArgs, functionReturnType);
             }
 
-            // if (ctx->functionSignature())
-            // {
-            //     visitFunctionArgs(ctx->functionSignature()->functionArgs(), functionArgs);
-            // }
-
             if (ctx->expr())
             {
                 // const auto varName = visitExpr(ctx->expr(), statement);
@@ -456,8 +448,23 @@ namespace hlir
                 }
 
                 arrowFunction->exitLocalScope();
+
             }
+            variable->setSignature(createSignatureFromFunction(arrowFunction));
         }
+
+    }
+
+    std::shared_ptr<Signature> HLIRGenerator::createSignatureFromFunction(const std::shared_ptr<Function> &function)
+    {
+        const auto signature = std::make_shared<Signature>(function->getFunctionReturnType());
+
+        for (const auto &arg : function->getFunctionArgs()->getArgs())
+        {
+            signature->addArg(arg);
+        }
+
+        return signature;
     }
 
     void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
@@ -468,8 +475,11 @@ namespace hlir
         {
             const auto arrowFuncName = varDeclaration->varName->getText();
             const auto type = std::make_shared<Type>(tokenMap::FUNCTION);
-            const auto variable = std::make_shared<Variable>()->set(arrowFuncName, type);
-            currentStatement->addDeclaredVariable(variable);
+            const auto variable = currentFunction->findVarAllScopesAndArg(arrowFuncName);
+            if (!variable)
+            {
+                throw HLIRException("HLIRGenerator::visitArrowFunctionInline. Variable not found");
+            }
 
             // Cria um nome único para a função no escopo global
             const std::string inlineFunctionName =
@@ -485,6 +495,7 @@ namespace hlir
             {
                 returnTypeStr = getTokenText(tokenMap::VOID);
             }
+
 
             const auto functionArgs = std::make_shared<FunctionArgs>();
             const auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
@@ -510,6 +521,8 @@ namespace hlir
                 visitStatementList(ctx->statementList(), arrowFunction);
             }
             arrowFunction->exitLocalScope();
+            variable->setSignature(createSignatureFromFunction(arrowFunction));
+
         }
     }
 

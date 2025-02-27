@@ -72,6 +72,7 @@ namespace hlir
 
         void visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx,
                                       const std::shared_ptr<Function> &currentFunction);
+        std::shared_ptr<Signature> createSignatureFromFunction(const std::shared_ptr<Function> &function);
 
         void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
                                      const std::shared_ptr<Function> &currentFunction);

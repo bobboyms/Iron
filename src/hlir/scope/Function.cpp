@@ -149,7 +149,7 @@ namespace hlir
     {
 
         // verifica no escopo local e superiores
-        std::stack<std::shared_ptr<Statement>> tempStack(statementStack);
+        std::stack tempStack(statementStack);
         while (!tempStack.empty())
         {
             auto currentScope = tempStack.top();
@@ -163,6 +163,7 @@ namespace hlir
                         variable->changeToAnotherScope();
                         return variable;
                     }
+
                     return variable;
                 }
             }
@@ -707,6 +708,11 @@ namespace hlir
         {
             throw HLIRException("Statement::addDeclaredVariable. Attempted to add a nullptr variable in "
                                 "addDeclaredVariable method.");
+        }
+
+        if (findVarByName(variable->getVarName()))
+        {
+            throw std::invalid_argument("Attempted to add a variable with duplicate name.");
         }
 
         variableMap.insert({variable->getVarName(), variable});

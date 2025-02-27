@@ -1,22 +1,11 @@
-import std.output.printf
+        fn main() {
+           let inline:fn = (a:int):int -> a * 8
 
-        fn main():int {
+           let block:fn = (func:fn (x:fn):int):int -> {
+                func(x:inline)
+                return 0
+           }
 
-            let x:float = 3.1
-            let y:int = 30
-
-            if (x > y) {
-                printf(format:"X > Y\n")
-                if (true) {
-                    printf(format:"É true\n")
-                }
-            } else if (false) {
-                printf(format:"X < Y\n")
-            } else {
-                printf(format:"Entrou no else\n")
-            }
-
-            printf(format:"Terminou\n")
-
-            return 0
+           let func:fn = (x:fn):int -> 2 * 2
+           block(func:func)
         }

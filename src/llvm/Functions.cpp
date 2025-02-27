@@ -201,7 +201,6 @@ namespace iron
         {
             throw LLVMException("visitAssignment: currentFunction is null");
         }
-
         // Obter o nome da função a ser chamada
         const auto functionName = functionCall->getFunction()->getFunctionName();
 
@@ -226,6 +225,11 @@ namespace iron
             const auto value = createConstValue(arg->value->getValueType(), arg->value);
             args.push_back(value);
         }
+
+        // printf("functionName: %s\n", functionName.c_str());
+        // printf("function call: %u\n", functionCall->getFunction()->getFunctionArgs()->getArgs().size());
+        // printf("function->arg_size(): %u\n", function->arg_size());
+        // printf("Args: %u\n", args.size());
 
         // Verificar se o número de argumentos corresponde à assinatura da função
         if (!functionCall->getFunction()->isVariedArguments())
@@ -299,12 +303,15 @@ namespace iron
 
             if (arg->type->getType() == tokenMap::FUNCTION)
             {
-                if (arg->signature)
+                if (!arg->signature)
                 {
-                    const llvm::FunctionType *funcType = createFuncTypeFromSignature(arg->signature);
-                    argTypes.push_back(funcType->getPointerTo());
-                    argNames.push_back(arg->name);
+                    throw LLVMException("LLVM::createFunctionArgs. Arg don't have a signature. Arg name: " + arg->name);
                 }
+
+                const llvm::FunctionType *funcType = createFuncTypeFromSignature(arg->signature);
+                argTypes.push_back(funcType->getPointerTo());
+                argNames.push_back(arg->name);
+
             }
             else
             {
@@ -332,9 +339,18 @@ namespace iron
         // Definir a linkage baseada na visibilidade
         constexpr llvm::Function::LinkageTypes linkage = llvm::Function::ExternalLinkage;
 
+        const auto functionName = hlirFunction->getFunctionName();
+
+        bool found = false;
+        if (functionName == "gfn_main_block")
+        {
+            found = true;
+            printf("Encontrou\n");
+        }
+
         // Criar a função no módulo
         llvm::Function *function =
-                llvm::Function::Create(funcType, linkage, hlirFunction->getFunctionName(), module.get());
+                llvm::Function::Create(funcType, linkage, functionName, module.get());
 
         if (!argTypes.empty())
         {
@@ -345,6 +361,12 @@ namespace iron
                 {
                     const std::string &argName = argNames[idx++];
                     arg.setName(argName);
+
+                    if (found)
+                    {
+                        printf("Arg name: %s\n",argName.c_str());
+                    }
+
                 }
             }
         }
