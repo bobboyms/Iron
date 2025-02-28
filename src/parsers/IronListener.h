@@ -59,9 +59,6 @@ public:
   virtual void enterArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) = 0;
   virtual void exitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx) = 0;
 
-  virtual void enterArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) = 0;
-  virtual void exitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx) = 0;
-
   virtual void enterFunctionSignature(IronParser::FunctionSignatureContext *ctx) = 0;
   virtual void exitFunctionSignature(IronParser::FunctionSignatureContext *ctx) = 0;
 

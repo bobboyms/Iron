@@ -61,9 +61,6 @@ public:
   virtual void enterArrowFunctionInline(IronParser::ArrowFunctionInlineContext * /*ctx*/) override { }
   virtual void exitArrowFunctionInline(IronParser::ArrowFunctionInlineContext * /*ctx*/) override { }
 
-  virtual void enterArrowFunctionBlock(IronParser::ArrowFunctionBlockContext * /*ctx*/) override { }
-  virtual void exitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext * /*ctx*/) override { }
-
   virtual void enterFunctionSignature(IronParser::FunctionSignatureContext * /*ctx*/) override { }
   virtual void exitFunctionSignature(IronParser::FunctionSignatureContext * /*ctx*/) override { }
 

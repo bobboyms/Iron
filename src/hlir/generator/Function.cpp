@@ -447,6 +447,7 @@ namespace hlir
                 visitFunctionSignature(ctx->functionSignature(), functionArgs, functionReturnType);
             }
 
+
             if (ctx->expr())
             {
                 // const auto varName = visitExpr(ctx->expr(), statement);
@@ -464,6 +465,13 @@ namespace hlir
 
                 arrowFunction->exitLocalScope();
             }
+
+            arrowFunction->enterLocalScope(std::make_shared<Statement>());
+            if (ctx->statementList())
+            {
+                visitStatementList(ctx->statementList(), arrowFunction);
+            }
+            arrowFunction->exitLocalScope();
             variable->setSignature(createSignatureFromFunction(arrowFunction));
         }
     }
@@ -480,63 +488,63 @@ namespace hlir
         return signature;
     }
 
-    void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
-                                                const std::shared_ptr<Function> &currentFunction)
-    {
-        const auto currentStatement = currentFunction->getCurrentLocalScope();
-        if (const auto *varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
-        {
-            const auto arrowFuncName = varDeclaration->varName->getText();
-            const auto type = std::make_shared<Type>(tokenMap::FUNCTION);
-            const auto variable = currentFunction->findVarAllScopesAndArg(arrowFuncName);
-            if (!variable)
-            {
-                throw HLIRException("HLIRGenerator::visitArrowFunctionInline. Variable not found");
-            }
-
-            // Cria um nome único para a função no escopo global
-            const std::string inlineFunctionName =
-                    iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
-
-            // Verifica se há tipo de retorno na assinatura da arrow function
-            std::string returnTypeStr;
-            if (ctx->functionSignature()->functionReturnType())
-            {
-                returnTypeStr = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
-            }
-            else
-            {
-                returnTypeStr = getTokenText(tokenMap::VOID);
-            }
-
-
-            const auto functionArgs = std::make_shared<FunctionArgs>();
-            const auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
-            const auto inlineStatement = std::make_shared<Statement>();
-
-            auto arrowFunction =
-                    std::make_shared<Function>()->set(inlineFunctionName, functionArgs, functionReturnType);
-            const auto value = std::make_shared<Value>()->set(arrowFunction, type);
-            const auto assign = std::make_shared<Assign>()->set(variable, value);
-            currentStatement->addStatement(assign);
-
-            arrowFunction->enableInline();
-            context->addFunction(arrowFunction);
-
-            arrowFunction->enterLocalScope(std::make_shared<Statement>());
-            if (ctx->functionSignature())
-            {
-                visitFunctionSignature(ctx->functionSignature(), functionArgs, functionReturnType);
-            }
-
-            if (ctx->statementList())
-            {
-                visitStatementList(ctx->statementList(), arrowFunction);
-            }
-            arrowFunction->exitLocalScope();
-            variable->setSignature(createSignatureFromFunction(arrowFunction));
-        }
-    }
+    // void HLIRGenerator::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
+    //                                             const std::shared_ptr<Function> &currentFunction)
+    // {
+    //     const auto currentStatement = currentFunction->getCurrentLocalScope();
+    //     if (const auto *varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
+    //     {
+    //         const auto arrowFuncName = varDeclaration->varName->getText();
+    //         const auto type = std::make_shared<Type>(tokenMap::FUNCTION);
+    //         const auto variable = currentFunction->findVarAllScopesAndArg(arrowFuncName);
+    //         if (!variable)
+    //         {
+    //             throw HLIRException("HLIRGenerator::visitArrowFunctionInline. Variable not found");
+    //         }
+    //
+    //         // Cria um nome único para a função no escopo global
+    //         const std::string inlineFunctionName =
+    //                 iron::createFunctionName(currentFunction->getFunctionName(), arrowFuncName);
+    //
+    //         // Verifica se há tipo de retorno na assinatura da arrow function
+    //         std::string returnTypeStr;
+    //         if (ctx->functionSignature()->functionReturnType())
+    //         {
+    //             returnTypeStr = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+    //         }
+    //         else
+    //         {
+    //             returnTypeStr = getTokenText(tokenMap::VOID);
+    //         }
+    //
+    //
+    //         const auto functionArgs = std::make_shared<FunctionArgs>();
+    //         const auto functionReturnType = std::make_shared<Type>(tokenMap::getTokenType(returnTypeStr));
+    //         const auto inlineStatement = std::make_shared<Statement>();
+    //
+    //         auto arrowFunction =
+    //                 std::make_shared<Function>()->set(inlineFunctionName, functionArgs, functionReturnType);
+    //         const auto value = std::make_shared<Value>()->set(arrowFunction, type);
+    //         const auto assign = std::make_shared<Assign>()->set(variable, value);
+    //         currentStatement->addStatement(assign);
+    //
+    //         arrowFunction->enableInline();
+    //         context->addFunction(arrowFunction);
+    //
+    //         arrowFunction->enterLocalScope(std::make_shared<Statement>());
+    //         if (ctx->functionSignature())
+    //         {
+    //             visitFunctionSignature(ctx->functionSignature(), functionArgs, functionReturnType);
+    //         }
+    //
+    //         if (ctx->statementList())
+    //         {
+    //             visitStatementList(ctx->statementList(), arrowFunction);
+    //         }
+    //         arrowFunction->exitLocalScope();
+    //         variable->setSignature(createSignatureFromFunction(arrowFunction));
+    //     }
+    // }
 
 
     void HLIRGenerator::visitReturn(IronParser::ReturnStatementContext *ctx,

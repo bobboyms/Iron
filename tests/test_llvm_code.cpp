@@ -1653,6 +1653,112 @@ TEST_F(LLVMTestCode, T15)
 TEST_F(LLVMTestCode, T16)
 {
     const std::string output = R"(
+        ; ModuleID = 'output.o'
+        source_filename = "output.o"
+
+        declare i32 @printf(ptr, ...)
+
+        define i32 @main() {
+        entry:
+          %var_9 = alloca i32, align 4
+          %var_5 = alloca i1, align 1
+          %var_3 = alloca i1, align 1
+          %var_1 = alloca i1, align 1
+          %var_0 = alloca float, align 4
+          %y = alloca i32, align 4
+          %x = alloca float, align 4
+          store float 0x4008CCCCC0000000, ptr %x, align 4
+          store i32 30, ptr %y, align 4
+          %load_y = load i32, ptr %y, align 4
+          %cast_y = sitofp i32 %load_y to float
+          store float %cast_y, ptr %var_0, align 4
+          %load_x = load float, ptr %x, align 4
+          %load_var_0 = load float, ptr %var_0, align 4
+          %cmp_gt = fcmp ogt float %load_x, %load_var_0
+          store i1 %cmp_gt, ptr %var_1, align 1
+          %cond_ = load i1, ptr %var_1, align 1
+          br i1 %cond_, label %then_1, label %else_2
+
+        then_1:                                           ; preds = %entry
+          %var_2 = alloca [10 x i8], align 1
+          store [7 x i8] c"X > Y\0A\00", ptr %var_2, align 1
+          %str_ptr = getelementptr [10 x i8], ptr %var_2, i32 0, i32 0
+          %call_printf = call i32 (ptr, ...) @printf(ptr %str_ptr)
+          store i1 true, ptr %var_3, align 1
+          %cond_1 = load i1, ptr %var_3, align 1
+          br i1 %cond_1, label %then_4, label %end_3
+
+        then_4:                                           ; preds = %then_1
+          %var_4 = alloca [12 x i8], align 1
+          store [9 x i8] c"\C3\89 true\0A\00", ptr %var_4, align 1
+          %str_ptr2 = getelementptr [12 x i8], ptr %var_4, i32 0, i32 0
+          %call_printf3 = call i32 (ptr, ...) @printf(ptr %str_ptr2)
+          br label %end_3
+
+        end_3:                                            ; preds = %then_4, %then_1
+          br label %end_0
+
+        else_2:                                           ; preds = %entry
+          store i1 false, ptr %var_5, align 1
+          %cond_4 = load i1, ptr %var_5, align 1
+          br i1 %cond_4, label %then_6, label %else_7
+
+        then_6:                                           ; preds = %else_2
+          %var_6 = alloca [10 x i8], align 1
+          store [7 x i8] c"X < Y\0A\00", ptr %var_6, align 1
+          %str_ptr5 = getelementptr [10 x i8], ptr %var_6, i32 0, i32 0
+          %call_printf6 = call i32 (ptr, ...) @printf(ptr %str_ptr5)
+          br label %end_0
+
+        else_7:                                           ; preds = %else_2
+          %var_7 = alloca [19 x i8], align 1
+          store [16 x i8] c"Entrou no else\0A\00", ptr %var_7, align 1
+          %str_ptr7 = getelementptr [19 x i8], ptr %var_7, i32 0, i32 0
+          %call_printf8 = call i32 (ptr, ...) @printf(ptr %str_ptr7)
+          br label %end_0
+
+        end_0:                                            ; preds = %else_7, %then_6, %end_3
+          %var_8 = alloca [13 x i8], align 1
+          store [10 x i8] c"Terminou\0A\00", ptr %var_8, align 1
+          %str_ptr9 = getelementptr [13 x i8], ptr %var_8, i32 0, i32 0
+          %call_printf10 = call i32 (ptr, ...) @printf(ptr %str_ptr9)
+          store i32 0, ptr %var_9, align 4
+          %load_var_9 = load i32, ptr %var_9, align 4
+          ret i32 %load_var_9
+        }
+    )";
+
+    const std::string input = R"(
+        import std.output.printf
+
+        fn main():int {
+
+            let x:float = 3.1
+            let y:int = 30
+
+            if (x > y) {
+                printf(format:"X > Y\n")
+                if (true) {
+                    printf(format:"É true\n")
+                }
+            } else if (false) {
+                printf(format:"X < Y\n")
+            } else {
+                printf(format:"Entrou no else\n")
+            }
+
+            printf(format:"Terminou\n")
+
+            return 0
+        }
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(LLVMTestCode, T17)
+{
+    const std::string output = R"(
 
     )";
 

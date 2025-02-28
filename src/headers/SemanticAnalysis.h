@@ -74,7 +74,7 @@ namespace iron
 
         std::shared_ptr<scope::Function> visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
 
-        std::shared_ptr<scope::Function> visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
+        // std::shared_ptr<scope::Function> visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
 
         void visitReturn(IronParser::ReturnStatementContext *ctx);
 

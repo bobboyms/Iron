@@ -205,8 +205,6 @@ namespace iron
         // Obter o nome da função a ser chamada
         const auto functionName = functionCall->getFunction()->getFunctionName();
 
-        printf("functionName: %s\n", functionName.c_str());
-
         // Buscar a função no módulo LLVM
         llvm::Function *function = module->getFunction(functionName);
         if (!function)

@@ -74,8 +74,8 @@ namespace hlir
                                       const std::shared_ptr<Function> &currentFunction);
         std::shared_ptr<Signature> createSignatureFromFunction(const std::shared_ptr<Function> &function);
 
-        void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
-                                     const std::shared_ptr<Function> &currentFunction);
+        // void visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx,
+        //                              const std::shared_ptr<Function> &currentFunction);
         void visitReturn(IronParser::ReturnStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
 
