@@ -179,6 +179,7 @@ set(SRC_COMMON
         src/analyser/Analyser.cpp
         src/headers/Analyser.h
         src/utils/Path.cpp
+        src/semantic/Loops.cpp
 
 )
 

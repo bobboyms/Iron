@@ -47,6 +47,10 @@ IMPORT: 'import';
 RETURN: 'return';
 
 // Tipos de dados
+
+IN: 'in';
+FOR: 'for';
+WHILE: 'while';
 TYPE_INT: 'int';
 TYPE_CHAR: 'char';
 TYPE_FLOAT: 'float';
@@ -54,6 +58,9 @@ TYPE_STRING: 'string';
 TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
 TYPE_VOID: 'void';
+REPEAT: 'repeat';
+CONTINUE: 'continue';
+BREAK: 'break';
 
 // Literais
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
@@ -89,10 +96,33 @@ statementList: (
 		| varAssignment
 		| functionCall
 		| expr
-//		| boolExpr
 		| ifStatement
+		| whileStatement
+		| repeatStatement
+		| forStatement
 		| returnStatement
 	)*;
+
+breakStatement: BREAK;
+continueStatement: CONTINUE;
+
+loopStatementList: (
+		: continueStatement
+		| breakStatement
+		| varDeclaration
+		| varAssignment
+		| functionCall
+		| expr
+		| ifStatement
+		| whileStatement
+		| repeatStatement
+		| forStatement
+		| voidReturnStatement
+		| returnStatement
+
+	)*;
+
+voidReturnStatement: RETURN;
 
 returnStatement:
 	RETURN (
@@ -103,30 +133,19 @@ returnStatement:
 	);
 
 
-//forStatement
-//    : 'for' forClause block
-//    ;
-//
-//forClause
-//    : forClassicClause            // Forma clássica com inicialização, condição e pós-execução
-//    | forConditionClause          // Forma com apenas condição
-//    |                             // Forma sem condição (loop infinito)
-//    ;
-//
-//// Forma clássica: inicialização; condição; pós-execução
-//forClassicClause
-//    : '(' (varDeclaration | varAssignment | expr)? ';' expr? ';' expr? ')'
-//    ;
-//
-//// Forma com apenas condição
-//forConditionClause
-//    : '(' boolExpr ')'
-//    ;
+whileStatement:
+    WHILE boolExpr L_CURLY loopStatementList R_CURLY;
 
-// Bloco de código
-//block
-//    : '{' statementList '}'
-//    ;
+repeatStatement:
+    REPEAT L_CURLY loopStatementList R_CURLY WHILE boolExpr;
+
+forStatement:
+    FOR IDENTIFIER IN intervals L_CURLY loopStatementList R_CURLY;
+
+intervals:
+    (firstNumber = INT_NUMBER | firstVarName = IDENTIFIER)
+    '..'
+    (secondNumber = INT_NUMBER | secondVarName = IDENTIFIER);
 
 //printf("Taxa de aprovação: %d%%\n", 90);
 // f"Nome: %s", maria
@@ -269,17 +288,7 @@ boolExpr
    | number
    | varName = IDENTIFIER
    | functionCall
-
    | expr;
-
-primary
-   : number
-   | IDENTIFIER
-   | BOOLEAN_VALUE
-   | functionCall
-   | L_PAREN boolExpr R_PAREN
-   | expr
-   ;
 
 expr:
 	left = expr (mult = '*' | mod= '%' | div = '/') right = expr
@@ -290,6 +299,8 @@ expr:
 	| L_PAREN expr R_PAREN;
 
 number: REAL_NUMBER | INT_NUMBER;
+
+
 
 // Formato de dados para inicializadores
 dataFormat:

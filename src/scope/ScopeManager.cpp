@@ -52,6 +52,16 @@ namespace scope
         variables.push_back(std::make_shared<Variable>(name, type));
     }
 
+    void Statements::addVariable(const std::string &name, int type, bool mut)
+    {
+
+        if (name.empty())
+        {
+            throw std::runtime_error(util::format("Statements::addVariable. Variable name is empty", ""));
+        }
+        variables.push_back(std::make_shared<Variable>(name, type, mut));
+    }
+
     void Statements::addFunctionAlias(const std::string& varName, const std::shared_ptr<Function>& function)
     {
 

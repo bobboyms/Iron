@@ -1,5 +1,14 @@
 fn main() {
-    let inline:fn = (a:int):int -> a * 3
+    for i in 0..3 {
+        let a:int = b
+    }
 
-    let block:fn = (a:int):int -> { return a * 3 }
+    while true {
+        let a:int = b
+    }
+
+    repeat {
+        let a:int = b
+
+    } while true
 }

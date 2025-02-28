@@ -2157,3 +2157,43 @@ TEST_F(SemanticAnalysisTest, 145)
     )";
     EXPECT_NO_THROW(runAnalysis(input));
 }
+
+TEST_F(SemanticAnalysisTest, 146)
+{
+    const std::string input = R"(
+        fn main() {
+            let x:int = 3
+            while (x < 5) {
+                x = x + 1
+            }
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::VariableCannotBeChangedException);
+}
+
+TEST_F(SemanticAnalysisTest, 147)
+{
+    const std::string input = R"(
+        fn main() {
+            mut let x:int = 3
+            let z:float = 0.25
+            while (x < 5) {
+                x = z
+            }
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticAnalysisTest, 148)
+{
+    const std::string input = R"(
+        fn main() {
+            mut let x:int = 3
+            while (x < 5) {
+                x = z
+            }
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}

@@ -28,8 +28,32 @@ public:
   virtual void enterStatementList(IronParser::StatementListContext * /*ctx*/) override { }
   virtual void exitStatementList(IronParser::StatementListContext * /*ctx*/) override { }
 
+  virtual void enterBreakStatement(IronParser::BreakStatementContext * /*ctx*/) override { }
+  virtual void exitBreakStatement(IronParser::BreakStatementContext * /*ctx*/) override { }
+
+  virtual void enterContinueStatement(IronParser::ContinueStatementContext * /*ctx*/) override { }
+  virtual void exitContinueStatement(IronParser::ContinueStatementContext * /*ctx*/) override { }
+
+  virtual void enterLoopStatementList(IronParser::LoopStatementListContext * /*ctx*/) override { }
+  virtual void exitLoopStatementList(IronParser::LoopStatementListContext * /*ctx*/) override { }
+
+  virtual void enterVoidReturnStatement(IronParser::VoidReturnStatementContext * /*ctx*/) override { }
+  virtual void exitVoidReturnStatement(IronParser::VoidReturnStatementContext * /*ctx*/) override { }
+
   virtual void enterReturnStatement(IronParser::ReturnStatementContext * /*ctx*/) override { }
   virtual void exitReturnStatement(IronParser::ReturnStatementContext * /*ctx*/) override { }
+
+  virtual void enterWhileStatement(IronParser::WhileStatementContext * /*ctx*/) override { }
+  virtual void exitWhileStatement(IronParser::WhileStatementContext * /*ctx*/) override { }
+
+  virtual void enterRepeatStatement(IronParser::RepeatStatementContext * /*ctx*/) override { }
+  virtual void exitRepeatStatement(IronParser::RepeatStatementContext * /*ctx*/) override { }
+
+  virtual void enterForStatement(IronParser::ForStatementContext * /*ctx*/) override { }
+  virtual void exitForStatement(IronParser::ForStatementContext * /*ctx*/) override { }
+
+  virtual void enterIntervals(IronParser::IntervalsContext * /*ctx*/) override { }
+  virtual void exitIntervals(IronParser::IntervalsContext * /*ctx*/) override { }
 
   virtual void enterFormatStatement(IronParser::FormatStatementContext * /*ctx*/) override { }
   virtual void exitFormatStatement(IronParser::FormatStatementContext * /*ctx*/) override { }
@@ -105,9 +129,6 @@ public:
 
   virtual void enterBoolExpr(IronParser::BoolExprContext * /*ctx*/) override { }
   virtual void exitBoolExpr(IronParser::BoolExprContext * /*ctx*/) override { }
-
-  virtual void enterPrimary(IronParser::PrimaryContext * /*ctx*/) override { }
-  virtual void exitPrimary(IronParser::PrimaryContext * /*ctx*/) override { }
 
   virtual void enterExpr(IronParser::ExprContext * /*ctx*/) override { }
   virtual void exitExpr(IronParser::ExprContext * /*ctx*/) override { }

@@ -65,7 +65,6 @@ namespace iron
 
         const auto currentFunction = getCurrentFunction();
 
-        bool hasReturn = false;
         currentFunction->enterLocalScope(std::make_shared<scope::Statements>());
 
         for (const auto child: ctx->children)
@@ -86,6 +85,18 @@ namespace iron
             if (const auto expression = dynamic_cast<IronParser::ExprContext *>(child))
             {
                 visitExpr(expression);
+            }
+            if (const auto whileLoop = dynamic_cast<IronParser::WhileStatementContext *>(child))
+            {
+                visitWhileStatement(whileLoop);
+            }
+            if (const auto forLoop = dynamic_cast<IronParser::ForStatementContext *>(child))
+            {
+                visitForStatement(forLoop);
+            }
+            if (const auto repeatLoop = dynamic_cast<IronParser::RepeatStatementContext *>(child))
+            {
+                visitRepeatStatement(repeatLoop);
             }
             if (const auto IfStatement = dynamic_cast<IronParser::IfStatementContext *>(child))
             {
@@ -112,6 +123,8 @@ namespace iron
 
         const auto currentFunction = getCurrentFunction();
 
+        bool mut = ctx->MUT() != nullptr;
+
         if (auto existingSymbol = currentFunction->findVarCurrentScopeAndArg(varName))
         {
             throw VariableRedefinitionException(util::format("Variable {} already declared. Line: {}, Scope: {}",
@@ -132,7 +145,7 @@ namespace iron
             throw ScopeNotFoundException("SemanticAnalysis::visitVarDeclaration. Local scope is not a statement");
         }
 
-        statement->addVariable(varName, tokenMap::getTokenType(varType));
+        statement->addVariable(varName, tokenMap::getTokenType(varType), mut);
 
         if (ctx->assignment())
         {
@@ -160,7 +173,8 @@ namespace iron
         const std::string varName = ctx->varName->getText();
         const auto function = getCurrentFunction();
 
-        if (const auto variable = function->findVarAllScopesAndArg(varName); !variable)
+        const auto variable = function->findVarAllScopesAndArg(varName);
+        if (!variable)
         {
             throw VariableNotFoundException(util::format(
                     "Variable '{}' not found.\n"
@@ -168,10 +182,58 @@ namespace iron
                     "{}\n"
                     "{}\n",
                     color::colorText(varName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), caretLine, codeLine));
+        }
+
+        if (!variable->mut)
+        {
+            throw VariableCannotBeChangedException(util::format(
+                "The value of the variable '{}' cannot be changed because it is immutable. If you want to make the variable mutable, use '{}' before let..\n"
+                "Line: {}, Scope: {}\n\n"
+                "{}\n"
+                "{}\n",
+                color::colorText(varName, color::BOLD_GREEN),
+                color::colorText("mut", color::BOLD_BLUE),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(scopeManager->currentScopeName(),
+                    color::BOLD_YELLOW), caretLine, codeLine));
+        }
+
+        if (ctx->anotherVarName)
+        {
+            const auto anotherVarName = ctx->anotherVarName->getText();
+            const auto anotherVariable = function->findVarAllScopesAndArg(anotherVarName);
+            if (!anotherVariable)
+            {
+                throw VariableNotFoundException(util::format(
+                        "Variable '{}' not found.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n",
+                        color::colorText(anotherVarName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), caretLine, codeLine));
+            }
+
+            if (!variable->type != anotherVariable->type)
+            {
+                throw TypeMismatchException(util::format(
+                                "The variable {} type is {} and the variable {} type is {}.\n"
+                                "Line: {}, Scope: {}\n\n"
+                                "{}\n" // Exibe a linha de código
+                                "{}\n", // Exibe a setinha '^'
+                                color::colorText(varName, color::BOLD_GREEN),
+                                color::colorText(tokenMap::getTokenText(variable->type),
+                                color::BOLD_GREEN), color::colorText(anotherVarName, color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                caretLine, codeLine));
+            }
+
         }
     }
-    void SemanticAnalysis::visitImportStatement(IronParser::ImportStatementContext *ctx)
+
+    void SemanticAnalysis::visitImportStatement(IronParser::ImportStatementContext *ctx) const
     {
         const uint col = ctx->getStart()->getCharPositionInLine();
         const uint line = ctx->getStart()->getLine();
@@ -222,9 +284,9 @@ namespace iron
                                                            color::colorText("Global", color::BOLD_YELLOW), codeLine,
                                                            caretLine));
             }
-
         }
     }
+
 
 
     std::pair<std::string, std::string> SemanticAnalysis::getCodeLineAndCaretLine(const uint line, const uint col,
