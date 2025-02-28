@@ -1938,7 +1938,7 @@ TEST_F(SemanticAnalysisTest, 135)
            block(func:func)
         }
     )";
-    EXPECT_NO_THROW(runAnalysis(input));
+    EXPECT_THROW(runAnalysis(input), iron::FunctionSignatureNotDefined);
 }
 
 TEST_F(SemanticAnalysisTest, 136)
@@ -2106,6 +2106,24 @@ TEST_F(SemanticAnalysisTest, 143)
             printf(format:"Terminou\n")
 
             return 0
+        }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}
+
+TEST_F(SemanticAnalysisTest, 144)
+{
+    const std::string input = R"(
+        fn main() {
+           let inline:fn = (a:int):int -> a * 8
+
+           let block:fn = (func:fn (x:fn):int):int -> {
+                func(x:inline)
+                return 0
+           }
+
+           let func:fn = (x:fn(a:int):int):int -> 2 * 2
+           block(func:func)
         }
     )";
     EXPECT_NO_THROW(runAnalysis(input));

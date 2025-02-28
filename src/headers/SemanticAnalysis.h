@@ -17,7 +17,7 @@ namespace iron
         std::vector<std::string> sourceLines;
         std::shared_ptr<config::Configuration> config;
 
-        std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps);
+        std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps) const;
 
         void visitExternBlock(IronParser::ExternBlockContext *ctx);
 
@@ -53,9 +53,9 @@ namespace iron
 
         void visitAssignment(IronParser::AssignmentContext *ctx);
 
-        void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx);
+        void visitFunctionSignature(const IronParser::FunctionSignatureContext *ctx) const;
 
-        void visitFunctionArgs(IronParser::FunctionArgsContext *ctx);
+        void visitFunctionArgs(const IronParser::FunctionArgsContext *ctx) const;
 
         void visitFunctionArg(IronParser::FunctionArgContext *ctx) const;
 

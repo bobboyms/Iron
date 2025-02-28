@@ -124,6 +124,35 @@ namespace hlir
                                                  variable->getSignature()->getReturnType());
     }
 
+    void createExternalCallArg(const std::shared_ptr<FunctionCallArgs> &callArgs,
+        const std::shared_ptr<Function> &calledFunction,
+        const std::shared_ptr<Function> &currentFunction)
+    {
+        const auto funcArgSize = calledFunction->getFunctionArgs()->getArgs().size();
+
+        if (const auto callArgSize = callArgs->getCallArgs().size(); funcArgSize > callArgSize)
+        {
+            // auto diff = funcArgSize - callArgSize;
+            for (size_t i = callArgSize; i < funcArgSize; i++)
+            {
+                const auto arg = calledFunction->getFunctionArgs()->getArgs()[i];
+                auto variable = currentFunction->findVarAllScopesAndArg(arg->name);
+                // auto variable = snd;
+
+                printf("XXXXX\n");
+
+                if (!variable)
+                {
+                    throw HLIRException("HLIRGenerator::visitFunctionCall. Variable not found");
+                }
+
+                auto value = std::make_shared<Value>()->set(variable, variable->getVarType());
+                auto callArg = std::make_shared<FunctionCallArg>(arg->name, variable->getVarType(), value);
+                callArgs->addCallArg(callArg);
+            }
+        }
+    }
+
     std::shared_ptr<FunctionCall> HLIRGenerator::visitFunctionCall(IronParser::FunctionCallContext *ctx,
                                                                    const std::shared_ptr<Function> &currentFunction)
     {
@@ -157,6 +186,9 @@ namespace hlir
                 visitFunctionCallArgs(ctx->functionCallArgs(), callArgs, currentFunction);
             }
 
+            printf("Chegou aqui\n");
+            createExternalCallArg(callArgs, functionArg, currentFunction);
+
             return call;
         }
 
@@ -170,27 +202,31 @@ namespace hlir
             visitFunctionCallArgs(ctx->functionCallArgs(), callArgs, currentFunction);
         }
 
-        const auto funcArgSize = arrowFunction->getFunctionArgs()->getArgs().size();
+        createExternalCallArg(callArgs, arrowFunction, currentFunction);
 
-        if (const auto callArgSize = callArgs->getCallArgs().size(); funcArgSize > callArgSize)
-        {
-            // auto diff = funcArgSize - callArgSize;
-            for (size_t i = callArgSize; i < funcArgSize; i++)
-            {
-                const auto arg = arrowFunction->getFunctionArgs()->getArgs()[i];
-                auto variable = currentFunction->findVarAllScopesAndArg(arg->name);
-                // auto variable = snd;
-
-                if (!variable)
-                {
-                    throw HLIRException("HLIRGenerator::visitFunctionCall. Variable not found");
-                }
-
-                auto value = std::make_shared<Value>()->set(variable, variable->getVarType());
-                auto callArg = std::make_shared<FunctionCallArg>(arg->name, variable->getVarType(), value);
-                callArgs->addCallArg(callArg);
-            }
-        }
+        // const auto funcArgSize = arrowFunction->getFunctionArgs()->getArgs().size();
+        //
+        // if (const auto callArgSize = callArgs->getCallArgs().size(); funcArgSize > callArgSize)
+        // {
+        //     // auto diff = funcArgSize - callArgSize;
+        //     for (size_t i = callArgSize; i < funcArgSize; i++)
+        //     {
+        //         const auto arg = arrowFunction->getFunctionArgs()->getArgs()[i];
+        //         auto variable = currentFunction->findVarAllScopesAndArg(arg->name);
+        //         // auto variable = snd;
+        //
+        //         printf("XXXXX\n");
+        //
+        //         if (!variable)
+        //         {
+        //             throw HLIRException("HLIRGenerator::visitFunctionCall. Variable not found");
+        //         }
+        //
+        //         auto value = std::make_shared<Value>()->set(variable, variable->getVarType());
+        //         auto callArg = std::make_shared<FunctionCallArg>(arg->name, variable->getVarType(), value);
+        //         callArgs->addCallArg(callArg);
+        //     }
+        // }
 
         return call;
     }
@@ -217,6 +253,7 @@ namespace hlir
 
         auto argName = ctx->varName->getText();
         auto callFunction = std::dynamic_pointer_cast<FunctionCall>(callArgs->getParent());
+        printf("argName %s\n", argName.c_str());
 
         if (!callFunction)
         {
@@ -334,6 +371,8 @@ namespace hlir
             auto functionName = ctx->functionCall()->functionName->getText();
             auto calledFunction = context->getFunctionByName(functionName);
 
+            printf("functionName %s\n", functionName.c_str());
+
             if (!calledFunction)
             {
                 auto currentFunction = std::dynamic_pointer_cast<Function>(statement->getParent());
@@ -364,7 +403,6 @@ namespace hlir
                 }
             }
 
-            callFunction->getFunction()->isVariedArguments();
 
             if (callFunction->getFunction()->isExternal() && callFunction->getFunction()->isVariedArguments())
             {

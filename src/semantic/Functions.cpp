@@ -51,7 +51,8 @@ namespace iron
         }
     }
 
-    void SemanticAnalysis::validateFunctionReturn(const std::string &codeLine, const int line, std::shared_ptr<scope::Function> function)
+    void SemanticAnalysis::validateFunctionReturn(const std::string &codeLine, const int line,
+                                                  std::shared_ptr<scope::Function> function)
     {
 
         if (function->getReturnType() != tokenMap::VOID && !function->isReturnFound())
@@ -79,7 +80,6 @@ namespace iron
                     color::colorText("return", color::BOLD_BLUE), color::colorText(std::to_string(line), color::YELLOW),
                     color::colorText(scopeName, color::BOLD_YELLOW), codeLine));
         }
-
     }
 
     void SemanticAnalysis::visitFunctionBody(IronParser::FunctionDeclarationContext *ctx)
@@ -153,7 +153,7 @@ namespace iron
         return std::make_shared<scope::Signature>(returnType, arguments);
     }
 
-    void SemanticAnalysis::visitFunctionSignature(IronParser::FunctionSignatureContext *ctx)
+    void SemanticAnalysis::visitFunctionSignature(const IronParser::FunctionSignatureContext *ctx) const
     {
         for (const auto child: ctx->children)
         {
@@ -164,7 +164,7 @@ namespace iron
         }
     }
 
-    void SemanticAnalysis::visitFunctionArgs(IronParser::FunctionArgsContext *ctx)
+    void SemanticAnalysis::visitFunctionArgs(const IronParser::FunctionArgsContext *ctx) const
     {
         for (const auto child: ctx->children)
         {
@@ -179,8 +179,14 @@ namespace iron
     {
 
         const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 1);
 
         const auto currentFunction = scopeManager->currentFunctionDeclaration();
+
+        // currentFunction->getAlias()->name;
+
         if (!currentFunction)
         {
             throw ScopeNotFoundException(util::format("visitFunctionArg. Scope current not found. Line: {}",
@@ -188,7 +194,8 @@ namespace iron
         }
 
         const auto argsList = currentFunction->getArgs();
-        std::string argName = ctx->varName->getText();
+        const std::string argName = ctx->varName->getText();
+
         if (auto arg = currentFunction->getArgByName(argName))
         {
             throw VariableRedefinitionException(util::format(
@@ -197,20 +204,29 @@ namespace iron
                     color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW)));
         }
 
+
         if (ctx->fnsignature())
         {
-            // visitFunctionSignature(ctx->fnsignature()->functionSignature());
             const auto signature = getSignature(ctx->fnsignature()->functionSignature());
-            if (!signature)
-            {
-                throw std::runtime_error("SemanticAnalysis::visitFunctionArg. Function signature is empty.");
-            }
-
             argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::FUNCTION, signature));
         }
         else
         {
+
             const std::string argType = ctx->varTypes()->getText();
+
+            if (tokenMap::getTokenType(argType) == tokenMap::FUNCTION)
+            {
+                throw FunctionSignatureNotDefined(util::format(
+                        "function signature not defined for argument {}.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n",
+                        color::colorText(argName, color::BOLD_GREEN),
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW), codeLine, caretLine));
+            }
+
             argsList->push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType)));
         }
     }
@@ -338,17 +354,18 @@ namespace iron
 
             if (calledArg->type != localCalledFunction->getReturnType())
             {
-                throw TypeMismatchException(util::format(
-                        "The function argument {} type is {} and the function {} return type is {}.\n"
-                        "Line: {}, Scope: {}\n\n"
-                        "{}\n" // Exibe a linha de código
-                        "{}\n", // Exibe a setinha '^'
-                        color::colorText(calledArgName, color::BOLD_GREEN),
-                        color::colorText(tokenMap::getTokenText(calledArg->type), color::BOLD_GREEN),
-                        color::colorText(calledFunctionName, color::BOLD_BLUE),
-                        color::colorText(tokenMap::getTokenText(localCalledFunction->getReturnType()), color::BOLD_BLUE),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(currentFunctionName, color::BOLD_YELLOW), codeLine, caretLine));
+                throw TypeMismatchException(
+                        util::format("The function argument {} type is {} and the function {} return type is {}.\n"
+                                     "Line: {}, Scope: {}\n\n"
+                                     "{}\n" // Exibe a linha de código
+                                     "{}\n", // Exibe a setinha '^'
+                                     color::colorText(calledArgName, color::BOLD_GREEN),
+                                     color::colorText(tokenMap::getTokenText(calledArg->type), color::BOLD_GREEN),
+                                     color::colorText(calledFunctionName, color::BOLD_BLUE),
+                                     color::colorText(tokenMap::getTokenText(localCalledFunction->getReturnType()),
+                                                      color::BOLD_BLUE),
+                                     color::colorText(std::to_string(line), color::YELLOW),
+                                     color::colorText(currentFunctionName, color::BOLD_YELLOW), codeLine, caretLine));
             }
 
             visitFunctionCall(ctx->functionCall());

@@ -78,6 +78,7 @@ namespace hlir
                 auto call = visitFunctionCall(funcCall, currentFunction);
                 statement->addStatement(call);
             }
+
             if (const auto re_turn = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(re_turn, currentFunction);
@@ -205,10 +206,7 @@ namespace hlir
                 const auto strLeftVarName = varDecl->varName->getText();
                 const auto strLeftVarTypeName = varDecl->varTypes()->getText();
 
-                int leftDataTypeType = tokenMap::getTokenType(strLeftVarTypeName);
-                auto leftVar =
-                        std::make_shared<Variable>()->set(strLeftVarName, std::make_shared<Type>(leftDataTypeType));
-                statement->addDeclaredVariable(leftVar);
+                auto leftVar = currentFunction->findVarAllScopesAndArg(strLeftVarName);
 
                 auto value = std::make_shared<Value>()->set(rightVar, rightVar->getVarType());
                 auto assign = std::make_shared<Assign>()->set(leftVar, value);
@@ -221,7 +219,8 @@ namespace hlir
 
             const auto strRightVarName = visitExpr(ctx->expr(), currentFunction);
             const auto rightVar = currentFunction->findVarAllScopesAndArg(strRightVarName);
-            // auto rightVar = variable.second;
+
+
 
             if (!rightVar)
             {
@@ -234,9 +233,7 @@ namespace hlir
                 std::string strLeftVarTypeName = varDecl->varTypes()->getText();
 
                 int leftDataTypeType = tokenMap::getTokenType(strLeftVarTypeName);
-                auto leftVar =
-                        std::make_shared<Variable>()->set(strLeftVarName, std::make_shared<Type>(leftDataTypeType));
-                statement->addDeclaredVariable(leftVar);
+                auto leftVar = currentFunction->findVarAllScopesAndArg(strLeftVarName);
 
                 if (leftDataTypeType != rightVar->getVarType()->getType())
                 {
@@ -297,6 +294,7 @@ namespace hlir
 
         if (!F->findVarCurrentScopeAndArg(var->getVarName()))
         {
+            printf("var->getVarName() %s\n", var->getVarName().c_str());
             const auto functionArgs = F->getFunctionArgs();
             const auto newArg = std::make_shared<Arg>()->set(var->getVarName(), var->getVarType(), var->getSignature());
             functionArgs->addArg(newArg);

@@ -228,7 +228,7 @@ namespace iron
 
 
     std::pair<std::string, std::string> SemanticAnalysis::getCodeLineAndCaretLine(const uint line, const uint col,
-                                                                                  const int steps)
+                                                                                  const int steps) const
     {
         std::string codeLine;
         if (line > 0 && line <= static_cast<int>(sourceLines.size()))

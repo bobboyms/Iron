@@ -430,8 +430,8 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *COLON();
     antlr4::tree::TerminalNode *IDENTIFIER();
-    VarTypesContext *varTypes();
     FnsignatureContext *fnsignature();
+    VarTypesContext *varTypes();
     AssignmentContext *assignment();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -499,7 +499,6 @@ public:
     antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
     DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
-    FormatStatementContext *formatStatement();
     ArrowFunctionInlineContext *arrowFunctionInline();
     ArrowFunctionBlockContext *arrowFunctionBlock();
 
