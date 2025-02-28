@@ -316,11 +316,6 @@ namespace iron
             visitArrowFunctionInline(ctx->arrowFunctionInline());
         }
 
-        if (ctx->arrowFunctionBlock())
-        {
-            visitArrowFunctionBlock(ctx->arrowFunctionBlock());
-        }
-
         if (ctx->functionCall())
         {
 

@@ -1,22 +1,10 @@
-import std.output.printf
+fn mult(n:int, p:float): float {return 0.0}
 
-        fn main():int {
+        fn sub(ax:int, bx:float): int {return 0 }
 
-            let x:float = 3.1
-            let y:int = 30
-
-            if (x > y) {
-                printf(format:"X > Y\n")
-                if (true) {
-                    printf(format:"É true\n")
-                }
-            } else if (false) {
-                printf(format:"X < Y\n")
-            } else {
-                printf(format:"Entrou no else\n")
-            }
-
-            printf(format:"Terminou\n")
-
-            return 0
+        fn main(): float {
+            let x: float = 25.00
+            let inline:fn = (a:int):float -> a * x
+            //return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
+            return 0.0
         }

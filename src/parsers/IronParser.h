@@ -29,13 +29,13 @@ public:
     RuleReturnStatement = 4, RuleFormatStatement = 5, RuleFormatArguments = 6, 
     RuleFormatArgument = 7, RuleExternBlock = 8, RuleExternFunctionDeclaration = 9, 
     RuleExternFunctionArgs = 10, RuleExternFunctionArg = 11, RuleCTypes = 12, 
-    RuleFunctionDeclaration = 13, RuleArrowFunctionInline = 14, RuleArrowFunctionBlock = 15, 
-    RuleFunctionSignature = 16, RuleFunctionReturnType = 17, RuleFunctionArgs = 18, 
-    RuleFunctionArg = 19, RuleFnsignature = 20, RuleFunctionCall = 21, RuleFunctionCallArgs = 22, 
-    RuleFunctionCallArg = 23, RuleVarDeclaration = 24, RuleAssignment = 25, 
-    RuleVarAssignment = 26, RuleIfBlock = 27, RuleIfStatement = 28, RuleElseStatement = 29, 
-    RuleBoolExpr = 30, RulePrimary = 31, RuleExpr = 32, RuleNumber = 33, 
-    RuleDataFormat = 34, RuleVarTypes = 35
+    RuleFunctionDeclaration = 13, RuleArrowFunctionInline = 14, RuleFunctionSignature = 15, 
+    RuleFunctionReturnType = 16, RuleFunctionArgs = 17, RuleFunctionArg = 18, 
+    RuleFnsignature = 19, RuleFunctionCall = 20, RuleFunctionCallArgs = 21, 
+    RuleFunctionCallArg = 22, RuleVarDeclaration = 23, RuleAssignment = 24, 
+    RuleVarAssignment = 25, RuleIfBlock = 26, RuleIfStatement = 27, RuleElseStatement = 28, 
+    RuleBoolExpr = 29, RulePrimary = 30, RuleExpr = 31, RuleNumber = 32, 
+    RuleDataFormat = 33, RuleVarTypes = 34
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -70,7 +70,6 @@ public:
   class CTypesContext;
   class FunctionDeclarationContext;
   class ArrowFunctionInlineContext;
-  class ArrowFunctionBlockContext;
   class FunctionSignatureContext;
   class FunctionReturnTypeContext;
   class FunctionArgsContext;
@@ -352,20 +351,6 @@ public:
     FunctionSignatureContext *functionSignature();
     antlr4::tree::TerminalNode *ARROW();
     ExprContext *expr();
-
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
-  };
-
-  ArrowFunctionInlineContext* arrowFunctionInline();
-
-  class  ArrowFunctionBlockContext : public antlr4::ParserRuleContext {
-  public:
-    ArrowFunctionBlockContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    FunctionSignatureContext *functionSignature();
-    antlr4::tree::TerminalNode *ARROW();
     antlr4::tree::TerminalNode *L_CURLY();
     StatementListContext *statementList();
     antlr4::tree::TerminalNode *R_CURLY();
@@ -375,7 +360,7 @@ public:
    
   };
 
-  ArrowFunctionBlockContext* arrowFunctionBlock();
+  ArrowFunctionInlineContext* arrowFunctionInline();
 
   class  FunctionSignatureContext : public antlr4::ParserRuleContext {
   public:
@@ -500,7 +485,6 @@ public:
     DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
     ArrowFunctionInlineContext *arrowFunctionInline();
-    ArrowFunctionBlockContext *arrowFunctionBlock();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -534,7 +518,6 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EQ();
     ArrowFunctionInlineContext *arrowFunctionInline();
-    ArrowFunctionBlockContext *arrowFunctionBlock();
     DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
     ExprContext *expr();
@@ -556,7 +539,6 @@ public:
     antlr4::tree::TerminalNode *EQ();
     antlr4::tree::TerminalNode *IDENTIFIER();
     ArrowFunctionInlineContext *arrowFunctionInline();
-    ArrowFunctionBlockContext *arrowFunctionBlock();
     DataFormatContext *dataFormat();
     ExprContext *expr();
 

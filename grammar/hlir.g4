@@ -102,7 +102,31 @@ returnStatement:
 		| expr
 	);
 
-//Format
+
+//forStatement
+//    : 'for' forClause block
+//    ;
+//
+//forClause
+//    : forClassicClause            // Forma clássica com inicialização, condição e pós-execução
+//    | forConditionClause          // Forma com apenas condição
+//    |                             // Forma sem condição (loop infinito)
+//    ;
+//
+//// Forma clássica: inicialização; condição; pós-execução
+//forClassicClause
+//    : '(' (varDeclaration | varAssignment | expr)? ';' expr? ';' expr? ')'
+//    ;
+//
+//// Forma com apenas condição
+//forConditionClause
+//    : '(' boolExpr ')'
+//    ;
+
+// Bloco de código
+//block
+//    : '{' statementList '}'
+//    ;
 
 //printf("Taxa de aprovação: %d%%\n", 90);
 // f"Nome: %s", maria
@@ -140,15 +164,12 @@ cTypes:
 	| TYPE_VOID
 	;
 
-
-//**********************
-
 // Declaração de função
 functionDeclaration:
 	PUBLIC? FUNCTION functionName = IDENTIFIER functionSignature L_CURLY statementList R_CURLY;
 
 //(peso:float, idade:int):float -> peso * idade
-arrowFunctionInline: functionSignature ARROW expr;
+arrowFunctionInline: functionSignature ARROW (expr | L_CURLY statementList R_CURLY);
 
 arrowFunctionBlock:
 	functionSignature ARROW L_CURLY statementList R_CURLY;
@@ -164,7 +185,11 @@ functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (varTypes | functionSignature) assignment?;
+	varName = IDENTIFIER COLON (fnsignature | varTypes  ) assignment?;
+
+fnsignature:
+    FUNCTION functionSignature
+;
 
 // Chamada de função
 functionCall:
@@ -179,7 +204,7 @@ functionCallArg:
 		dataFormat
 		| anotherVarName = IDENTIFIER
 		| functionCall
-		| formatStatement
+//		| formatStatement
 		| arrowFunctionInline
 		| arrowFunctionBlock
 	);

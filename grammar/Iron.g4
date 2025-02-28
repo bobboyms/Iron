@@ -164,22 +164,15 @@ cTypes:
 	| TYPE_VOID
 	;
 
-
-//**********************
-funcSignatureArgs: varTypes (COMMA varTypes)*;
-
-
-/////
-
 // Declaração de função
 functionDeclaration:
 	PUBLIC? FUNCTION functionName = IDENTIFIER functionSignature L_CURLY statementList R_CURLY;
 
 //(peso:float, idade:int):float -> peso * idade
-arrowFunctionInline: functionSignature ARROW expr;
+arrowFunctionInline: functionSignature ARROW (expr | L_CURLY statementList R_CURLY);
 
-arrowFunctionBlock:
-	functionSignature ARROW L_CURLY statementList R_CURLY;
+//arrowFunctionBlock:
+//	functionSignature ARROW L_CURLY statementList R_CURLY;
 
 functionSignature:
 	L_PAREN functionArgs? R_PAREN functionReturnType?;
@@ -192,7 +185,11 @@ functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (varTypes | FUNCTION functionSignature ) assignment?;
+	varName = IDENTIFIER COLON (fnsignature | varTypes  ) assignment?;
+
+fnsignature:
+    FUNCTION functionSignature
+;
 
 // Chamada de função
 functionCall:
@@ -207,9 +204,9 @@ functionCallArg:
 		dataFormat
 		| anotherVarName = IDENTIFIER
 		| functionCall
-		| formatStatement
+//		| formatStatement
 		| arrowFunctionInline
-		| arrowFunctionBlock
+//		| arrowFunctionBlock
 	);
 
 // Declaração de variável
@@ -220,7 +217,7 @@ varDeclaration:
 assignment:
 	EQ (
 		arrowFunctionInline
-		| arrowFunctionBlock
+//		| arrowFunctionBlock
 		| varName = IDENTIFIER
 		| dataFormat
 		| functionCall
@@ -231,7 +228,7 @@ assignment:
 varAssignment:
 	varName = IDENTIFIER EQ (
 		arrowFunctionInline
-		| arrowFunctionBlock
+//		| arrowFunctionBlock
 		| dataFormat
 		| expr
 	);

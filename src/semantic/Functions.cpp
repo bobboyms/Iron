@@ -876,69 +876,75 @@ namespace iron
             {
                 visitExpr(ctx->expr());
             }
-            scopeManager->exitScope();
-            // currentFunction->exitLocalScope();
 
-            return arrowFunction;
-        }
-
-        throw SemanticException("SemanticAnalysis::visitArrowFunctionInline error.");
-    }
-
-    std::shared_ptr<scope::Function>
-    SemanticAnalysis::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx)
-    {
-        const int line = ctx->getStart()->getLine();
-        const int col = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
-
-        const auto currentFunction = getCurrentFunction();
-
-        if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
-        {
-            const auto varName = varDeclaration->varName->getText();
-            auto functionName = iron::createFunctionName(scopeManager->currentScope()->getName(), varName);
-            auto funcArgs = std::make_shared<std::vector<std::shared_ptr<scope::FunctionArg>>>();
-            int returnType = tokenMap::VOID;
-            if (ctx->functionSignature()->functionReturnType())
-            {
-                const std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
-                returnType = tokenMap::getTokenType(type);
-            }
-
-            const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
-            auto arrowFunction = std::make_shared<scope::Function>(functionName, funcArgs, returnType);
-            arrowFunction->setAlias(variable);
-            scopeManager->addFunctionDeclaration(arrowFunction);
-
-            if (ctx->functionSignature())
-            {
-                visitFunctionSignature(ctx->functionSignature());
-            }
-
-            const auto currentStatement =
-                    std::dynamic_pointer_cast<scope::Statements>(currentFunction->getCurrentLocalScope());
-            if (!currentStatement)
-            {
-                throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current statement not found");
-            }
-
-            currentStatement->addFunctionAlias(varName, arrowFunction);
-            arrowFunction->setUpperFunction(currentFunction);
-
-            scopeManager->enterScope(arrowFunction);
             if (ctx->statementList())
             {
                 visitStatementList(ctx->statementList());
+                validateFunctionReturn(codeLine, line, arrowFunction);
             }
             scopeManager->exitScope();
-            validateFunctionReturn(codeLine, line, arrowFunction);
+
 
             return arrowFunction;
         }
 
         throw SemanticException("SemanticAnalysis::visitArrowFunctionInline error.");
     }
+
+    // std::shared_ptr<scope::Function>
+    // SemanticAnalysis::visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx)
+    // {
+    //     const int line = ctx->getStart()->getLine();
+    //     const int col = ctx->getStart()->getCharPositionInLine();
+    //     auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+    //
+    //     const auto currentFunction = getCurrentFunction();
+    //
+    //     if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
+    //     {
+    //         const auto varName = varDeclaration->varName->getText();
+    //         auto functionName = iron::createFunctionName(scopeManager->currentScope()->getName(), varName);
+    //         auto funcArgs = std::make_shared<std::vector<std::shared_ptr<scope::FunctionArg>>>();
+    //         int returnType = tokenMap::VOID;
+    //         if (ctx->functionSignature()->functionReturnType())
+    //         {
+    //             const std::string type = ctx->functionSignature()->functionReturnType()->varTypes()->getText();
+    //             returnType = tokenMap::getTokenType(type);
+    //         }
+    //
+    //         const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
+    //         auto arrowFunction = std::make_shared<scope::Function>(functionName, funcArgs, returnType);
+    //         arrowFunction->setAlias(variable);
+    //         scopeManager->addFunctionDeclaration(arrowFunction);
+    //
+    //         if (ctx->functionSignature())
+    //         {
+    //             visitFunctionSignature(ctx->functionSignature());
+    //         }
+    //
+    //         const auto currentStatement =
+    //                 std::dynamic_pointer_cast<scope::Statements>(currentFunction->getCurrentLocalScope());
+    //         if (!currentStatement)
+    //         {
+    //             throw ScopeNotFoundException("SemanticAnalysis::visitArrowFunctionInline. Current statement not found");
+    //         }
+    //
+    //         currentStatement->addFunctionAlias(varName, arrowFunction);
+    //         arrowFunction->setUpperFunction(currentFunction);
+    //
+    //         scopeManager->enterScope(arrowFunction);
+    //         if (ctx->statementList())
+    //         {
+    //             visitStatementList(ctx->statementList());
+    //         }
+    //         scopeManager->exitScope();
+    //         validateFunctionReturn(codeLine, line, arrowFunction);
+    //
+    //         return arrowFunction;
+    //     }
+    //
+    //     throw SemanticException("SemanticAnalysis::visitArrowFunctionInline error.");
+    // }
 
     // Helper para obter o escopo da função atual
     std::shared_ptr<scope::Function> SemanticAnalysis::getCurrentFunction()

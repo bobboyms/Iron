@@ -274,10 +274,6 @@ namespace hlir
             }
         }
 
-        if (ctx->arrowFunctionBlock())
-        {
-            visitArrowFunctionBlock(ctx->arrowFunctionBlock(), currentFunction);
-        }
         else if (ctx->arrowFunctionInline())
         {
             visitArrowFunctionInline(ctx->arrowFunctionInline(), currentFunction);

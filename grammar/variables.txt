@@ -1,8 +1,5 @@
-import std.output.printf
+fn main() {
+    let inline:fn = (a:int):int -> a * 3
 
-fn sum(func:fn(a:int):int, c:int) {}
-
-// fn main() {
-//    let inline:fn = (a:int):int -> a * 3
-//    mult(func:inline, a:10)
-// }
+    let block:fn = (a:int):int -> { return a * 3 }
+}
