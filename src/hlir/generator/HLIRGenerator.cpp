@@ -294,7 +294,6 @@ namespace hlir
 
         if (!F->findVarCurrentScopeAndArg(var->getVarName()))
         {
-            printf("var->getVarName() %s\n", var->getVarName().c_str());
             const auto functionArgs = F->getFunctionArgs();
             const auto newArg = std::make_shared<Arg>()->set(var->getVarName(), var->getVarType(), var->getSignature());
             functionArgs->addArg(newArg);

@@ -183,6 +183,7 @@ namespace hlir
                 variable->setSignature(arg->signature);
             }
 
+            variable->changeToFromFunctionArg();
             return variable;
         }
 
@@ -214,6 +215,7 @@ namespace hlir
                 variable->setSignature(arg->signature);
             }
 
+            variable->changeToFromFunctionArg();
             return variable;
         }
 

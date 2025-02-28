@@ -1,11 +1,11 @@
-fn mult(n:int, p:float): float {return 0.0}
+fn main() {
+           let inline:fn = (a:int):int -> a * 8
 
-        fn sub(ax:int, bx:float): int {return 0 }
+           let block:fn = (func:fn(x:fn(a:int):int):int):int -> {
+                func(x:inline)
+                return 0
+           }
 
-        fn main(): float {
-            let x: float = 25.00
-            let inline:fn = (a:int):float -> a * x
-            inline(a:25)
-            return 0.0
-            //return 32.25 * sub(ax: 1, bx: mult(n:22, p:inline(a:25)))
+           let func:fn = (zz:fn(a:int):int):int -> 2 * 2
+           block(func:func)
         }

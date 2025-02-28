@@ -123,8 +123,15 @@ namespace iron
         validateFunctionReturn(codeLine, line, function);
     }
 
-    std::shared_ptr<scope::Signature> SemanticAnalysis::getSignature(IronParser::FunctionSignatureContext *ctx)
+    std::shared_ptr<scope::Signature> SemanticAnalysis::getSignature(IronParser::FunctionSignatureContext *ctx) const
     {
+
+        const uint line = ctx->getStart()->getLine();
+        const uint col = ctx->getStart()->getCharPositionInLine();
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 1);
+
+        const auto currentFunction = scopeManager->currentFunctionDeclaration();
+
         int returnType = tokenMap::VOID;
         if (ctx->functionReturnType())
         {
@@ -140,11 +147,32 @@ namespace iron
                 {
                     if (const auto functionArg = dynamic_cast<IronParser::FunctionArgContext *>(child))
                     {
-                        const std::string argType = functionArg->varTypes()->getText();
-                        const std::string argName = functionArg->varName->getText();
 
-                        const auto arg = std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType));
-                        arguments.push_back(arg);
+                        const std::string argName = functionArg->varName->getText();
+                        if (functionArg->fnsignature())
+                        {
+                            const auto signature = getSignature(functionArg->fnsignature()->functionSignature());
+                            arguments.push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::FUNCTION, signature));
+                        } else
+                        {
+                            const std::string argType = functionArg->varTypes()->getText();
+                            if (tokenMap::getTokenType(argType) == tokenMap::FUNCTION)
+                            {
+                                throw FunctionSignatureNotDefined(util::format(
+                                        "function signature not defined for argument {}.\n"
+                                        "Line: {}, Scope: {}\n\n"
+                                        "{}\n"
+                                        "{}\n",
+                                        color::colorText(argName, color::BOLD_GREEN),
+                                        color::colorText(std::to_string(line), color::YELLOW),
+                                        color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW), codeLine,
+                                        caretLine));
+                            }
+
+                            const auto arg = std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType));
+                            arguments.push_back(arg);
+                        }
+
                     }
                 }
             }
@@ -810,7 +838,7 @@ namespace iron
         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent))
         {
             const auto varName = varDeclaration->varName->getText();
-            auto functionName = iron::createFunctionName(scopeManager->currentScope()->getName(), varName);
+            auto functionName = createFunctionName(scopeManager->currentScope()->getName(), varName);
             auto funcArgs = std::make_shared<std::vector<std::shared_ptr<scope::FunctionArg>>>();
             int returnType = tokenMap::VOID;
             if (ctx->functionSignature()->functionReturnType())
@@ -886,7 +914,7 @@ namespace iron
                 visitFunctionSignature(ctx->functionSignature());
             }
 
-            auto currentStatement =
+            const auto currentStatement =
                     std::dynamic_pointer_cast<scope::Statements>(currentFunction->getCurrentLocalScope());
             if (!currentStatement)
             {

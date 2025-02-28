@@ -1515,31 +1515,22 @@ TEST_F(LLVMTestCode, T14)
         ; ModuleID = 'main.o'
         source_filename = "main.o"
 
-        define i32 @sum(ptr %func, i32 %p) {
-        entry:
-          %var_0 = alloca i32, align 4
-          %p_alloca = alloca i32, align 4
-          store i32 %p, ptr %p_alloca, align 4
-          %load_p = load i32, ptr %p_alloca, align 4
-          %call_func_arg = call i32 %func(i32 %load_p)
-          store i32 0, ptr %var_0, align 4
-          %load_var_0 = load i32, ptr %var_0, align 4
-          ret i32 %load_var_0
-        }
-
         define void @main() {
         entry:
-          %var_0 = alloca i32, align 4
           %inline = alloca ptr, align 8
           store ptr @gfn_main_inline, ptr %inline, align 8
-          store i32 3, ptr %var_0, align 4
+          %block = alloca ptr, align 8
+          store ptr @gfn_main_block, ptr %block, align 8
+          %func = alloca ptr, align 8
+          store ptr @gfn_main_func, ptr %func, align 8
+          %load_func = load ptr, ptr %func, align 8
           %load_inline = load ptr, ptr %inline, align 8
-          %load_var_0 = load i32, ptr %var_0, align 4
-          %call_sum = call i32 @sum(ptr %load_inline, i32 %load_var_0)
+          %arrow_block_loaded = load ptr, ptr %block, align 8
+          %call_block = call i32 %arrow_block_loaded(ptr %load_func, ptr %load_inline)
           ret void
         }
 
-        define i32 @gfn_main_inline(i32 %a) {
+        define i32 @gfn_main_inline(i32 %a, ptr %inline) {
         entry:
           %a_alloca = alloca i32, align 4
           %var_1 = alloca i32, align 4
@@ -1553,23 +1544,45 @@ TEST_F(LLVMTestCode, T14)
           %load_var_1 = load i32, ptr %var_1, align 4
           ret i32 %load_var_1
         }
+
+        define i32 @gfn_main_block(ptr %func, ptr %inline) {
+        entry:
+          %var_0 = alloca i32, align 4
+          %inline_alloca = alloca ptr, align 8
+          store ptr %inline, ptr %inline_alloca, align 8
+          %load_inline = load ptr, ptr %inline_alloca, align 8
+          %call_func_arg = call i32 %func(ptr %load_inline)
+          store i32 0, ptr %var_0, align 4
+          %load_var_0 = load i32, ptr %var_0, align 4
+          ret i32 %load_var_0
+        }
+
+        define i32 @gfn_main_func(ptr %zz) {
+        entry:
+          %var_2 = alloca i32, align 4
+          %var_1 = alloca i32, align 4
+          %var_0 = alloca i32, align 4
+          store i32 2, ptr %var_0, align 4
+          store i32 2, ptr %var_1, align 4
+          %load_var_0 = load i32, ptr %var_0, align 4
+          %load_var_1 = load i32, ptr %var_1, align 4
+          %rmult = mul i32 %load_var_0, %load_var_1
+          store i32 %rmult, ptr %var_2, align 4
+          %load_var_2 = load i32, ptr %var_2, align 4
+          ret i32 %load_var_2
+        }
     )";
 
     const std::string input = R"(
-        fn sum(func:fn (a:int):int, p:int):int {
-            let inline:fn = (x:int):int -> x * 2 * p
-            func(a:inline(x:p))
-            return 0
-        }
-
         fn main() {
            let inline:fn = (a:int):int -> a * 8
-           let block:fn = (func:fn (x:fn):int):int -> {
+
+           let block:fn = (func:fn(x:fn(a:int):int):int):int -> {
                 func(x:inline)
                 return 0
            }
 
-           let func:fn = (x:fn):int -> 2 * 2
+           let func:fn = (zz:fn(a:int):int):int -> 2 * 2
            block(func:func)
         }
     )";

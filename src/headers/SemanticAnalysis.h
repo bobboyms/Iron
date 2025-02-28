@@ -39,7 +39,7 @@ namespace iron
         static void validateFunctionReturn(const std::string &codeLine, int line, std::shared_ptr<scope::Function> function);
 
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
-        static std::shared_ptr<scope::Signature> getSignature(IronParser::FunctionSignatureContext *ctx);
+        std::shared_ptr<scope::Signature> getSignature(IronParser::FunctionSignatureContext *ctx) const;
 
         void visitStatementList(const IronParser::StatementListContext *ctx);
 

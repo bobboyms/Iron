@@ -201,13 +201,17 @@ namespace iron
         {
             throw LLVMException("visitAssignment: currentFunction is null");
         }
+
         // Obter o nome da função a ser chamada
         const auto functionName = functionCall->getFunction()->getFunctionName();
+
+        printf("functionName: %s\n", functionName.c_str());
 
         // Buscar a função no módulo LLVM
         llvm::Function *function = module->getFunction(functionName);
         if (!function)
         {
+
             const auto funcArg = getArgumentByName(currentFunction, functionName);
             if (!funcArg)
             {
@@ -225,11 +229,6 @@ namespace iron
             const auto value = createConstValue(arg->value->getValueType(), arg->value);
             args.push_back(value);
         }
-
-        // printf("functionName: %s\n", functionName.c_str());
-        // printf("function call: %u\n", functionCall->getFunction()->getFunctionArgs()->getArgs().size());
-        // printf("function->arg_size(): %u\n", function->arg_size());
-        // printf("Args: %u\n", args.size());
 
         // Verificar se o número de argumentos corresponde à assinatura da função
         if (!functionCall->getFunction()->isVariedArguments())
@@ -278,7 +277,6 @@ namespace iron
         }
         else
         {
-            // Definir o tipo da função
             funcType = llvm::FunctionType::get(functionReturnType, llvm::ArrayRef<llvm::Type *>(), isVariedArguments);
         }
 
@@ -341,13 +339,6 @@ namespace iron
 
         const auto functionName = hlirFunction->getFunctionName();
 
-        bool found = false;
-        if (functionName == "gfn_main_block")
-        {
-            found = true;
-            printf("Encontrou\n");
-        }
-
         // Criar a função no módulo
         llvm::Function *function =
                 llvm::Function::Create(funcType, linkage, functionName, module.get());
@@ -361,12 +352,6 @@ namespace iron
                 {
                     const std::string &argName = argNames[idx++];
                     arg.setName(argName);
-
-                    if (found)
-                    {
-                        printf("Arg name: %s\n",argName.c_str());
-                    }
-
                 }
             }
         }

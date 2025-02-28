@@ -298,6 +298,7 @@ namespace hlir
 
         std::shared_ptr<Signature> signature;
         bool anotherScope = false;
+        bool fromFunctionArg{false};
 
     public:
 
@@ -330,6 +331,8 @@ namespace hlir
 
         void changeToAnotherScope();
         bool isAnotherScope() const;
+        bool isFromFunctionArg() const;
+        void changeToFromFunctionArg();
 
         Variable();
 
