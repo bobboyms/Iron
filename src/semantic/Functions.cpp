@@ -152,8 +152,10 @@ namespace iron
                         if (functionArg->fnsignature())
                         {
                             const auto signature = getSignature(functionArg->fnsignature()->functionSignature());
-                            arguments.push_back(std::make_shared<scope::FunctionArg>(argName, tokenMap::FUNCTION, signature));
-                        } else
+                            arguments.push_back(
+                                    std::make_shared<scope::FunctionArg>(argName, tokenMap::FUNCTION, signature));
+                        }
+                        else
                         {
                             const std::string argType = functionArg->varTypes()->getText();
                             if (tokenMap::getTokenType(argType) == tokenMap::FUNCTION)
@@ -165,14 +167,14 @@ namespace iron
                                         "{}\n",
                                         color::colorText(argName, color::BOLD_GREEN),
                                         color::colorText(std::to_string(line), color::YELLOW),
-                                        color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW), codeLine,
-                                        caretLine));
+                                        color::colorText(currentFunction->getFunctionName(), color::BOLD_YELLOW),
+                                        codeLine, caretLine));
                             }
 
-                            const auto arg = std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType));
+                            const auto arg =
+                                    std::make_shared<scope::FunctionArg>(argName, tokenMap::getTokenType(argType));
                             arguments.push_back(arg);
                         }
-
                     }
                 }
             }
