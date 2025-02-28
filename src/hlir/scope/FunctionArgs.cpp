@@ -4,6 +4,14 @@ namespace hlir
 {
     FunctionArgs::FunctionArgs() = default;
 
+    FunctionArgs::FunctionArgs(std::shared_ptr<Signature> signature)
+    {
+        for (const auto arg : signature->getArgs())
+        {
+            addArg(arg);
+        }
+    }
+
     FunctionArgs::~FunctionArgs() = default;
 
     void FunctionArgs::addArg(const std::shared_ptr<Arg> &arg)

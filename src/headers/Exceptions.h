@@ -91,6 +91,14 @@ namespace iron
         }
     };
 
+    class FunctionSignatureNotDefined final : public SemanticException
+    {
+    public:
+        explicit FunctionSignatureNotDefined(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
 
     class ModuleRedefinitionException final : public SemanticException
     {

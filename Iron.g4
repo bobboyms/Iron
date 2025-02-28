@@ -187,7 +187,7 @@ functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (varTypes | fnsignature ) assignment?;
+	varName = IDENTIFIER COLON (fnsignature | varTypes  ) assignment?;
 
 fnsignature:
     FUNCTION functionSignature

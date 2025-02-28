@@ -177,6 +177,7 @@ namespace scope
         std::shared_ptr<Function> upperFunction;
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args;
         int returnType;
+        bool returnFound{false};
 
     public:
         Function(const std::string &name, const std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> &args,
@@ -199,6 +200,8 @@ namespace scope
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> getArgs();
         std::shared_ptr<Function> getUpperFunction();
 
+        bool isReturnFound();
+        void changeToReturnFound();
         bool isExternal() const;
         void changeToExternal();
         bool isVariedArguments() const;

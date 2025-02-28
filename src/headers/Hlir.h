@@ -210,6 +210,7 @@ namespace hlir
 
         std::shared_ptr<Arg> set(const std::string &name, const std::shared_ptr<Type> &type, const std::shared_ptr<Signature> &signature)
         {
+
             this->name = name;
             this->type = type;
             this->signature = signature;
@@ -248,6 +249,7 @@ namespace hlir
          */
         void addArg(const std::shared_ptr<Arg> &arg);
 
+
         /**
          * @brief Produces a textual representation of all arguments, e.g., "x:int,y:int".
          * @return The comma-separated list of arguments.
@@ -262,6 +264,7 @@ namespace hlir
          * @brief Default constructor creating an empty FunctionArgs.
          */
         FunctionArgs();
+        explicit FunctionArgs(std::shared_ptr<Signature> signature);
 
         /**
          * @brief Destructor for FunctionArgs.
@@ -295,6 +298,7 @@ namespace hlir
 
         std::shared_ptr<Signature> signature;
         bool anotherScope = false;
+        bool fromFunctionArg{false};
 
     public:
 
@@ -327,6 +331,8 @@ namespace hlir
 
         void changeToAnotherScope();
         bool isAnotherScope() const;
+        bool isFromFunctionArg() const;
+        void changeToFromFunctionArg();
 
         Variable();
 

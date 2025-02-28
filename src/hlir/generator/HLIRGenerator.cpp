@@ -78,6 +78,7 @@ namespace hlir
                 auto call = visitFunctionCall(funcCall, currentFunction);
                 statement->addStatement(call);
             }
+
             if (const auto re_turn = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(re_turn, currentFunction);
@@ -205,10 +206,7 @@ namespace hlir
                 const auto strLeftVarName = varDecl->varName->getText();
                 const auto strLeftVarTypeName = varDecl->varTypes()->getText();
 
-                int leftDataTypeType = tokenMap::getTokenType(strLeftVarTypeName);
-                auto leftVar =
-                        std::make_shared<Variable>()->set(strLeftVarName, std::make_shared<Type>(leftDataTypeType));
-                statement->addDeclaredVariable(leftVar);
+                auto leftVar = currentFunction->findVarAllScopesAndArg(strLeftVarName);
 
                 auto value = std::make_shared<Value>()->set(rightVar, rightVar->getVarType());
                 auto assign = std::make_shared<Assign>()->set(leftVar, value);
@@ -221,7 +219,8 @@ namespace hlir
 
             const auto strRightVarName = visitExpr(ctx->expr(), currentFunction);
             const auto rightVar = currentFunction->findVarAllScopesAndArg(strRightVarName);
-            // auto rightVar = variable.second;
+
+
 
             if (!rightVar)
             {
@@ -234,9 +233,7 @@ namespace hlir
                 std::string strLeftVarTypeName = varDecl->varTypes()->getText();
 
                 int leftDataTypeType = tokenMap::getTokenType(strLeftVarTypeName);
-                auto leftVar =
-                        std::make_shared<Variable>()->set(strLeftVarName, std::make_shared<Type>(leftDataTypeType));
-                statement->addDeclaredVariable(leftVar);
+                auto leftVar = currentFunction->findVarAllScopesAndArg(strLeftVarName);
 
                 if (leftDataTypeType != rightVar->getVarType()->getType())
                 {
@@ -287,21 +284,6 @@ namespace hlir
         }
     }
 
-    bool HLIRGenerator::hasVariableOrArg(const std::shared_ptr<Function> &F, const std::string &varName)
-    {
-        // if (auto v = F->fin)
-        // {
-        //     return true;
-        // }
-        //
-        // if (auto a = F->getFunctionArgs()->findArgByName(varName))
-        // {
-        //     return true;
-        // }
-
-        return false;
-    }
-
     void HLIRGenerator::ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var)
     {
 
@@ -313,17 +295,16 @@ namespace hlir
         if (!F->findVarCurrentScopeAndArg(var->getVarName()))
         {
             const auto functionArgs = F->getFunctionArgs();
-            const auto newArg = std::make_shared<Arg>()->set(var->getVarName(), var->getVarType());
+            const auto newArg = std::make_shared<Arg>()->set(var->getVarName(), var->getVarType(), var->getSignature());
             functionArgs->addArg(newArg);
         }
-        //
-        const auto parentF = F->getParentFunction();
-        if (!parentF)
+
+        if (const auto parentF = F->getParentFunction())
         {
-            throw HLIRException("Variável não encontrada em escopo global");
+            ensureVariableCaptured(parentF, var);
         }
 
-        ensureVariableCaptured(parentF, var);
+
     }
 
 

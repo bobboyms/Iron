@@ -17,7 +17,7 @@ namespace iron
         std::vector<std::string> sourceLines;
         std::shared_ptr<config::Configuration> config;
 
-        std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps);
+        std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps) const;
 
         void visitExternBlock(IronParser::ExternBlockContext *ctx);
 
@@ -36,9 +36,10 @@ namespace iron
         void visitElseStatement(IronParser::ElseStatementContext *ctx);
 
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
+        static void validateFunctionReturn(const std::string &codeLine, int line, std::shared_ptr<scope::Function> function);
 
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
-        static std::shared_ptr<scope::Signature> getSignature(IronParser::FunctionSignatureContext *ctx);
+        std::shared_ptr<scope::Signature> getSignature(IronParser::FunctionSignatureContext *ctx) const;
 
         void visitStatementList(const IronParser::StatementListContext *ctx);
 
@@ -52,9 +53,9 @@ namespace iron
 
         void visitAssignment(IronParser::AssignmentContext *ctx);
 
-        void visitFunctionSignature(IronParser::FunctionSignatureContext *ctx);
+        void visitFunctionSignature(const IronParser::FunctionSignatureContext *ctx) const;
 
-        void visitFunctionArgs(IronParser::FunctionArgsContext *ctx);
+        void visitFunctionArgs(const IronParser::FunctionArgsContext *ctx) const;
 
         void visitFunctionArg(IronParser::FunctionArgContext *ctx) const;
 

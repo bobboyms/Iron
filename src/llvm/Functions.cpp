@@ -175,7 +175,6 @@ namespace iron
         }
 
         return builder.CreateCall(targetFuncType, funcArg, args, "call_func_arg");
-
     }
 
     llvm::Value *LLVM::visitFunctionCall(const std::shared_ptr<hlir::FunctionCall> &functionCall)
@@ -206,10 +205,13 @@ namespace iron
         // Obter o nome da função a ser chamada
         const auto functionName = functionCall->getFunction()->getFunctionName();
 
+        printf("functionName: %s\n", functionName.c_str());
+
         // Buscar a função no módulo LLVM
         llvm::Function *function = module->getFunction(functionName);
         if (!function)
         {
+
             const auto funcArg = getArgumentByName(currentFunction, functionName);
             if (!funcArg)
             {
@@ -275,14 +277,13 @@ namespace iron
         }
         else
         {
-            // Definir o tipo da função
             funcType = llvm::FunctionType::get(functionReturnType, llvm::ArrayRef<llvm::Type *>(), isVariedArguments);
         }
 
         return funcType;
     }
 
-    llvm::FunctionType *LLVM::createFuncTypeFromSignature(const std::shared_ptr<hlir::Signature>& signature) const
+    llvm::FunctionType *LLVM::createFuncTypeFromSignature(const std::shared_ptr<hlir::Signature> &signature) const
     {
         llvm::Type *functionReturnType = mapType(signature->getReturnType()->getType());
         const auto [innerArgTypes, _] = createFunctionArgs(signature->getArgs());
@@ -300,12 +301,15 @@ namespace iron
 
             if (arg->type->getType() == tokenMap::FUNCTION)
             {
-                if (arg->signature)
+                if (!arg->signature)
                 {
-                    const llvm::FunctionType *funcType = createFuncTypeFromSignature(arg->signature);
-                    argTypes.push_back(funcType->getPointerTo());
-                    argNames.push_back(arg->name);
+                    throw LLVMException("LLVM::createFunctionArgs. Arg don't have a signature. Arg name: " + arg->name);
                 }
+
+                const llvm::FunctionType *funcType = createFuncTypeFromSignature(arg->signature);
+                argTypes.push_back(funcType->getPointerTo());
+                argNames.push_back(arg->name);
+
             }
             else
             {
@@ -333,9 +337,11 @@ namespace iron
         // Definir a linkage baseada na visibilidade
         constexpr llvm::Function::LinkageTypes linkage = llvm::Function::ExternalLinkage;
 
+        const auto functionName = hlirFunction->getFunctionName();
+
         // Criar a função no módulo
         llvm::Function *function =
-                llvm::Function::Create(funcType, linkage, hlirFunction->getFunctionName(), module.get());
+                llvm::Function::Create(funcType, linkage, functionName, module.get());
 
         if (!argTypes.empty())
         {

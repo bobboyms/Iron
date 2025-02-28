@@ -135,6 +135,16 @@ namespace hlir
         return anotherScope;
     }
 
+    bool Variable::isFromFunctionArg() const
+    {
+        return fromFunctionArg;
+    }
+
+    void Variable::changeToFromFunctionArg()
+    {
+        fromFunctionArg = true;
+    }
+
     std::shared_ptr<Variable> Variable::set(const std::string &newVarName, const std::shared_ptr<Type> &newVarType)
     {
         if (!newVarType)
