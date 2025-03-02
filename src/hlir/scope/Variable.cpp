@@ -34,7 +34,7 @@ namespace hlir
         // Verifica se value contém uma Function e estabelece seu pai
         if (std::holds_alternative<std::shared_ptr<Function>>(newValue))
         {
-            auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
+            const auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
             if (!funcPtr)
             {
                 throw HLIRException("Value::set failed: Function pointer in value is null.");
@@ -91,7 +91,7 @@ namespace hlir
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
                     {
-                        sb << util::format("{}", arg->getVarName());
+                        sb << util::format("{}", arg->getRealName());
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
                     {
@@ -215,7 +215,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("let {}:{}", varName, varType->getText());
+        sb << util::format("{}:{}", realName, varType->getText());
         return sb.str();
     }
 

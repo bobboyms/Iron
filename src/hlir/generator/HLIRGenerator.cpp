@@ -186,8 +186,6 @@ namespace hlir
         const std::string varType = ctx->varTypes()->getText();
         const auto statement = currentFunction->getCurrentLocalScope();
 
-        printf("Declarou: %s\n", varName.c_str());
-
         const auto variable =
                 std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::getTokenType(varType)));
         statement->addDeclaredVariable(variable);
@@ -200,7 +198,6 @@ namespace hlir
             visitAssignment(ctx->assignment(), currentFunction);
         }
     }
-
 
     void HLIRGenerator::visitAssignment(IronParser::AssignmentContext *ctx,
                                         const std::shared_ptr<Function> &currentFunction)

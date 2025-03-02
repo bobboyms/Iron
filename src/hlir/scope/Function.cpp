@@ -617,31 +617,32 @@ namespace hlir
                         using T = std::decay_t<decltype(*stmtPtr)>;
                         if constexpr (std::is_same_v<T, Assign>)
                         {
-                            sb << util::format(" {}\n", stmtPtr->getText());
+                            sb << util::format("    {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, Expr>)
                         {
-                            sb << util::format(" {}\n", stmtPtr->getText());
+                            sb << util::format("    {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, FunctionCall>)
                         {
-                            sb << util::format(" {}\n", stmtPtr->getText());
+                            sb << util::format("    {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, FuncReturn>)
                         {
-                            sb << util::format(" {}\n", stmtPtr->getText());
+                            sb << util::format("    {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, Block>)
                         {
+                            sb << util::format("{}\n", "");
                             sb << util::format(" {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, Conditional>)
                         {
-                            sb << util::format(" {}\n", stmtPtr->getText());
+                            sb << util::format("    {}\n", stmtPtr->getText());
                         }
                         else if constexpr (std::is_same_v<T, Jump>)
                         {
-                            sb << util::format(" {}\n", stmtPtr->getText());
+                            sb << util::format("    {}\n", stmtPtr->getText());
                         }
                     },
                     stmt);
@@ -765,7 +766,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("return {} {}", variable->getVarType()->getText(), variable->getVarName());
+        sb << util::format("return {} {}", variable->getVarType()->getText(), variable->getRealName());
         return sb.str();
     }
 

@@ -2197,3 +2197,29 @@ TEST_F(SemanticAnalysisTest, 148)
     )";
     EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
 }
+
+TEST_F(SemanticAnalysisTest, 149)
+{
+    const std::string input = R"(
+    import std.output.printf
+
+    fn main() {
+        mut let x:int = 0
+        while x < 100 {
+            x = x + 1
+            if (x == 5) {
+                printf(format:"x = 5\n")
+            } else {
+                x = x + 1
+                 printf(format:"else x = %u\n", x:x)
+                 if (x == 59) {
+                    break
+                 }
+            }
+        }
+
+        printf(format:"x1 = %u\n", r:x)
+    }
+    )";
+    EXPECT_NO_THROW(runAnalysis(input));
+}

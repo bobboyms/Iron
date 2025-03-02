@@ -107,7 +107,6 @@ namespace iron
 
         const auto variable = hlirAssignment->getVariable();
         const auto value = hlirAssignment->getValue()->getValue();
-        printf("variable: %s\n", variable->getRealName().c_str());
 
         // auto value = hlirAssignment->getValue()->getValue();
         std::visit(

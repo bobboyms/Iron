@@ -6,7 +6,7 @@
 namespace iron
 {
 
-    void SemanticAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
+    void SemanticAnalysis::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) const
     {
 
         const uint line = ctx->getStart()->getLine();
@@ -52,7 +52,7 @@ namespace iron
     }
 
     void SemanticAnalysis::validateFunctionReturn(const std::string &codeLine, const int line,
-                                                  std::shared_ptr<scope::Function> function)
+                                                  const std::shared_ptr<scope::Function>& function)
     {
 
         if (function->getReturnType() != tokenMap::VOID && !function->isReturnFound())
@@ -70,6 +70,7 @@ namespace iron
                     upperFunction = upperFunction->getUpperFunction();
                 }
             }
+
             throw ReturnNotFoundException(util::format(
                     "The Function {} returns an {} type. But you are not returning any value in the function body.\n"
                     "To do this, use the keyword '{}'.\n"

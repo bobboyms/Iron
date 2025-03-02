@@ -154,7 +154,7 @@ namespace hlir
 
         std::string getText() override;
 
-        std::shared_ptr<Arg> findArgByName(const std::string &argName) const;
+        static std::shared_ptr<Arg> findArgByName(const std::string &argName);
 
         std::vector<std::shared_ptr<Arg>> getArgs();
 
@@ -264,7 +264,7 @@ namespace hlir
          * @brief Default constructor creating an empty FunctionArgs.
          */
         FunctionArgs();
-        explicit FunctionArgs(std::shared_ptr<Signature> signature);
+        explicit FunctionArgs(const std::shared_ptr<Signature>& signature);
 
         /**
          * @brief Destructor for FunctionArgs.

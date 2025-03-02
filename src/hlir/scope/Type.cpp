@@ -68,7 +68,7 @@ namespace hlir
         throw std::runtime_error("Signature::getText() not implemented");
     }
 
-    std::shared_ptr<Arg> Signature::findArgByName(const std::string &argName) const
+    std::shared_ptr<Arg> Signature::findArgByName(const std::string &argName)
     {
         throw std::runtime_error("Signature::findArgByName not implemented");
     }

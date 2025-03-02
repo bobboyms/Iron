@@ -74,7 +74,7 @@ namespace hlir
         // conditional var_3 %then, %ifcont
         sb.str("");
         sb.clear();
-        sb << util::format("cond {} {}, {}", variable->getVarName(), trueLabel, falseLabel);
+        sb << util::format("cond {} {}, {}", variable->getRealName(), trueLabel, falseLabel);
         return sb.str();
     }
     std::shared_ptr<Variable> Conditional::getVariable()
