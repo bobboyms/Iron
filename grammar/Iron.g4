@@ -41,6 +41,7 @@ GTE: '>=';
 IF: 'if';
 FUNCTION: 'fn';
 LET: 'let';
+MUT: 'mut';
 ELSE: 'else';
 PUBLIC: 'public';
 IMPORT: 'import';
@@ -92,7 +93,9 @@ qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
-		varDeclaration
+        : continueStatement
+		| breakStatement
+		| varDeclaration
 		| varAssignment
 		| functionCall
 		| expr
@@ -106,23 +109,22 @@ statementList: (
 breakStatement: BREAK;
 continueStatement: CONTINUE;
 
-loopStatementList: (
-		: continueStatement
-		| breakStatement
-		| varDeclaration
-		| varAssignment
-		| functionCall
-		| expr
-		| ifStatement
-		| whileStatement
-		| repeatStatement
-		| forStatement
-		| voidReturnStatement
-		| returnStatement
+//loopStatementList: (
+//		: continueStatement
+//		| breakStatement
+//		| varDeclaration
+//		| varAssignment
+//		| functionCall
+//		| expr
+//		| ifStatement
+//		| whileStatement
+//		| repeatStatement
+//		| forStatement
+//		| voidReturnStatement
+//		| returnStatement
+//
+//	)*;
 
-	)*;
-
-voidReturnStatement: RETURN;
 
 returnStatement:
 	RETURN (
@@ -130,17 +132,17 @@ returnStatement:
 		| varName = IDENTIFIER
 		| functionCall
 		| expr
-	);
+	)?;
 
 
 whileStatement:
-    WHILE boolExpr L_CURLY loopStatementList R_CURLY;
+    WHILE boolExpr L_CURLY statementList R_CURLY;
 
 repeatStatement:
-    REPEAT L_CURLY loopStatementList R_CURLY WHILE boolExpr;
+    REPEAT L_CURLY statementList R_CURLY WHILE boolExpr;
 
 forStatement:
-    FOR IDENTIFIER IN intervals L_CURLY loopStatementList R_CURLY;
+    FOR IDENTIFIER IN intervals L_CURLY statementList R_CURLY;
 
 intervals:
     (firstNumber = INT_NUMBER | firstVarName = IDENTIFIER)
@@ -190,9 +192,6 @@ functionDeclaration:
 //(peso:float, idade:int):float -> peso * idade
 arrowFunctionInline: functionSignature ARROW (expr | L_CURLY statementList R_CURLY);
 
-//arrowFunctionBlock:
-//	functionSignature ARROW L_CURLY statementList R_CURLY;
-
 functionSignature:
 	L_PAREN functionArgs? R_PAREN functionReturnType?;
 
@@ -223,20 +222,17 @@ functionCallArg:
 		dataFormat
 		| anotherVarName = IDENTIFIER
 		| functionCall
-//		| formatStatement
 		| arrowFunctionInline
-//		| arrowFunctionBlock
 	);
 
 // Declaração de variável
 varDeclaration:
-	LET varName = IDENTIFIER COLON varTypes assignment?;
+	MUT? LET varName = IDENTIFIER COLON varTypes assignment?;
 
 // Atribuição
 assignment:
 	EQ (
 		arrowFunctionInline
-//		| arrowFunctionBlock
 		| varName = IDENTIFIER
 		| dataFormat
 		| functionCall
@@ -247,7 +243,7 @@ assignment:
 varAssignment:
 	varName = IDENTIFIER EQ (
 		arrowFunctionInline
-//		| arrowFunctionBlock
+		| anotherVarName=IDENTIFIER
 		| dataFormat
 		| expr
 	);
@@ -266,16 +262,6 @@ elseStatement
     : ifStatement
     | ifBlock
     ;
-
-//expression
-// : LPAREN expression RPAREN                       #parenExpression
-// | NOT expression                                 #notExpression
-// | left=expression op=comparator right=expression #comparatorExpression
-// | left=expression op=binary right=expression     #binaryExpression
-// | bool                                           #boolExpression
-// | IDENTIFIER                                     #identifierExpression
-// | DECIMAL                                        #decimalExpression
-// ;
 
 boolExpr
 
@@ -299,8 +285,6 @@ expr:
 	| L_PAREN expr R_PAREN;
 
 number: REAL_NUMBER | INT_NUMBER;
-
-
 
 // Formato de dados para inicializadores
 dataFormat:

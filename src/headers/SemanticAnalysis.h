@@ -45,7 +45,8 @@ namespace iron
         void visitIfStatement(IronParser::IfStatementContext *ctx);
         void visitElseStatement(IronParser::ElseStatementContext *ctx);
 
-        void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
+        // void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
+        void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) const;
         static void validateFunctionReturn(const std::string &codeLine, int line,
                                            const std::shared_ptr<scope::Function>& function);
 

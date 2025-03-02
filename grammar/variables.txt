@@ -1,14 +1,3 @@
-fn main() {
-    for i in 0..3 {
-        let a:int = b
-    }
-
-    while true {
-        let a:int = b
-    }
-
-    repeat {
-        let a:int = b
-
-    } while true
-}
+fn main():int {
+            return
+        }

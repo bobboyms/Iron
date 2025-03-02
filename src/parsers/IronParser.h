@@ -27,18 +27,18 @@ public:
 
   enum {
     RuleProgram = 0, RuleImportStatement = 1, RuleQualifiedName = 2, RuleStatementList = 3, 
-    RuleBreakStatement = 4, RuleContinueStatement = 5, RuleVoidReturnStatement = 6, 
-    RuleReturnStatement = 7, RuleWhileStatement = 8, RuleRepeatStatement = 9, 
-    RuleForStatement = 10, RuleIntervals = 11, RuleFormatStatement = 12, 
-    RuleFormatArguments = 13, RuleFormatArgument = 14, RuleExternBlock = 15, 
-    RuleExternFunctionDeclaration = 16, RuleExternFunctionArgs = 17, RuleExternFunctionArg = 18, 
-    RuleCTypes = 19, RuleFunctionDeclaration = 20, RuleArrowFunctionInline = 21, 
-    RuleFunctionSignature = 22, RuleFunctionReturnType = 23, RuleFunctionArgs = 24, 
-    RuleFunctionArg = 25, RuleFnsignature = 26, RuleFunctionCall = 27, RuleFunctionCallArgs = 28, 
-    RuleFunctionCallArg = 29, RuleVarDeclaration = 30, RuleAssignment = 31, 
-    RuleVarAssignment = 32, RuleIfBlock = 33, RuleIfStatement = 34, RuleElseStatement = 35, 
-    RuleBoolExpr = 36, RuleExpr = 37, RuleNumber = 38, RuleDataFormat = 39, 
-    RuleVarTypes = 40
+    RuleBreakStatement = 4, RuleContinueStatement = 5, RuleReturnStatement = 6, 
+    RuleWhileStatement = 7, RuleRepeatStatement = 8, RuleForStatement = 9, 
+    RuleIntervals = 10, RuleFormatStatement = 11, RuleFormatArguments = 12, 
+    RuleFormatArgument = 13, RuleExternBlock = 14, RuleExternFunctionDeclaration = 15, 
+    RuleExternFunctionArgs = 16, RuleExternFunctionArg = 17, RuleCTypes = 18, 
+    RuleFunctionDeclaration = 19, RuleArrowFunctionInline = 20, RuleFunctionSignature = 21, 
+    RuleFunctionReturnType = 22, RuleFunctionArgs = 23, RuleFunctionArg = 24, 
+    RuleFnsignature = 25, RuleFunctionCall = 26, RuleFunctionCallArgs = 27, 
+    RuleFunctionCallArg = 28, RuleVarDeclaration = 29, RuleAssignment = 30, 
+    RuleVarAssignment = 31, RuleIfBlock = 32, RuleIfStatement = 33, RuleElseStatement = 34, 
+    RuleBoolExpr = 35, RuleExpr = 36, RuleNumber = 37, RuleDataFormat = 38, 
+    RuleVarTypes = 39
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -64,7 +64,6 @@ public:
   class StatementListContext;
   class BreakStatementContext;
   class ContinueStatementContext;
-  class VoidReturnStatementContext;
   class ReturnStatementContext;
   class WhileStatementContext;
   class RepeatStatementContext;
@@ -174,8 +173,6 @@ public:
     RepeatStatementContext* repeatStatement(size_t i);
     std::vector<ForStatementContext *> forStatement();
     ForStatementContext* forStatement(size_t i);
-    std::vector<VoidReturnStatementContext *> voidReturnStatement();
-    VoidReturnStatementContext* voidReturnStatement(size_t i);
     std::vector<ReturnStatementContext *> returnStatement();
     ReturnStatementContext* returnStatement(size_t i);
 
@@ -211,19 +208,6 @@ public:
   };
 
   ContinueStatementContext* continueStatement();
-
-  class  VoidReturnStatementContext : public antlr4::ParserRuleContext {
-  public:
-    VoidReturnStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *RETURN();
-
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
-  };
-
-  VoidReturnStatementContext* voidReturnStatement();
 
   class  ReturnStatementContext : public antlr4::ParserRuleContext {
   public:

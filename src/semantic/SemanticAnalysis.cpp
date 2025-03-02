@@ -642,6 +642,9 @@ namespace iron
         const auto currentFunction = getCurrentFunction();
         currentFunction->changeToReturnFound();
 
+        printf(">> return func: %s\n", currentFunction->getFunctionName().c_str());
+        printf(">> is return: %u\n", currentFunction->isReturnFound());
+
         if (ctx->dataFormat())
         {
             const auto value = ctx->dataFormat()->getText();

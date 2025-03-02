@@ -32,9 +32,6 @@ public:
   virtual void enterContinueStatement(IronParser::ContinueStatementContext *ctx) = 0;
   virtual void exitContinueStatement(IronParser::ContinueStatementContext *ctx) = 0;
 
-  virtual void enterVoidReturnStatement(IronParser::VoidReturnStatementContext *ctx) = 0;
-  virtual void exitVoidReturnStatement(IronParser::VoidReturnStatementContext *ctx) = 0;
-
   virtual void enterReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
   virtual void exitReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
 

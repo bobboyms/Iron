@@ -34,9 +34,6 @@ public:
   virtual void enterContinueStatement(IronParser::ContinueStatementContext * /*ctx*/) override { }
   virtual void exitContinueStatement(IronParser::ContinueStatementContext * /*ctx*/) override { }
 
-  virtual void enterVoidReturnStatement(IronParser::VoidReturnStatementContext * /*ctx*/) override { }
-  virtual void exitVoidReturnStatement(IronParser::VoidReturnStatementContext * /*ctx*/) override { }
-
   virtual void enterReturnStatement(IronParser::ReturnStatementContext * /*ctx*/) override { }
   virtual void exitReturnStatement(IronParser::ReturnStatementContext * /*ctx*/) override { }
 

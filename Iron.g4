@@ -103,7 +103,6 @@ statementList: (
 		| whileStatement
 		| repeatStatement
 		| forStatement
-		| voidReturnStatement
 		| returnStatement
 	)*;
 
@@ -126,7 +125,6 @@ continueStatement: CONTINUE;
 //
 //	)*;
 
-voidReturnStatement: RETURN;
 
 returnStatement:
 	RETURN (
@@ -134,7 +132,7 @@ returnStatement:
 		| varName = IDENTIFIER
 		| functionCall
 		| expr
-	);
+	)?;
 
 
 whileStatement:
