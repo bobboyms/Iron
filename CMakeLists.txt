@@ -151,6 +151,7 @@ set(SRC_COMMON
         src/hlir/scope/Variable.cpp
         src/hlir/scope/Operations.cpp
         src/hlir/scope/IFelse.cpp
+        src/hlir/scope/ScopeGuard.cpp
         src/scope/ScopeManager.cpp
         src/hlir/generator/Expr.cpp
         src/hlir/generator/Function.cpp

@@ -107,23 +107,31 @@ namespace iron
 
         const auto variable = hlirAssignment->getVariable();
         const auto value = hlirAssignment->getValue()->getValue();
-
-        // auto value = hlirAssignment->getValue()->getValue();
         std::visit(
                 [this, &hlirAssignment, currentFunction]([[maybe_unused]] auto &&arg)
                 {
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
                     {
-
                         llvm::AllocaInst *alloca =
                                 findAllocaByName(currentFunction, hlirAssignment->getVariable()->getRealName());
                         if (!alloca)
                         {
                             alloca = allocaVariableFuncPtr(hlirAssignment->getVariable(), arg);
                         }
+                        
+                        if (!alloca)
+                        {
+                            throw LLVMException("visitAssignment: Failed to allocate variable for function pointer");
+                        }
 
                         llvm::Function *calledFunction = module->getFunction(arg->getFunctionName());
+                        if (!calledFunction)
+                        {
+                            throw LLVMException(util::format("visitAssignment: Function '{}' not found in module", 
+                                               arg->getFunctionName()));
+                        }
+                        
                         builder.CreateStore(calledFunction, alloca);
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
@@ -202,50 +210,86 @@ namespace iron
         if (cmp)
         {
             const auto result = executeCMP(cmp, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeCMP returned null");
+            }
             builder.CreateStore(result, variable);
         }
 
         if (_and)
         {
             const auto result = executeAND(_and, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeAND returned null");
+            }
             builder.CreateStore(result, variable);
         }
 
         if (_or)
         {
             const auto result = executeOR(_or, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeOR returned null");
+            }
             builder.CreateStore(result, variable);
         }
 
         if (_not)
         {
             const auto result = executeNOT(_not, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeNOT returned null");
+            }
             builder.CreateStore(result, variable);
         }
 
         if (mult)
         {
             const auto result = executeMult(mult, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeMult returned null");
+            }
             builder.CreateStore(result, variable);
         }
         else if (div)
         {
             const auto result = executeDiv(div, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeDiv returned null");
+            }
             builder.CreateStore(result, variable);
         }
         else if (plus)
         {
             const auto result = executePlus(plus, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executePlus returned null");
+            }
             builder.CreateStore(result, variable);
         }
         else if (minus)
         {
             const auto result = executeMinus(minus, currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: executeMinus returned null");
+            }
             builder.CreateStore(result, variable);
         }
         else if (cast)
         {
             const auto result = numberCasting(cast->getVariable(), cast->getType(), currentFunction);
+            if (!result)
+            {
+                throw LLVMException("visitExpr: numberCasting returned null");
+            }
             builder.CreateStore(result, variable);
         }
         else if (assign)
@@ -287,10 +331,8 @@ namespace iron
                                  errorStream.str()));
         }
 
-        // std::string irStr;
-        // llvm::raw_string_ostream irStream(irStr);
-        // module->print(irStream, nullptr);
 
+        // Para std::unique_ptr, o std::move é necessário para transferir propriedade
         return std::move(module);
     }
 } // namespace iron

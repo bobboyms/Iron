@@ -55,9 +55,6 @@ namespace iron
                                                   const std::shared_ptr<scope::Function>& function)
     {
 
-        printf("return func: %s\n", function->getFunctionName().c_str());
-        printf("is return: %u\n", function->isReturnFound());
-
         if (function->getReturnType() != tokenMap::VOID && !function->isReturnFound())
         {
 

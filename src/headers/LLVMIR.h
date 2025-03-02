@@ -8,7 +8,6 @@
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IRBuilder.h>
-// #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
@@ -35,9 +34,6 @@ namespace iron
     public:
         explicit LLVM(const std::shared_ptr<hlir::Context> &hlirContext, llvm::LLVMContext &context,
                       const std::string &filename);
-
-        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename,
-             const llvm::LLVMContext &context);
         ~LLVM();
 
         std::unique_ptr<llvm::Module> generateCode();

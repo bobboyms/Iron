@@ -1,3 +1,14 @@
+/**
+ * @file Hlir.h
+ * @brief High-Level Intermediate Representation (HLIR) for the Iron language compiler.
+ * @author Thiago Rodrigues
+ * @date 2025
+ * 
+ * This file contains the comprehensive class hierarchy that forms the High-Level
+ * Intermediate Representation (HLIR) used by the Iron language compiler. The HLIR
+ * serves as a bridge between the AST (produced by parsing) and LLVM IR generation.
+ */
+
 #ifndef HLIR_H
 #define HLIR_H
 
@@ -10,7 +21,16 @@
 
 /**
  * @namespace hlir
- * @brief Contains classes and structures representing a High-Level IR.
+ * @brief Contains classes and structures representing the High-Level Intermediate Representation (HLIR).
+ * 
+ * The HLIR namespace provides a comprehensive set of classes that represent various components
+ * of the Iron programming language in an intermediate form between the AST and LLVM IR.
+ * This includes representations for functions, variables, types, expressions, operations,
+ * control flow structures, and other language constructs.
+ * 
+ * The HLIR serves as a bridge between semantic analysis and code generation,
+ * providing a structured and type-safe representation of program elements
+ * that can be more easily translated to LLVM IR.
  */
 namespace hlir
 {
@@ -39,46 +59,96 @@ namespace hlir
 
     /**
      * @class Basic
-     * @brief Abstract base class enforcing a getText() method.
+     * @brief Abstract base class enforcing a getText() method for all HLIR elements.
+     * 
+     * Basic serves as the fundamental base class for all HLIR elements that need 
+     * a textual representation. It enforces a common interface through the pure virtual
+     * getText() method, which all derived classes must implement. It also provides a
+     * shared stringstream object for efficient string building.
      */
     class Basic
     {
 
     public:
+        /** @brief String stream buffer used for text representation construction */
         std::stringstream sb;
+        
         /**
          * @brief Virtual destructor for proper cleanup of derived classes.
+         * 
+         * Since Basic is an abstract base class with derived classes,
+         * a virtual destructor ensures proper cleanup when a derived object
+         * is deleted through a pointer to the base class.
          */
         virtual ~Basic() = default;
 
         /**
          * @brief Produces a text representation of the derived object.
-         * @return A string with the representation.
+         * 
+         * This pure virtual method must be implemented by all derived classes.
+         * It's used to generate a standardized textual representation of any
+         * HLIR element, which is useful for debugging and serialization.
+         * 
+         * @return A string containing the text representation of the object.
          */
         virtual std::string getText() = 0;
 
     protected:
-        // Construct it in the base constructor to ensure it's never null
+        /**
+         * @brief Protected constructor initializes the string stream.
+         * 
+         * The constructor is protected to prevent direct instantiation of Basic,
+         * and ensures the stringstream is properly initialized for all derived classes.
+         */
         Basic() : sb(std::stringstream())
         {
         }
     };
 
+    /**
+     * @class Parent
+     * @brief Base class for HLIR elements that can have a parent-child relationship.
+     * 
+     * Parent provides the foundation for establishing hierarchical relationships between HLIR elements.
+     * It inherits from std::enable_shared_from_this to allow objects to obtain a shared_ptr to themselves,
+     * which is crucial for safe self-referencing in hierarchical structures.
+     * 
+     * The class uses weak_ptr to store the parent reference to avoid circular reference issues
+     * which could lead to memory leaks.
+     */
     class Parent : public std::enable_shared_from_this<Parent>
     {
     protected:
+        /** @brief Weak reference to the parent element to avoid circular references */
         std::weak_ptr<Parent> parent;
 
     public:
-        virtual ~Parent() = default; // Destruidor virtual padrão
+        /**
+         * @brief Virtual destructor for proper cleanup of derived classes.
+         */
+        virtual ~Parent() = default;
 
-        // Método para definir o pai
+        /**
+         * @brief Sets the parent of this HLIR element.
+         * 
+         * This pure virtual method must be implemented by all derived classes
+         * to establish the parent-child relationship.
+         * 
+         * @param newParent A shared pointer to the parent element
+         */
         virtual void setParent(std::shared_ptr<Parent> newParent) = 0;
 
-        // Método para obter o pai
+        /**
+         * @brief Gets the parent of this HLIR element.
+         * 
+         * This method safely converts the internal weak_ptr to a shared_ptr,
+         * returning nullptr if the parent no longer exists.
+         * 
+         * @return A shared pointer to the parent element, or nullptr if the parent no longer exists
+         */
         std::shared_ptr<Parent> getParent() const
         {
-            return parent.lock(); // Retorna um shared_ptr se o pai ainda existir
+            return parent.lock(); // Returns a shared_ptr if the parent still exists
         }
     };
 
@@ -94,15 +164,21 @@ namespace hlir
 
     /**
      * @class Type
-     * @brief Represents a specific data type (int, float, etc.) in the IR.
+     * @brief Represents a specific data type (int, float, etc.) in the HLIR.
      *
-     * Inherits from Basic to provide a textual form of the type.
+     * The Type class encapsulates information about data types in the Iron language.
+     * Each type is represented by an integer code (corresponding to constants in tokenMap),
+     * such as TYPE_INT, TYPE_FLOAT, TYPE_STRING, etc. This class provides methods for
+     * accessing and converting types to their textual representation.
+     * 
+     * This class is marked as 'final' to prevent further inheritance, as it represents
+     * concrete types that should not be extended.
      */
     class Type final : public Basic, public Parent
     {
     private:
-        /**
-         * @brief Integer-based type identifier, e.g., TYPE_INT, TYPE_FLOAT.
+        /** 
+         * @brief Integer-based type identifier from tokenMap (e.g., TYPE_INT, TYPE_FLOAT)
          */
         int type{};
 
@@ -110,60 +186,148 @@ namespace hlir
     public:
         /**
          * @brief Retrieves the integer-based type identifier.
-         * @return An int representing this type code.
+         * 
+         * This method returns the numeric code that identifies this type,
+         * corresponding to constants defined in the tokenMap namespace.
+         * 
+         * @return An integer representing this type code
          */
         int getType() const;
 
         /**
-         * @brief Returns the textual form of this type, e.g., "int".
-         * @return The text representing the type.
+         * @brief Returns the textual form of this type.
+         * 
+         * Converts the numeric type identifier to its string representation,
+         * such as "int", "float", "string", etc. This method is mainly used
+         * for debugging and code generation purposes.
+         * 
+         * @return A string containing the text representation of the type
          */
         std::string getText() override;
 
         /**
          * @brief Constructs a Type using an integer type code.
-         * @param type The integer code (e.g., TYPE_INT).
+         * 
+         * @param type The integer code from tokenMap (e.g., TYPE_INT, TYPE_FLOAT)
          */
         explicit Type(int type);
+        
+        /**
+         * @brief Default constructor creates an uninitialized type.
+         * 
+         * The type must be explicitly set before use.
+         */
         Type();
 
-        void set(int type);
         /**
-         * @brief Destructor for Type.
+         * @brief Sets or changes the type identifier.
+         * 
+         * @param type The new integer type code from tokenMap
+         */
+        void set(int type);
+        
+        /**
+         * @brief Virtual destructor for proper cleanup.
          */
         ~Type() override;
 
+        /**
+         * @brief Sets the parent of this Type.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * Establishes the parent-child relationship for this Type instance.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
         }
     };
 
+    /**
+     * @class Signature
+     * @brief Represents the signature of a function.
+     * 
+     * The Signature class encapsulates information about a function's interface,
+     * including its return type and argument types. This is used for function
+     * declarations, function pointers, and function type checking.
+     * 
+     * This class is marked 'final' to prevent further inheritance.
+     */
     class Signature final : public Basic, public Parent
     {
     private:
+        /** @brief The return type of the function */
         std::shared_ptr<Type> returnType;
+        
+        /** @brief List of arguments (parameters) for the function */
         std::vector<std::shared_ptr<Arg>> args;
 
     public:
         /**
-         * @brief Adds a new Arg to the internal list.
-         * @param arg A shared pointer to an Arg.
+         * @brief Adds a new argument to the function signature.
+         * 
+         * This method appends a new argument to the list of arguments
+         * in this function signature.
+         * 
+         * @param arg A shared pointer to an Arg instance representing the argument
          */
         void addArg(const std::shared_ptr<Arg> &arg);
 
+        /**
+         * @brief Generates a textual representation of the signature.
+         * 
+         * Creates a string that represents this function signature,
+         * including return type and argument types.
+         * 
+         * @return A string containing the text representation
+         */
         std::string getText() override;
 
+        /**
+         * @brief Finds an argument by name.
+         * 
+         * Static method to search for an argument with the specified name.
+         * 
+         * @param argName The name of the argument to find
+         * @return A shared pointer to the found Arg, or nullptr if not found
+         */
         static std::shared_ptr<Arg> findArgByName(const std::string &argName);
 
+        /**
+         * @brief Gets all arguments of this signature.
+         * 
+         * @return A vector of shared pointers to all arguments
+         */
         std::vector<std::shared_ptr<Arg>> getArgs();
 
+        /**
+         * @brief Gets the return type of this signature.
+         * 
+         * @return A shared pointer to the Type representing the return type
+         */
         std::shared_ptr<Type> getReturnType();
 
+        /**
+         * @brief Constructs a Signature with a specified return type.
+         * 
+         * @param returnType A shared pointer to the Type representing the return type
+         */
         explicit Signature(const std::shared_ptr<Type> &returnType);
 
+        /**
+         * @brief Virtual destructor for proper cleanup.
+         */
         ~Signature() override;
 
+        /**
+         * @brief Sets the parent of this Signature.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -172,26 +336,58 @@ namespace hlir
 
     /**
      * @struct Arg
-     * @brief Represents a single argument with a name and an associated Type.
+     * @brief Represents a single function argument with a name, type, and optional signature.
+     * 
+     * The Arg structure encapsulates information about a single function parameter,
+     * including its name, data type, and optional function signature (for function pointer arguments).
+     * 
+     * This structure is marked 'final' to prevent further inheritance.
      */
     struct Arg final : Parent
     {
-        /**
-         * @brief The argument's name.
+        /** 
+         * @brief The argument's name as it appears in the function declaration.
          */
         std::string name;
 
         /**
-         * @brief Shared pointer to a Type for this argument.
+         * @brief Shared pointer to the Type of this argument.
+         * 
+         * Represents the data type of this argument, such as int, float, etc.
          */
         std::shared_ptr<Type> type;
+        
+        /**
+         * @brief Optional function signature for function pointer arguments.
+         * 
+         * When this argument represents a function pointer, this field
+         * contains the signature of the target function.
+         */
         std::shared_ptr<Signature> signature;
 
+        /**
+         * @brief Sets the parent of this Arg.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
         }
 
+        /**
+         * @brief Configures the Arg with a name and type.
+         * 
+         * This method sets up the argument with the given name and type,
+         * and establishes the parent-child relationship.
+         * 
+         * @param newName The name of the argument
+         * @param newType A shared pointer to the Type of the argument
+         * @return A shared pointer to this Arg for method chaining
+         * @throws HLIRException If the cast to Arg fails
+         */
         std::shared_ptr<Arg> set(const std::string &newName, const std::shared_ptr<Type> &newType)
         {
             name = newName;
@@ -208,9 +404,20 @@ namespace hlir
             return assignPtr;
         }
 
+        /**
+         * @brief Configures the Arg with a name, type, and function signature.
+         * 
+         * This expanded version of set() is used for function pointer arguments,
+         * where a signature is required in addition to the name and type.
+         * 
+         * @param name The name of the argument
+         * @param type A shared pointer to the Type of the argument
+         * @param signature A shared pointer to the Signature of the function pointer
+         * @return A shared pointer to this Arg for method chaining
+         * @throws HLIRException If the cast to Arg fails
+         */
         std::shared_ptr<Arg> set(const std::string &name, const std::shared_ptr<Type> &type, const std::shared_ptr<Signature> &signature)
         {
-
             this->name = name;
             this->type = type;
             this->signature = signature;
@@ -230,47 +437,87 @@ namespace hlir
 
     /**
      * @class FunctionArgs
-     * @brief Represents a list of Arg objects (function parameters).
+     * @brief Represents a complete list of function parameters.
      *
-     * Inherits from Basic to provide a combined textual representation.
+     * The FunctionArgs class encapsulates a list of function parameters (Arg objects),
+     * providing methods to add, find, and access these parameters. It represents
+     * the complete parameter list of a function and is used in function declarations,
+     * definitions, and calls.
+     * 
+     * This class is marked 'final' to prevent further inheritance.
      */
     class FunctionArgs final : public Basic, public Parent
     {
     private:
         /**
-         * @brief A vector of shared pointers to Arg objects.
+         * @brief A vector of shared pointers to Arg objects representing the function parameters.
+         * 
+         * This collection maintains the ordered list of all parameters for a function.
          */
         std::vector<std::shared_ptr<Arg>> args;
 
     public:
         /**
-         * @brief Adds a new Arg to the internal list.
-         * @param arg A shared pointer to an Arg.
+         * @brief Adds a new argument to the function parameter list.
+         * 
+         * This method appends a new parameter to the list of function arguments.
+         * 
+         * @param arg A shared pointer to an Arg object representing the parameter
          */
         void addArg(const std::shared_ptr<Arg> &arg);
 
-
         /**
-         * @brief Produces a textual representation of all arguments, e.g., "x:int,y:int".
-         * @return The comma-separated list of arguments.
+         * @brief Produces a textual representation of all arguments.
+         * 
+         * Generates a comma-separated list of all function parameters in the format
+         * "arg1:type1,arg2:type2,...". This representation is used for debugging
+         * and code generation.
+         * 
+         * @return A string containing the comma-separated list of arguments
          */
         std::string getText() override;
 
+        /**
+         * @brief Finds an argument by name in this function's parameter list.
+         * 
+         * Searches through the list of parameters to find one with the specified name.
+         * 
+         * @param argName The name of the argument to find
+         * @return A shared pointer to the Arg if found, nullptr otherwise
+         */
         std::shared_ptr<Arg> findArgByName(const std::string &argName) const;
 
+        /**
+         * @brief Gets all arguments in this function parameter list.
+         * 
+         * @return A vector of shared pointers to all Arg objects
+         */
         std::vector<std::shared_ptr<Arg>> getArgs();
 
         /**
-         * @brief Default constructor creating an empty FunctionArgs.
+         * @brief Default constructor creates an empty parameter list.
          */
         FunctionArgs();
+        
+        /**
+         * @brief Constructor that initializes the parameter list from a function signature.
+         * 
+         * @param signature A shared pointer to a Signature to copy arguments from
+         */
         explicit FunctionArgs(const std::shared_ptr<Signature>& signature);
 
         /**
-         * @brief Destructor for FunctionArgs.
+         * @brief Virtual destructor for proper cleanup.
          */
         ~FunctionArgs() override;
 
+        /**
+         * @brief Sets the parent of this FunctionArgs.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -279,71 +526,169 @@ namespace hlir
 
     /**
      * @class Variable
-     * @brief Represents a variable with a name and a Type.
+     * @brief Represents a variable with name, type, and additional attributes.
      *
-     * Inherits from Basic to provide text in the form "let varName: varType".
+     * The Variable class represents variables in the Iron language, including 
+     * their name, type, and various properties. Variables can be simple data variables,
+     * function arguments, or function pointers (with signatures).
+     * 
+     * This class is marked 'final' to prevent further inheritance.
      */
     class Variable final : public Expression
     {
         /**
-         * @brief The variable's name.
+         * @brief The variable's source name as written in the code.
          */
         std::string varName;
+        
+        /**
+         * @brief The variable's real (potentially transformed) name used in code generation.
+         * 
+         * This might differ from varName due to mangling, scope changes, or other transformations.
+         */
         std::string realName;
 
         /**
-         * @brief A shared pointer to the variable's Type.
+         * @brief A shared pointer to the variable's data type.
          */
         std::shared_ptr<Type> varType;
 
+        /**
+         * @brief Optional function signature for function pointer variables.
+         * 
+         * When this variable represents a function pointer, this field
+         * contains the signature of the target function.
+         */
         std::shared_ptr<Signature> signature;
+        
+        /**
+         * @brief Flag indicating if this variable belongs to another scope.
+         * 
+         * When true, this variable is referring to a variable defined in a parent scope.
+         */
         bool anotherScope = false;
+        
+        /**
+         * @brief Flag indicating if this variable was created from a function argument.
+         * 
+         * When true, this variable represents a function parameter.
+         */
         bool fromFunctionArg{false};
 
     public:
-
-        void setSignature(const std::shared_ptr<Signature> &signature);
-        std::shared_ptr<Signature> getSignature();
         /**
-         * @brief Retrieves the variable's name.
-         * @return A string with the name.
+         * @brief Sets the function signature for this variable.
+         * 
+         * Used when this variable represents a function pointer to specify
+         * the signature of the target function.
+         * 
+         * @param signature A shared pointer to the Signature
+         */
+        void setSignature(const std::shared_ptr<Signature> &signature);
+        
+        /**
+         * @brief Gets the function signature for this variable.
+         * 
+         * @return A shared pointer to the Signature, or nullptr if not a function pointer
+         */
+        std::shared_ptr<Signature> getSignature();
+        
+        /**
+         * @brief Retrieves the variable's source name.
+         * 
+         * @return A string containing the source name of the variable
          */
         std::string getVarName();
 
         /**
-         * @brief Produces text like "let varName:typeName".
-         * @return The textual representation of the variable.
+         * @brief Produces a textual representation of the variable.
+         * 
+         * Generates a string representation in the format "let varName:typeName".
+         * This representation is used for debugging and code generation.
+         * 
+         * @return A string containing the text representation
          */
         std::string getText() override;
 
+        /**
+         * @brief Gets the real (potentially transformed) name of the variable.
+         * 
+         * This name might differ from the source name due to mangling,
+         * scope changes, or other transformations during compilation.
+         * 
+         * @return A string containing the real name
+         */
         std::string getRealName();
+        
+        /**
+         * @brief Changes the real name of the variable.
+         * 
+         * @param realName The new real name
+         */
         void changeRealName(const std::string& realName);
 
         /**
-         * @brief Gets the variable's Type.
-         * @return A shared pointer to a Type.
+         * @brief Gets the variable's data type.
+         * 
+         * @return A shared pointer to the Type
          */
         std::shared_ptr<Type> getVarType();
 
         /**
-         * @brief Constructs a Variable with a given name and type.
-         * @param varName The name of the variable.
-         * @param varType A shared pointer to a Type.
+         * @brief Configures the variable with a name and type.
+         * 
+         * This method initializes or updates the variable with the given name and type.
+         * 
+         * @param varName The name of the variable
+         * @param varType A shared pointer to the Type
+         * @return A shared pointer to this Variable for method chaining
          */
         std::shared_ptr<Variable> set(const std::string &varName, const std::shared_ptr<Type> &varType);
 
+        /**
+         * @brief Marks this variable as belonging to another scope.
+         * 
+         * When this method is called, the variable is flagged as referencing
+         * a variable defined in a parent scope.
+         */
         void changeToAnotherScope();
+        
+        /**
+         * @brief Checks if this variable belongs to another scope.
+         * 
+         * @return true if this variable refers to one in a parent scope, false otherwise
+         */
         bool isAnotherScope() const;
+        
+        /**
+         * @brief Checks if this variable was created from a function argument.
+         * 
+         * @return true if this variable represents a function parameter, false otherwise
+         */
         bool isFromFunctionArg() const;
+        
+        /**
+         * @brief Marks this variable as having been created from a function argument.
+         */
         void changeToFromFunctionArg();
 
+        /**
+         * @brief Default constructor creates an uninitialized variable.
+         */
         Variable();
 
         /**
-         * @brief Destructor for Variable.
+         * @brief Virtual destructor for proper cleanup.
          */
         ~Variable() override;
 
+        /**
+         * @brief Sets the parent of this Variable.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -352,53 +697,85 @@ namespace hlir
 
     /**
      * @typedef Data
-     * @brief A variant capable of holding several possible data types (Function, std::string, int, float, double,
-     * bool).
+     * @brief A variant type that can hold different kinds of values used in the HLIR.
+     * 
+     * This variant can store any of the following types:
+     * - std::shared_ptr<Function>: A reference to a function
+     * - std::shared_ptr<Variable>: A reference to a variable
+     * - std::string: A string literal
+     * 
+     * This allows for flexible representation of different value types within
+     * the HLIR without using inheritance or type erasure.
      */
     using Data = std::variant<std::shared_ptr<Function>, std::shared_ptr<Variable>,
                               std::string>; //, int, float, double, bool
 
     /**
      * @class Value
-     * @brief Wraps a Data variant and a corresponding Type.
+     * @brief Wraps a typed value of any supported data type.
      *
-     * Inherits from Basic to produce a textual representation of the stored Data.
+     * The Value class encapsulates a value of any supported type (represented by the Data variant)
+     * along with its corresponding Type. This allows for type-safe value representation throughout
+     * the HLIR, regardless of the actual data type (function pointer, variable reference, string, etc.).
+     * 
+     * This class is marked 'final' to prevent further inheritance.
      */
     class Value final : public Basic, public Parent
     {
     public:
         /**
-         * @brief setValue a Value object with a Data variant and a Type.
-         * @param value The Data to store (could be a string, int, function pointer, etc.).
-         * @param valueType A shared pointer to a Type describing the data.
+         * @brief Configures a Value object with a data value and its type.
+         * 
+         * This method initializes or updates the Value with the given data and type information.
+         * 
+         * @param value The Data variant to store (function pointer, variable reference, etc.)
+         * @param valueType A shared pointer to a Type describing the data
+         * @return A shared pointer to this Value for method chaining
          */
         std::shared_ptr<Value> set(const Data &value, const std::shared_ptr<Type> &valueType);
 
+        /**
+         * @brief Default constructor creates an uninitialized Value.
+         */
         Value();
 
         /**
-         * @brief Destructor for Value.
+         * @brief Virtual destructor for proper cleanup.
          */
         ~Value() override;
 
         /**
-         * @brief Retrieves the underlying Data variant.
-         * @return The stored Data.
+         * @brief Retrieves the underlying data value.
+         * 
+         * @return The stored Data variant
          */
         Data getValue();
 
         /**
-         * @brief Produces a textual representation of the stored data (e.g. "42", "true").
-         * @return A string representation.
+         * @brief Produces a textual representation of the stored value.
+         * 
+         * Generates a string representation of the underlying data,
+         * appropriate to its type. For example, string values might be
+         * quoted, while numbers are represented as digits.
+         * 
+         * @return A string containing the text representation
          */
         std::string getText() override;
 
         /**
-         * @brief Gets the associated Type of this Value.
-         * @return A shared pointer to the Type.
+         * @brief Gets the type information for this value.
+         * 
+         * @return A shared pointer to the Type of this value
          */
         std::shared_ptr<Type> getValueType();
 
+        /**
+         * @brief Sets the parent of this Value.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -406,59 +783,103 @@ namespace hlir
 
     private:
         /**
-         * @brief The Data variant holding the actual value (e.g., int, string, etc.).
+         * @brief The Data variant holding the actual value.
+         * 
+         * This field stores the actual data value, which can be a Function pointer,
+         * Variable reference, or string literal, depending on the context.
          */
         Data value;
 
         /**
-         * @brief The semantic Type for the stored data.
+         * @brief The type information for the stored data.
+         * 
+         * This field holds the type descriptor for the value, defining what
+         * data type the value represents (int, string, function pointer, etc.).
          */
         std::shared_ptr<Type> valueType;
     };
 
     /**
      * @class Assign
-     * @brief Represents an assignment operation, e.g., "let varName:varType = value".
+     * @brief Represents a variable assignment operation.
      *
-     * Inherits from Basic to produce the textual form of the assignment.
+     * The Assign class represents an assignment operation in the Iron language,
+     * where a value is assigned to a variable. This is one of the fundamental
+     * operations in the language, used for variable initialization and updates.
+     * 
+     * This class is marked 'final' to prevent further inheritance.
      */
     class Assign final : public Basic, public Parent
     {
     protected:
         /**
-         * @brief The Variable being assigned to.
+         * @brief The target variable that is being assigned to.
+         * 
+         * This is the left-hand side of the assignment operation.
          */
         std::shared_ptr<Variable> variable;
 
         /**
-         * @brief The Value being assigned.
+         * @brief The value that is being assigned.
+         * 
+         * This is the right-hand side of the assignment operation,
+         * containing the actual data being assigned to the variable.
          */
         std::shared_ptr<Value> value;
 
     public:
         /**
-         * @brief setAssign an Assign between a Variable and a Value.
-         * @param variable A shared pointer to the Variable.
-         * @param value A shared pointer to the Value.
+         * @brief Configures an assignment operation between a variable and a value.
+         * 
+         * This method sets up or updates the assignment with the target variable and value.
+         * 
+         * @param variable A shared pointer to the Variable being assigned to
+         * @param value A shared pointer to the Value being assigned
+         * @return A shared pointer to this Assign for method chaining
          */
         std::shared_ptr<Assign> set(const std::shared_ptr<Variable> &variable, const std::shared_ptr<Value> &value);
 
+        /**
+         * @brief Default constructor creates an uninitialized assignment.
+         */
         Assign();
 
         /**
-         * @brief Destructor for Assign.
+         * @brief Virtual destructor for proper cleanup.
          */
         ~Assign() override;
 
         /**
-         * @brief Produces text in the form "let varName:varType = value".
-         * @return The string representation of the assignment.
+         * @brief Produces a textual representation of the assignment.
+         * 
+         * Generates a string representation in the format "let varName:varType = value".
+         * This representation is used for debugging and code generation.
+         * 
+         * @return A string containing the text representation
          */
         std::string getText() override;
 
+        /**
+         * @brief Gets the variable being assigned to.
+         * 
+         * @return A shared pointer to the target Variable
+         */
         std::shared_ptr<Variable> getVariable();
+        
+        /**
+         * @brief Gets the value being assigned.
+         * 
+         * @return A shared pointer to the Value
+         */
         std::shared_ptr<Value> getValue();
 
+        /**
+         * @brief Sets the parent of this Assign.
+         * 
+         * Implementation of the pure virtual method from the Parent class.
+         * 
+         * @param newParent A shared pointer to the new parent
+         */
         void setParent(const std::shared_ptr<Parent> newParent) override
         {
             parent = newParent;
@@ -467,7 +888,11 @@ namespace hlir
 
     /**
      * @struct FunctionCallArg
-     * @brief Represents an argument in a function call, with a name, a Type, and a Value.
+     * @brief Represents a single argument in a function call.
+     * 
+     * This structure encapsulates a single argument passed to a function during a call,
+     * including the argument name, its type, and the specific value being passed.
+     * It is used in function calls to track exactly what values are being passed.
      */
     struct FunctionCallArg final : Parent
     {
@@ -941,15 +1366,6 @@ namespace hlir
      * - Cast
      * - FunctionPtr
      */
-    // using ValidExpr = std::variant<
-    //     std::shared_ptr<Div>,
-    //     std::shared_ptr<Mult>,
-    //     std::shared_ptr<Minus>,
-    //     std::shared_ptr<Plus>,
-    //     std::shared_ptr<FunctionCall>,
-    //     std::shared_ptr<Variable>,
-    //     std::shared_ptr<Cast>,
-    //     std::shared_ptr<FunctionPtr>>;
 
     /**
      * @class Expr
@@ -999,6 +1415,17 @@ namespace hlir
         }
     };
 
+    /**
+     * @class FuncReturn
+     * @brief Represents a function return statement in the HLIR.
+     * 
+     * The FuncReturn class encapsulates a return statement within a function,
+     * associating a function with the variable being returned. This class
+     * is used to represent return statements and verify type compatibility
+     * between the function's declared return type and the actual returned value.
+     * 
+     * This class is marked 'final' to prevent further inheritance.
+     */
     class FuncReturn final : public Basic
     {
     private:
@@ -1012,16 +1439,48 @@ namespace hlir
         std::string getText() override;
     };
 
+    /**
+     * @typedef ValidStatement
+     * @brief A variant that can hold any type of valid statement in a code block.
+     * 
+     * This variant type can hold any kind of statement that can appear in a block of code,
+     * allowing for flexible representation of different statement types without complex
+     * inheritance hierarchies. It includes assignments, expressions, function calls,
+     * returns, blocks, jumps, and conditionals.
+     * 
+     * Used primarily by the Statement class to store collections of heterogeneous statements.
+     */
     using ValidStatement = std::variant<std::shared_ptr<Assign>, std::shared_ptr<Expr>, std::shared_ptr<FunctionCall>,
                                         std::shared_ptr<FuncReturn>, std::shared_ptr<Block>, std::shared_ptr<Jump>,
                                         std::shared_ptr<Conditional>>;
 
+    /**
+     * @brief Helper function to check if a ValidStatement contains a null pointer.
+     * 
+     * This utility function uses std::visit to check if the shared_ptr contained
+     * in any ValidStatement variant alternative is null. This is useful for
+     * validating statements before use and preventing null pointer dereferences.
+     * 
+     * @param statement The ValidStatement to check
+     * @return true if the contained shared_ptr is null, false otherwise
+     */
     inline bool isValidStatementNull(const ValidStatement &statement)
     {
         return std::visit([](const auto &ptr) { return ptr == nullptr; }, statement);
     }
 
 
+    /**
+     * @class Statement
+     * @brief Represents a block of code statements in the HLIR.
+     * 
+     * The Statement class represents a code block containing multiple statements.
+     * It manages a list of statements and provides methods to add, access, and manipulate them.
+     * Statements can also track variables declared within their scope.
+     * 
+     * This class serves as a container for executable statements in a function body
+     * or block, and is a fundamental component for representing code structure in the HLIR.
+     */
     class Statement final : public Basic, public Parent
     {
     private:
@@ -1053,6 +1512,16 @@ namespace hlir
     };
 
 
+    /**
+     * @class Jump
+     * @brief Represents an unconditional jump to a labeled block.
+     * 
+     * The Jump class represents a control flow operation that unconditionally
+     * transfers execution to a target block. This is used for implementing
+     * control structures like loops, breaks, continues, and gotos in the HLIR.
+     * 
+     * Jumps can be enabled or disabled, allowing for conditional compilation or optimization.
+     */
     class Jump final : public Basic
     {
     public:
@@ -1067,6 +1536,17 @@ namespace hlir
         std::shared_ptr<Block> block;
     };
 
+    /**
+     * @class Block
+     * @brief Represents a labeled block of code in the HLIR.
+     * 
+     * The Block class represents a labeled section of code that can be the target of jumps
+     * and branches. Blocks are fundamental components in the control flow graph of a function,
+     * providing targets for conditional and unconditional jumps.
+     * 
+     * Blocks can be marked as "end blocks" to indicate they represent the end of a control flow construct.
+     * This is used in optimization and code generation to identify termination points.
+     */
     class Block final : public Basic, public Parent
     {
     public:
@@ -1095,7 +1575,19 @@ namespace hlir
     };
 
 
-    class Conditional : public Basic, public Parent
+    /**
+     * @class Conditional
+     * @brief Represents a conditional branch in the control flow.
+     * 
+     * The Conditional class represents a decision point in the code where execution
+     * branches based on a boolean condition. It is used to implement if-else statements
+     * and is a fundamental component of control flow structures in the HLIR.
+     * 
+     * Each conditional has a condition variable, a true branch target label, and
+     * a false branch target label, defining where execution should continue based
+     * on the evaluation of the condition.
+     */
+    class Conditional final : public Basic, public Parent
     {
     public:
         Conditional();
@@ -1127,6 +1619,60 @@ namespace hlir
         std::stringstream sb; // Buffer para montagem da string de saída.
     };
 
+    class Function;
+    
+    /**
+     * @class ScopeGuard
+     * @brief RAII helper for safe scope management in functions.
+     * 
+     * The ScopeGuard class implements the Resource Acquisition Is Initialization (RAII)
+     * pattern for scope management in functions. When created, it automatically enters a scope,
+     * and when destroyed (e.g., when going out of scope), it automatically exits the scope.
+     * 
+     * This ensures proper scope cleanup even in the presence of exceptions, providing
+     * exception-safe scope management that's more robust than manual enterLocalScope/exitLocalScope calls.
+     * 
+     * Copy and assignment are disabled to prevent scope mismanagement.
+     */
+    class ScopeGuard {
+    private:
+        /** @brief The function whose scope is being managed */
+        std::shared_ptr<Function> function;
+        
+    public:
+        /**
+         * @brief Constructs a ScopeGuard and enters the specified scope.
+         * 
+         * @param func The function whose scope is being managed
+         * @param statement The statement (scope) to enter
+         */
+        explicit ScopeGuard(std::shared_ptr<Function> func, const std::shared_ptr<Statement> &statement);
+        
+        /**
+         * @brief Destructor that automatically exits the scope.
+         */
+        ~ScopeGuard();
+        
+        // Prevent copying and assignment
+        ScopeGuard(const ScopeGuard&) = delete;
+        ScopeGuard& operator=(const ScopeGuard&) = delete;
+    };
+    
+    /**
+     * @class Function
+     * @brief Represents a complete function definition in the HLIR.
+     * 
+     * The Function class is one of the most complex and important classes in the HLIR,
+     * representing a complete function with its name, arguments, return type, and body.
+     * It manages function scope, variables, statements, and control flow within the function.
+     * 
+     * Functions can be regular functions, external functions (declarations only),
+     * inline functions, or functions with varied arguments. They can also contain
+     * nested functions with proper scope management.
+     * 
+     * This class forms the foundation of the executable code structure in the HLIR,
+     * serving as the primary unit of compilation and execution.
+     */
     class Function final : public Basic, public Parent
     {
     public:
@@ -1149,6 +1695,9 @@ namespace hlir
         std::shared_ptr<Statement> getRootScope();
         void enterLocalScope(const std::shared_ptr<Statement> &statement);
         void exitLocalScope();
+        
+        // Método seguro para gerenciamento de escopo via RAII
+        [[nodiscard]] ScopeGuard createScopeGuard(const std::shared_ptr<Statement> &statement);
 
         // Busca de variável
         std::shared_ptr<Variable> findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers = 0);
@@ -1221,7 +1770,16 @@ namespace hlir
 
     /**
      * @class Context
-     * @brief Holds contextual resources like a shared string stream.
+     * @brief Main container for all functions in an HLIR program.
+     * 
+     * The Context class serves as the top-level container for an entire Iron program
+     * in the HLIR. It maintains a collection of all functions (both regular and external)
+     * defined in the program and provides methods to add, find, and access these functions.
+     * 
+     * This class represents the global scope and overall structure of the program,
+     * functioning as the root node of the HLIR representation.
+     * 
+     * This class is marked 'final' to prevent further inheritance.
      */
     class Context final : public Basic
     {
