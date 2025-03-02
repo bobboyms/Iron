@@ -19,9 +19,9 @@ namespace iron
                         if (value)
                         {
                             auto type = mapType(value->getVarType()->getType());
-                            auto anotherAlloca = this->findAllocaByName(function, value->getVarName());
+                            auto anotherAlloca = this->findAllocaByName(function, value->getRealName());
                             llvm::LoadInst *loadInst = builder.CreateLoad(type, anotherAlloca,
-                                                                          util::format("load_{}", value->getVarName()));
+                                                                          util::format("load_{}", value->getRealName()));
                             builder.CreateStore(loadInst, allocaVariable);
                         }
                     }
@@ -315,14 +315,14 @@ namespace iron
 
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
-                        if (argValue->getVarName().empty())
+                        if (argValue->getRealName().empty())
                         {
                             throw std::invalid_argument("Variable name is empty");
                         }
 
 
                         llvm::AllocaInst *allocaVar =
-                                getOrPromoteToAlloca(argValue->getVarName(), builder.GetInsertBlock()->getParent());
+                                getOrPromoteToAlloca(argValue->getRealName(), builder.GetInsertBlock()->getParent());
 
                         if (const llvm::Type *type = allocaVar->getAllocatedType(); type == nullptr)
                         {
@@ -337,7 +337,7 @@ namespace iron
                         }
 
                         llvm::Value *loadedVar = builder.CreateLoad(allocaVar->getAllocatedType(), allocaVar,
-                                                                    util::format("load_{}", argValue->getVarName()));
+                                                                    util::format("load_{}", argValue->getRealName()));
                         return loadedVar;
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
@@ -412,7 +412,7 @@ namespace iron
 
         const unsigned strSize = value.size() + 1;
         llvm::ArrayType *strArrType = llvm::ArrayType::get(llvm::Type::getInt8Ty(llvmContext), strSize);
-        llvm::AllocaInst *localStr = builder.CreateAlloca(strArrType, nullptr, variable->getVarName());
+        llvm::AllocaInst *localStr = builder.CreateAlloca(strArrType, nullptr, variable->getRealName());
         return localStr;
     }
 
@@ -444,7 +444,7 @@ namespace iron
         }
 
         llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(calledFunction->getFunctionType());
-        return builder.CreateAlloca(funcPtrType, nullptr, variable->getVarName());
+        return builder.CreateAlloca(funcPtrType, nullptr, variable->getRealName());
 
     }
 
@@ -469,7 +469,7 @@ namespace iron
         llvm::IRBuilder<> tmpBuilder(&entryBlock, entryBlock.begin());
 
         llvm::Type *llvmType = mapType(variable->getVarType()->getType());
-        llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, variable->getVarName());
+        llvm::AllocaInst *allocaVariable = tmpBuilder.CreateAlloca(llvmType, nullptr, variable->getRealName());
         return allocaVariable;
     }
 
@@ -493,7 +493,7 @@ namespace iron
         }
 
         // Check if the variable name is not empty
-        const std::string varName = variable->getVarName();
+        const std::string varName = variable->getRealName();
         if (varName.empty())
         {
             throw LLVMException("LLVM::numberCasting: 'variable->getVarName()' is empty.");
@@ -544,10 +544,6 @@ namespace iron
         const int variableType = varType->getType();
 
 
-        // if (variableType == tokenMap::TYPE_BOOLEAN)
-        // {
-        //     printf("%u\n", tokenMap::getTokenText(variable->getVarType()->getType()).c_str());
-        // }
 
         // Perform casting based on types
         if (const int desiredTypeInt = type->getType();

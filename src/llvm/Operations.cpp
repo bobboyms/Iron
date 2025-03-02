@@ -5,19 +5,19 @@
 
 namespace iron
 {
-    std::pair<llvm::LoadInst *, llvm::LoadInst *> LLVM::operationLoad(std::shared_ptr<hlir::BinaryOperation> op,
+    std::pair<llvm::LoadInst *, llvm::LoadInst *> LLVM::operationLoad(const std::shared_ptr<hlir::BinaryOperation>& op,
                                                                       llvm::Function *currentFunction)
     {
-        llvm::AllocaInst *leftVar = getOrPromoteToAlloca(op->getVarLeft()->getVarName(), currentFunction);
-        llvm::AllocaInst *rightVar = getOrPromoteToAlloca(op->getVarRight()->getVarName(), currentFunction);
+        llvm::AllocaInst *leftVar = getOrPromoteToAlloca(op->getVarLeft()->getRealName(), currentFunction);
+        llvm::AllocaInst *rightVar = getOrPromoteToAlloca(op->getVarRight()->getRealName(), currentFunction);
 
         llvm::Type *leftAllocatedType = leftVar->getAllocatedType();
         llvm::Type *rightAllocatedType = rightVar->getAllocatedType();
 
         llvm::LoadInst *loadLeftVar =
-                builder.CreateLoad(leftAllocatedType, leftVar, util::format("load_{}", op->getVarLeft()->getVarName()));
+                builder.CreateLoad(leftAllocatedType, leftVar, util::format("load_{}", op->getVarLeft()->getRealName()));
         llvm::LoadInst *loadRightVar = builder.CreateLoad(rightAllocatedType, rightVar,
-                                                          util::format("load_{}", op->getVarRight()->getVarName()));
+                                                          util::format("load_{}", op->getVarRight()->getRealName()));
 
         return std::make_pair(loadLeftVar, loadRightVar);
     }

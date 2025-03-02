@@ -93,22 +93,7 @@ qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
-		varDeclaration
-		| varAssignment
-		| functionCall
-		| expr
-		| ifStatement
-		| whileStatement
-		| repeatStatement
-		| forStatement
-		| returnStatement
-	)*;
-
-breakStatement: BREAK;
-continueStatement: CONTINUE;
-
-loopStatementList: (
-		: continueStatement
+        : continueStatement
 		| breakStatement
 		| varDeclaration
 		| varAssignment
@@ -120,8 +105,26 @@ loopStatementList: (
 		| forStatement
 		| voidReturnStatement
 		| returnStatement
-
 	)*;
+
+breakStatement: BREAK;
+continueStatement: CONTINUE;
+
+//loopStatementList: (
+//		: continueStatement
+//		| breakStatement
+//		| varDeclaration
+//		| varAssignment
+//		| functionCall
+//		| expr
+//		| ifStatement
+//		| whileStatement
+//		| repeatStatement
+//		| forStatement
+//		| voidReturnStatement
+//		| returnStatement
+//
+//	)*;
 
 voidReturnStatement: RETURN;
 
@@ -135,13 +138,13 @@ returnStatement:
 
 
 whileStatement:
-    WHILE boolExpr L_CURLY loopStatementList R_CURLY;
+    WHILE boolExpr L_CURLY statementList R_CURLY;
 
 repeatStatement:
-    REPEAT L_CURLY loopStatementList R_CURLY WHILE boolExpr;
+    REPEAT L_CURLY statementList R_CURLY WHILE boolExpr;
 
 forStatement:
-    FOR IDENTIFIER IN intervals L_CURLY loopStatementList R_CURLY;
+    FOR IDENTIFIER IN intervals L_CURLY statementList R_CURLY;
 
 intervals:
     (firstNumber = INT_NUMBER | firstVarName = IDENTIFIER)

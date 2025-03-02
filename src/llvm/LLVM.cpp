@@ -107,33 +107,54 @@ namespace iron
 
         const auto variable = hlirAssignment->getVariable();
         const auto value = hlirAssignment->getValue()->getValue();
+        printf("variable: %s\n", variable->getRealName().c_str());
 
         // auto value = hlirAssignment->getValue()->getValue();
         std::visit(
-                [this, hlirAssignment, variable, currentFunction]([[maybe_unused]] auto &&arg)
+                [this, &hlirAssignment, currentFunction]([[maybe_unused]] auto &&arg)
                 {
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
                     {
-                        const auto alloca = allocaVariableFuncPtr(hlirAssignment->getVariable(), arg);
+
+                        llvm::AllocaInst *alloca =
+                                findAllocaByName(currentFunction, hlirAssignment->getVariable()->getRealName());
+                        if (!alloca)
+                        {
+                            alloca = allocaVariableFuncPtr(hlirAssignment->getVariable(), arg);
+                        }
+
                         llvm::Function *calledFunction = module->getFunction(arg->getFunctionName());
                         builder.CreateStore(calledFunction, alloca);
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
-                        const auto alloca = allocaVariable(hlirAssignment->getVariable());
+                        llvm::AllocaInst *alloca =
+                                findAllocaByName(currentFunction, hlirAssignment->getVariable()->getRealName());
+                        if (!alloca)
+                        {
+                            alloca = allocaVariable(hlirAssignment->getVariable());
+                        }
+
                         this->assignVariable(hlirAssignment->getValue(), alloca, currentFunction);
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
                     {
-                        llvm::AllocaInst *alloca;
-                        if (variable->getVarType()->getType() == tokenMap::TYPE_STRING)
+                        llvm::AllocaInst *alloca =
+                                findAllocaByName(currentFunction, hlirAssignment->getVariable()->getRealName());
+                        if (hlirAssignment->getVariable()->getVarType()->getType() == tokenMap::TYPE_STRING)
                         {
-                            alloca = allocaVariableStr(hlirAssignment->getVariable(), arg);
+                            if (!alloca)
+                            {
+                                alloca = allocaVariableStr(hlirAssignment->getVariable(), arg);
+                            }
                         }
                         else
                         {
-                            alloca = allocaVariable(hlirAssignment->getVariable());
+                            if (!alloca)
+                            {
+                                alloca = allocaVariable(hlirAssignment->getVariable());
+                            }
                         }
 
                         this->assignValue(hlirAssignment->getVariable(), hlirAssignment->getValue(), alloca);

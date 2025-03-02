@@ -2,6 +2,9 @@
 // Created by Thiago Rodrigues on 18/02/25.
 //
 
+#include <tuple>
+
+
 #include "../../headers/Analyser.h"
 #include "../../headers/Files.h"
 #include "../../headers/HLIRGenerator.h"
@@ -15,14 +18,15 @@ namespace hlir
     // Métodos auxiliares privados na classe HLIRGenerator
 
 // Executa o bloco e retorna se há um comando de retorno nele.
-bool HLIRGenerator::visitBlockAndCheckReturn(IronParser::IfBlockContext* blockCtx,
-                                             const std::shared_ptr<Function>& currentFunction)
+std::pair<bool, bool> HLIRGenerator::visitBlockAndCheckReturn(IronParser::IfBlockContext* blockCtx,
+                                             const std::shared_ptr<Function>& currentFunction,
+                                             const std::shared_ptr<Jump> &endJump)
 {
     currentFunction->enterLocalScope(std::make_shared<Statement>());
-    visitIfBlock(blockCtx, currentFunction);
-    const bool hasReturn = currentFunction->getCurrentLocalScope()->haveReturn();
+    const auto [hasBreak, hasReturn] = visitIfBlock(blockCtx, currentFunction, endJump);
+    // const bool hasReturn = currentFunction->getCurrentLocalScope()->haveReturn();
     currentFunction->exitLocalScope();
-    return hasReturn;
+    return std::make_tuple(hasBreak, hasReturn);
 }
 
 // Adiciona um bloco de fim, criando um jump se necessário.
@@ -42,18 +46,24 @@ void HLIRGenerator::handleEndBlock(const std::shared_ptr<Function>& currentFunct
 }
 
 // Função de visita ao bloco simples
-void HLIRGenerator::visitIfBlock(IronParser::IfBlockContext *ctx,
-                                 const std::shared_ptr<Function> &currentFunction)
+std::pair<bool, bool> HLIRGenerator::visitIfBlock(IronParser::IfBlockContext *ctx,
+                                 const std::shared_ptr<Function> &currentFunction,
+                                 const std::shared_ptr<Jump> &endJump)
 {
+
     if (ctx->statementList())
     {
-        visitStatementList(ctx->statementList(), currentFunction);
+        return visitStatementList(ctx->statementList(), currentFunction, endJump);
     }
+
+    return std::make_pair(false, false);
+
 }
 
-void HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx,
+std::pair<bool, bool>  HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx,
                                      const std::shared_ptr<Function> &currentFunction,
-                                     const std::string &endLabel)
+                                     const std::string &endLabel,
+                                     const std::shared_ptr<Jump> &endJump)
 {
     const auto statement = currentFunction->getCurrentLocalScope();
 
@@ -61,7 +71,7 @@ void HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx,
     const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
     if (!variable)
     {
-        throw HLIRException("Variable '" + varName + "' not found");
+        throw HLIRException(util::format("HLIRGenerator::visitIfStatement. Variable '{}' does not exist", varName));
     }
 
     const std::string thenLabel = currentFunction->generateLabel("then");
@@ -76,31 +86,42 @@ void HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx,
     auto thenBlock = std::make_shared<Block>()->set(thenLabel);
     statement->addStatement(thenBlock);
 
-    const bool haveReturn = ctx->ifBlock() ? visitBlockAndCheckReturn(ctx->ifBlock(), currentFunction)
-                                     : false;
+    // = ctx->ifBlock() ? visitBlockAndCheckReturn(ctx->ifBlock(), currentFunction, endJump) : false;
+
+    bool hasBreak{false};
+    bool hasReturn{false};
+    if (ctx->ifBlock())
+    {
+        std::tie(hasBreak,hasReturn) = visitBlockAndCheckReturn(ctx->ifBlock(), currentFunction, endJump);
+    }
+
 
     if (ctx->elseStatement())
     {
         // Adiciona jump para o bloco de fim se necessário
-        if (!haveReturn)
+        if (!hasReturn and !hasBreak)
         {
             auto endBlock = std::make_shared<Block>()->set(endLabel);
             auto endJump = std::make_shared<Jump>(endBlock);
             statement->addStatement(endJump);
         }
-        visitElseStatement(ctx->elseStatement(), currentFunction, elseLabel, endLabel);
+        std::tie(hasBreak,hasReturn) = visitElseStatement(ctx->elseStatement(), currentFunction, elseLabel, endLabel, endJump);
     }
     else
     {
         // Se não houver else, ajusta a label falsa e trata o bloco de fim
         conditional->setFalseLabel(endLabel);
+        const auto haveReturn = hasReturn or hasBreak;
         handleEndBlock(currentFunction, statement, endLabel, haveReturn);
     }
+
+    return std::make_pair(hasBreak, hasReturn);
 }
 
-void HLIRGenerator::visitElseStatement(IronParser::ElseStatementContext *ctx,
+std::pair<bool, bool> HLIRGenerator::visitElseStatement(IronParser::ElseStatementContext *ctx,
                                        const std::shared_ptr<Function> &currentFunction,
-                                       const std::string &label, const std::string &endLabel)
+                                       const std::string &label, const std::string &endLabel,
+                                       const std::shared_ptr<Jump> &endJump)
 {
     const auto statement = currentFunction->getCurrentLocalScope();
     auto block = std::make_shared<Block>()->set(label);
@@ -108,142 +129,21 @@ void HLIRGenerator::visitElseStatement(IronParser::ElseStatementContext *ctx,
 
     if (ctx->ifStatement())
     {
-        visitIfStatement(ctx->ifStatement(), currentFunction, endLabel);
+        return visitIfStatement(ctx->ifStatement(), currentFunction, endLabel, endJump);
     }
-    else if (ctx->ifBlock())
+
+    if (ctx->ifBlock())
     {
-        const bool haveReturn = visitBlockAndCheckReturn(ctx->ifBlock(), currentFunction);
+        printf("endLabel 2 %s\n", endLabel.c_str());
+        const auto [hasBreak, hasReturn] =
+                visitBlockAndCheckReturn(ctx->ifBlock(), currentFunction, endJump);
+        const auto haveReturn = hasBreak or hasReturn;
+
         handleEndBlock(currentFunction, statement, endLabel, haveReturn);
+        return std::make_pair(hasBreak, hasReturn);
     }
 }
 
-
-//     void HLIRGenerator::visitIfBlock(IronParser::IfBlockContext *ctx, const std::shared_ptr<Function> &currentFunction)
-//     {
-//         if (ctx->statementList())
-//         {
-//             visitStatementList(ctx->statementList(), currentFunction);
-//         }
-//     }
-//
-//     void HLIRGenerator::visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction, const std::string &endLabel)
-//     {
-//
-//         const auto statement = currentFunction->getCurrentLocalScope();
-//
-//         const auto varName = visitBoolExpr(ctx->boolExpr(), currentFunction);
-//         const auto variable = currentFunction->findVarCurrentScopeAndArg(varName);
-//         if (!variable)
-//         {
-//             throw HLIRException("Variable '" + varName + "' not found");
-//         }
-//
-//         const std::string thenLabel = currentFunction->generateLabel("then");
-//         const std::string elseLabel = currentFunction->generateLabel("else");
-//         // const std::string endLabel = currentFunction->generateLabel("end");
-//
-//         const auto conditional = std::make_shared<Conditional>()->set(variable);
-//         conditional->setTrueLabel(thenLabel);
-//         conditional->setFalseLabel(elseLabel);
-//
-//         statement->addStatement(conditional);
-//         const auto thenBlock = std::make_shared<Block>()->set(thenLabel);
-//         statement->addStatement(thenBlock);
-//
-//         //condicional else
-//
-//
-//
-//         const auto elseBlock = std::make_shared<Block>()->set(elseLabel);
-//         bool haveReturn{false};
-//         {
-//             currentFunction->enterLocalScope(std::make_shared<Statement>());
-//             visitIfBlock(ctx->ifBlock(), currentFunction);
-//             if (currentFunction->getCurrentLocalScope()->haveReturn())
-//             {
-//                 haveReturn = true;
-//             }
-//             currentFunction->exitLocalScope();
-//         }
-//
-//
-//         if (ctx->elseStatement())
-//         {
-//             const auto hasIfStatement = ctx->elseStatement()->ifStatement() != nullptr;
-//
-//             if (hasIfStatement)
-//             {
-//                 if (!haveReturn)
-//                 {
-//                     const auto endBlock = std::make_shared<Block>()->set(endLabel);
-//                     const auto endJump = std::make_shared<Jump>(endBlock);
-//                     statement->addStatement(endJump);
-//                 }
-//             } else
-//             {
-//                 if (!haveReturn)
-//                 {
-//                     const auto endBlock = std::make_shared<Block>()->set(endLabel);
-//                     const auto endJump = std::make_shared<Jump>(endBlock);
-//                     statement->addStatement(endJump);
-//                 }
-//             }
-//
-//             visitElseStatement(ctx->elseStatement(), currentFunction, elseLabel, endLabel);
-//         }
-//         else
-//         {
-//             conditional->setFalseLabel(endLabel);
-//             const auto block = std::make_shared<Block>()->set(endLabel);
-//             if (!haveReturn)
-//             {
-//                 const auto endJump = std::make_shared<Jump>(block);
-//                 statement->addStatement(endJump);
-//             }
-//
-//             block->changeToEndBlock();
-//             statement->addStatement(block);
-//         }
-//     }
-//
-//     void HLIRGenerator::visitElseStatement(IronParser::ElseStatementContext *ctx,
-//                                            const std::shared_ptr<Function> &currentFunction, const std::string &label, const std::string &endLabel)
-//     {
-//
-//         const auto statement = currentFunction->getCurrentLocalScope();
-//
-//         const auto block = std::make_shared<Block>()->set(label);
-//         statement->addStatement(block);
-//
-//         if (ctx->ifStatement())
-//         {
-//             visitIfStatement(ctx->ifStatement(), currentFunction, endLabel);
-//         }
-//         else if (ctx->ifBlock())
-//         {
-//             bool haveReturn{false};
-//             {
-//                 currentFunction->enterLocalScope(std::make_shared<Statement>());
-//                 visitIfBlock(ctx->ifBlock(), currentFunction);
-//                 if (currentFunction->getCurrentLocalScope()->haveReturn())
-//                 {
-//                     haveReturn = true;
-//                 }
-//                 currentFunction->exitLocalScope();
-//             }
-//
-//             const auto block = std::make_shared<Block>()->set(endLabel);
-//             if (!haveReturn)
-//             {
-//                 const auto endJump = std::make_shared<Jump>(block);
-//                 statement->addStatement(endJump);
-//             }
-//
-//             block->changeToEndBlock();
-//             statement->addStatement(block);
-//         }
-//     }
-//
 } // namespace hlir
 
 

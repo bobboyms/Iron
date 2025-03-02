@@ -71,7 +71,7 @@ namespace iron
         llvm::Value *numberCasting(const std::shared_ptr<hlir::Variable> &variable,
                                    const std::shared_ptr<hlir::Type> &type, llvm::Function *currentFunction);
 
-        std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(std::shared_ptr<hlir::BinaryOperation> op,
+        std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(const std::shared_ptr<hlir::BinaryOperation> &op,
                                                                     llvm::Function *currentFunction);
         llvm::Value *executeAND(const std::shared_ptr<hlir::AND> &_and, llvm::Function *currentFunction);
         llvm::Value *executeOR(const std::shared_ptr<hlir::OR> &_or, llvm::Function *currentFunction);

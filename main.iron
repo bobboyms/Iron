@@ -1,6 +1,19 @@
+import std.output.printf
+
 fn main() {
-    mut let x:int = 3
-    while (x < 5) {
-        x = z
+    mut let x:int = 0
+    while x < 100 {
+        x = x + 1
+        if (x == 5) {
+            printf(format:"x = 5\n")
+        } else {
+            x = x + 1
+             printf(format:"else x = %u\n", x:x)
+             if (x == 59) {
+                break
+             }
+        }
     }
+
+    printf(format:"x1 = %u\n", r:x)
 }

@@ -714,7 +714,6 @@ namespace hlir
 
         if (findVarByName(variable->getVarName()))
         {
-            // printf("Duplicado: %s\n", variable->getVarName().c_str());
             throw std::invalid_argument("Attempted to add a variable with duplicate name.");
         }
 

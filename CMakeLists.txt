@@ -180,6 +180,7 @@ set(SRC_COMMON
         src/headers/Analyser.h
         src/utils/Path.cpp
         src/semantic/Loops.cpp
+        src/hlir/generator/Loops.cpp
 
 )
 

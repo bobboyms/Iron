@@ -21,7 +21,7 @@ namespace iron
       void visitWhileStatement(IronParser::WhileStatementContext *ctx);
       void visitRepeatStatement(IronParser::RepeatStatementContext *ctx);
       void visitForStatement(IronParser::ForStatementContext *ctx);
-      void visitLoopStatementList(IronParser::LoopStatementListContext *ctx);
+      // void visitLoopStatementList(IronParser::LoopStatementListContext *ctx);
       // void visitBreakStatement(IronParser::BreakStatementContext *ctx);
       // void visitContinueStatement(IronParser::ContinueStatementContext *ctx);
       // void visitVoidReturnStatement(IronParser::VoidReturnStatementContext *ctx);
@@ -56,7 +56,7 @@ namespace iron
 
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
 
-        void visitVarAssignment(IronParser::VarAssignmentContext *ctx);
+        void visitVarAssignment(const IronParser::VarAssignmentContext *ctx);
 
         void visitImportStatement(IronParser::ImportStatementContext *ctx) const;
 

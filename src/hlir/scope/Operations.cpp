@@ -65,7 +65,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(),
+        sb << util::format("let {}:{} = {}", variable->getRealName(), variable->getVarType()->getText(),
                            value->getText());
 
         return sb.str();

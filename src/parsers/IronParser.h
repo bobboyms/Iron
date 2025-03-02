@@ -27,18 +27,18 @@ public:
 
   enum {
     RuleProgram = 0, RuleImportStatement = 1, RuleQualifiedName = 2, RuleStatementList = 3, 
-    RuleBreakStatement = 4, RuleContinueStatement = 5, RuleLoopStatementList = 6, 
-    RuleVoidReturnStatement = 7, RuleReturnStatement = 8, RuleWhileStatement = 9, 
-    RuleRepeatStatement = 10, RuleForStatement = 11, RuleIntervals = 12, 
-    RuleFormatStatement = 13, RuleFormatArguments = 14, RuleFormatArgument = 15, 
-    RuleExternBlock = 16, RuleExternFunctionDeclaration = 17, RuleExternFunctionArgs = 18, 
-    RuleExternFunctionArg = 19, RuleCTypes = 20, RuleFunctionDeclaration = 21, 
-    RuleArrowFunctionInline = 22, RuleFunctionSignature = 23, RuleFunctionReturnType = 24, 
-    RuleFunctionArgs = 25, RuleFunctionArg = 26, RuleFnsignature = 27, RuleFunctionCall = 28, 
-    RuleFunctionCallArgs = 29, RuleFunctionCallArg = 30, RuleVarDeclaration = 31, 
-    RuleAssignment = 32, RuleVarAssignment = 33, RuleIfBlock = 34, RuleIfStatement = 35, 
-    RuleElseStatement = 36, RuleBoolExpr = 37, RuleExpr = 38, RuleNumber = 39, 
-    RuleDataFormat = 40, RuleVarTypes = 41
+    RuleBreakStatement = 4, RuleContinueStatement = 5, RuleVoidReturnStatement = 6, 
+    RuleReturnStatement = 7, RuleWhileStatement = 8, RuleRepeatStatement = 9, 
+    RuleForStatement = 10, RuleIntervals = 11, RuleFormatStatement = 12, 
+    RuleFormatArguments = 13, RuleFormatArgument = 14, RuleExternBlock = 15, 
+    RuleExternFunctionDeclaration = 16, RuleExternFunctionArgs = 17, RuleExternFunctionArg = 18, 
+    RuleCTypes = 19, RuleFunctionDeclaration = 20, RuleArrowFunctionInline = 21, 
+    RuleFunctionSignature = 22, RuleFunctionReturnType = 23, RuleFunctionArgs = 24, 
+    RuleFunctionArg = 25, RuleFnsignature = 26, RuleFunctionCall = 27, RuleFunctionCallArgs = 28, 
+    RuleFunctionCallArg = 29, RuleVarDeclaration = 30, RuleAssignment = 31, 
+    RuleVarAssignment = 32, RuleIfBlock = 33, RuleIfStatement = 34, RuleElseStatement = 35, 
+    RuleBoolExpr = 36, RuleExpr = 37, RuleNumber = 38, RuleDataFormat = 39, 
+    RuleVarTypes = 40
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -64,7 +64,6 @@ public:
   class StatementListContext;
   class BreakStatementContext;
   class ContinueStatementContext;
-  class LoopStatementListContext;
   class VoidReturnStatementContext;
   class ReturnStatementContext;
   class WhileStatementContext;
@@ -155,6 +154,10 @@ public:
   public:
     StatementListContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    std::vector<ContinueStatementContext *> continueStatement();
+    ContinueStatementContext* continueStatement(size_t i);
+    std::vector<BreakStatementContext *> breakStatement();
+    BreakStatementContext* breakStatement(size_t i);
     std::vector<VarDeclarationContext *> varDeclaration();
     VarDeclarationContext* varDeclaration(size_t i);
     std::vector<VarAssignmentContext *> varAssignment();
@@ -171,6 +174,8 @@ public:
     RepeatStatementContext* repeatStatement(size_t i);
     std::vector<ForStatementContext *> forStatement();
     ForStatementContext* forStatement(size_t i);
+    std::vector<VoidReturnStatementContext *> voidReturnStatement();
+    VoidReturnStatementContext* voidReturnStatement(size_t i);
     std::vector<ReturnStatementContext *> returnStatement();
     ReturnStatementContext* returnStatement(size_t i);
 
@@ -206,42 +211,6 @@ public:
   };
 
   ContinueStatementContext* continueStatement();
-
-  class  LoopStatementListContext : public antlr4::ParserRuleContext {
-  public:
-    LoopStatementListContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    std::vector<ContinueStatementContext *> continueStatement();
-    ContinueStatementContext* continueStatement(size_t i);
-    std::vector<BreakStatementContext *> breakStatement();
-    BreakStatementContext* breakStatement(size_t i);
-    std::vector<VarDeclarationContext *> varDeclaration();
-    VarDeclarationContext* varDeclaration(size_t i);
-    std::vector<VarAssignmentContext *> varAssignment();
-    VarAssignmentContext* varAssignment(size_t i);
-    std::vector<FunctionCallContext *> functionCall();
-    FunctionCallContext* functionCall(size_t i);
-    std::vector<ExprContext *> expr();
-    ExprContext* expr(size_t i);
-    std::vector<IfStatementContext *> ifStatement();
-    IfStatementContext* ifStatement(size_t i);
-    std::vector<WhileStatementContext *> whileStatement();
-    WhileStatementContext* whileStatement(size_t i);
-    std::vector<RepeatStatementContext *> repeatStatement();
-    RepeatStatementContext* repeatStatement(size_t i);
-    std::vector<ForStatementContext *> forStatement();
-    ForStatementContext* forStatement(size_t i);
-    std::vector<VoidReturnStatementContext *> voidReturnStatement();
-    VoidReturnStatementContext* voidReturnStatement(size_t i);
-    std::vector<ReturnStatementContext *> returnStatement();
-    ReturnStatementContext* returnStatement(size_t i);
-
-    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
-    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
-   
-  };
-
-  LoopStatementListContext* loopStatementList();
 
   class  VoidReturnStatementContext : public antlr4::ParserRuleContext {
   public:
@@ -281,7 +250,7 @@ public:
     antlr4::tree::TerminalNode *WHILE();
     BoolExprContext *boolExpr();
     antlr4::tree::TerminalNode *L_CURLY();
-    LoopStatementListContext *loopStatementList();
+    StatementListContext *statementList();
     antlr4::tree::TerminalNode *R_CURLY();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -297,7 +266,7 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *REPEAT();
     antlr4::tree::TerminalNode *L_CURLY();
-    LoopStatementListContext *loopStatementList();
+    StatementListContext *statementList();
     antlr4::tree::TerminalNode *R_CURLY();
     antlr4::tree::TerminalNode *WHILE();
     BoolExprContext *boolExpr();
@@ -318,7 +287,7 @@ public:
     antlr4::tree::TerminalNode *IN();
     IntervalsContext *intervals();
     antlr4::tree::TerminalNode *L_CURLY();
-    LoopStatementListContext *loopStatementList();
+    StatementListContext *statementList();
     antlr4::tree::TerminalNode *R_CURLY();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;

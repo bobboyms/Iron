@@ -4,6 +4,35 @@
 
 namespace hlir
 {
+
+    std::tuple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
+    HLIRGenerator::getVariableOrCreate(const std::shared_ptr<Function> &currentFunction, const std::string &strLeftVar,
+                                       const std::string &strRightVar, const std::string &tempVarStr,
+                                       const uint higherType, bool createTempVar)
+    {
+        auto newLeftVar = currentFunction->findVarAllScopesAndArg(strLeftVar);
+        if (!newLeftVar)
+        {
+            newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
+        }
+
+        auto newRightVar = currentFunction->findVarAllScopesAndArg(strRightVar);
+        if (!newLeftVar)
+        {
+            newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
+        }
+
+        if (createTempVar)
+        {
+            const auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
+            currentFunction->getCurrentLocalScope()->addDeclaredVariable(tempVar);
+
+            return std::make_tuple(newLeftVar, newRightVar, tempVar);
+        }
+
+        return std::make_tuple(newLeftVar, newRightVar, nullptr);
+    }
+
     std::string HLIRGenerator::visitBoolExpr(IronParser::BoolExprContext *ctx,
                                              const std::shared_ptr<Function> &currentFunction)
     {
@@ -51,10 +80,8 @@ namespace hlir
 
             std::string tempVarStr = currentFunction->generateVarName();
 
-            auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
-            // statement->addDeclaredVariable(newLeftVar);
-            auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
-            // statement->addDeclaredVariable(newRightVar);
+            const auto [newLeftVar, newRightVar, _] =
+                    getVariableOrCreate(currentFunction, strLeftVar, strRightVar, tempVarStr, higherType);
             auto tempVar =
                     std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             statement->addDeclaredVariable(tempVar);
@@ -288,11 +315,8 @@ namespace hlir
 
             std::string tempVarStr = currentFunction->generateVarName();
 
-
-            auto newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
-            auto newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
-            auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
-            statement->addDeclaredVariable(tempVar);
+            const auto [newLeftVar, newRightVar, tempVar] =
+                    getVariableOrCreate(currentFunction, strLeftVar, strRightVar, tempVarStr, higherType, true);
 
             if (ctx->mult)
             {

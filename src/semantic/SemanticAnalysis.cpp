@@ -163,7 +163,7 @@ namespace iron
         }
     }
 
-    void SemanticAnalysis::visitVarAssignment(IronParser::VarAssignmentContext *ctx)
+    void SemanticAnalysis::visitVarAssignment(const IronParser::VarAssignmentContext *ctx)
     {
         const uint col = ctx->getStart()->getCharPositionInLine();
         const uint line = ctx->getStart()->getLine();

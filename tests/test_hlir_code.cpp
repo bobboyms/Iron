@@ -1088,12 +1088,63 @@ TEST_F(HlIrTestCode, T26)
 TEST_F(HlIrTestCode, T27)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
-
+        fn main():void {
+         let x:int = 3
+         jump while_cond_0
+         block while_cond_0:
+         let var_0:int = 5
+         let var_1:boolean = cmp LT x, var_0
+         cond var_1 while_body_1, while_end_2
+         block while_body_1:
+         let z:int = 3
+         let var_2:int = 3
+         let var_3:boolean = cmp NEQ z, var_2
+         cond var_3 then_4, else_5
+         block then_4:
+         let z:int = 55
+         jump end_3
+         block else_5:
+         let var_4:boolean = false
+         cond var_4 then_6, else_7
+         block then_6:
+         let op:int = 1254
+         jump end_3
+         block else_7:
+         let pp:int = 665
+         jump while_end_2
+         block end_3:
+         let var_5:int = 3
+         let var_6:int = MULT z, var_5
+         let n:int = var_6
+         jump while_cond_0
+         block while_end_2:
+         let var_7:string = "Finalizou\n"
+         call int printf(format:var_7)
+        }
     )";
 
     const std::string input = R"(
+        import std.output.printf
 
+        fn main() {
+            mut let x:int = 3
+            while (x < 5) {
+                let z:int = 3
+                if (z != 3) {
+                    let z:int = 55
+                } else if (false) {
+                    let op:int = 1254
+                } else {
+                    let pp:int = 665
+                    break
+                }
+                let n:int = z * 3
+            }
+
+            printf(format:"Finalizou\n")
+        }
 
     )";
 

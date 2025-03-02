@@ -17,27 +17,47 @@ namespace hlir
         std::shared_ptr<config::Configuration> config;
         std::shared_ptr<std::map<std::string, std::shared_ptr<Context>>> exportContexts;
 
+        // loops
+        void visitWhileStatement(IronParser::WhileStatementContext *ctx,
+                                 const std::shared_ptr<Function> &currentFunction);
+        void visitRepeatStatement(IronParser::RepeatStatementContext *ctx,
+                                  const std::shared_ptr<Function> &currentFunction);
+        void visitForStatement(IronParser::ForStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
+
+
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
-        void visitStatementList(const IronParser::StatementListContext *ctx,
-                                const std::shared_ptr<Function> &currentFunction);
+
+        std::pair<bool, bool> visitStatementList(const IronParser::StatementListContext *ctx,
+                                const std::shared_ptr<Function> &currentFunction,
+                                const std::shared_ptr<Jump> &endJump = nullptr);
+
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx,
                                  const std::shared_ptr<Function> &currentFunction);
-        // static void visitVarAssignment(IronParser::VarAssignmentContext *ctx, std::shared_ptr<Statement> statement);
 
         std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Function> &currentFunction);
+        static std::tuple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, std::shared_ptr<Variable>> getVariableOrCreate(const std::shared_ptr<Function> &currentFunction,
+                                                     const std::string &strLeftVar, const std::string &strRightVar,
+                                                     const std::string &tempVarStr, uint higherType,
+                                                     bool createTempVar = false);
+
         std::string visitBoolExpr(IronParser::BoolExprContext *ctx, const std::shared_ptr<Function> &currentFunction);
-        bool visitBlockAndCheckReturn(IronParser::IfBlockContext *blockCtx,
-                                      const std::shared_ptr<Function> &currentFunction);
+        std::pair<bool, bool> visitBlockAndCheckReturn(IronParser::IfBlockContext *blockCtx,
+                                      const std::shared_ptr<Function> &currentFunction,
+                                      const std::shared_ptr<Jump> &endJump);
+
         static void handleEndBlock(const std::shared_ptr<Function> &currentFunction,
                                    const std::shared_ptr<Statement> &statement, const std::string &endLabel,
                                    bool haveReturn);
-        void visitIfBlock(IronParser::IfBlockContext *ctx, const std::shared_ptr<Function> &currentFunction);
 
-        void visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
-                              const std::string &endLabel);
+        std::pair<bool, bool>  visitIfBlock(IronParser::IfBlockContext *ctx, const std::shared_ptr<Function> &currentFunction,
+                          const std::shared_ptr<Jump> &endJump);
 
-        void visitElseStatement(IronParser::ElseStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
-                                const std::string &label, const std::string &endLabel);
+        std::pair<bool, bool>  visitIfStatement(IronParser::IfStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
+                              const std::string &endLabel, const std::shared_ptr<Jump> &endJump);
+
+        std::pair<bool, bool>  visitElseStatement(IronParser::ElseStatementContext *ctx, const std::shared_ptr<Function> &currentFunction,
+                                const std::string &label, const std::string &endLabel,
+                                const std::shared_ptr<Jump> &endJump);
 
         std::tuple<int, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
         initializerExprVariables(const std::string &strLeftVar, const std::string &strRightVar,
@@ -80,7 +100,7 @@ namespace hlir
 
 
         static std::shared_ptr<Function> getFunctionValue(const std::shared_ptr<Function> &currentFunction,
-                                                   const std::string &varName);
+                                                          const std::string &varName);
 
         static void ensureVariableCaptured(const std::shared_ptr<Function> &F, const std::shared_ptr<Variable> &var);
 
@@ -95,6 +115,9 @@ namespace hlir
 
         std::shared_ptr<Function> gatArrowFunction(const std::shared_ptr<Function> &currentFunction,
                                                    const std::string &functionName);
+
+      void visitVarAssignment(IronParser::VarAssignmentContext *ctx,
+        const std::shared_ptr<Function> &currentFunction);
 
 
     public:

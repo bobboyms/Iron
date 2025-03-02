@@ -168,9 +168,10 @@ namespace hlir
             throw HLIRException("Variable::set failed: shared_from_this() returned null.");
         }
 
-        varName = newVarName;
-        varType = newVarType;
-        varType->setParent(parentPtr);
+        this->varName = newVarName;
+        this->varType = newVarType;
+        this->varType->setParent(parentPtr);
+        this->realName = newVarName;
 
         // Realiza o cast para std::shared_ptr<Variable>
         auto variablePtr = std::dynamic_pointer_cast<Variable>(parentPtr);
@@ -216,6 +217,20 @@ namespace hlir
         sb.clear();
         sb << util::format("let {}:{}", varName, varType->getText());
         return sb.str();
+    }
+
+    std::string Variable::getRealName()
+    {
+        return realName;
+    }
+
+    void Variable::changeRealName(const std::string& realName)
+    {
+        if (realName.empty())
+        {
+            throw HLIRException("Variable::setRealName failed: realName is empty.");
+        }
+        this->realName = realName;
     }
 
 } // namespace hlir

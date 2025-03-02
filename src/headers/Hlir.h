@@ -285,11 +285,11 @@ namespace hlir
      */
     class Variable final : public Expression
     {
-    private:
         /**
          * @brief The variable's name.
          */
         std::string varName;
+        std::string realName;
 
         /**
          * @brief A shared pointer to the variable's Type.
@@ -315,6 +315,9 @@ namespace hlir
          * @return The textual representation of the variable.
          */
         std::string getText() override;
+
+        std::string getRealName();
+        void changeRealName(const std::string& realName);
 
         /**
          * @brief Gets the variable's Type.
