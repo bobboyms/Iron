@@ -71,8 +71,10 @@ namespace hlir
         return sb.str();
     }
 
-    /*********
+    /**
+     * @brief Default constructor for the Plus class.
      *
+     * @return Constructs a Plus operation object.
      */
 
     Plus::Plus() = default;

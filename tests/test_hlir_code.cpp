@@ -109,45 +109,45 @@ protected:
 TEST_F(HlIrTestCode, T1)
 {
     const std::string output = R"(
-    fn soma(n:float,j:int):int {
-     let block1:fn = gfn_soma_block1
-     let var_0:int = call int block1(j:j)
-     return int var_0
-    }
+       fn soma(n:float,j:int):int {
+            var_0:fn = gfn_soma_block1
+            var_1:int = call int block1(j:j)
+            return int var_1
+        }
 
-    fn gfn_soma_block1(j:int):int {
-     let x:int = 25
-     let block2:fn = gfn_gfn_soma_block1_block2
-     let var_0:int = call int block2(j:j,x:x)
-     return int var_0
-    }
+        fn gfn_soma_block1(j:int):int {
+            var_0:int = 25
+            var_1:fn = gfn_gfn_soma_block1_block2
+            var_2:int = call int block2(j:j,x:var_0)
+            return int var_2
+        }
 
-    fn gfn_gfn_soma_block1_block2(j:int,x:int):int {
-     let var_0:int = 2
-     let var_1:int = MULT var_0, j
-     let var_2:int = MULT var_1, x
-     let r:int = var_2
-     let x:int = 25
-     let block3:fn = gfn_gfn_gfn_soma_block1_block2_block3
-     let var_4:int = 14524
-     let var_3:int = call int block3(n:var_4,j:j,x:x)
-     return int var_3
-    }
+        fn gfn_gfn_soma_block1_block2(j:int,x:int):int {
+            var_1:int = 2
+            var_2:int = MULT var_1, j
+            var_3:int = MULT var_2, x
+            var_0:int = var_3
+            var_4:int = 25
+            var_5:fn = gfn_gfn_gfn_soma_block1_block2_block3
+            var_7:int = 14524
+            var_6:int = call int block3(n:var_7,j:j,x:var_4)
+            return int var_6
+        }
 
-    fn gfn_gfn_gfn_soma_block1_block2_block3(n:int,j:int,x:int):int {
-     let var_0:int = 2
-     let var_1:int = MULT var_0, j
-     let var_2:int = MULT var_1, x
-     let var_3:int = MULT var_2, n
-     let r:int = var_3
-     return int r
-    }
+        fn gfn_gfn_gfn_soma_block1_block2_block3(n:int,j:int,x:int):int {
+            var_1:int = 2
+            var_2:int = MULT var_1, j
+            var_3:int = MULT var_2, x
+            var_4:int = MULT var_3, n
+            var_0:int = var_4
+            return int var_0
+        }
 
-    fn main():void {
-     let var_0:float = 2.3
-     let var_1:int = 3
-     let r:int = call int soma(n:var_0,j:var_1)
-    }
+        fn main():void {
+            var_1:float = 2.3
+            var_2:int = 3
+            var_0:int = call int soma(n:var_1,j:var_2)
+        }
     )";
 
     const std::string input = R"(
@@ -183,11 +183,11 @@ TEST_F(HlIrTestCode, T2)
 {
     const std::string output = R"(
         fn main():void {
-         let b:int = 12
-         let x:int = b
-         let var_0:int = 25
-         let var_1:int = MULT x, var_0
-         let var_2:int = PLUS b, var_1
+            var_0:int = 12
+            var_1:int = var_0
+            var_2:int = 25
+            var_3:int = MULT var_1, var_2
+            var_4:int = PLUS var_0, var_3
         }
     )";
 
@@ -205,26 +205,35 @@ TEST_F(HlIrTestCode, T2)
 TEST_F(HlIrTestCode, T3)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
+
         fn main():void {
-         let a:int = 25
-         let b:int = 32
-         let var_0:float = 1.25
-         let var_1:float = a int to float
-         let var_2:float = PLUS var_1, var_0
-         let var_3:float = 2.36
-         let var_4:float = b int to float
-         let var_5:float = MULT var_4, var_3
-         let var_6:float = PLUS var_2, var_5
-         let var_7:float = a int to float
-         let var_8:float = MINUS var_6, var_7
+            var_0:int = 25
+            var_1:int = 32
+            var_3:float = 1.25
+            var_4:float = var_0 int to float
+            var_5:float = PLUS var_4, var_3
+            var_6:float = 2.36
+            var_7:float = var_1 int to float
+            var_8:float = MULT var_7, var_6
+            var_9:float = PLUS var_5, var_8
+            var_10:float = var_0 int to float
+            var_11:float = MINUS var_9, var_10
+            var_2:float = var_11
+            var_12:string = "result %f\n"
+            call int printf(result:var_12,r:var_2)
         }
     )";
 
     const std::string input = R"(
+        import std.output.printf
+
         fn main() {
-            let a:int = 25
-            let b:int = 32
-            a + 1.25 + b * 2.36 - a
+           let a:int = 25
+           let b:int = 32
+           let r:float = a + 1.25 + b * 2.36 - a
+           //result 76.77
+           printf(result:"result %f\n",r:r)
         }
     )";
 
@@ -234,26 +243,34 @@ TEST_F(HlIrTestCode, T3)
 TEST_F(HlIrTestCode, T4)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
+
         fn main():void {
-         let a:int = 10
-         let b:double = 20.00D
-         let c:int = 30
-         let var_0:double = a int to double
-         let var_1:double = PLUS var_0, b
-         let var_2:double = c int to double
-         let var_3:double = MULT var_1, var_2
-         let var_4:double = a int to double
-         let var_5:double = MINUS var_3, var_4
-         let r:double = var_5
+            var_0:int = 10
+            var_1:double = 20.00D
+            var_2:int = 30
+            var_4:double = var_0 int to double
+            var_5:double = PLUS var_4, var_1
+            var_6:double = var_2 int to double
+            var_7:double = MULT var_5, var_6
+            var_8:double = var_0 int to double
+            var_9:double = MINUS var_7, var_8
+            var_3:double = var_9
+            var_10:string = "result %f\n"
+            call int printf(result:var_10,r:var_3)
         }
     )";
 
     const std::string input = R"(
+        import std.output.printf
+
         fn main() {
             let a:int = 10
             let b:double = 20.00D
             let c:int = 30
             let r:double = (a + b) * c - a
+            // result = 890.00
+            printf(result:"result %f\n",r:r)
         }
     )";
 
@@ -263,12 +280,12 @@ TEST_F(HlIrTestCode, T4)
 TEST_F(HlIrTestCode, T5)
 {
     const std::string output = R"(
-        fn soma(x:int,b:int):void { 
-         let var_0:float = 1.145
-         let var_1:float = b int to float
-         let var_2:float = MULT var_1, var_0
-         let var_3:float = x int to float
-         let var_4:float = PLUS var_3, var_2
+        fn soma(x:int,b:int):void {
+            var_0:float = 1.145
+            var_1:float = b int to float
+            var_2:float = MULT var_1, var_0
+            var_3:float = x int to float
+            var_4:float = PLUS var_3, var_2
         }
     )";
 
@@ -285,28 +302,37 @@ TEST_F(HlIrTestCode, T5)
 TEST_F(HlIrTestCode, T6)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
+
         fn sub(ax:int,bx:int,nx:int):int {
-         let var_0:int = 0
-         return int var_0
+            var_0:int = MULT bx, nx
+            var_1:int = PLUS ax, var_0
+            return int var_1
         }
 
         fn main():void {
-         let var_0:float = 32.25
-         let var_2:int = 1
-         let var_3:int = 32
-         let var_4:int = 25
-         let var_1:int = call int sub(ax:var_2,bx:var_3,nx:var_4)
-         let var_5:float = var_1 int to float
-         let var_6:float = MULT var_0, var_5
+            var_1:float = 32.25
+            var_3:int = 25
+            var_4:int = 32
+            var_5:int = 25
+            var_2:int = call int sub(ax:var_3,bx:var_4,nx:var_5)
+            var_6:float = var_2 int to float
+            var_7:float = MULT var_1, var_6
+            var_0:float = var_7
+            var_8:string = "result %f\n"
+            call int printf(result:var_8,r:var_0)
         }
-
     )";
 
     const std::string input = R"(
-        fn sub(ax:int, bx:int, nx:int): int { return 0 }
+        import std.output.printf
+
+        fn sub(ax:int, bx:int, nx:int): int { return ax + bx * nx}
 
         fn main() {
-            32.25 * sub(ax: 1, bx: 32, nx: 25)
+            let r:float = 32.25 * sub(ax: 25, bx: 32, nx: 25)
+            // result 26606.250000
+            printf(result:"result %f\n",r:r)
         }
     )";
 
@@ -316,36 +342,48 @@ TEST_F(HlIrTestCode, T6)
 TEST_F(HlIrTestCode, T7)
 {
     const std::string output = R"(
-       fn mult(n:int,p:float):float {
-         let var_0:float = 0.0
-         return float var_0
+        extern C fn printf(format:ptr char, ...):int
+
+        fn mult(n:int,p:float):float {
+            var_0:float = n int to float
+            var_1:float = MULT var_0, p
+            return float var_1
         }
 
-        fn sub(ax:int,bx:float):int {
-         let var_0:int = 0
-         return int var_0
+        fn sub(ax:int,bx:float):float {
+            var_0:float = 1.0
+            var_1:float = MULT bx, var_0
+            var_2:float = ax int to float
+            var_3:float = MINUS var_2, var_1
+            return float var_3
         }
 
         fn main():void {
-         let x:float = 25.00
-         let var_0:float = 32.25
-         let var_2:int = 1
-         let var_3:int = 22
-         let var_4:float = call float mult(n:var_3,p:x)
-         let var_1:int = call int sub(ax:var_2,bx:var_4)
-         let var_5:float = var_1 int to float
-         let var_6:float = MULT var_0, var_5
+            var_0:float = 25.00
+            var_2:float = 32.25
+            var_4:int = 1
+            var_5:int = 22
+            var_6:float = call float mult(n:var_5,p:var_0)
+            var_3:float = call float sub(ax:var_4,bx:var_6)
+            var_7:float = MULT var_2, var_3
+            var_1:float = var_7
+            var_8:string = "result %f\n"
+            call int printf(result:var_8,r:var_1)
         }
     )";
 
     const std::string input = R"(
-        fn mult(n:int, p:float): float {return 0.0}
+        import std.output.printf
 
-        fn sub(ax:int, bx:float): int { return 0 }
+        fn mult(n:int, p:float): float {return n * p}
+
+        fn sub(ax:int, bx:float): float { return ax - bx * 1.0 }
 
         fn main() {
             let x: float = 25.00
-            32.25 * sub(ax: 1, bx: mult(n:22, p:x))
+            let r:float = 32.25 * sub(ax: 1, bx: mult(n:22, p:x))
+            // result -17705.250000
+            printf(result:"result %f\n",r:r)
         }
     )";
 

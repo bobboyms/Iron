@@ -8,7 +8,7 @@ namespace hlir
     std::tuple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
     HLIRGenerator::getVariableOrCreate(const std::shared_ptr<Function> &currentFunction, const std::string &strLeftVar,
                                        const std::string &strRightVar, const std::string &tempVarStr,
-                                       const uint higherType, bool createTempVar)
+                                       const uint higherType, const bool createTempVar)
     {
         auto newLeftVar = currentFunction->findVarAllScopesAndArg(strLeftVar);
         if (!newLeftVar)
@@ -20,6 +20,16 @@ namespace hlir
         if (!newLeftVar)
         {
             newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
+        }
+
+        if (!newRightVar)
+        {
+            throw HLIRException(util::format("HLIRGenerator::getVariableOrCreate. Undefined right variable: {} in expression", strRightVar));
+        }
+
+        if (!newLeftVar)
+        {
+            throw HLIRException(util::format("HLIRGenerator::getVariableOrCreate. Undefined right variable: {} in expression", strLeftVar));
         }
 
         if (createTempVar)
@@ -65,7 +75,7 @@ namespace hlir
             if (leftVar->getVarType()->getType() != higherType)
             {
                 const std::string tempVarStr = currentFunction->generateVarName();
-                const auto expr = castVariable(higherType, tempVarStr, leftVar);
+                const auto expr = castVariable(higherType, tempVarStr, leftVar, currentFunction);
                 statement->addStatement(expr);
                 strLeftVar = tempVarStr;
             }
@@ -73,7 +83,7 @@ namespace hlir
             if (rightVar->getVarType()->getType() != higherType)
             {
                 std::string tempVarStr = currentFunction->generateVarName();
-                const auto expr = castVariable(higherType, tempVarStr, rightVar);
+                const auto expr = castVariable(higherType, tempVarStr, rightVar, currentFunction);
                 statement->addStatement(expr);
                 strRightVar = tempVarStr;
             }
@@ -264,11 +274,23 @@ namespace hlir
     }
 
     std::shared_ptr<Expr> HLIRGenerator::castVariable(int higherType, const std::string &varName,
-                                                      const std::shared_ptr<Variable> &variable)
+                                                      const std::shared_ptr<Variable> &variable,
+                                                      const std::shared_ptr<Function> &currentFunction
+                                                      )
     {
+
+        if (!variable)
+        {
+            throw HLIRException(util::format("HLIRGenerator::castVariable. Undefined variable: {} in expression", varName));
+        }
+
         const auto tempVar = std::make_shared<Variable>()->set(varName, std::make_shared<Type>(higherType));
         const auto cast = std::make_shared<Cast>()->apply(variable, std::make_shared<Type>(higherType));
+
+        currentFunction->getCurrentLocalScope()->addDeclaredVariable(tempVar);
+
         return std::make_shared<Expr>()->set(tempVar, cast);
+
     }
 
 
@@ -300,7 +322,7 @@ namespace hlir
             if (leftVar->getVarType()->getType() != higherType)
             {
                 const std::string tempVarStr = currentFunction->generateVarName();
-                const auto expr = castVariable(higherType, tempVarStr, leftVar);
+                const auto expr = castVariable(higherType, tempVarStr, leftVar, currentFunction);
                 statement->addStatement(expr);
                 strLeftVar = tempVarStr;
             }
@@ -308,7 +330,7 @@ namespace hlir
             if (rightVar->getVarType()->getType() != higherType)
             {
                 std::string tempVarStr = currentFunction->generateVarName();
-                const auto expr = castVariable(higherType, tempVarStr, rightVar);
+                const auto expr = castVariable(higherType, tempVarStr, rightVar, currentFunction);
                 statement->addStatement(expr);
                 strRightVar = tempVarStr;
             }

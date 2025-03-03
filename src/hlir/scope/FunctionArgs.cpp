@@ -2,11 +2,12 @@
 
 namespace hlir
 {
+
     FunctionArgs::FunctionArgs() = default;
 
-    FunctionArgs::FunctionArgs(const std::shared_ptr<Signature>& signature)
+    FunctionArgs::FunctionArgs(const std::shared_ptr<Signature> &signature)
     {
-        for (const auto arg : signature->getArgs())
+        for (const auto arg: signature->getArgs())
         {
             addArg(arg);
         }
@@ -58,7 +59,15 @@ namespace hlir
             }
 
             const bool hasComma = (argIndex < commaCount);
-            sb << util::format("{}:{}", arg->name, arg->type->getText());
+            if (arg->signature)
+            {
+                sb << util::format("{}:fn{}", arg->name, Utilities::generateTextFromSignature(arg->signature));
+            }
+            else
+            {
+                sb << util::format("{}:{}", arg->name, arg->type->getText());
+            }
+
             if (hasComma)
             {
                 sb << ",";

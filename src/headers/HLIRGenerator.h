@@ -64,7 +64,8 @@ namespace hlir
                                  const std::shared_ptr<Function> &currentFunction);
 
         static std::shared_ptr<Expr> castVariable(int higherType, const std::string &varName,
-                                                  const std::shared_ptr<Variable> &variable);
+                                                  const std::shared_ptr<Variable> &variable,
+                                                  const std::shared_ptr<Function> &currentFunction);
 
 
         static std::shared_ptr<Signature> getSignature(IronParser::FunctionSignatureContext *ctx);

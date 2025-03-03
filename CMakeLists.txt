@@ -182,6 +182,8 @@ set(SRC_COMMON
         src/utils/Path.cpp
         src/semantic/Loops.cpp
         src/hlir/generator/Loops.cpp
+        src/hlir/scope/Statements.cpp
+        src/hlir/scope/Utilities.cpp
 
 )
 
