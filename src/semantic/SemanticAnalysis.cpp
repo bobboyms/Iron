@@ -1,6 +1,4 @@
 #include "../headers/SemanticAnalysis.h"
-#include <iostream>
-#include <utility>
 #include "../headers/Analyser.h"
 #include "../headers/Files.h"
 
@@ -65,7 +63,6 @@ namespace iron
 
         const auto currentFunction = getCurrentFunction();
 
-        bool hasReturn = false;
         currentFunction->enterLocalScope(std::make_shared<scope::Statements>());
 
         for (const auto child: ctx->children)
@@ -86,6 +83,18 @@ namespace iron
             if (const auto expression = dynamic_cast<IronParser::ExprContext *>(child))
             {
                 visitExpr(expression);
+            }
+            if (const auto whileLoop = dynamic_cast<IronParser::WhileStatementContext *>(child))
+            {
+                visitWhileStatement(whileLoop);
+            }
+            if (const auto forLoop = dynamic_cast<IronParser::ForStatementContext *>(child))
+            {
+                visitForStatement(forLoop);
+            }
+            if (const auto repeatLoop = dynamic_cast<IronParser::RepeatStatementContext *>(child))
+            {
+                visitRepeatStatement(repeatLoop);
             }
             if (const auto IfStatement = dynamic_cast<IronParser::IfStatementContext *>(child))
             {
@@ -112,27 +121,44 @@ namespace iron
 
         const auto currentFunction = getCurrentFunction();
 
+        bool mut = ctx->MUT() != nullptr;
+
         if (auto existingSymbol = currentFunction->findVarCurrentScopeAndArg(varName))
         {
-            throw VariableRedefinitionException(util::format("Variable {} already declared. Line: {}, Scope: {}",
-                                                             color::colorText(varName, color::BOLD_GREEN),
-                                                             color::colorText(std::to_string(line), color::YELLOW),
-                                                             color::colorText(scopeName, color::BOLD_YELLOW)));
+            throw VariableRedefinitionException(util::format(
+                "Variable redefinition error: '{}' is already declared in the current scope.\n"
+                "Line: {}, Scope: {}\n\n"
+                "Hint: Use a different variable name or remove the duplicate declaration.",
+                color::colorText(varName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(scopeName, color::BOLD_YELLOW)));
         }
 
         const auto localScope = currentFunction->getCurrentLocalScope();
         if (!localScope)
         {
-            throw ScopeNotFoundException("SemanticAnalysis::visitVarDeclaration. Local scope not found");
+            throw ScopeNotFoundException(util::format(
+                "Internal error: Local scope not found when declaring variable '{}'.\n"
+                "Line: {}, Scope: {}\n\n"
+                "This is a compiler internal error. Verify that your variable declaration is within a valid block.",
+                color::colorText(varName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(scopeName, color::BOLD_YELLOW)));
         }
 
         const auto statement = std::dynamic_pointer_cast<scope::Statements>(localScope);
         if (!statement)
         {
-            throw ScopeNotFoundException("SemanticAnalysis::visitVarDeclaration. Local scope is not a statement");
+            throw ScopeNotFoundException(util::format(
+                "Internal error: The local scope for variable '{}' is not a valid statement block.\n"
+                "Line: {}, Scope: {}\n\n"
+                "This is a compiler internal error. Verify your code structure.",
+                color::colorText(varName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(scopeName, color::BOLD_YELLOW)));
         }
 
-        statement->addVariable(varName, tokenMap::getTokenType(varType));
+        statement->addVariable(varName, tokenMap::getTokenType(varType), mut);
 
         if (ctx->assignment())
         {
@@ -141,16 +167,19 @@ namespace iron
         else
         {
             throw UninitializedVariableException(util::format(
-                    "Variable {} has not been initialized.\n"
+                    "Uninitialized variable error: Variable '{}' must be initialized at declaration.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
-                    "{}\n",
-                    color::colorText(varName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+                    "{}\n\n"
+                    "Hint: All variables must be initialized when declared. Add an assignment using '=' followed by a value.",
+                    color::colorText(varName, color::BOLD_GREEN), 
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                    codeLine, caretLine));
         }
     }
 
-    void SemanticAnalysis::visitVarAssignment(IronParser::VarAssignmentContext *ctx)
+    void SemanticAnalysis::visitVarAssignment(const IronParser::VarAssignmentContext *ctx)
     {
         const uint col = ctx->getStart()->getCharPositionInLine();
         const uint line = ctx->getStart()->getLine();
@@ -160,18 +189,80 @@ namespace iron
         const std::string varName = ctx->varName->getText();
         const auto function = getCurrentFunction();
 
-        if (const auto variable = function->findVarAllScopesAndArg(varName); !variable)
+        const auto variable = function->findVarAllScopesAndArg(varName);
+        if (!variable)
         {
             throw VariableNotFoundException(util::format(
-                    "Variable '{}' not found.\n"
+                    "Undefined variable error: Variable '{}' is not defined in current scope or any parent scope.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
-                    "{}\n",
-                    color::colorText(varName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+                    "{}\n\n"
+                    "Hint: Check for typos in the variable name or declare the variable before using it.",
+                    color::colorText(varName, color::BOLD_GREEN), 
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                    caretLine, codeLine));
+        }
+
+        if (!variable->mut)
+        {
+            throw VariableCannotBeChangedException(util::format(
+                "Immutable variable error: Cannot assign a new value to '{}' because it is immutable.\n"
+                "Line: {}, Scope: {}\n\n"
+                "{}\n"
+                "{}\n\n"
+                "Hint: Add the '{}' keyword before 'let' in the variable's declaration to make it mutable: '{}let {} = ...'",
+                color::colorText(varName, color::BOLD_GREEN),
+                color::colorText(std::to_string(line), color::YELLOW),
+                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                caretLine, codeLine,
+                color::colorText("mut", color::BOLD_BLUE),
+                color::colorText("mut ", color::BOLD_BLUE),
+                color::colorText(varName, color::BOLD_GREEN)));
+        }
+
+        if (ctx->anotherVarName)
+        {
+            const auto anotherVarName = ctx->anotherVarName->getText();
+            const auto anotherVariable = function->findVarAllScopesAndArg(anotherVarName);
+            if (!anotherVariable)
+            {
+                throw VariableNotFoundException(util::format(
+                        "Undefined variable error: Variable '{}' is not defined in current scope or any parent scope.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}\n\n"
+                        "Hint: Check for typos in the variable name or declare the variable before using it.",
+                        color::colorText(anotherVarName, color::BOLD_GREEN), 
+                        color::colorText(std::to_string(line), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                        caretLine, codeLine));
+            }
+
+            // Bug fix: Changed (!variable->type != anotherVariable->type) to (variable->type != anotherVariable->type)
+            if (variable->type != anotherVariable->type)
+            {
+                throw TypeMismatchException(util::format(
+                                "Type mismatch error: Cannot assign a value of type '{}' to a variable of type '{}'.\n"
+                                "Line: {}, Scope: {}\n\n"
+                                "{}\n"
+                                "{}\n\n"
+                                "Hint: Variables '{}' (type: {}) and '{}' (type: {}) must have the same type for assignment.",
+                                color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
+                                color::colorText(std::to_string(line), color::YELLOW),
+                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                caretLine, codeLine,
+                                color::colorText(varName, color::BOLD_GREEN),
+                                color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN), 
+                                color::colorText(anotherVarName, color::BOLD_BLUE),
+                                color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE)));
+            }
+
         }
     }
-    void SemanticAnalysis::visitImportStatement(IronParser::ImportStatementContext *ctx)
+
+    void SemanticAnalysis::visitImportStatement(IronParser::ImportStatementContext *ctx) const
     {
         const uint col = ctx->getStart()->getCharPositionInLine();
         const uint line = ctx->getStart()->getLine();
@@ -187,14 +278,16 @@ namespace iron
             if (auto globalScope = scopeManager->getFunctionDeclarationByName(element))
             {
 
-                throw ModuleRedefinitionException(util::format("Module {} already declared."
-                                                               "Line: {}, Scope: {}\n\n"
-                                                               "{}\n"
-                                                               "{}\n",
-                                                               color::colorText(element, color::BOLD_GREEN),
-                                                               color::colorText(std::to_string(line), color::YELLOW),
-                                                               color::colorText("Global", color::BOLD_YELLOW), codeLine,
-                                                               caretLine));
+                throw ModuleRedefinitionException(util::format(
+                    "Module redefinition error: Module '{}' is already imported or declared.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}\n\n"
+                    "Hint: Remove duplicate imports or rename one of the modules to avoid conflicts.",
+                    color::colorText(element, color::BOLD_GREEN),
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText("Global", color::BOLD_YELLOW), 
+                    codeLine, caretLine));
             }
 
             bool foundExternal = false;
@@ -213,18 +306,21 @@ namespace iron
 
             if (!foundExternal)
             {
-                throw ModuleNotFoundException(util::format("Module {} not found."
-                                                           "Line: {}, Scope: {}\n\n"
-                                                           "{}\n"
-                                                           "{}\n",
-                                                           color::colorText(element, color::BOLD_GREEN),
-                                                           color::colorText(std::to_string(line), color::YELLOW),
-                                                           color::colorText("Global", color::BOLD_YELLOW), codeLine,
-                                                           caretLine));
+                throw ModuleNotFoundException(util::format(
+                    "Module not found error: Module '{}' could not be found in the standard library.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}\n\n"
+                    "Hint: Check for typos in the module name or verify that the module exists in path: '{}'",
+                    color::colorText(element, color::BOLD_GREEN),
+                    color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText("Global", color::BOLD_YELLOW), 
+                    codeLine, caretLine,
+                    color::colorText(fullPath, color::BOLD_BLUE)));
             }
-
         }
     }
+
 
 
     std::pair<std::string, std::string> SemanticAnalysis::getCodeLineAndCaretLine(const uint line, const uint col,
@@ -277,16 +373,18 @@ namespace iron
 
                         // Lançando exceção com a linha do código em destaque
                         throw TypeMismatchException(util::format(
-                                "The variable {} type is {} and the value {} type is {}.\n"
+                                "Type mismatch error: Cannot assign a float value '{}' to a variable of type '{}'.\n"
                                 "Line: {}, Scope: {}\n\n"
-                                "{}\n" // Exibe a linha de código
-                                "{}\n", // Exibe a setinha '^'
-                                color::colorText(varName, color::BOLD_GREEN),
-                                color::colorText(varType, color::BOLD_GREEN), color::colorText(value, color::BOLD_BLUE),
-                                color::colorText(valueType, color::BOLD_BLUE),
+                                "{}\n"
+                                "{}\n\n"
+                                "Hint: The float value's precision ({}) doesn't match the variable's type ({}). Use the correct type or cast the value.",
+                                color::colorText(value, color::BOLD_BLUE),
+                                color::colorText(varType, color::BOLD_GREEN),
                                 color::colorText(std::to_string(line), color::YELLOW),
-                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                caretLine));
+                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                                codeLine, caretLine,
+                                color::colorText(valueType, color::BOLD_BLUE),
+                                color::colorText(varType, color::BOLD_GREEN)));
                     }
                 }
                 else
@@ -296,16 +394,20 @@ namespace iron
                         const auto valueType = tokenMap::getTokenText(tokenMap::determineType(value));
 
                         throw TypeMismatchException(util::format(
-                                "The variable {} type is {} and the value {} type is {}.\n"
+                                "Type mismatch error: Cannot assign a value of type '{}' to a variable of type '{}'.\n"
                                 "Line: {}, Scope: {}\n\n"
                                 "{}\n"
-                                "{}\n",
-                                color::colorText(varName, color::BOLD_GREEN),
-                                color::colorText(varType, color::BOLD_GREEN), color::colorText(value, color::BOLD_BLUE),
+                                "{}\n\n"
+                                "Hint: The literal '{}' (type: {}) cannot be assigned to variable '{}' (type: {}). Use the correct type or cast the value.",
                                 color::colorText(valueType, color::BOLD_BLUE),
+                                color::colorText(varType, color::BOLD_GREEN),
                                 color::colorText(std::to_string(line), color::YELLOW),
-                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                caretLine));
+                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                                codeLine, caretLine,
+                                color::colorText(value, color::BOLD_BLUE),
+                                color::colorText(valueType, color::BOLD_BLUE),
+                                color::colorText(varName, color::BOLD_GREEN),
+                                color::colorText(varType, color::BOLD_GREEN)));
                     }
                 }
             }
@@ -334,10 +436,11 @@ namespace iron
                         if (!arg || !arg->signature)
                         {
                             throw FunctionNotFoundException(
-                                util::format("Function {} not found.\n"
+                                util::format("Function not found error: Function '{}' is not defined in current scope or standard library.\n"
                                              "Line: {}, Scope: {}\n\n"
                                              "{}\n"
-                                             "{}\n",
+                                             "{}\n\n"
+                                             "Hint: Check for typos in the function name or import the module that contains this function.",
                                              color::colorText(functionName, color::BOLD_GREEN),
                                              color::colorText(std::to_string(line), color::YELLOW),
                                              color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
@@ -347,18 +450,20 @@ namespace iron
                         if (arg->signature->getReturnType() != tokenMap::getTokenType(varType))
                         {
                             throw TypeMismatchException(util::format(
-                                    "The variable {} of type {} is incompatible with the function {} return of type {}.\n"
+                                    "Return type mismatch error: Cannot assign result of function '{}' to variable '{}'.\n"
                                     "Line: {}, Scope: {}\n\n"
                                     "{}\n"
-                                    "{}\n",
-                                    color::colorText(varName, color::BOLD_GREEN),
-                                    color::colorText(varType, color::BOLD_GREEN),
+                                    "{}\n\n"
+                                    "Hint: Function '{}' returns type '{}' but variable '{}' is of type '{}'. These types are incompatible.",
                                     color::colorText(functionName, color::BOLD_BLUE),
-                                    color::colorText(tokenMap::getTokenText(variable->function->getReturnType()),
-                                                     color::BOLD_BLUE),
+                                    color::colorText(varName, color::BOLD_GREEN),
                                     color::colorText(std::to_string(line), color::YELLOW),
-                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                    caretLine));
+                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                                    codeLine, caretLine,
+                                    color::colorText(functionName, color::BOLD_BLUE),
+                                    color::colorText(tokenMap::getTokenText(variable->function->getReturnType()), color::BOLD_BLUE),
+                                    color::colorText(varName, color::BOLD_GREEN),
+                                    color::colorText(varType, color::BOLD_GREEN)));
                         }
 
                         visitFunctionCall(ctx->functionCall());
@@ -579,6 +684,7 @@ namespace iron
 
         const auto currentFunction = getCurrentFunction();
         currentFunction->changeToReturnFound();
+
 
         if (ctx->dataFormat())
         {

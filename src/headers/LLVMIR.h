@@ -8,7 +8,6 @@
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IRBuilder.h>
-// #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
@@ -35,9 +34,6 @@ namespace iron
     public:
         explicit LLVM(const std::shared_ptr<hlir::Context> &hlirContext, llvm::LLVMContext &context,
                       const std::string &filename);
-
-        LLVM(const std::shared_ptr<hlir::Context> &hlirContext, const std::string &filename,
-             const llvm::LLVMContext &context);
         ~LLVM();
 
         std::unique_ptr<llvm::Module> generateCode();
@@ -71,7 +67,7 @@ namespace iron
         llvm::Value *numberCasting(const std::shared_ptr<hlir::Variable> &variable,
                                    const std::shared_ptr<hlir::Type> &type, llvm::Function *currentFunction);
 
-        std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(std::shared_ptr<hlir::BinaryOperation> op,
+        std::pair<llvm::LoadInst *, llvm::LoadInst *> operationLoad(const std::shared_ptr<hlir::BinaryOperation> &op,
                                                                     llvm::Function *currentFunction);
         llvm::Value *executeAND(const std::shared_ptr<hlir::AND> &_and, llvm::Function *currentFunction);
         llvm::Value *executeOR(const std::shared_ptr<hlir::OR> &_or, llvm::Function *currentFunction);

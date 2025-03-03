@@ -51,7 +51,7 @@ namespace iron
             throw LLVMException("visitAssignment: currentFunction is null");
         }
 
-        const auto varName = funcReturn->getVariable()->getVarName();
+        const auto varName = funcReturn->getVariable()->getRealName();
         const auto allocaVariable = findAllocaByName(currentFunction, varName);
 
         const auto type = mapType(funcReturn->getVariable()->getVarType()->getType());
@@ -116,7 +116,7 @@ namespace iron
             throw LLVMException("visitExpr: currentFunction is null");
         }
 
-        const auto variable = getOrPromoteToAlloca(conditional->getVariable()->getVarName(), currentFunction);
+        const auto variable = getOrPromoteToAlloca(conditional->getVariable()->getRealName(), currentFunction);
         auto *cond = builder.CreateLoad(builder.getInt1Ty(), variable, "cond_");
 
         llvm::BasicBlock *thenBB = getBasicBlock(conditional->getTrueLabel(), currentFunction);

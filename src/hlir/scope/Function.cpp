@@ -3,6 +3,9 @@
 
 namespace hlir
 {
+
+
+
     Function::Function() : external(false), variedArguments(false), languageType(tokenMap::IRON_LANG)
     {
     }
@@ -83,12 +86,23 @@ namespace hlir
             throw std::runtime_error(util::format("Function::enterLocalScope. Scope is null", ""));
         }
 
-        const std::shared_ptr<Parent> parentPtr = shared_from_this();
-        statement->setParent(parentPtr);
-
-        if (const auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr); !functionPtr)
+        try
         {
-            throw std::runtime_error("Function::enterLocalScope. Failed to cast Parent to Function.");
+            // Garantir que o objeto está sendo gerenciado por um shared_ptr antes de usar shared_from_this
+            const std::shared_ptr<Parent> parentPtr = shared_from_this();
+            statement->setParent(parentPtr);
+            
+            // Este cast é redundante, já que estamos em um método Function
+            // mas é mantido para verificação de segurança
+            if (const auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr); !functionPtr)
+            {
+                throw std::runtime_error("Function::enterLocalScope. Failed to cast Parent to Function.");
+            }
+        }
+        catch(const std::bad_weak_ptr& e)
+        {
+            // Captura exceção se o objeto não for gerenciado por shared_ptr
+            throw std::runtime_error("Function::enterLocalScope. Object not managed by shared_ptr, cannot use shared_from_this()");
         }
 
         if (!rootStatement)
@@ -98,8 +112,6 @@ namespace hlir
         statement->rootStatement = rootStatement;
 
         statementStack.push(statement);
-        // // Armazena o índice atual (posição onde o escopo atual começa no rootStatement)
-        // localScopePositions.push(rootStatement->getStatements().size());
     }
 
     void Function::exitLocalScope()
@@ -109,82 +121,61 @@ namespace hlir
             statementStack.pop();
         }
     }
-
-    // void Function::exitLocalScope()
-    // {
-    //     if (!statementStack.empty())
-    //     {
-    //         // Recupera o escopo atual a ser mesclado
-    //         auto tempStatement = statementStack.top();
-    //         statementStack.pop();
-    //
-    //         size_t insertPos = 0;
-    //         if (!localScopePositions.empty())
-    //         {
-    //             insertPos = localScopePositions.top();
-    //             localScopePositions.pop();
-    //         }
-    //
-    //         // Define o escopo pai para inserção: se existir um escopo atual, use-o; caso contrário, use o
-    //         rootStatement auto parentScope = getCurrentLocalScope(); if (!parentScope)
-    //         {
-    //             parentScope = rootStatement;
-    //         }
-    //
-    //         util::printf(">> Exiting local scope. Insert position: {}. Parent scope current size: {}\n",
-    //                      insertPos, parentScope->getStatements().size());
-    //
-    //         const auto stmts = tempStatement->getStatements();
-    //         util::printf(">> Number of statements to insert from local scope: {}\n", stmts.size());
-    //
-    //         // Insere os statements no escopo pai na posição marcada
-    //         parentScope->insertStatementsAt(stmts, insertPos);
-    //
-    //         util::printf(">> After insertion, parent scope size: {}\n", parentScope->getStatements().size());
-    //     }
-    // }
+    
+    ScopeGuard Function::createScopeGuard(const std::shared_ptr<Statement> &statement)
+    {
+        // Fazemos um dynamic_cast para obter std::shared_ptr<Function>
+        auto self = std::dynamic_pointer_cast<Function>(shared_from_this());
+        return ScopeGuard(self, statement);
+    }
 
 
     std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers)
     {
-
         // verifica no escopo local e superiores
         std::stack tempStack(statementStack);
         while (!tempStack.empty())
         {
-            auto currentScope = tempStack.top();
+            const std::shared_ptr<Statement> currentScope = tempStack.top();
             tempStack.pop();
-            if (const auto statementsScope = std::dynamic_pointer_cast<Statement>(currentScope))
+            
+            // Garantir que currentScope não é nulo antes de usar
+            if (!currentScope)
             {
-                if (auto variable = statementsScope->findVarByName(varName))
+                continue;
+            }
+            
+            // Não é necessário dynamic_cast com shared_ptr, pois statementStack
+            // já deveria conter apenas Statement
+            if (auto variable = currentScope->findVarByName(varName))
+            {
+                if (scopeNumbers > 0)
                 {
-                    if (scopeNumbers > 0)
-                    {
-                        variable->changeToAnotherScope();
-                        return variable;
-                    }
-
-                    return variable;
+                    variable->changeToAnotherScope();
                 }
+                return variable;
             }
         }
 
         // verifica nos argumentos da função
-        if (const auto arg = functionArgs->findArgByName(varName))
+        if (functionArgs)
         {
-            const auto variable = std::make_shared<Variable>()->set(arg->name, arg->type);
-            if (scopeNumbers > 0)
+            if (const auto arg = functionArgs->findArgByName(varName))
             {
-                variable->changeToAnotherScope();
-            }
+                auto variable = std::make_shared<Variable>()->set(arg->name, arg->type);
+                if (scopeNumbers > 0)
+                {
+                    variable->changeToAnotherScope();
+                }
 
-            if (arg->signature)
-            {
-                variable->setSignature(arg->signature);
-            }
+                if (arg->signature)
+                {
+                    variable->setSignature(arg->signature);
+                }
 
-            variable->changeToFromFunctionArg();
-            return variable;
+                variable->changeToFromFunctionArg();
+                return variable;
+            }
         }
 
         if (parentFunction)
@@ -303,8 +294,6 @@ namespace hlir
                                             const std::shared_ptr<FunctionArgs> &functionArgs,
                                             const std::shared_ptr<Type> &functionReturnType)
     {
-
-
         if (!functionArgs)
         {
             throw HLIRException("FunctionArgs cannot be null.");
@@ -314,26 +303,30 @@ namespace hlir
             throw HLIRException("FunctionReturnType cannot be null.");
         }
 
-        const std::shared_ptr<Parent> parentPtr = shared_from_this();
-
-        this->functionName = functionName;
-        this->functionArgs = functionArgs;
-        this->functionReturnType = functionReturnType;
-        this->functionArgs->setParent(parentPtr);
-        this->functionReturnType->setParent(parentPtr);
-
-        auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr);
-        if (!functionPtr)
+        try
         {
-            throw HLIRException("Failed to cast Parent to Function.");
-        }
+            const std::shared_ptr<Parent> parentPtr = shared_from_this();
 
-        return functionPtr;
+            this->functionName = functionName;
+            this->functionArgs = functionArgs;
+            this->functionReturnType = functionReturnType;
+            this->functionArgs->setParent(parentPtr);
+            this->functionReturnType->setParent(parentPtr);
+
+            auto functionPtr = std::dynamic_pointer_cast<Function>(parentPtr);
+            if (!functionPtr)
+            {
+                throw HLIRException("Failed to cast Parent to Function.");
+            }
+
+            return functionPtr;
+        }
+        catch(const std::bad_weak_ptr& e)
+        {
+            // O objeto não está sendo gerenciado por um shared_ptr
+            throw HLIRException("Function::set. Object not managed by shared_ptr, cannot use shared_from_this()");
+        }
     }
-    // std::vector<std::shared_ptr<Statement>> Function::getStatementList()
-    // {
-    //     return statementList;
-    // }
 
     std::string Function::getFunctionName()
     {
@@ -484,254 +477,6 @@ namespace hlir
         return sb.str();
     }
 
-    Statement::Statement() = default;
-    Statement::~Statement() = default;
-
-    std::shared_ptr<Statement> Statement::set(ValidStatement statement)
-    {
-        if (isValidStatementNull(statement))
-        {
-            throw HLIRException("Null statement provided to set method.");
-        }
-
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
-        statementList.push_back(statement);
-
-        std::visit(
-                [parentPtr](auto &&arg)
-                {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::shared_ptr<Assign>>)
-                    {
-                        if (arg)
-                        {
-                            arg->setParent(parentPtr);
-                        }
-                    }
-                    if constexpr (std::is_same_v<T, std::shared_ptr<Expr>>)
-                    {
-                        if (arg)
-                        {
-                            arg->setParent(parentPtr);
-                        }
-                    }
-                    else if constexpr (std::is_same_v<T, std::shared_ptr<FunctionCall>>)
-                    {
-                        if (arg)
-                        {
-                            arg->setParent(parentPtr);
-                        }
-                    }
-                    else
-                    {
-                        throw HLIRException("Unsupported expression type encountered in set method.");
-                    }
-                },
-                statement);
-
-        auto assignPtr = std::dynamic_pointer_cast<Statement>(parentPtr);
-        if (!assignPtr)
-        {
-            throw HLIRException("Failed to cast Parent to Statement in set method.");
-        }
-
-        return assignPtr;
-    }
-
-    std::string Statement::getNewVarName()
-    {
-        varId++;
-        return util::format("var_{}", varId);
-    }
-
-
-    void Statement::insertStatementsAt(const std::vector<ValidStatement> &stmts, size_t pos)
-    {
-        // Garante que a posição não exceda o tamanho atual da lista
-        if (pos > statementList.size())
-        {
-            pos = statementList.size();
-        }
-        util::printf(">> Inserting {} statements at position {} (current size: {})\n", stmts.size(), pos,
-                     statementList.size());
-
-        statementList.insert(statementList.begin() + pos, stmts.begin(), stmts.end());
-
-        util::printf(">> New size of statementList after insertion: {}\n", statementList.size());
-    }
-
-
-    void Statement::addStatement(ValidStatement statement)
-    {
-
-        // const auto function = std::dynamic_pointer_cast<FuncReturn>(statement->getParent());
-        // if (!function)
-        // {
-        //     throw HLIRException("Failed to cast Function to Statement.");
-        // }
-
-        if (isValidStatementNull(statement))
-        {
-            throw HLIRException("Attempted to add a nullptr statement in addStatement method.");
-        }
-
-        std::visit(
-                [](const auto &stmtPtr)
-                {
-                    if (!stmtPtr)
-                    {
-                        throw HLIRException("Attempted to add a nullptr statement in addStatement method.");
-                    }
-                },
-                statement);
-
-        statementList.emplace_back(statement);
-        if (rootStatement)
-        {
-            rootStatement->addStatement(statement);
-        }
-
-        if (logged)
-        {
-            util::printf("{}", getText());
-        }
-    }
-
-    std::vector<ValidStatement> Statement::getStatements()
-    {
-        return statementList;
-    }
-
-    std::string Statement::getText()
-    {
-        sb.str("");
-        sb.clear();
-
-        sb << "\n";
-
-        for (const auto &stmt: statementList)
-        {
-            std::visit(
-                    [this](const auto &stmtPtr)
-                    {
-                        using T = std::decay_t<decltype(*stmtPtr)>;
-                        if constexpr (std::is_same_v<T, Assign>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                        else if constexpr (std::is_same_v<T, Expr>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                        else if constexpr (std::is_same_v<T, FunctionCall>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                        else if constexpr (std::is_same_v<T, FuncReturn>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                        else if constexpr (std::is_same_v<T, Block>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                        else if constexpr (std::is_same_v<T, Conditional>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                        else if constexpr (std::is_same_v<T, Jump>)
-                        {
-                            sb << util::format(" {}\n", stmtPtr->getText());
-                        }
-                    },
-                    stmt);
-        }
-
-        return sb.str();
-    }
-
-    std::shared_ptr<Value> Statement::getVariableValue(std::string varName)
-    {
-        std::shared_ptr<Value> value = nullptr;
-        for (auto stmt: statementList)
-        {
-            std::visit(
-                    [this, varName, &value](const auto &stmtPtr)
-                    {
-                        using T = std::decay_t<decltype(*stmtPtr)>;
-                        if constexpr (std::is_same_v<T, Assign>)
-                        {
-                            if (stmtPtr->getVariable()->getVarName() == varName)
-                            {
-                                value = stmtPtr->getValue();
-                            }
-                        }
-                    },
-                    stmt);
-
-            if (value != nullptr)
-            {
-                return value;
-            }
-        }
-
-        return nullptr;
-    }
-
-    bool Statement::haveReturn() const
-    {
-        bool haveReturn{false};
-        for (auto stmt: statementList)
-        {
-            std::visit(
-                    [this, &haveReturn](const auto &stmtPtr)
-                    {
-                        using T = std::decay_t<decltype(*stmtPtr)>;
-                        if constexpr (std::is_same_v<T, FuncReturn>)
-                        {
-                            haveReturn = true;
-                        }
-                    },
-                    stmt);
-
-            if (haveReturn)
-            {
-                break;
-            }
-        }
-
-        return haveReturn;
-    }
-
-
-    void Statement::addDeclaredVariable(const std::shared_ptr<Variable> &variable)
-    {
-        if (!variable)
-        {
-            throw HLIRException("Statement::addDeclaredVariable. Attempted to add a nullptr variable in "
-                                "addDeclaredVariable method.");
-        }
-
-        if (findVarByName(variable->getVarName()))
-        {
-            // printf("Duplicado: %s\n", variable->getVarName().c_str());
-            throw std::invalid_argument("Attempted to add a variable with duplicate name.");
-        }
-
-        variableMap.insert({variable->getVarName(), variable});
-    }
-
-    std::shared_ptr<Variable> Statement::findVarByName(const std::string &varName)
-    {
-
-        if (const auto it = variableMap.find(varName); it != variableMap.end())
-        {
-            return it->second;
-        }
-
-        return nullptr;
-    }
-
 
     // Function Return
     FuncReturn::FuncReturn(const std::shared_ptr<Function> &function, const std::shared_ptr<Variable> &variable)
@@ -766,7 +511,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("return {} {}", variable->getVarType()->getText(), variable->getVarName());
+        sb << util::format("return {} {}", variable->getVarType()->getText(), variable->getRealName());
         return sb.str();
     }
 

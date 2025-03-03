@@ -99,6 +99,14 @@ namespace iron
         }
     };
 
+    class VariableCannotBeChangedException final : public SemanticException
+    {
+    public:
+        explicit VariableCannotBeChangedException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
 
     class ModuleRedefinitionException final : public SemanticException
     {

@@ -52,9 +52,14 @@ namespace scope
     {
         std::string name;
         int type;
+        bool mut{false};
         std::shared_ptr<Function> function;
 
         Variable(const std::string &name, const int type) : name(name), type(type)
+        {
+        }
+
+        Variable(const std::string &name, const int type, const bool mut) : name(name), type(type), mut(mut)
         {
         }
     };
@@ -85,6 +90,7 @@ namespace scope
 
     public:
         void addVariable(const std::string &name, int type);
+        void addVariable(const std::string &name, int type, bool mut);
         void addFunctionAlias(const std::string &varName, const std::shared_ptr<Function> &function);
         std::shared_ptr<Variable> getVariable(const std::string &name);
 

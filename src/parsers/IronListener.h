@@ -26,8 +26,26 @@ public:
   virtual void enterStatementList(IronParser::StatementListContext *ctx) = 0;
   virtual void exitStatementList(IronParser::StatementListContext *ctx) = 0;
 
+  virtual void enterBreakStatement(IronParser::BreakStatementContext *ctx) = 0;
+  virtual void exitBreakStatement(IronParser::BreakStatementContext *ctx) = 0;
+
+  virtual void enterContinueStatement(IronParser::ContinueStatementContext *ctx) = 0;
+  virtual void exitContinueStatement(IronParser::ContinueStatementContext *ctx) = 0;
+
   virtual void enterReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
   virtual void exitReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
+
+  virtual void enterWhileStatement(IronParser::WhileStatementContext *ctx) = 0;
+  virtual void exitWhileStatement(IronParser::WhileStatementContext *ctx) = 0;
+
+  virtual void enterRepeatStatement(IronParser::RepeatStatementContext *ctx) = 0;
+  virtual void exitRepeatStatement(IronParser::RepeatStatementContext *ctx) = 0;
+
+  virtual void enterForStatement(IronParser::ForStatementContext *ctx) = 0;
+  virtual void exitForStatement(IronParser::ForStatementContext *ctx) = 0;
+
+  virtual void enterIntervals(IronParser::IntervalsContext *ctx) = 0;
+  virtual void exitIntervals(IronParser::IntervalsContext *ctx) = 0;
 
   virtual void enterFormatStatement(IronParser::FormatStatementContext *ctx) = 0;
   virtual void exitFormatStatement(IronParser::FormatStatementContext *ctx) = 0;
@@ -103,9 +121,6 @@ public:
 
   virtual void enterBoolExpr(IronParser::BoolExprContext *ctx) = 0;
   virtual void exitBoolExpr(IronParser::BoolExprContext *ctx) = 0;
-
-  virtual void enterPrimary(IronParser::PrimaryContext *ctx) = 0;
-  virtual void exitPrimary(IronParser::PrimaryContext *ctx) = 0;
 
   virtual void enterExpr(IronParser::ExprContext *ctx) = 0;
   virtual void exitExpr(IronParser::ExprContext *ctx) = 0;

@@ -65,14 +65,16 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(),
+        sb << util::format("{}:{} = {}", variable->getRealName(), variable->getVarType()->getText(),
                            value->getText());
 
         return sb.str();
     }
 
-    /*********
+    /**
+     * @brief Default constructor for the Plus class.
      *
+     * @return Constructs a Plus operation object.
      */
 
     Plus::Plus() = default;
@@ -84,7 +86,7 @@ namespace hlir
         sb.str("");
         sb.clear();
         // mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
-        sb << util::format("PLUS {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("PLUS {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -169,7 +171,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("MINUS {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("MINUS {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -183,7 +185,7 @@ namespace hlir
         sb.str("");
         sb.clear();
         // mathOp: ( MULT | DIV | PLUS | MINUS) opLeft COMMA opRight;
-        sb << util::format("MULT {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("MULT {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -196,7 +198,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("DIV {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("DIV {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -209,7 +211,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("AND {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("AND {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -222,7 +224,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("OR {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("OR {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -235,7 +237,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("NOT {}, {}", varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("NOT {}, {}", varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -256,7 +258,7 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("cmp {} {}, {}", opType->getText(), varLeft->getVarName(), varRight->getVarName());
+        sb << util::format("cmp {} {}, {}", opType->getText(), varLeft->getRealName(), varRight->getRealName());
 
         return sb.str();
     }
@@ -312,7 +314,7 @@ namespace hlir
         sb.str("");
         sb.clear();
 
-        sb << util::format("let {}:{} = {}", variable->getVarName(), variable->getVarType()->getText(),
+        sb << util::format("{}:{} = {}", variable->getRealName(), variable->getVarType()->getText(),
                            validExpr->getText());
 
         return sb.str();
@@ -384,7 +386,7 @@ namespace hlir
         sb.clear();
 
         // cast: anotherVarName = IDENTIFIER typeLeft TO typeRight;
-        sb << util::format("{} {} to {}", variable->getVarName(), variable->getVarType()->getText(), type->getText());
+        sb << util::format("{} {} to {}", variable->getRealName(), variable->getVarType()->getText(), type->getText());
 
         return sb.str();
     }

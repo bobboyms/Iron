@@ -44,12 +44,40 @@ namespace scope
 
     void Statements::addVariable(const std::string &name, int type)
     {
-
         if (name.empty())
         {
             throw std::runtime_error(util::format("Statements::addVariable. Variable name is empty", ""));
         }
+        
+        // Verificar se já existe uma variável com este nome para evitar duplicação
+        for (const auto& var : variables)
+        {
+            if (var->name == name)
+            {
+                throw std::runtime_error(util::format("Statements::addVariable. Variable {} already exists", name));
+            }
+        }
+        
         variables.push_back(std::make_shared<Variable>(name, type));
+    }
+
+    void Statements::addVariable(const std::string &name, int type, bool mut)
+    {
+        if (name.empty())
+        {
+            throw std::runtime_error(util::format("Statements::addVariable. Variable name is empty", ""));
+        }
+        
+        // Verificar se já existe uma variável com este nome para evitar duplicação
+        for (const auto& var : variables)
+        {
+            if (var->name == name)
+            {
+                throw std::runtime_error(util::format("Statements::addVariable. Variable {} already exists", name));
+            }
+        }
+        
+        variables.push_back(std::make_shared<Variable>(name, type, mut));
     }
 
     void Statements::addFunctionAlias(const std::string& varName, const std::shared_ptr<Function>& function)
@@ -430,47 +458,6 @@ namespace scope
         functionDeclarations.push_back(function);
     }
 
-    // std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(const std::string &functionName)
-    // {
-    //     for (auto function: functionDeclarations)
-    //     {
-    //         if (function->getFunctionName() == functionName)
-    //         {
-    //             return function;
-    //         }
-    //     }
-    //
-    //     if (const auto it = externDeclarations.find(functionName); it != externDeclarations.end())
-    //     {
-    //         return it->second;
-    //     }
-    //
-    //     // auto variable = currentFunctionDeclarationBy(); //->findVarCurrentScopeAndArg(functionName);
-    //     if (!currentScope())
-    //     {
-    //         return nullptr;
-    //     }
-    //
-    //     const auto currentFunction = std::dynamic_pointer_cast<scope::Function>(currentScope());
-    //     if (!currentFunction)
-    //     {
-    //         return nullptr;
-    //     }
-    //
-    //     const auto variable = currentFunction->findVarAllScopesAndArg(functionName);
-    //     if (!variable)
-    //     {
-    //         return nullptr;
-    //     }
-    //
-    //     if (variable->type == tokenMap::FUNCTION)
-    //     {
-    //         return variable->function;
-    //     }
-    //
-    //
-    //     return nullptr;
-    // }
 
     std::shared_ptr<Function> ScopeManager::getFunctionDeclarationByName(const std::string &functionName)
     {

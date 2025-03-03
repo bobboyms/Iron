@@ -1,5 +1,3 @@
-fn main() {
-    let inline:fn = (a:int):int -> a * 3
-
-    let block:fn = (a:int):int -> { return a * 3 }
-}
+fn main():int {
+            return
+        }

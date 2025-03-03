@@ -34,7 +34,7 @@ namespace hlir
         // Verifica se value contém uma Function e estabelece seu pai
         if (std::holds_alternative<std::shared_ptr<Function>>(newValue))
         {
-            auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
+            const auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
             if (!funcPtr)
             {
                 throw HLIRException("Value::set failed: Function pointer in value is null.");
@@ -91,7 +91,7 @@ namespace hlir
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
                     {
-                        sb << util::format("{}", arg->getVarName());
+                        sb << util::format("{}", arg->getRealName());
                     }
                     else if constexpr (std::is_same_v<T, std::string>)
                     {
@@ -168,9 +168,10 @@ namespace hlir
             throw HLIRException("Variable::set failed: shared_from_this() returned null.");
         }
 
-        varName = newVarName;
-        varType = newVarType;
-        varType->setParent(parentPtr);
+        this->varName = newVarName;
+        this->varType = newVarType;
+        this->varType->setParent(parentPtr);
+        this->realName = newVarName;
 
         // Realiza o cast para std::shared_ptr<Variable>
         auto variablePtr = std::dynamic_pointer_cast<Variable>(parentPtr);
@@ -214,8 +215,22 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << util::format("let {}:{}", varName, varType->getText());
+        sb << util::format("{}:{}", realName, varType->getText());
         return sb.str();
+    }
+
+    std::string Variable::getRealName()
+    {
+        return realName;
+    }
+
+    void Variable::changeRealName(const std::string& realName)
+    {
+        if (realName.empty())
+        {
+            throw HLIRException("Variable::setRealName failed: realName is empty.");
+        }
+        this->realName = realName;
     }
 
 } // namespace hlir

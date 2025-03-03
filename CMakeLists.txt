@@ -151,6 +151,7 @@ set(SRC_COMMON
         src/hlir/scope/Variable.cpp
         src/hlir/scope/Operations.cpp
         src/hlir/scope/IFelse.cpp
+        src/hlir/scope/ScopeGuard.cpp
         src/scope/ScopeManager.cpp
         src/hlir/generator/Expr.cpp
         src/hlir/generator/Function.cpp
@@ -179,13 +180,22 @@ set(SRC_COMMON
         src/analyser/Analyser.cpp
         src/headers/Analyser.h
         src/utils/Path.cpp
+        src/semantic/Loops.cpp
+        src/hlir/generator/Loops.cpp
+        src/hlir/scope/Statements.cpp
+        src/hlir/scope/Utilities.cpp
 
 )
 
 set(TEST_SRC
         tests/test_semantic_analysis.cpp
-        tests/test_hlir_code.cpp
         tests/test_llvm_code.cpp
+        tests/test_hlir_common.cpp
+        tests/test_hlir_function.cpp
+        tests/test_hlir_expressions.cpp
+        tests/test_hlir_boolean.cpp
+        tests/test_hlir_function_arg.cpp
+        tests/test_hlir_loops.cpp
 )
 
 # Cópia do arquivo YAML para a pasta de build
