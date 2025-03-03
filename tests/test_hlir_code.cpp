@@ -151,6 +151,7 @@ TEST_F(HlIrTestCode, T1)
     )";
 
     const std::string input = R"(
+
         fn soma(n:float, j:int): int {
 
             let block1:fn = ():int -> {
@@ -393,7 +394,36 @@ TEST_F(HlIrTestCode, T7)
 TEST_F(HlIrTestCode, T8)
 {
     const std::string output = R"(
+        fn mult(n:int,p:float):float {
+            var_0:float = 0.0
+            return float var_0
+        }
 
+        fn sub(ax:int,bx:float):int {
+            var_0:int = 0
+            return int var_0
+        }
+
+        fn main():float {
+            var_0:float = 25.00
+            var_1:fn = gfn_main_inline
+            var_2:float = 32.25
+            var_4:int = 1
+            var_5:int = 22
+            var_6:int = 25
+            var_7:float = call float inline(a:var_6,x:var_0)
+            var_8:float = call float mult(n:var_5,p:var_7)
+            var_3:int = call int sub(ax:var_4,bx:var_8)
+            var_9:float = var_3 int to float
+            var_10:float = MULT var_2, var_9
+            return float var_10
+        }
+
+        fn gfn_main_inline(a:int,x:float):float {
+            var_0:float = a int to float
+            var_1:float = MULT var_0, x
+            return float var_1
+        }
     )";
 
     const std::string input = R"(
@@ -414,7 +444,36 @@ TEST_F(HlIrTestCode, T8)
 TEST_F(HlIrTestCode, T9)
 {
     const std::string output = R"(
+        fn mult(n:int,p:float):float {
+            var_0:float = 0.0
+            return float var_0
+        }
 
+        fn sub(ax:int,bx:float):int {
+            var_0:int = 0
+            return int var_0
+        }
+
+        fn main():float {
+            var_0:float = 25.00
+            var_1:fn = gfn_main_inline
+            var_2:float = 32.25
+            var_4:int = 1
+            var_5:int = 22
+            var_6:int = 25
+            var_7:float = call float inline(a:var_6,x:var_0)
+            var_8:float = call float mult(n:var_5,p:var_7)
+            var_3:int = call int sub(ax:var_4,bx:var_8)
+            var_9:float = var_3 int to float
+            var_10:float = MULT var_2, var_9
+            return float var_10
+        }
+
+        fn gfn_main_inline(a:int,x:float):float {
+            var_0:float = a int to float
+            var_1:float = MULT var_0, x
+            return float var_1
+        }
     )";
 
     const std::string input = R"(
@@ -436,17 +495,51 @@ TEST_F(HlIrTestCode, T9)
 TEST_F(HlIrTestCode, T10)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn main():void {
+            var_0:int = 36
+            var_1:fn = gfn_main_inline
+            var_2:fn = gfn_main_sum
+            var_5:int = 12
+            var_6:int = 14
+            var_4:int = call int inline(a:var_5,b:var_6,xb:var_0)
+            var_7:float = 5.22
+            var_9:int = 2
+            var_10:float = 3.26F
+            var_8:float = call float sum(x:var_9,y:var_10)
+            var_11:float = DIV var_7, var_8
+            var_12:float = var_4 int to float
+            var_13:float = PLUS var_12, var_11
+            var_3:float = var_13
+            var_14:string = "result %f\n"
+            call int printf(format:var_14,r:var_3)
+        }
 
+        fn gfn_main_inline(a:int,b:int,xb:int):int {
+            var_0:int = PLUS xb, b
+            var_1:int = MULT var_0, a
+            return int var_1
+        }
+
+        fn gfn_main_sum(x:int,y:float):float {
+            var_0:float = x int to float
+            var_1:float = PLUS var_0, y
+            return float var_1
+        }
     )";
 
     const std::string input = R"(
+        import std.output.printf
+
         fn main() {
             let xb: int = 36
             let inline:fn = (a: int, b: int):int -> (xb + b) * a
             let sum:fn = (x:int, y:float):float -> x + y
 
-            inline(a:12, b:14) + 5.22 / sum(x:2, y:3.26F)
+            let r:float = inline(a:12, b:14) + 5.22 / sum(x:2, y:3.26F)
+            // result 600.992
+            printf(format:"result %f\n", r:r)
         }
 
     )";
@@ -457,13 +550,57 @@ TEST_F(HlIrTestCode, T10)
 TEST_F(HlIrTestCode, T11)
 {
     const std::string output = R"(
+        fn mult(pp:float):float {
+            var_0:float = 1.3
+            return float var_0
+        }
 
+        fn xptc(z:float):int {
+            var_0:int = 2
+            return int var_0
+        }
 
+        fn main():void {
+            var_0:int = 36
+            var_1:fn = gfn_main_inline
+            var_2:fn = gfn_main_sum
+            var_3:float = 5.22
+            var_5:int = 12
+            var_6:int = 14
+            var_4:int = call int inline(a:var_5,b:var_6,xb:var_0)
+            var_8:int = 12
+            var_9:int = 87
+            var_7:float = call float sum(x:var_8,y:var_9)
+            var_10:float = var_4 int to float
+            var_11:float = MULT var_10, var_7
+            var_12:float = PLUS var_3, var_11
+            var_14:float = 12.00F
+            var_15:float = call float mult(pp:var_14)
+            var_13:int = call int xptc(z:var_15)
+            var_16:int = DIV var_13, var_0
+            var_17:float = var_16 int to float
+            var_18:float = MINUS var_12, var_17
+        }
+
+        fn gfn_main_inline(a:int,b:int,xb:int):int {
+            var_0:int = PLUS xb, b
+            var_1:int = MULT var_0, a
+            return int var_1
+        }
+
+        fn gfn_main_sum(x:int,y:int):float {
+            var_0:float = 2.25
+            var_1:float = x int to float
+            var_2:float = PLUS var_0, var_1
+            var_3:float = y int to float
+            var_4:float = PLUS var_2, var_3
+            return float var_4
+        }
     )";
 
     const std::string input = R"(
-        fn mult(pp:float): float {return 1.0 }
-        fn xptc(z:float): int {return 0 }
+        fn mult(pp:float): float {return 1.3 }
+        fn xptc(z:float): int {return 2 }
 
         fn main() {
             let xb: int = 36
@@ -481,8 +618,107 @@ TEST_F(HlIrTestCode, T11)
 TEST_F(HlIrTestCode, T18)
 {
     const std::string output = R"(
-
-
+        fn main():void {
+            var_1:boolean = true
+            var_2:int = 3
+            var_3:int = 1
+            var_4:boolean = cmp GT var_2, var_3
+            var_5:boolean = NOT var_4, var_1
+            var_0:boolean = var_5
+            var_7:int = 3
+            var_8:int = 1
+            var_9:boolean = cmp GT var_7, var_8
+            var_6:boolean = var_9
+            var_11:int = 3
+            var_12:int = 1
+            var_13:boolean = cmp NEQ var_11, var_12
+            var_10:boolean = var_13
+            var_15:int = 3
+            var_16:int = 1
+            var_17:boolean = cmp EQEQ var_15, var_16
+            var_14:boolean = var_17
+            var_19:int = 5
+            var_20:int = 3
+            var_21:boolean = cmp GT var_19, var_20
+            var_22:int = 25
+            var_23:int = 6
+            var_24:int = MULT var_22, var_23
+            var_25:boolean = var_24 int to boolean
+            var_26:boolean = cmp NEQ var_21, var_25
+            var_27:int = 5
+            var_28:boolean = var_27 int to boolean
+            var_29:boolean = cmp LT var_26, var_28
+            var_30:int = 25
+            var_31:int = 25
+            var_32:boolean = cmp EQEQ var_30, var_31
+            var_33:boolean = cmp NEQ var_29, var_32
+            var_18:boolean = var_33
+            var_35:int = 5
+            var_36:int = 3
+            var_37:boolean = cmp GT var_35, var_36
+            var_38:int = 25
+            var_39:int = 6
+            var_40:int = MULT var_38, var_39
+            var_41:boolean = var_40 int to boolean
+            var_42:boolean = cmp NEQ var_37, var_41
+            var_43:int = 5
+            var_44:boolean = var_43 int to boolean
+            var_45:boolean = cmp LT var_42, var_44
+            var_46:int = 25
+            var_47:int = 25
+            var_48:boolean = cmp EQEQ var_46, var_47
+            var_49:boolean = cmp NEQ var_45, var_48
+            var_50:int = 32
+            var_51:int = 2
+            var_52:int = DIV var_50, var_51
+            var_53:int = 5
+            var_54:boolean = cmp GT var_52, var_53
+            var_55:boolean = OR var_49, var_54
+            var_34:boolean = var_55
+            var_56:int = 12
+            var_57:float = 1.6
+            var_59:int = 5
+            var_60:int = 3
+            var_61:boolean = cmp GT var_59, var_60
+            var_62:int = 6
+            var_63:int = MULT var_56, var_62
+            var_64:boolean = var_63 int to boolean
+            var_65:boolean = cmp NEQ var_61, var_64
+            var_66:int = 5
+            var_67:boolean = var_66 int to boolean
+            var_68:boolean = cmp LT var_65, var_67
+            var_69:int = 25
+            var_70:float = var_69 int to float
+            var_71:boolean = cmp EQEQ var_70, var_57
+            var_72:boolean = cmp NEQ var_68, var_71
+            var_73:int = 32
+            var_74:int = 2
+            var_75:int = DIV var_73, var_74
+            var_76:boolean = cmp GT var_75, var_56
+            var_77:int = 2
+            var_78:int = 2
+            var_79:boolean = cmp GT var_77, var_78
+            var_80:boolean = AND var_76, var_79
+            var_81:boolean = OR var_72, var_80
+            var_58:boolean = var_81
+            var_83:int = 5
+            var_84:boolean = cmp GT var_83, var_56
+            var_85:int = 25
+            var_86:int = 6
+            var_87:int = MULT var_85, var_86
+            var_88:boolean = cmp LT var_87, var_56
+            var_89:int = 2
+            var_90:boolean = var_89 int to boolean
+            var_91:boolean = cmp NEQ var_88, var_90
+            var_92:boolean = cmp NEQ var_84, var_91
+            var_93:boolean = true
+            var_94:int = 25
+            var_95:int = 25
+            var_96:boolean = cmp EQEQ var_94, var_95
+            var_97:boolean = NOT var_96, var_93
+            var_98:boolean = cmp EQEQ var_92, var_97
+            var_82:boolean = var_98
+        }
     )";
 
     const std::string input = R"(
@@ -523,7 +759,26 @@ TEST_F(HlIrTestCode, T18)
 TEST_F(HlIrTestCode, T19)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn sum(func:fn(a:int,b:int):int,a:int,b:int):int {
+            var_0:int = call int func(a:a,b:b)
+            return int var_0
+        }
+
+        fn main():void {
+            var_0:fn = gfn_main_inline
+            var_1:string = "result:%u\n"
+            var_2:int = 2
+            var_3:int = 3
+            var_4:int = call int sum(func:var_0,a:var_2,b:var_3)
+            call int printf(format:var_1,r:var_4)
+        }
+
+        fn gfn_main_inline(a:int,b:int):int {
+            var_0:int = MULT a, b
+            return int var_0
+        }
     )";
 
     const std::string input = R"(
@@ -545,7 +800,24 @@ TEST_F(HlIrTestCode, T19)
 TEST_F(HlIrTestCode, T21)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn sum(func:fn(a:int,b:int):int,c:int):void {
+            var_1:int = 2
+            var_0:int = call int func(a:c,b:var_1)
+            var_2:string = "result: %u\n"
+            call int printf(format:var_2,r:var_0)
+        }
+
+        fn sub(a:int,b:int):int {
+            var_0:int = MINUS a, b
+            return int var_0
+        }
+
+        fn main():void {
+            var_0:int = 10
+            call void sum(func:sub,c:var_0)
+        }
     )";
 
     const std::string input = R"(
@@ -572,11 +844,39 @@ TEST_F(HlIrTestCode, T21)
 TEST_F(HlIrTestCode, T22)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn sum(func:fn(a:int):int,p:int):int {
+            var_0:fn = gfn_sum_inline
+            var_2:int = call int inline(x:p,p:p)
+            var_1:int = call int func(a:var_2)
+            return int var_1
+        }
+
+        fn gfn_sum_inline(x:int,p:int):int {
+            var_0:int = 2
+            var_1:int = MULT x, var_0
+            var_2:int = MULT var_1, p
+            return int var_2
+        }
+
+        fn main():void {
+            var_0:fn = gfn_main_inline
+            var_1:string = "result %u\n"
+            var_2:int = 3
+            var_3:int = call int sum(func:var_0,p:var_2)
+            call int printf(format:var_1,r:var_3)
+        }
+
+        fn gfn_main_inline(a:int):int {
+            var_0:int = 8
+            var_1:int = MULT a, var_0
+            return int var_1
+        }
     )";
 
     const std::string input = R"(
-        import std.output.printf
+                import std.output.printf
 
                 fn sum(func:fn (a:int):int, p:int):int {
                     let inline:fn = (x:int):int -> x * 2 * p
@@ -595,7 +895,26 @@ TEST_F(HlIrTestCode, T22)
 TEST_F(HlIrTestCode, T23)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn sum(func:fn(a:int):int,p:int):int {
+            var_0:int = call int func(a:p)
+            return int var_0
+        }
+
+        fn main():void {
+            var_0:fn = gfn_main_inline
+            var_1:string = "result %u\n"
+            var_2:int = 3
+            var_3:int = call int sum(func:var_0,p:var_2)
+            call int printf(format:var_1,r:var_3)
+        }
+
+        fn gfn_main_inline(a:int):int {
+            var_0:int = 8
+            var_1:int = MULT a, var_0
+            return int var_1
+        }
     )";
 
     const std::string input = R"(
@@ -618,7 +937,33 @@ TEST_F(HlIrTestCode, T23)
 TEST_F(HlIrTestCode, T24)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn sub(a:int):int {
+            var_0:int = 2
+            var_1:int = MINUS a, var_0
+            return int var_1
+        }
+
+        fn sum(p:int):int {
+            var_0:fn = gfn_sum_block
+            var_2:int = 3
+            var_1:int = call int block(x:var_2,p:p)
+            return int var_1
+        }
+
+        fn gfn_sum_block(x:int,p:int):int {
+            var_0:int = call int sub(a:p)
+            var_1:int = MULT var_0, x
+            return int var_1
+        }
+
+        fn main():void {
+            var_0:string = "resutl: %u\n"
+            var_1:int = 3
+            var_2:int = call int sum(p:var_1)
+            call int printf(format:var_0,r:var_2)
+        }
     )";
 
     const std::string input = R"(
@@ -648,7 +993,34 @@ TEST_F(HlIrTestCode, T24)
 TEST_F(HlIrTestCode, T25)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn sum(sub:fn(a:int):int,p:int):int {
+            var_0:fn = gfn_sum_block
+            var_2:int = 3
+            var_1:int = call int block(x:var_2,sub:sub,p:p)
+            return int var_1
+        }
+
+        fn gfn_sum_block(x:int,sub:fn(a:int):int,p:int):int {
+            var_0:int = call int sub(a:p)
+            var_1:int = MULT var_0, x
+            return int var_1
+        }
+
+        fn main():void {
+            var_0:fn = gfn_main_inline
+            var_1:string = "resutl: %u\n"
+            var_2:int = 3
+            var_3:int = call int sum(sub:var_0,p:var_2)
+            call int printf(format:var_1,r:var_3)
+        }
+
+        fn gfn_main_inline(a:int):int {
+            var_0:int = 2
+            var_1:int = MINUS a, var_0
+            return int var_1
+        }
     )";
 
     const std::string input = R"(
@@ -672,58 +1044,51 @@ TEST_F(HlIrTestCode, T25)
     runAnalysis(input, output);
 }
 
-TEST_F(HlIrTestCode, T26)
-{
-    const std::string output = R"(
-
-
-    )";
-
-    const std::string input = R"(
-
-
-    )";
-
-    runAnalysis(input, output);
-}
-
 TEST_F(HlIrTestCode, T27)
 {
     const std::string output = R"(
         extern C fn printf(format:ptr char, ...):int
 
         fn main():void {
-         let x:int = 3
-         jump while_cond_0
+            var_0:int = 3
+            jump while_cond_0
+
          block while_cond_0:
-         let var_0:int = 5
-         let var_1:boolean = cmp LT x, var_0
-         cond var_1 while_body_1, while_end_2
+            var_1:int = 5
+            var_2:boolean = cmp LT var_0, var_1
+            cond var_2 while_body_1, while_end_2
+
          block while_body_1:
-         let z:int = 3
-         let var_2:int = 3
-         let var_3:boolean = cmp NEQ z, var_2
-         cond var_3 then_4, else_5
+            var_3:int = 3
+            var_4:int = 3
+            var_5:boolean = cmp NEQ var_3, var_4
+            cond var_5 then_4, else_5
+
          block then_4:
-         let z:int = 55
-         jump end_3
+            var_6:int = 55
+            jump end_3
+
          block else_5:
-         let var_4:boolean = false
-         cond var_4 then_6, else_7
+            var_7:boolean = false
+            cond var_7 then_6, else_7
+
          block then_6:
-         let op:int = 1254
-         jump end_3
+            var_8:int = 1254
+            jump end_3
+
          block else_7:
-         let pp:int = 665
-         jump while_end_2
+            var_9:int = 665
+            jump while_end_2
+
          block end_3:
-         let var_5:int = 3
-         let var_6:int = MULT z, var_5
-         let n:int = var_6
-         jump while_cond_0
+            var_11:int = 3
+            var_12:int = MULT var_3, var_11
+            var_10:int = var_12
+            jump while_cond_0
+
          block while_end_2:
-         let var_7:string = "Finalizou\n"
-         call int printf(format:var_7)
+            var_13:string = "Finalizou\n"
+            call int printf(format:var_13)
         }
     )";
 
@@ -756,13 +1121,39 @@ TEST_F(HlIrTestCode, T27)
 TEST_F(HlIrTestCode, T28)
 {
     const std::string output = R"(
+        extern C fn printf(format:ptr char, ...):int
 
+        fn main():void {
+            var_0:int = 0
+            jump while_cond_0
 
+         block while_cond_0:
+            var_1:int = 10
+            var_2:boolean = cmp LT var_0, var_1
+            cond var_2 while_body_1, while_end_2
+
+         block while_body_1:
+            var_3:int = 1
+            var_4:int = PLUS var_0, var_3
+            var_0:int = var_4
+            var_5:string = "value if x: %i\n"
+            call int printf(format:var_5,r:var_0)
+            jump while_cond_0
+
+         block while_end_2:
+        }
     )";
 
     const std::string input = R"(
+        import std.output.printf
 
-
+        fn main() {
+            mut let x: int = 0
+            while x < 10 {
+                x = x + 1
+                printf(format:"value if x: %i\n", r:x)
+            }
+        }
     )";
 
     runAnalysis(input, output);

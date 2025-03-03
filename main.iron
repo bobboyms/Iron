@@ -1,12 +1,9 @@
 import std.output.printf
 
-        fn mult(n:int, p:float): float {return n * p}
-
-        fn sub(ax:int, bx:float): float { return ax - bx * 1.0 }
-
         fn main() {
-            let x: float = 25.00
-            let r:float = 32.25 * sub(ax: 1, bx: mult(n:22, p:x))
-            // result -17705.250000
-            printf(result:"result %f\n",r:r)
+            mut let x: int = 0
+            while x < 10 {
+                x = x + 1
+                printf(format:"value if x: %i\n", r:x)
+            }
         }
