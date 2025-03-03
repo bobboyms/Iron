@@ -189,8 +189,13 @@ set(SRC_COMMON
 
 set(TEST_SRC
         tests/test_semantic_analysis.cpp
-        tests/test_hlir_code.cpp
         tests/test_llvm_code.cpp
+        tests/test_hlir_common.cpp
+        tests/test_hlir_function.cpp
+        tests/test_hlir_expressions.cpp
+        tests/test_hlir_boolean.cpp
+        tests/test_hlir_function_arg.cpp
+        tests/test_hlir_loops.cpp
 )
 
 # Cópia do arquivo YAML para a pasta de build
