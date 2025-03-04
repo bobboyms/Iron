@@ -449,6 +449,11 @@ namespace hlir
         return functions;
     }
 
+    std::vector<std::shared_ptr<Struct>> Context::getStructs()
+    {
+        return structs_;
+    }
+
     void Context::addExternalFunction(const std::shared_ptr<Function> &function)
     {
         if (!function)
@@ -483,6 +488,16 @@ namespace hlir
         functions.push_back(function);
     }
 
+    void Context::addStruct(const std::shared_ptr<Struct> &struct_)
+    {
+        if (!struct_)
+        {
+            throw HLIRException("Context::addStruct failed: struct is null.");
+        }
+
+        structs_.push_back(struct_);
+    }
+
     std::shared_ptr<Function> Context::getFunctionByName(const std::string &funcName) const
     {
         for (auto function: functions)
@@ -490,6 +505,19 @@ namespace hlir
             if (function->getFunctionName() == funcName)
             {
                 return function;
+            }
+        }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<Struct> Context::getStructByName(const std::string &structName) const
+    {
+        for (auto struct_: structs_)
+        {
+            if (struct_->getName() == structName)
+            {
+                return struct_;
             }
         }
 

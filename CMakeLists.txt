@@ -186,6 +186,7 @@ set(SRC_COMMON
         src/hlir/scope/Utilities.cpp
         src/semantic/Structs.cpp
         src/semantic/SemanticHelpers.cpp
+        src/hlir/scope/Structs.cpp
 
 )
 

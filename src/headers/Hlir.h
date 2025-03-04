@@ -55,6 +55,8 @@ namespace hlir
 
     struct Arg;
 
+    class Struct;
+
 
     /**
      * @class Basic
@@ -1786,6 +1788,7 @@ namespace hlir
     {
     private:
     protected:
+        std::vector<std::shared_ptr<Struct>> structs_;
         std::vector<std::shared_ptr<Function>> functions;
 
     public:
@@ -1795,8 +1798,10 @@ namespace hlir
          */
         ~Context() override;
         void addFunction(const std::shared_ptr<Function> &function);
+        void addStruct(const std::shared_ptr<Struct> &struct_);
 
         std::shared_ptr<Function> getFunctionByName(const std::string &funcName) const;
+        std::shared_ptr<Struct> getStructByName(const std::string &structName) const;
 
         /**
          * @brief Produces a textual representation: "fn functionName(args):returnType".
@@ -1805,16 +1810,89 @@ namespace hlir
         std::string getText() override;
 
         std::vector<std::shared_ptr<Function>> getFunctions();
+        std::vector<std::shared_ptr<Struct>> getStructs();
         void addExternalFunction(const std::shared_ptr<Function> &function);
     };
 
-    class Utilities
-    {
-    public:
-        static std::string generateTextFromSignature(const std::shared_ptr<Signature> &signature);
-    };
+    /**
+ * @class Utilities
+ * @brief Utility class for helper functions.
+ *
+ * The Utilities class provides static methods for common tasks, such as generating
+ * textual representations from a signature. These helper functions facilitate data
+ * conversion and standardization in the HLIR.
+ */
+class Utilities
+{
+public:
+    /**
+     * @brief Generates text from a signature.
+     *
+     * This static method converts a Signature instance into a formatted textual
+     * representation, making it easier to display and debug.
+     *
+     * @param signature Shared pointer to the signature to be converted.
+     * @return A string containing the textual representation of the signature.
+     */
+    static std::string generateTextFromSignature(const std::shared_ptr<Signature> &signature);
+};
 
+/**
+ * @class Struct
+ * @brief Represents a data structure in the HLIR.
+ *
+ * The Struct class encapsulates the concept of a structure, containing its name
+ * and associated variables. It provides methods to obtain the textual representation,
+ * search for variables by name, and access its components.
+ */
+class Struct final : public Basic
+{
+private:
+    std::string name;                               ///< The name of the structure.
+    std::vector<std::shared_ptr<Variable>> variables; ///< List of variables contained in the structure.
+public:
+    /**
+     * @brief Constructs a new Struct instance.
+     *
+     * @param name The name of the structure.
+     * @param variables A vector of variables that belong to the structure.
+     */
+    Struct(const std::string &name, const std::vector<std::shared_ptr<Variable>> &variables);
 
+    /**
+     * @brief Produces a textual representation of the structure.
+     *
+     * Returns a string that describes the structure, typically including the name
+     * and the list of declared variables.
+     *
+     * @return A string containing the description of the structure.
+     */
+    std::string getText() override;
+
+    /**
+     * @brief Retrieves the name of the structure.
+     *
+     * @return A string with the name of the structure.
+     */
+    std::string getName();
+
+    /**
+     * @brief Gets all variables of the structure.
+     *
+     * @return A vector containing shared pointers to the structure's variables.
+     */
+    std::vector<std::shared_ptr<Variable>> getVariables();
+
+    /**
+     * @brief Searches for a variable by name in the structure.
+     *
+     * Searches and returns a variable with the specified name, if it exists.
+     *
+     * @param varName The name of the variable to search for.
+     * @return Shared pointer to the found variable or nullptr if not found.
+     */
+    std::shared_ptr<Variable> findVarByName(const std::string &varName);
+};
 
 
 } // namespace hlir
