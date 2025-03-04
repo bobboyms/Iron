@@ -1,288 +1,358 @@
 // #include <string>
+// #include <regex>
 // #include "../headers/SemanticAnalysis.h"
 //
 // namespace iron
 // {
-//
-//     void SemanticAnalysis::
-//     visitFormatStatement(IronParser::FormatStatementContext *ctx)
+//     /**
+//      * @brief Processes a format statement (printf-style string formatting)
+//      *
+//      * Analyzes a format string, extracts format specifiers, and validates that
+//      * the provided arguments match the types required by the specifiers.
+//      *
+//      * @param ctx The format statement context from the parser
+//      */
+//     void SemanticAnalysis::visitFormatStatement(IronParser::FormatStatementContext *ctx)
 //     {
-//         const uint line = ctx->getStart()->getLine();
-//         const uint col = ctx->getStart()->getCharPositionInLine();
-//         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+//         const auto lineNumber = ctx->getStart()->getLine();
+//         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
+//         auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 //
-//         if (const auto specifiers = parseFormatSpecifiers(ctx->format->getText(), line, caretLine, codeLine);
-//             !specifiers.empty())
+//         // Parse format string and extract specifiers
+//         const auto specifiers = parseFormatSpecifiers(
+//             ctx->format->getText(),
+//             lineNumber,
+//             caretLine,
+//             codeLine
+//         );
+//
+//         // If we found specifiers, validate the format arguments
+//         if (!specifiers.empty() && ctx->formatArguments())
 //         {
 //             visitFormatArguments(ctx->formatArguments(), specifiers);
 //         }
 //     }
 //
-//     void SemanticAnalysis::visitFormatArguments(IronParser::FormatArgumentsContext *ctx,
-//                                                 const std::vector<std::pair<std::string, int>> &specifiers)
+//     /**
+//      * @brief Processes the arguments of a format statement
+//      *
+//      * Verifies that the number of arguments matches the number of format specifiers
+//      * and that each argument's type matches its corresponding specifier.
+//      *
+//      * @param ctx The format arguments context from the parser
+//      * @param specifiers The parsed specifiers from the format string
+//      */
+//     void SemanticAnalysis::visitFormatArguments(
+//         IronParser::FormatArgumentsContext *ctx,
+//         const std::vector<std::pair<std::string, int>> &specifiers)
 //     {
+//         const auto lineNumber = ctx->getStart()->getLine();
+//         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
+//         auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 //
-//         const uint line = ctx->getStart()->getLine();
-//         const uint col = ctx->getStart()->getCharPositionInLine();
-//         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
-//
-//         auto argSize = 0;
-//         for (auto const child: ctx->children)
+//         // Count the number of format arguments
+//         size_t argumentCount = 0;
+//         for (const auto& child : ctx->children)
 //         {
-//             if (const auto specifierArg = dynamic_cast<IronParser::FormatArgumentContext *>(child))
+//             if (dynamic_cast<IronParser::FormatArgumentContext*>(child))
 //             {
-//                 argSize++;
+//                 argumentCount++;
 //             }
 //         }
 //
-//         if (argSize != specifiers.size())
+//         // Verify argument count matches specifier count
+//         if (argumentCount != specifiers.size())
 //         {
 //             throw ArgumentCountMismatchException(util::format(
-//                     "the number of arguments must have the same number of specifiers\n"
+//                 "Format error: Expected {} arguments to match {} format specifiers.\n"
+//                 "Line: {}, Scope: {}\n\n"
+//                 "{}\n"
+//                 "{}\n",
+//                 color::colorText(std::to_string(specifiers.size()), color::BOLD_GREEN),
+//                 color::colorText(std::to_string(argumentCount), color::BOLD_BLUE),
+//                 color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                 codeLine, caretLine));
+//         }
+//
+//         // Process each format argument
+//         size_t specifierIndex = 0;
+//         for (const auto& child : ctx->children)
+//         {
+//             if (auto formatArgument = dynamic_cast<IronParser::FormatArgumentContext*>(child))
+//             {
+//                 const auto& specifier = specifiers[specifierIndex++];
+//                 visitFormatArgument(formatArgument, specifier);
+//             }
+//         }
+//     }
+//
+//     /**
+//      * @brief Processes a single format argument
+//      *
+//      * Validates that the argument's type matches the format specifier's required type.
+//      * Handles different kinds of arguments (literals, variables, expressions, function calls).
+//      *
+//      * @param ctx The format argument context from the parser
+//      * @param specifier The format specifier this argument corresponds to
+//      */
+//     void SemanticAnalysis::visitFormatArgument(
+//         IronParser::FormatArgumentContext *ctx,
+//         const std::pair<std::string, int> &specifier)
+//     {
+//         const auto lineNumber = ctx->getStart()->getLine();
+//         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
+//         auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+//
+//         // Unpack the specifier information
+//         const auto& [specifierString, specifierType] = specifier;
+//
+//         // Format specifier type for display
+//         const std::string displaySpecifierType =
+//             specifierType == tokenMap::REAL_NUMBER
+//             ? "Float / Double"
+//             : tokenMap::getTokenText(specifierType);
+//
+//         // Handle literal value argument
+//         if (ctx->dataFormat())
+//         {
+//             const auto literalValue = ctx->dataFormat()->getText();
+//             auto valueType = tokenMap::determineType(literalValue);
+//
+//             if (valueType != specifierType)
+//             {
+//                 const std::string displayValueType =
+//                     valueType == tokenMap::REAL_NUMBER
+//                     ? "Float / Double"
+//                     : tokenMap::getTokenText(valueType);
+//
+//                 throw TypeMismatchException(util::format(
+//                     "Format error: Specifier '{}' requires type '{}', but literal value '{}' has type '{}'.\n"
 //                     "Line: {}, Scope: {}\n\n"
 //                     "{}\n"
 //                     "{}\n",
-//                     color::colorText(std::to_string(line), color::YELLOW),
-//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
-//         }
-//
-//         size_t specIndex = 0;
-//         for (auto *child: ctx->children)
-//         {
-//             // Verifica se é de fato um nó do tipo FormatArgumentContext
-//             if (const auto specifierArg = dynamic_cast<IronParser::FormatArgumentContext *>(child))
-//             {
-//                 // Pegamos o specifier correspondente a este argumento
-//                 const auto &specifier = specifiers[specIndex++];
-//                 visitFormatArgument(specifierArg, specifier);
+//                     color::colorText(specifierString, color::BOLD_GREEN),
+//                     color::colorText(displaySpecifierType, color::BOLD_GREEN),
+//                     color::colorText(literalValue, color::BOLD_BLUE),
+//                     color::colorText(displayValueType, color::BOLD_BLUE),
+//                     color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                     codeLine, caretLine));
 //             }
 //         }
-//     }
-//
-//
-//     void SemanticAnalysis::visitFormatArgument(IronParser::FormatArgumentContext *ctx,
-//                                                const std::pair<std::string, int> &specifier)
-//     {
-//         const uint line = ctx->getStart()->getLine();
-//         const uint col = ctx->getStart()->getCharPositionInLine();
-//         auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
-//
-//         if (ctx->dataFormat())
+//         // Handle variable argument
+//         else if (ctx->varName)
 //         {
-//             const auto value = ctx->dataFormat()->getText();
-//             auto type = tokenMap::determineType(value);
-//
-//             if (auto [spec, specifierType] = specifier; type != specifierType)
-//             {
-//                 auto strSpecifierType = specifierType == tokenMap::REAL_NUMBER ? "Float / Double"
-//                                                                                : tokenMap::getTokenText(specifierType);
-//
-//                 auto strExprType = type == tokenMap::REAL_NUMBER ? "Float / Double" : tokenMap::getTokenText(type);
-//
-//                 throw TypeMismatchException(util::format(
-//                         "Specifier {} has a type {}, but the value {} type is {}\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(spec, color::BOLD_GREEN),
-//                         color::colorText(strSpecifierType, color::BOLD_GREEN),
-//                         color::colorText(value, color::BOLD_BLUE),
-//                         color::colorText(tokenMap::getTokenText(type), color::BOLD_BLUE),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
-//             }
-//         }
-//
-//         if (ctx->varName)
-//         {
-//
-//
-//             const auto varName = ctx->varName->getText();
+//             const auto variableName = ctx->varName->getText();
 //             const auto currentFunction = getCurrentFunction();
-//             const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+//             const auto variable = currentFunction->findVarAllScopesAndArg(variableName);
+//
+//             // Verify variable exists
 //             if (!variable)
 //             {
 //                 throw VariableNotFoundException(util::format(
-//                         "Variable '{}' not found.\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(varName, color::BOLD_GREEN),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+//                     "Variable '{}' not found in format argument.\n"
+//                     "Line: {}, Scope: {}\n\n"
+//                     "{}\n"
+//                     "{}\n",
+//                     color::colorText(variableName, color::BOLD_GREEN),
+//                     color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                     codeLine, caretLine));
 //             }
 //
-//             auto varType = variable->type;
-//             if (varType == tokenMap::TYPE_FLOAT || varType == tokenMap::TYPE_DOUBLE)
+//             // Handle floating point type normalization
+//             auto variableType = variable->type;
+//             if (variableType == tokenMap::TYPE_FLOAT || variableType == tokenMap::TYPE_DOUBLE)
 //             {
-//                 varType = tokenMap::REAL_NUMBER;
+//                 variableType = tokenMap::REAL_NUMBER;
 //             }
 //
-//             if (auto [spec, specifierType] = specifier; variable->type != specifierType)
+//             // Verify type compatibility
+//             if (variableType != specifierType)
 //             {
-//
-//                 auto strSpecifierType = specifierType == tokenMap::REAL_NUMBER ? "Float / Double"
-//                                                                                : tokenMap::getTokenText(specifierType);
-//                 auto strExprType =
-//                         varType == tokenMap::REAL_NUMBER ? "Float / Double" : tokenMap::getTokenText(varType);
-//
+//                 const std::string displayVariableType =
+//                     variableType == tokenMap::REAL_NUMBER
+//                     ? "Float / Double"
+//                     : tokenMap::getTokenText(variableType);
 //
 //                 throw TypeMismatchException(util::format(
-//                         "Specifier {} has a type {}, but the variable {} type is {}\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(spec, color::BOLD_GREEN),
-//                         color::colorText(tokenMap::getTokenText(specifierType), color::BOLD_GREEN),
-//                         color::colorText(varName, color::BOLD_BLUE),
-//                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+//                     "Format error: Specifier '{}' requires type '{}', but variable '{}' has type '{}'.\n"
+//                     "Line: {}, Scope: {}\n\n"
+//                     "{}\n"
+//                     "{}\n",
+//                     color::colorText(specifierString, color::BOLD_GREEN),
+//                     color::colorText(displaySpecifierType, color::BOLD_GREEN),
+//                     color::colorText(variableName, color::BOLD_BLUE),
+//                     color::colorText(displayVariableType, color::BOLD_BLUE),
+//                     color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                     codeLine, caretLine));
 //             }
 //         }
-//
-//         if (ctx->expr())
+//         // Handle expression argument
+//         else if (ctx->expr())
 //         {
-//             //.
-//             auto [_, exprType] = visitExpr(ctx->expr());
+//             // Evaluate the expression's type
+//             auto [expressionName, expressionType] = visitExpr(ctx->expr());
 //
-//             if (exprType == tokenMap::TYPE_FLOAT || exprType == tokenMap::TYPE_DOUBLE)
+//             // Handle floating point type normalization
+//             if (expressionType == tokenMap::TYPE_FLOAT || expressionType == tokenMap::TYPE_DOUBLE)
 //             {
-//                 exprType = tokenMap::REAL_NUMBER;
+//                 expressionType = tokenMap::REAL_NUMBER;
 //             }
 //
-//             if (auto [spec, specifierType] = specifier; exprType != specifierType)
+//             // Verify type compatibility
+//             if (expressionType != specifierType)
 //             {
-//                 auto strSpecifierType = specifierType == tokenMap::REAL_NUMBER ? "Float / Double"
-//                                                                                : tokenMap::getTokenText(specifierType);
-//                 auto strExprType =
-//                         exprType == tokenMap::REAL_NUMBER ? "Float / Double" : tokenMap::getTokenText(exprType);
+//                 const std::string displayExpressionType =
+//                     expressionType == tokenMap::REAL_NUMBER
+//                     ? "Float / Double"
+//                     : tokenMap::getTokenText(expressionType);
 //
 //                 throw TypeMismatchException(util::format(
-//                         "Specifier {} has a type {}, but is incompatible with result of the expression type {}\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(spec, color::BOLD_GREEN),
-//                         color::colorText(strSpecifierType, color::BOLD_GREEN),
-//                         color::colorText(strExprType, color::BOLD_BLUE),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+//                     "Format error: Specifier '{}' requires type '{}', but expression result has type '{}'.\n"
+//                     "Line: {}, Scope: {}\n\n"
+//                     "{}\n"
+//                     "{}\n",
+//                     color::colorText(specifierString, color::BOLD_GREEN),
+//                     color::colorText(displaySpecifierType, color::BOLD_GREEN),
+//                     color::colorText(displayExpressionType, color::BOLD_BLUE),
+//                     color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                     codeLine, caretLine));
 //             }
 //         }
-//
-//         if (ctx->functionCall())
+//         // Handle function call argument
+//         else if (ctx->functionCall())
 //         {
-//             const auto functionCallName = ctx->functionCall()->functionName->getText();
-//             const auto calledFunction = scopeManager->getFunctionDeclarationByName(functionCallName);
-//             if (!calledFunction)
+//             const auto functionName = ctx->functionCall()->functionName->getText();
+//             const auto function = verifyFunctionExists(functionName, lineNumber, columnPosition);
+//
+//             // Handle floating point type normalization
+//             auto returnType = function->getReturnType();
+//             if (returnType == tokenMap::TYPE_FLOAT || returnType == tokenMap::TYPE_DOUBLE)
 //             {
-//                 throw FunctionNotFoundException(util::format(
-//                         "Function {} not found.\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(functionCallName, color::BOLD_GREEN),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+//                 returnType = tokenMap::REAL_NUMBER;
 //             }
 //
-//             auto funcReturnType = calledFunction->getReturnType();
-//             if (funcReturnType == tokenMap::TYPE_FLOAT || funcReturnType == tokenMap::TYPE_DOUBLE)
+//             // Verify type compatibility
+//             if (returnType != specifierType)
 //             {
-//                 funcReturnType = tokenMap::REAL_NUMBER;
-//             }
-//
-//             if (auto [spec, specifierType] = specifier; funcReturnType != specifierType)
-//             {
-//                 auto strSpecifierType = specifierType == tokenMap::REAL_NUMBER ? "Float / Double"
-//                                                                                : tokenMap::getTokenText(specifierType);
 //                 throw TypeMismatchException(util::format(
-//                         "Specifier {} has a type {}, but is incompatible with result of the function {} with return "
-//                         "type {}\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(spec, color::BOLD_GREEN),
-//                         color::colorText(strSpecifierType, color::BOLD_GREEN),
-//                         color::colorText(functionCallName, color::BOLD_BLUE),
-//                         color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()), color::BOLD_BLUE),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+//                     "Format error: Specifier '{}' requires type '{}', but function '{}' returns type '{}'.\n"
+//                     "Line: {}, Scope: {}\n\n"
+//                     "{}\n"
+//                     "{}\n",
+//                     color::colorText(specifierString, color::BOLD_GREEN),
+//                     color::colorText(displaySpecifierType, color::BOLD_GREEN),
+//                     color::colorText(functionName, color::BOLD_BLUE),
+//                     color::colorText(tokenMap::getTokenText(function->getReturnType()), color::BOLD_BLUE),
+//                     color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                     codeLine, caretLine));
 //             }
+//
+//             // Process the function call
+//             visitFunctionCall(ctx->functionCall());
 //         }
 //     }
 //
-//
-//     // Função que analisa a string de formatação e retorna os especificadores encontrados
-//     std::vector<std::pair<std::string, int>> SemanticAnalysis::parseFormatSpecifiers(const std::string &format,
-//                                                                                      uint line,
-//                                                                                      const std::string &caretLine,
-//                                                                                      const std::string &codeLine) const
+//     /**
+//      * @brief Parses a format string to extract format specifiers
+//      *
+//      * Uses a regular expression to identify format specifiers in a printf-style
+//      * format string and determine the expected type for each specifier.
+//      *
+//      * @param formatString The format string to parse
+//      * @param lineNumber Line number for error reporting
+//      * @param caretLine Caret line for error reporting
+//      * @param codeLine Source code line for error reporting
+//      * @return std::vector<std::pair<std::string, int>> List of specifiers and their types
+//      */
+//     std::vector<std::pair<std::string, int>> SemanticAnalysis::parseFormatSpecifiers(
+//         const std::string &formatString,
+//         uint lineNumber,
+//         const std::string &caretLine,
+//         const std::string &codeLine) const
 //     {
-//
 //         std::vector<std::pair<std::string, int>> specifiers;
 //
-//         // Expressão regular para identificar um especificador printf
-//         // Explicação rápida:
-//         // %                             -> inicia o especificador
-//         // ([-+0 #]*)?                  -> flags opcionais
-//         // (\d+)?                       -> largura (width) opcional
-//         // (\.\d+)?                     -> precisão opcional (ponto seguido de dígitos)
-//         // (hh|h|ll|l|L)?               -> modificador de comprimento (length) opcional
-//         // ([diufFeEgGxXoscpaA%])        -> conversor obrigatório (o tipo)
-//         std::regex pattern(R"(%([-+0 #]*)?(\d+)?(\.\d+)?(hh|h|ll|l|L)?([diufFeEgGxXoscpaA%]))");
-//         auto begin = std::sregex_iterator(format.begin(), format.end(), pattern);
-//         auto end = std::sregex_iterator();
+//         // Regular expression for printf-style format specifiers
+//         // %                             -> specifier start
+//         // ([-+0 #]*)?                  -> optional flags
+//         // (\d+)?                       -> optional width
+//         // (\.\d+)?                     -> optional precision
+//         // (hh|h|ll|l|L)?               -> optional length modifier
+//         // ([diufFeEgGxXoscpaA%])       -> required type converter
+//         std::regex specifierPattern(R"(%([-+0 #]*)?(\d+)?(\.\d+)?(hh|h|ll|l|L)?([diufFeEgGxXoscpaA%]))");
 //
-//         for (auto it = begin; it != end; ++it)
+//         auto matchBegin = std::sregex_iterator(formatString.begin(), formatString.end(), specifierPattern);
+//         auto matchEnd = std::sregex_iterator();
+//
+//         for (auto it = matchBegin; it != matchEnd; ++it)
 //         {
 //             const std::smatch &match = *it;
-//             // match.str(0) contém o especificador completo, por exemplo, "%5.2f"
-//             std::string fullSpec = match.str(0);
-//             // O grupo 5 contém o conversor, ou seja, o caractere que indica o tipo
-//             std::string conv = match.str(5);
+//             std::string fullSpecifier = match.str(0);  // Complete specifier (e.g., "%5.2f")
+//             std::string typeConverter = match.str(5);  // Type character (e.g., "d", "f", "s")
 //
-//             // Determine o tipo com base no conversor
-//             int type;
-//             if (conv == "d" || conv == "i" || conv == "u" || conv == "x" || conv == "X" || conv == "o")
+//             // Determine type based on the converter character
+//             int specifierType;
+//             if (typeConverter == "d" || typeConverter == "i" ||
+//                 typeConverter == "u" || typeConverter == "x" ||
+//                 typeConverter == "X" || typeConverter == "o")
 //             {
-//                 type = tokenMap::TYPE_INT;
+//                 specifierType = tokenMap::TYPE_INT;
 //             }
-//             else if (conv == "f" || conv == "F" || conv == "e" || conv == "E" || conv == "g" || conv == "G")
+//             else if (typeConverter == "f" || typeConverter == "F" ||
+//                     typeConverter == "e" || typeConverter == "E" ||
+//                     typeConverter == "g" || typeConverter == "G")
 //             {
-//                 type = tokenMap::REAL_NUMBER;
+//                 specifierType = tokenMap::REAL_NUMBER;
 //             }
-//             else if (conv == "c")
+//             else if (typeConverter == "c")
 //             {
-//                 type = tokenMap::TYPE_CHAR;
+//                 specifierType = tokenMap::TYPE_CHAR;
 //             }
-//             else if (conv == "s")
+//             else if (typeConverter == "s")
 //             {
-//                 type = tokenMap::TYPE_STRING;
+//                 specifierType = tokenMap::TYPE_STRING;
+//             }
+//             else if (typeConverter == "%")
+//             {
+//                 // %% is a literal % - skip this as it doesn't need an argument
+//                 continue;
 //             }
 //             else
 //             {
 //                 throw UnrecognizedIdentifierException(util::format(
-//                         "Specifier {} has not been recognized.\n"
-//                         "Line: {}, Scope: {}\n\n"
-//                         "{}\n"
-//                         "{}\n",
-//                         color::colorText(fullSpec, color::BOLD_GREEN),
-//                         color::colorText(std::to_string(line), color::YELLOW),
-//                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+//                     "Unrecognized format specifier: '{}'.\n"
+//                     "Line: {}, Scope: {}\n\n"
+//                     "{}\n"
+//                     "{}\n\n"
+//                     "Hint: Valid type specifiers are d, i, u, f, F, e, E, g, G, x, X, o, c, s.",
+//                     color::colorText(fullSpecifier, color::BOLD_GREEN),
+//                     color::colorText(std::to_string(lineNumber), color::YELLOW),
+//                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+//                     codeLine, caretLine));
 //             }
 //
-//             specifiers.emplace_back(fullSpec, type);
+//             specifiers.emplace_back(fullSpecifier, specifierType);
 //         }
 //
 //         return specifiers;
 //     }
 //
-//     // Função que exibe os identificadores (conversion specifiers),
-//     // o tipo de dado que cada um aceita e exemplos de uso.
+//     /**
+//      * @brief Provides help information about format specifiers
+//      *
+//      * Shows information about available format specifiers, their corresponding
+//      * data types, and usage examples.
+//      */
 //     void SemanticAnalysis::showConversionSpecifiersHelp()
 //     {
+//         // This could be implemented to show help about format specifiers
+//         // Currently not used but kept for potential future implementation
 //     }
 //
 // } // namespace iron

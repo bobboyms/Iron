@@ -1,12 +1,24 @@
-//
-// Created by Thiago Rodrigues on 02/03/25.
-//
+/**
+ * @file Statements.cpp
+ * @brief Implementation of the Statement class and related functionality
+ * @author Thiago Rodrigues
+ * @date 2025-03-02
+ */
 #include "../../headers/Hlir.h"
 #include "../../headers/Utils.h"
 
 namespace hlir
 {
-Statement::Statement() = default;
+    /**
+     * @brief Represents a statement in the HLIR
+     * 
+     * The Statement class is responsible for managing a list of statements
+     * and providing operations for working with them.
+     */
+    Statement::Statement() : varId(0), logged(false) 
+    {
+    }
+    
     Statement::~Statement() = default;
 
     std::shared_ptr<Statement> Statement::set(ValidStatement statement)
@@ -67,19 +79,27 @@ Statement::Statement() = default;
     }
 
 
+    /**
+     * @brief Inserts statements at a specific position in the statement list
+     * 
+     * @param stmts Statements to insert
+     * @param pos Position at which to insert the statements
+     */
     void Statement::insertStatementsAt(const std::vector<ValidStatement> &stmts, size_t pos)
     {
-        // Garante que a posição não exceda o tamanho atual da lista
-        if (pos > statementList.size())
-        {
-            pos = statementList.size();
+        // Ensure the position doesn't exceed the current list size
+        pos = std::min(pos, statementList.size());
+        
+        if (logged) {
+            util::printf(">> Inserting {} statements at position {} (current size: {})\n", 
+                        stmts.size(), pos, statementList.size());
         }
-        util::printf(">> Inserting {} statements at position {} (current size: {})\n", stmts.size(), pos,
-                     statementList.size());
 
         statementList.insert(statementList.begin() + pos, stmts.begin(), stmts.end());
 
-        util::printf(">> New size of statementList after insertion: {}\n", statementList.size());
+        if (logged) {
+            util::printf(">> New size of statementList after insertion: {}\n", statementList.size());
+        }
     }
 
 

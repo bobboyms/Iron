@@ -2,6 +2,13 @@
 
 namespace hlir {
 
+    /**
+     * @brief RAII class for managing scope entry and exit
+     * 
+     * ScopeGuard automatically manages scope lifetime by calling enterLocalScope
+     * on construction and exitLocalScope on destruction, ensuring proper cleanup
+     * even in the presence of exceptions.
+     */
     ScopeGuard::ScopeGuard(std::shared_ptr<Function> func, const std::shared_ptr<Statement> &statement)
         : function(std::move(func))
     {

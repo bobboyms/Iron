@@ -2,54 +2,54 @@
 
 namespace hlir
 {
-
+    /**
+     * @brief Sets the value and type of this Value object
+     * 
+     * @param newValue The data to store
+     * @param newValueType The type of the data
+     * @return std::shared_ptr<Value> Pointer to this object for method chaining
+     * @throws HLIRException If validation fails or operation cannot be completed
+     */
     std::shared_ptr<Value> Value::set(const Data &newValue, const std::shared_ptr<Type> &newValueType)
     {
-        if (!newValueType)
-        {
+        // Validate parameters
+        if (!newValueType) {
             throw HLIRException("Value::set failed: newValueType is null.");
         }
 
-        if (newValueType->getType() == tokenMap::VOID)
-        {
+        if (newValueType->getType() == tokenMap::VOID) {
             throw HLIRException("Value::set failed: The value type cannot be void.");
         }
 
-        const std::shared_ptr<Parent> parentPtr = shared_from_this();
-        if (!parentPtr)
-        {
-            throw HLIRException("Value::set failed: shared_from_this() returned null.");
-        }
-
-        newValueType->setParent(parentPtr);
-
-        if (!newValueType->getType())
-        {
+        if (!newValueType->getType()) {
             throw HLIRException("Value::set failed: newValueType's type is null.");
         }
 
-        valueType = newValueType;
-        value = newValue;
+        try {
+            const std::shared_ptr<Parent> parentPtr = shared_from_this();
+            
+            // Set properties
+            valueType = newValueType;
+            value = newValue;
+            
+            // Set parent relationships
+            newValueType->setParent(parentPtr);
 
-        // Verifica se value contém uma Function e estabelece seu pai
-        if (std::holds_alternative<std::shared_ptr<Function>>(newValue))
-        {
-            const auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
-            if (!funcPtr)
-            {
-                throw HLIRException("Value::set failed: Function pointer in value is null.");
+            // Handle function values specially
+            if (std::holds_alternative<std::shared_ptr<Function>>(newValue)) {
+                const auto funcPtr = std::get<std::shared_ptr<Function>>(newValue);
+                if (!funcPtr) {
+                    throw HLIRException("Value::set failed: Function pointer in value is null.");
+                }
+                funcPtr->setParent(parentPtr);
             }
-            funcPtr->setParent(parentPtr);
-        }
 
-        // Realiza o cast para std::shared_ptr<Value>
-        auto assignPtr = std::dynamic_pointer_cast<Value>(parentPtr);
-        if (!assignPtr)
-        {
-            throw HLIRException("Value::set failed: Unable to cast Parent to Value.");
+            // Return self for chaining
+            return std::dynamic_pointer_cast<Value>(parentPtr);
         }
-
-        return assignPtr;
+        catch (const std::bad_weak_ptr& e) {
+            throw HLIRException("Value::set failed: Object not managed by shared_ptr, cannot use shared_from_this()");
+        }
     }
 
     Value::Value() = default;

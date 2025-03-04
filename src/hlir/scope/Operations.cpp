@@ -114,44 +114,51 @@ namespace hlir
      *
      * @throws HLIRException If `varLeft` or `varRight` is nullptr.
      */
+    /**
+     * @brief Configure a binary operation with left and right operands
+     * 
+     * @param varLeft The left operand variable
+     * @param varRight The right operand variable
+     * @return std::shared_ptr<BinaryOperation> Pointer to this object for method chaining
+     * @throws HLIRException If parameters are invalid or operation fails
+     */
     std::shared_ptr<BinaryOperation> BinaryOperation::set(const std::shared_ptr<Variable> &varLeft,
-                                                          const std::shared_ptr<Variable> &varRight)
+                                                         const std::shared_ptr<Variable> &varRight)
     {
-        if (!varLeft)
-        {
-            throw HLIRException("BinaryOperation::set failed: newVarLeft is null.");
+        // Validate parameters
+        if (!varLeft) {
+            throw HLIRException("BinaryOperation::set failed: Left operand is null.");
         }
 
-        if (!varRight)
-        {
-            throw HLIRException("BinaryOperation::set failed: newVarRight is null.");
+        if (!varRight) {
+            throw HLIRException("BinaryOperation::set failed: Right operand is null.");
         }
 
-        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType())
-        {
-            throw HLIRException("BinaryOperation::set failed: The variables must be of the same type.");
-
+        if (varLeft->getVarType()->getType() != varRight->getVarType()->getType()) {
+            throw HLIRException("BinaryOperation::set failed: Operands must be of the same type.");
         }
 
-        std::shared_ptr<Parent> parentPtr = shared_from_this();
-        if (!parentPtr)
-        {
-            throw HLIRException("BinaryOperation::set  failed: shared_from_this() returned null.");
+        try {
+            std::shared_ptr<Parent> parentPtr = shared_from_this();
+            
+            // Set the operands
+            this->varLeft = varLeft;
+            this->varRight = varRight;
+            
+            // Set parent relationships
+            varLeft->setParent(parentPtr);
+            varRight->setParent(parentPtr);
+
+            // Return self for chaining
+            auto selfPtr = std::dynamic_pointer_cast<BinaryOperation>(parentPtr);
+            if (!selfPtr) {
+                throw HLIRException("BinaryOperation::set failed: Unable to cast to BinaryOperation.");
+            }
+            return selfPtr;
         }
-
-        varLeft->setParent(parentPtr);
-        varRight->setParent(parentPtr);
-
-        this->varLeft = varLeft;
-        this->varRight = varRight;
-
-        // Realiza o cast para std::shared_ptr<Minus>
-        auto assignPtr = std::dynamic_pointer_cast<BinaryOperation>(parentPtr);
-        if (!assignPtr)
-        {
-            throw HLIRException("BinaryOperation::set  failed: Unable to cast Parent to Minus.");
+        catch (const std::bad_weak_ptr& e) {
+            throw HLIRException("BinaryOperation::set failed: Object not managed by shared_ptr.");
         }
-        return assignPtr;
     }
 
     /**
@@ -229,6 +236,9 @@ namespace hlir
         return sb.str();
     }
 
+    /**
+     * @brief Represents a logical NOT operation
+     */
     _NOT::_NOT() = default;
 
     _NOT::~_NOT() = default;
