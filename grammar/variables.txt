@@ -1,3 +1,16 @@
-fn main():int {
-            return
-        }
+import std.output.printf
+
+options Message {
+    None,
+    Result(r:string)
+}
+
+struct Pessoa {
+    mut name:string,
+    idade:int
+}
+
+fn main() {
+    let pessoa:Pessoa = {name:"Thiago", idade:2}
+    pessoa.name.casa.bola = "Novo nome"
+}

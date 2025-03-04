@@ -32,6 +32,18 @@ public:
   virtual void enterContinueStatement(IronParser::ContinueStatementContext *ctx) = 0;
   virtual void exitContinueStatement(IronParser::ContinueStatementContext *ctx) = 0;
 
+  virtual void enterStructStatement(IronParser::StructStatementContext *ctx) = 0;
+  virtual void exitStructStatement(IronParser::StructStatementContext *ctx) = 0;
+
+  virtual void enterStructBody(IronParser::StructBodyContext *ctx) = 0;
+  virtual void exitStructBody(IronParser::StructBodyContext *ctx) = 0;
+
+  virtual void enterOptionsStatement(IronParser::OptionsStatementContext *ctx) = 0;
+  virtual void exitOptionsStatement(IronParser::OptionsStatementContext *ctx) = 0;
+
+  virtual void enterOptionsBody(IronParser::OptionsBodyContext *ctx) = 0;
+  virtual void exitOptionsBody(IronParser::OptionsBodyContext *ctx) = 0;
+
   virtual void enterReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
   virtual void exitReturnStatement(IronParser::ReturnStatementContext *ctx) = 0;
 
@@ -106,6 +118,12 @@ public:
 
   virtual void enterAssignment(IronParser::AssignmentContext *ctx) = 0;
   virtual void exitAssignment(IronParser::AssignmentContext *ctx) = 0;
+
+  virtual void enterStructInit(IronParser::StructInitContext *ctx) = 0;
+  virtual void exitStructInit(IronParser::StructInitContext *ctx) = 0;
+
+  virtual void enterStructInitBody(IronParser::StructInitBodyContext *ctx) = 0;
+  virtual void exitStructInitBody(IronParser::StructInitBodyContext *ctx) = 0;
 
   virtual void enterVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
   virtual void exitVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;

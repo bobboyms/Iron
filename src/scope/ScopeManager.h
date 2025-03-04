@@ -11,6 +11,8 @@ namespace scope
 
     class FunctionArg;
 
+    class StructStemt;
+
     class Parent : public std::enable_shared_from_this<Parent>
     {
     protected:
@@ -54,6 +56,7 @@ namespace scope
         int type;
         bool mut{false};
         std::shared_ptr<Function> function;
+        std::shared_ptr<StructStemt> structStemt;
 
         Variable(const std::string &name, const int type) : name(name), type(type)
         {
@@ -96,6 +99,7 @@ namespace scope
 
         Statements();
         ~Statements() override;
+        void addVariable(const std::shared_ptr<scope::Variable> &variable);
 
         std::shared_ptr<Statements> upperScope;
 
@@ -182,6 +186,7 @@ namespace scope
         std::shared_ptr<Variable> alias;
         std::shared_ptr<Function> upperFunction;
         std::shared_ptr<std::vector<std::shared_ptr<FunctionArg>>> args;
+        std::vector<std::shared_ptr<StructStemt>> structs;
         int returnType;
         bool returnFound{false};
 
@@ -220,6 +225,7 @@ namespace scope
     class ScopeManager
     {
     private:
+        std::vector<std::shared_ptr<StructStemt>> structDeclarations;
         std::vector<std::shared_ptr<Function>> functionDeclarations;
         std::unordered_map<std::string, std::shared_ptr<Function>> externDeclarations;
         std::stack<std::shared_ptr<GlobalScope>> scopeStack;
@@ -228,7 +234,10 @@ namespace scope
 
     public:
         void addFunctionDeclaration(const std::shared_ptr<Function> &function);
+        void addStructDeclaration(const std::shared_ptr<StructStemt> &struct_);
+
         std::shared_ptr<Function> getFunctionDeclarationByName(const std::string &functionName);
+        std::shared_ptr<StructStemt> getStructDeclarationByName(const std::string &name) const;
         std::shared_ptr<Function> currentFunctionDeclaration();
         void enterScope(const std::shared_ptr<GlobalScope> &scope);
         void exitScope();
@@ -238,6 +247,19 @@ namespace scope
         std::vector<std::shared_ptr<Function>> getFunctionDeclarations();
 
         void setExternDeclaration(const std::shared_ptr<Function> &declarations);
+    };
+
+    class StructStemt
+    {
+    private:
+        std::vector<std::shared_ptr<Variable>> variables;
+    public:
+        std::string name;
+        explicit StructStemt(const std::string &name);
+        void setVariables(const std::vector<std::shared_ptr<Variable>> &variables);
+
+        std::shared_ptr<Variable> getVarByName(const std::string &varName) const;
+        std::vector<std::shared_ptr<Variable>> getVariables();
     };
 
 } // namespace scope

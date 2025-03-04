@@ -42,22 +42,32 @@ namespace scope
 
     Statements::~Statements() = default;
 
+    void Statements::addVariable(const std::shared_ptr<Variable> &variable)
+    {
+        if (!variable)
+        {
+            throw std::runtime_error(util::format("Statements::addVariable. Variable is empty", ""));
+        }
+
+        variables.push_back(variable);
+    }
+
     void Statements::addVariable(const std::string &name, int type)
     {
         if (name.empty())
         {
             throw std::runtime_error(util::format("Statements::addVariable. Variable name is empty", ""));
         }
-        
+
         // Verificar se já existe uma variável com este nome para evitar duplicação
-        for (const auto& var : variables)
+        for (const auto &var: variables)
         {
             if (var->name == name)
             {
                 throw std::runtime_error(util::format("Statements::addVariable. Variable {} already exists", name));
             }
         }
-        
+
         variables.push_back(std::make_shared<Variable>(name, type));
     }
 
@@ -67,20 +77,20 @@ namespace scope
         {
             throw std::runtime_error(util::format("Statements::addVariable. Variable name is empty", ""));
         }
-        
+
         // Verificar se já existe uma variável com este nome para evitar duplicação
-        for (const auto& var : variables)
+        for (const auto &var: variables)
         {
             if (var->name == name)
             {
                 throw std::runtime_error(util::format("Statements::addVariable. Variable {} already exists", name));
             }
         }
-        
+
         variables.push_back(std::make_shared<Variable>(name, type, mut));
     }
 
-    void Statements::addFunctionAlias(const std::string& varName, const std::shared_ptr<Function>& function)
+    void Statements::addFunctionAlias(const std::string &varName, const std::shared_ptr<Function> &function)
     {
 
         if (!function)
@@ -131,10 +141,9 @@ namespace scope
     {
         return name;
     }
-    Signature::Signature(const int returnType, const std::vector<std::shared_ptr<FunctionArg>> &arguments):
-        returnType(returnType),arguments(arguments)
+    Signature::Signature(const int returnType, const std::vector<std::shared_ptr<FunctionArg>> &arguments) :
+        returnType(returnType), arguments(arguments)
     {
-
     }
     int Signature::getReturnType() const
     {
@@ -200,7 +209,7 @@ namespace scope
         return returnType;
     }
 
-    void Function::setUpperFunction(const std::shared_ptr<Function>& function)
+    void Function::setUpperFunction(const std::shared_ptr<Function> &function)
     {
         if (!function)
         {
@@ -210,7 +219,7 @@ namespace scope
         upperFunction = function;
     }
 
-    void Function::enterLocalScope(const std::shared_ptr<LocalScope>& scope)
+    void Function::enterLocalScope(const std::shared_ptr<LocalScope> &scope)
     {
         if (!scope)
         {
@@ -289,7 +298,7 @@ namespace scope
                     args->push_back(arg);
                 }
 
-                const auto function = std::make_shared<Function>(arg->name,args, arg->signature->getReturnType());
+                const auto function = std::make_shared<Function>(arg->name, args, arg->signature->getReturnType());
                 const auto variable = std::make_shared<Variable>(arg->name, arg->type);
                 variable->function = function;
                 return variable;
@@ -331,7 +340,7 @@ namespace scope
                     args->push_back(arg);
                 }
 
-                const auto function = std::make_shared<Function>(arg->name,args, arg->signature->getReturnType());
+                const auto function = std::make_shared<Function>(arg->name, args, arg->signature->getReturnType());
                 const auto variable = std::make_shared<Variable>(arg->name, arg->type);
                 variable->function = function;
                 return variable;
@@ -397,7 +406,7 @@ namespace scope
 
     /* --------------------------- SCOPE MANAGER -------------------------- */
 
-    void ScopeManager::enterScope(const std::shared_ptr<GlobalScope>& scope)
+    void ScopeManager::enterScope(const std::shared_ptr<GlobalScope> &scope)
     {
         if (!scope)
         {
@@ -453,9 +462,15 @@ namespace scope
         externDeclarations.insert({declarations->getFunctionName(), declarations});
     }
 
+
     void ScopeManager::addFunctionDeclaration(const std::shared_ptr<Function> &function)
     {
         functionDeclarations.push_back(function);
+    }
+
+    void ScopeManager::addStructDeclaration(const std::shared_ptr<StructStemt> &struct_)
+    {
+        structDeclarations.push_back(struct_);
     }
 
 
@@ -478,7 +493,7 @@ namespace scope
 
         // 2. Se não foi encontrada entre as variáveis locais ou dos escopos acima,
         //    busca nas declarações globais de função.
-        for (auto function : functionDeclarations)
+        for (auto function: functionDeclarations)
         {
             if (function->getFunctionName() == functionName)
             {
@@ -496,6 +511,19 @@ namespace scope
         return nullptr;
     }
 
+    std::shared_ptr<StructStemt> ScopeManager::getStructDeclarationByName(const std::string &name) const
+    {
+        for (const auto &struct_: structDeclarations)
+        {
+            if (struct_->name == name)
+            {
+                return struct_;
+            }
+        }
+
+        return nullptr;
+    }
+
 
     std::shared_ptr<Function> ScopeManager::currentFunctionDeclaration()
     {
@@ -505,6 +533,31 @@ namespace scope
         }
 
         return functionDeclarations.back();
+    }
+
+    StructStemt::StructStemt(const std::string &name) : name(name)
+    {
+    }
+
+    void StructStemt::setVariables(const std::vector<std::shared_ptr<Variable>> &variables)
+    {
+        this->variables = variables;
+    }
+
+    std::shared_ptr<Variable> StructStemt::getVarByName(const std::string &varName) const
+    {
+        for (auto var: variables)
+        {
+            if (var->name == varName)
+            {
+                return var;
+            }
+        }
+        return nullptr;
+    }
+    std::vector<std::shared_ptr<Variable>> StructStemt::getVariables()
+    {
+        return variables;
     }
 
 } // namespace scope

@@ -184,18 +184,32 @@ set(SRC_COMMON
         src/hlir/generator/Loops.cpp
         src/hlir/scope/Statements.cpp
         src/hlir/scope/Utilities.cpp
+        src/semantic/Structs.cpp
+        src/semantic/SemanticHelpers.cpp
 
 )
 
 set(TEST_SRC
-        tests/test_semantic_analysis.cpp
         tests/test_llvm_code.cpp
+        # HLIR tests
         tests/test_hlir_common.cpp
         tests/test_hlir_function.cpp
         tests/test_hlir_expressions.cpp
         tests/test_hlir_boolean.cpp
         tests/test_hlir_function_arg.cpp
         tests/test_hlir_loops.cpp
+        # Semantic analysis tests
+        tests/test_semantic_common.cpp
+        tests/test_semantic_basic.cpp
+        tests/test_semantic_variables.cpp
+        tests/test_semantic_expressions.cpp
+        tests/test_semantic_functions.cpp
+        tests/test_semantic_boolean.cpp
+        tests/test_semantic_nested.cpp
+        tests/test_semantic_modules.cpp
+        tests/test_semantic_control_flow.cpp
+        tests/test_semantic_loops.cpp
+        tests/test_semantic_function_values.cpp
 )
 
 # Cópia do arquivo YAML para a pasta de build
