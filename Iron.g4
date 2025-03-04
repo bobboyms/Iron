@@ -247,7 +247,6 @@ assignment:
 		| expr
 		| boolExpr
 	);
-
 //{name:"Thiago", idade:2}
 
 structInit:

@@ -197,3 +197,33 @@ TEST_F(SemanticVariableTests, TestStructInitTypeFound)
     )";
     EXPECT_NO_THROW(runAnalysis(input));
 }
+
+TEST_F(SemanticVariableTests, TestStructInitFieldNotFound)
+{
+    std::string input = R"(
+        struct Pessoa {
+            mut name:string,
+            idade:int
+        }
+
+        fn main() {
+            let pessoa:Pessoa = {nameXX:"Thiago", idade:2}
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
+
+TEST_F(SemanticVariableTests, TestStructInitFieldTypeMismatch)
+{
+    std::string input = R"(
+        struct Pessoa {
+            mut name:string,
+            idade:int
+        }
+
+        fn main() {
+            let pessoa:Pessoa = {name:78468, idade:2}
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}

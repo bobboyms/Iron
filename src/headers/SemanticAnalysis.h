@@ -43,12 +43,10 @@ namespace iron
         std::shared_ptr<scope::Function> verifyFunctionExists(const std::string& functionName, uint line, uint col);
         void verifyTypesMatch(int typeA, int typeB, const std::string &nameA, const std::string &nameB, uint line,
                               uint col, const std::string &errorContextMsg = "Type mismatch error") const;
-        int determineValueType(const std::string& value);
+        static int determineValueType(const std::string& value);
 
         void visitStructDeclaration(IronParser::StructStatementContext *ctx) const;
         void visitStructStatement(IronParser::StructStatementContext *ctx) const;
-        static void visitStructBody(IronParser::StructBodyContext *ctx,
-                             std::vector<std::shared_ptr<scope::Variable>> &variables);
         void visitStructInit(IronParser::StructInitContext *ctx);
         void visitStructInitBody(IronParser::StructInitBodyContext *ctx);
 

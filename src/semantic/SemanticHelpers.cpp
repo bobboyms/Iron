@@ -116,4 +116,6 @@ namespace iron
                                                  color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
                                                  caretLine, codeLine));
     }
+
+
 } // namespace iron
