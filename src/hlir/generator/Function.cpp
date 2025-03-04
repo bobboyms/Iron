@@ -1,29 +1,54 @@
+/**
+ * @file Function.cpp
+ * @brief Implementation of function processing in the HLIR generator
+ */
 #include "../../headers/Analyser.h"
 #include "../../headers/HLIRGenerator.h"
 #include "../../headers/Hlir.h"
+#include <string_view>
 
 namespace hlir
 {
+    /**
+     * @brief Processes a function declaration in the parser
+     * 
+     * This method converts a function declaration from the parse tree
+     * into a Function object in the HLIR representation.
+     * 
+     * @param ctx Function declaration context from the parser
+     * @throws HLIRException If required components are missing or invalid
+     */
     void HLIRGenerator::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
     {
+        if (!ctx) {
+            throw HLIRException("visitFunctionDeclaration: Context is null");
+        }
+        
+        if (!ctx->functionName) {
+            throw HLIRException("Function name is missing");
+        }
+        
+        // Create function components
         const auto functionName = ctx->functionName->getText();
         const auto functionArgs = std::make_shared<FunctionArgs>();
         const auto functionReturnType = std::make_shared<Type>();
 
-        const auto function = std::make_shared<Function>()->set(functionName, functionArgs, functionReturnType);
+        // Create the function and add it to the context
+        const auto function = std::make_shared<Function>()->set(
+            functionName, functionArgs, functionReturnType);
         context->addFunction(function);
 
-        if (ctx->functionSignature())
-        {
+        // Process function signature if present
+        if (ctx->functionSignature()) {
             visitFunctionSignature(ctx->functionSignature(), functionArgs, functionReturnType);
         }
 
-        function->enterLocalScope(std::make_shared<Statement>());
-        if (ctx->statementList())
-        {
+        // Process function body if present
+        auto scopeStatement = std::make_shared<Statement>();
+        ScopeGuard guard(function, scopeStatement);
+        if (ctx->statementList()) {
             visitStatementList(ctx->statementList(), function);
         }
-        function->exitLocalScope();
     }
 
 

@@ -1,4 +1,73 @@
-fn main(a:int,b:float):double { 
- let x:int = 20
- let c:int = x
+// This is a comprehensive HLIR test file
+// It demonstrates HLIR language features
+
+import std.io
+import std.math
+
+// External function declarations
+extern C {
+    fn printf(format: *char, ...) : int
+    fn malloc(size: int) : *void
+}
+
+// Function with basic types and arithmetic
+fn calculate(a: int, b: int): int {
+    let result: int = a + b
+    
+    if (result > 10) {
+        return result * 2
+    } else {
+        return result
+    }
+}
+
+// Function with boolean expressions
+fn isAdult(age: int): boolean {
+    return age >= 18
+}
+
+// Function with nested if-else
+fn getDiscount(age: int, isStudent: boolean): float {
+    if (age < 18) {
+        if (isStudent) {
+            return 0.5
+        } else {
+            return 0.25
+        }
+    } else if (age >= 65) {
+        return 0.3
+    } else {
+        if (isStudent) {
+            return 0.15
+        } else {
+            return 0.0
+        }
+    }
+}
+
+// Main function with various statements
+fn main() {
+    // Variable declarations
+    let x: int = 5
+    let y: int = 10
+    let result: int = calculate(a: x, b: y)
+    
+    // Conditional block
+    if (x > 10 and y < 20) {
+        let z: int = x + y
+    } else if (x == 5) {
+        let z: int = x * y
+    } else {
+        let z: int = x - y
+    }
+    
+    // Using arrow functions
+    let add: fn(a: int, b: int): int = (a: int, b: int): int -> a + b
+    
+    // Boolean expressions
+    let isTrue: boolean = true and not false
+    let isFalse: boolean = true and false
+    let comparison: boolean = (x < y) or (x == 5)
+    
+    return result
 }

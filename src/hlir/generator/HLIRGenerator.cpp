@@ -1,38 +1,63 @@
+/**
+ * @file HLIRGenerator.cpp
+ * @brief Implementation of the High-Level IR Generator for the Iron language
+ * 
+ * This file contains the implementation of the HLIRGenerator class, which is responsible
+ * for transforming the parse tree into a high-level intermediate representation.
+ */
 #include "../../headers/HLIRGenerator.h"
 #include "../../headers/Analyser.h"
 #include "../../headers/Files.h"
 #include "../../headers/Hlir.h"
+#include <string_view>
+#include <optional>
 
 namespace hlir
 {
-
-    void createMathExprAssign(const std::string &leftVarName, const std::string &leftVarTypeName,
+    /**
+     * @brief Creates a math expression assignment with type checking and casting if needed
+     * 
+     * @param leftVarName The name of the left variable
+     * @param leftVarTypeName The type name of the left variable
+     * @param rightVar The right variable
+     * @param currentFunction The current function context
+     * @throws HLIRException If the left variable cannot be found
+     */
+    void createMathExprAssign(std::string_view leftVarName, std::string_view leftVarTypeName,
                               const std::shared_ptr<Variable> &rightVar,
                               const std::shared_ptr<Function> &currentFunction)
     {
-
         const auto statement = currentFunction->getCurrentLocalScope();
+        if (!statement) {
+            throw HLIRException("createMathExprAssign: Current scope is null");
+        }
 
-        int leftDataTypeType = tokenMap::getTokenType(leftVarTypeName);
-        const auto leftVar = currentFunction->findVarAllScopesAndArg(leftVarName);
+        int leftDataTypeType = tokenMap::getTokenType(std::string(leftVarTypeName));
+        const auto leftVar = currentFunction->findVarAllScopesAndArg(std::string(leftVarName));
+        if (!leftVar) {
+            throw HLIRException("createMathExprAssign: Left variable not found");
+        }
 
+        // Different types require casting
         if (leftDataTypeType != rightVar->getVarType()->getType())
         {
-            const std::string strTempVar = currentFunction->generateVarName();
-
-            const auto cast = std::make_shared<Cast>()->apply(rightVar, std::make_shared<Type>(leftDataTypeType));
-            auto tempVariable = std::make_shared<Variable>()->set(strTempVar, std::make_shared<Type>(leftDataTypeType));
+            // Create a temporary variable for the cast result
+            const std::string tempVarName = currentFunction->generateVarName();
+            auto tempType = std::make_shared<Type>(leftDataTypeType);
+            auto tempVariable = std::make_shared<Variable>()->set(tempVarName, tempType);
             statement->addDeclaredVariable(tempVariable);
 
-
+            // Cast and assign
+            const auto cast = std::make_shared<Cast>()->apply(rightVar, tempType);
             auto expr = std::make_shared<Expr>()->set(tempVariable, cast);
             statement->addStatement(expr);
 
+            // Assign the casted value to the left variable
             const auto value = std::make_shared<Value>()->set(tempVariable, tempVariable->getVarType());
             auto assign = std::make_shared<Assign>()->set(leftVar, value);
             statement->addStatement(assign);
         }
-        else
+        else // Same types, direct assignment
         {
             const auto value = std::make_shared<Value>()->set(rightVar, rightVar->getVarType());
             auto assign = std::make_shared<Assign>()->set(leftVar, value);
@@ -40,40 +65,66 @@ namespace hlir
         }
     }
 
-    // Construtor: inicializa os membros conforme declarado no cabeçalho.
+    /**
+     * @brief Constructs a new HLIRGenerator
+     * 
+     * @param parser The Iron parser containing the parse tree
+     * @param context The context for storing generated code
+     * @param config The configuration settings
+     * @param exportContexts Map of contexts for imported modules
+     */
     HLIRGenerator::HLIRGenerator(
-            const std::shared_ptr<IronParser> &parser, const std::shared_ptr<Context> &context,
+            const std::shared_ptr<IronParser> &parser, 
+            const std::shared_ptr<Context> &context,
             const std::shared_ptr<config::Configuration> &config,
             const std::shared_ptr<std::map<std::string, std::shared_ptr<Context>>> &exportContexts) :
-        parser(parser), context(context), config(config), exportContexts(exportContexts)
+        parser(parser), 
+        context(context), 
+        config(config), 
+        exportContexts(exportContexts)
     {
-        // Qualquer inicialização adicional necessária pode ser feita aqui.
     }
 
-    // Destrutor: pode ser padrão se não houver liberação manual de recursos.
+    /**
+     * @brief Virtual destructor
+     */
     HLIRGenerator::~HLIRGenerator() = default;
 
-    // Método getContext(): retorna o contexto armazenado.
+    /**
+     * @brief Process the parse tree and build the HLIR context
+     *
+     * This method processes imports, external function declarations,
+     * and function declarations to build the HLIR context.
+     *
+     * @return The processed HLIR context
+     */
     std::shared_ptr<Context> HLIRGenerator::getContext()
     {
         IronParser::ProgramContext *programContext = parser->program();
-
-        for (const auto importStmt: programContext->importStatement())
-        {
-            visitImportStatement(importStmt);
+        if (!programContext) {
+            throw HLIRException("Failed to get program context from parser");
         }
 
-        if (programContext->externBlock())
-        {
-            visitExternBlock(programContext->externBlock());
-        }
-
-        for (const auto child: programContext->children)
-        {
-            if (const auto funcDecl = dynamic_cast<IronParser::FunctionDeclarationContext *>(child))
-            {
-                visitFunctionDeclaration(funcDecl);
+        try {
+            // Process import statements
+            for (const auto importStmt : programContext->importStatement()) {
+                visitImportStatement(importStmt);
             }
+
+            // Process external function declarations
+            if (programContext->externBlock()) {
+                visitExternBlock(programContext->externBlock());
+            }
+
+            // Process function declarations
+            for (const auto child : programContext->children) {
+                if (const auto funcDecl = dynamic_cast<IronParser::FunctionDeclarationContext*>(child)) {
+                    visitFunctionDeclaration(funcDecl);
+                }
+            }
+        }
+        catch (const std::exception& e) {
+            throw HLIRException(util::format("Error processing program: {}", e.what()));
         }
 
         return context;
