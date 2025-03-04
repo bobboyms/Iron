@@ -2,135 +2,111 @@
 
 namespace iron
 {
-
+    /**
+     * @brief Processes a boolean expression and determines its type
+     * 
+     * Evaluates a boolean expression in the AST, handling different kinds of expressions
+     * like comparisons, boolean literals, variables, and function calls. Ensures type
+     * compatibility for boolean operations.
+     * 
+     * @param ctx The boolean expression context from the parser
+     * @return std::pair<std::string, int> The expression name and its type
+     * @throws TypeMismatchException if expression types are incompatible
+     * @throws std::runtime_error if the expression is invalid
+     */
     std::pair<std::string, int> SemanticAnalysis::visitBoolExpr(IronParser::BoolExprContext *ctx)
     {
-        const auto line = ctx->getStart()->getLine();
-        const auto col = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+        const auto lineNumber = ctx->getStart()->getLine();
+        const auto columnPosition = ctx->getStart()->getCharPositionInLine();
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         auto currentFunction = getCurrentFunction();
 
+        // Handle parenthesized expressions
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
             return visitBoolExpr(ctx->boolExpr(0));
         }
 
+        // Handle binary operations between two boolean expressions
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
             auto [leftName, leftType] = visitBoolExpr(ctx->left);
             auto [rightName, rightType] = visitBoolExpr(ctx->right);
 
-
-            if ((tokenMap::isNumber(leftType) or leftType == tokenMap::TYPE_BOOLEAN) and tokenMap::isNumber(rightType) or
-                rightType == tokenMap::TYPE_BOOLEAN)
+            // Check if types are compatible for boolean operations
+            bool leftIsValidType = tokenMap::isNumber(leftType) || leftType == tokenMap::TYPE_BOOLEAN;
+            bool rightIsValidType = tokenMap::isNumber(rightType) || rightType == tokenMap::TYPE_BOOLEAN;
+            
+            if (leftIsValidType && rightIsValidType)
             {
-                if (leftType == tokenMap::TYPE_BOOLEAN or rightType == tokenMap::TYPE_BOOLEAN)
+                // If either operand is boolean, the result is boolean
+                if (leftType == tokenMap::TYPE_BOOLEAN || rightType == tokenMap::TYPE_BOOLEAN)
                 {
-                    return std::pair(rightName, tokenMap::TYPE_BOOLEAN);
+                    return {rightName, tokenMap::TYPE_BOOLEAN};
                 }
-                auto procedenceType = tokenMap::getHigherPrecedenceType(leftType, rightType);
-                return std::pair(rightName, procedenceType);
+                
+                // Otherwise, determine the appropriate numeric type
+                auto resultType = tokenMap::getHigherPrecedenceType(leftType, rightType);
+                return {rightName, resultType};
             }
 
-            throw TypeMismatchException(util::format(
-                    "The left operator {} of type {} is incompatible with the right operator {} of type {}.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n"
-                    "{}\n",
-                    color::colorText(leftName, color::BOLD_GREEN),
-                    color::colorText(tokenMap::getTokenText(leftType), color::BOLD_GREEN),
-                    color::colorText(rightName, color::BOLD_BLUE),
-                    color::colorText(tokenMap::getTokenText(rightType), color::BOLD_BLUE),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            // Types are incompatible, throw a detailed error
+            verifyTypesMatch(
+                leftType, 
+                rightType, 
+                leftName, 
+                rightName, 
+                lineNumber, 
+                columnPosition, 
+                "The left operator of type is incompatible with the right operator"
+            );
         }
 
+        // Handle regular expression within a boolean context
         if (ctx->expr())
         {
             return visitExpr(ctx->expr());
         }
 
+        // Handle boolean literals
         if (ctx->booleanValue)
         {
-            return std::pair(ctx->booleanValue->getText(), tokenMap::TYPE_BOOLEAN);
+            return {ctx->booleanValue->getText(), tokenMap::TYPE_BOOLEAN};
         }
 
+        // Handle boolean NOT operation
         if (ctx->not_)
         {
-            return std::pair(ctx->not_->getText(), tokenMap::TYPE_BOOLEAN);
+            return {ctx->not_->getText(), tokenMap::TYPE_BOOLEAN};
         }
 
+        // Handle numeric literals in boolean context
         if (ctx->number())
         {
-            std::string number = ctx->number()->getText();
-            int type = tokenMap::determineType(number);
-            if (type == tokenMap::REAL_NUMBER)
-            {
-                type = tokenMap::determineFloatType(number);
-            }
-
-            return std::pair(number, type);
+            std::string numberText = ctx->number()->getText();
+            int numberType = determineValueType(numberText);
+            return {numberText, numberType};
         }
 
+        // Handle variables in boolean context
         if (ctx->varName)
         {
-
-            const std::string varName = ctx->varName->getText();
-            const auto function = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
-            if (!function)
-            {
-                throw FunctionNotFoundException("SemanticAnalysis::visitExpr. No current function scope found");
-            }
-
-
-            const auto variable = function->findVarAllScopesAndArg(varName);
-            if (!variable)
-            {
-                throw VariableNotFoundException(util::format(
-                        "Variable '{}' not found.\n"
-                        "Line: {}, Scope: {}\n\n"
-                        "{}\n"
-                        "{}\n",
-                        color::colorText(varName, color::BOLD_GREEN),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
-            }
-
-            return std::pair(variable->name, variable->type);
+            const std::string variableName = ctx->varName->getText();
+            const auto variable = verifyVariableExists(variableName, lineNumber, columnPosition);
+            return {variable->name, variable->type};
         }
 
+        // Handle function calls in boolean context
         if (ctx->functionCall())
         {
-            auto calledFunctionName = ctx->functionCall()->functionName->getText();
-            std::shared_ptr<scope::Function> calledFunction;
-            if (auto functionPtr = currentFunction->findVarAllScopesAndArg(calledFunctionName); !functionPtr)
-            {
-                calledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
-                if (!calledFunction)
-                {
-                    // throw ScopeNotFoundException("SemanticAnalysis::visitExpr. No current function scope
-                    // found");
-                    throw FunctionNotFoundException(
-                            util::format("Function {} not found.\n"
-                                         "Line: {}, Scope: {}\n\n"
-                                         "{}\n"
-                                         "{}\n",
-                                         color::colorText(calledFunctionName, color::BOLD_GREEN),
-                                         color::colorText(std::to_string(line), color::YELLOW),
-                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                         codeLine, caretLine));
-                }
-            }
-            else
-            {
-                calledFunction = functionPtr->function;
-            }
-
+            auto functionName = ctx->functionCall()->functionName->getText();
+            auto function = verifyFunctionExists(functionName, lineNumber, columnPosition);
             visitFunctionCall(ctx->functionCall());
-            return std::pair(calledFunctionName, calledFunction->getReturnType());
+            return {functionName, function->getReturnType()};
         }
 
+        // If none of the expected patterns matched, the expression is invalid
         throw std::runtime_error("Invalid boolean expression");
     }
 

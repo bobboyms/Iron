@@ -184,6 +184,14 @@ namespace iron
         }
     };
 
+    class TypeNotFoundException final : public SemanticException
+    {
+    public:
+        explicit TypeNotFoundException(const std::string &msg) : SemanticException(msg)
+        {
+        }
+    };
+
     class ScopeNotFoundException final : public SemanticException
     {
     public:

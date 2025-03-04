@@ -2,107 +2,84 @@
 
 namespace iron
 {
-std::pair<std::string, int> SemanticAnalysis::visitExpr(IronParser::ExprContext *ctx)
+    /**
+     * @brief Evaluates an expression and determines its type
+     * 
+     * Processes an expression node in the AST, handling different kinds of expressions
+     * like arithmetic operations, variables, literals, and function calls. Ensures
+     * type compatibility for operations and provides detailed error messages.
+     * 
+     * @param ctx The expression context from the parser
+     * @return std::pair<std::string, int> The expression name and its type
+     * @throws TypeMismatchException if expression types are incompatible
+     * @throws std::runtime_error if the expression is invalid
+     */
+    std::pair<std::string, int> SemanticAnalysis::visitExpr(IronParser::ExprContext *ctx)
     {
-
-
-        auto line = ctx->getStart()->getLine();
-        auto col = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(line, col, 0);
+        const auto lineNumber = ctx->getStart()->getLine();
+        const auto columnPosition = ctx->getStart()->getCharPositionInLine();
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         auto currentFunction = getCurrentFunction();
 
+        // Handle parenthesized expressions
         if (ctx->L_PAREN() && ctx->R_PAREN())
         {
             return visitExpr(ctx->expr(0));
         }
+
+        // Handle binary operations
         if (ctx->left != nullptr && ctx->right != nullptr)
         {
             auto [leftName, leftType] = visitExpr(ctx->left);
             auto [rightName, rightType] = visitExpr(ctx->right);
 
+            // Handle numeric operations
             if (tokenMap::isNumber(leftType) && tokenMap::isNumber(rightType))
             {
-                auto procedenceType = tokenMap::getHigherPrecedenceType(leftType, rightType);
-                return std::pair(rightName, procedenceType);
+                // Determine the result type based on operand types
+                auto resultType = tokenMap::getHigherPrecedenceType(leftType, rightType);
+                return {rightName, resultType};
             }
-            throw TypeMismatchException(util::format(
-                    "The left operator {} of type {} is incompatible with the right operator {} of type {}.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n"
-                    "{}\n",
-                    color::colorText(leftName, color::BOLD_GREEN),
-                    color::colorText(tokenMap::getTokenText(leftType), color::BOLD_GREEN),
-                    color::colorText(rightName, color::BOLD_BLUE),
-                    color::colorText(tokenMap::getTokenText(rightType), color::BOLD_BLUE),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+
+            // Types are incompatible, throw a detailed error
+            verifyTypesMatch(
+                leftType, 
+                rightType, 
+                leftName, 
+                rightName, 
+                lineNumber, 
+                columnPosition, 
+                "The left operator of type is incompatible with the right operator"
+            );
         }
+
+        // Handle variable references
         if (ctx->varName)
         {
-            std::string varName = ctx->varName->getText();
-            auto function = std::dynamic_pointer_cast<scope::Function>(scopeManager->currentScope());
-            if (!function)
-            {
-                throw FunctionNotFoundException("SemanticAnalysis::visitExpr. No current function scope found");
-            }
-            auto variable = function->findVarAllScopesAndArg(varName);
-            if (!variable)
-            {
-                throw VariableNotFoundException(util::format(
-                        "Variable '{}' not found.\n"
-                        "Line: {}, Scope: {}\n\n"
-                        "{}\n"
-                        "{}\n",
-                        color::colorText(varName, color::BOLD_GREEN),
-                        color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
-            }
-
-            return std::pair(variable->name, variable->type);
+            const std::string variableName = ctx->varName->getText();
+            auto variable = verifyVariableExists(variableName, lineNumber, columnPosition);
+            return {variable->name, variable->type};
         }
+
+        // Handle numeric literals
         if (ctx->number())
         {
-            std::string number = ctx->number()->getText();
-            int type = tokenMap::determineType(number);
-            if (type == tokenMap::REAL_NUMBER)
-            {
-                type = tokenMap::determineFloatType(number);
-            }
-
-            return std::pair(number, type);
+            std::string numberText = ctx->number()->getText();
+            int numberType = determineValueType(numberText);
+            return {numberText, numberType};
         }
+
+        // Handle function calls
         if (ctx->functionCall())
         {
-            auto calledFunctionName = ctx->functionCall()->functionName->getText();
-            std::shared_ptr<scope::Function> calledFunction;
-            if (auto functionPtr = currentFunction->findVarAllScopesAndArg(calledFunctionName); !functionPtr)
-            {
-                calledFunction = scopeManager->getFunctionDeclarationByName(calledFunctionName);
-                if (!calledFunction)
-                {
-                    // throw ScopeNotFoundException("SemanticAnalysis::visitExpr. No current function scope
-                    // found");
-                    throw FunctionNotFoundException(
-                            util::format("Function {} not found.\n"
-                                         "Line: {}, Scope: {}\n\n"
-                                         "{}\n"
-                                         "{}\n",
-                                         color::colorText(calledFunctionName, color::BOLD_GREEN),
-                                         color::colorText(std::to_string(line), color::YELLOW),
-                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                         codeLine, caretLine));
-                }
-            }
-            else
-            {
-                calledFunction = functionPtr->function;
-            }
-
+            auto functionName = ctx->functionCall()->functionName->getText();
+            auto function = verifyFunctionExists(functionName, lineNumber, columnPosition);
             visitFunctionCall(ctx->functionCall());
-            return std::pair(calledFunctionName, calledFunction->getReturnType());
+            return {functionName, function->getReturnType()};
         }
 
+        // If none of the expected patterns matched, the expression is invalid
         throw std::runtime_error("Invalid expression");
     }
 

@@ -1,9 +1,10 @@
 import std.output.printf
 
-        fn main() {
-            mut let x: int = 0
-            while x < 10 {
-                x = x + 1
-                printf(format:"value if x: %i\n", r:x)
-            }
-        }
+struct Pessoa {
+    mut name:string,
+    idade:int
+}
+
+fn main() {
+    let pessoa:Pessoa = {name:"Thiago", idade:37}
+}

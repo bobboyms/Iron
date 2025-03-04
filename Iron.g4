@@ -60,6 +60,8 @@ TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
 TYPE_VOID: 'void';
 REPEAT: 'repeat';
+STRUCT:'struct';
+OPTIONS: 'options';
 CONTINUE: 'continue';
 BREAK: 'break';
 
@@ -80,7 +82,7 @@ WS: [ \t]+ -> skip;
 
 // Ponto de entrada da gramática
 program:
-	importStatement* externBlock? (functionDeclaration)* EOF;
+	importStatement* externBlock? (functionDeclaration | structStatement | optionsStatement)* EOF;
 
 // Declaração de importação
 importStatement: IMPORT qualifiedName (DOT STAR)?;
@@ -109,22 +111,27 @@ statementList: (
 breakStatement: BREAK;
 continueStatement: CONTINUE;
 
-//loopStatementList: (
-//		: continueStatement
-//		| breakStatement
-//		| varDeclaration
-//		| varAssignment
-//		| functionCall
-//		| expr
-//		| ifStatement
-//		| whileStatement
-//		| repeatStatement
-//		| forStatement
-//		| voidReturnStatement
-//		| returnStatement
-//
-//	)*;
 
+//struct Pessoa {
+//    name:string
+//    idade:int
+//}
+
+structStatement:
+    STRUCT structName = IDENTIFIER L_CURLY structBody (',' structBody)* R_CURLY
+;
+
+structBody:
+   MUT? varName = IDENTIFIER ':' varTypes
+;
+
+optionsStatement:
+     OPTIONS optionName = IDENTIFIER L_CURLY optionsBody (',' optionsBody)* R_CURLY
+;
+
+optionsBody:
+    itemName = IDENTIFIER functionSignature?
+;
 
 returnStatement:
 	RETURN (
@@ -227,7 +234,7 @@ functionCallArg:
 
 // Declaração de variável
 varDeclaration:
-	MUT? LET varName = IDENTIFIER COLON varTypes assignment?;
+	MUT? LET varName = IDENTIFIER COLON (varTypes | anotherType = IDENTIFIER) assignment?;
 
 // Atribuição
 assignment:
@@ -235,13 +242,28 @@ assignment:
 		arrowFunctionInline
 		| varName = IDENTIFIER
 		| dataFormat
+		| structInit
 		| functionCall
 		| expr
 		| boolExpr
 	);
+//{name:"Thiago", idade:2}
+
+structInit:
+    structName = IDENTIFIER? L_CURLY structInitBody (',' structInitBody)* R_CURLY
+;
+
+structInitBody:
+    varName = IDENTIFIER COLON (
+    		dataFormat
+    		| anotherVarName = IDENTIFIER
+    		| functionCall
+    		| arrowFunctionInline
+    	)
+;
 
 varAssignment:
-	varName = IDENTIFIER EQ (
+	varName = IDENTIFIER ('.' IDENTIFIER )* EQ (
 		arrowFunctionInline
 		| anotherVarName=IDENTIFIER
 		| dataFormat

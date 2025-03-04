@@ -45,6 +45,7 @@ namespace tokenMap
         PUBLIC,
         IMPORT,
         RETURN,
+        STRUCT,
 
         // Tipos de dados
         TYPE_INT,

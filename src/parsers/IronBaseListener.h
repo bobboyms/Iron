@@ -34,6 +34,18 @@ public:
   virtual void enterContinueStatement(IronParser::ContinueStatementContext * /*ctx*/) override { }
   virtual void exitContinueStatement(IronParser::ContinueStatementContext * /*ctx*/) override { }
 
+  virtual void enterStructStatement(IronParser::StructStatementContext * /*ctx*/) override { }
+  virtual void exitStructStatement(IronParser::StructStatementContext * /*ctx*/) override { }
+
+  virtual void enterStructBody(IronParser::StructBodyContext * /*ctx*/) override { }
+  virtual void exitStructBody(IronParser::StructBodyContext * /*ctx*/) override { }
+
+  virtual void enterOptionsStatement(IronParser::OptionsStatementContext * /*ctx*/) override { }
+  virtual void exitOptionsStatement(IronParser::OptionsStatementContext * /*ctx*/) override { }
+
+  virtual void enterOptionsBody(IronParser::OptionsBodyContext * /*ctx*/) override { }
+  virtual void exitOptionsBody(IronParser::OptionsBodyContext * /*ctx*/) override { }
+
   virtual void enterReturnStatement(IronParser::ReturnStatementContext * /*ctx*/) override { }
   virtual void exitReturnStatement(IronParser::ReturnStatementContext * /*ctx*/) override { }
 
@@ -108,6 +120,12 @@ public:
 
   virtual void enterAssignment(IronParser::AssignmentContext * /*ctx*/) override { }
   virtual void exitAssignment(IronParser::AssignmentContext * /*ctx*/) override { }
+
+  virtual void enterStructInit(IronParser::StructInitContext * /*ctx*/) override { }
+  virtual void exitStructInit(IronParser::StructInitContext * /*ctx*/) override { }
+
+  virtual void enterStructInitBody(IronParser::StructInitBodyContext * /*ctx*/) override { }
+  virtual void exitStructInitBody(IronParser::StructInitBodyContext * /*ctx*/) override { }
 
   virtual void enterVarAssignment(IronParser::VarAssignmentContext * /*ctx*/) override { }
   virtual void exitVarAssignment(IronParser::VarAssignmentContext * /*ctx*/) override { }

@@ -9,6 +9,14 @@
 
 namespace iron
 {
+    struct ErrorContext {
+        uint line;
+        uint col;
+        std::string codeLine;
+        std::string caretLine;
+        std::string scopeName;
+    };
+
     class SemanticAnalysis
     {
     private:
@@ -18,16 +26,29 @@ namespace iron
         std::shared_ptr<config::Configuration> config;
 
 
-      void visitWhileStatement(IronParser::WhileStatementContext *ctx);
-      void visitRepeatStatement(IronParser::RepeatStatementContext *ctx);
-      void visitForStatement(IronParser::ForStatementContext *ctx);
-      // void visitLoopStatementList(IronParser::LoopStatementListContext *ctx);
-      // void visitBreakStatement(IronParser::BreakStatementContext *ctx);
-      // void visitContinueStatement(IronParser::ContinueStatementContext *ctx);
-      // void visitVoidReturnStatement(IronParser::VoidReturnStatementContext *ctx);
+        void visitWhileStatement(IronParser::WhileStatementContext *ctx);
+        void visitRepeatStatement(IronParser::RepeatStatementContext *ctx);
+        void visitForStatement(IronParser::ForStatementContext *ctx);
+        // void visitLoopStatementList(IronParser::LoopStatementListContext *ctx);
+        // void visitBreakStatement(IronParser::BreakStatementContext *ctx);
+        // void visitContinueStatement(IronParser::ContinueStatementContext *ctx);
+        // void visitVoidReturnStatement(IronParser::VoidReturnStatementContext *ctx);
 
 
         std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps) const;
+        
+        // Helper functions for error handling and common operations
+        ErrorContext getErrorContext(uint line, uint col, int caretOffset = 0);
+        std::shared_ptr<scope::Variable> verifyVariableExists(const std::string& varName, uint line, uint col, const std::string& contextInfo = "");
+        std::shared_ptr<scope::Function> verifyFunctionExists(const std::string& functionName, uint line, uint col);
+        void verifyTypesMatch(int typeA, int typeB, const std::string &nameA, const std::string &nameB, uint line,
+                              uint col, const std::string &errorContextMsg = "Type mismatch error") const;
+        static int determineValueType(const std::string& value);
+
+        void visitStructDeclaration(IronParser::StructStatementContext *ctx) const;
+        void visitStructStatement(IronParser::StructStatementContext *ctx) const;
+        void visitStructInit(IronParser::StructInitContext *ctx);
+        void visitStructInitBody(IronParser::StructInitBodyContext *ctx);
 
         void visitExternBlock(IronParser::ExternBlockContext *ctx);
 
@@ -48,16 +69,19 @@ namespace iron
         // void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx);
         void visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx) const;
         static void validateFunctionReturn(const std::string &codeLine, int line,
-                                           const std::shared_ptr<scope::Function>& function);
+                                           const std::shared_ptr<scope::Function> &function);
 
         void visitFunctionBody(IronParser::FunctionDeclarationContext *ctx);
         std::shared_ptr<scope::Signature> getSignature(IronParser::FunctionSignatureContext *ctx) const;
 
         void visitStatementList(const IronParser::StatementListContext *ctx);
+        std::shared_ptr<scope::Variable> checkAnotherTypes(const std::string &varName,
+                                                           const std::string &anotherTypeName, bool mut, int line,
+                                                           const std::string &codeLine, const std::string &caretLine) const;
 
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
 
-        void visitVarAssignment(const IronParser::VarAssignmentContext *ctx);
+        void visitVarAssignment(IronParser::VarAssignmentContext *ctx);
 
         void visitImportStatement(IronParser::ImportStatementContext *ctx) const;
 

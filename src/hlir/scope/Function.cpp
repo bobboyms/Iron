@@ -3,17 +3,23 @@
 
 namespace hlir
 {
-
-
-
-    Function::Function() : external(false), variedArguments(false), languageType(tokenMap::IRON_LANG)
+    /**
+     * @brief Represents a function in the HLIR (High-Level Intermediate Representation)
+     * 
+     * The Function class is responsible for managing function declarations, 
+     * their arguments, return types, and scope hierarchy.
+     */
+    Function::Function() : external(false), variedArguments(false), 
+                           languageType(tokenMap::IRON_LANG), inlineFunction(false),
+                           argFunction(false), labelId(0), varId(0)
     {
     }
 
-    Function::~Function()
-    {
-    }
+    Function::~Function() = default;
 
+    /**
+     * @brief Marks this function as an inline function
+     */
     void Function::enableInline()
     {
         inlineFunction = true;
@@ -130,23 +136,32 @@ namespace hlir
     }
 
 
+    /**
+     * @brief Searches for a variable in all available scopes and function arguments
+     * 
+     * This method searches for a variable in the following order:
+     * 1. Local scope and all parent scopes
+     * 2. Function arguments
+     * 3. Parent function scopes (recursively)
+     * 
+     * @param varName Name of the variable to find
+     * @param scopeNumbers Counter for tracking scope traversal depth
+     * @return std::shared_ptr<Variable> Found variable or nullptr if not found
+     */
     std::shared_ptr<Variable> Function::findVarAllScopesAndArg(const std::string &varName, uint scopeNumbers)
     {
-        // verifica no escopo local e superiores
+        // Search in the local scope and parent scopes
         std::stack tempStack(statementStack);
         while (!tempStack.empty())
         {
             const std::shared_ptr<Statement> currentScope = tempStack.top();
             tempStack.pop();
             
-            // Garantir que currentScope não é nulo antes de usar
             if (!currentScope)
             {
                 continue;
             }
             
-            // Não é necessário dynamic_cast com shared_ptr, pois statementStack
-            // já deveria conter apenas Statement
             if (auto variable = currentScope->findVarByName(varName))
             {
                 if (scopeNumbers > 0)
@@ -157,7 +172,7 @@ namespace hlir
             }
         }
 
-        // verifica nos argumentos da função
+        // Search in function arguments
         if (functionArgs)
         {
             if (const auto arg = functionArgs->findArgByName(varName))
@@ -178,6 +193,7 @@ namespace hlir
             }
         }
 
+        // Recursively search in parent function
         if (parentFunction)
         {
             scopeNumbers++;

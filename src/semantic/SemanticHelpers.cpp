@@ -1,0 +1,227 @@
+#include "../headers/SemanticAnalysis.h"
+
+namespace iron
+{
+    /**
+     * @brief Creates context information for error reporting
+     * 
+     * This function collects all information needed for providing rich error messages,
+     * including source code context, line number, and scope name.
+     * 
+     * @param lineNumber Current line number in source code
+     * @param columnPosition Current column position in source code
+     * @param caretOffset Offset for positioning the caret under the error
+     * @return ErrorContext Struct containing all error context information
+     */
+    ErrorContext SemanticAnalysis::getErrorContext(uint lineNumber, uint columnPosition, int caretOffset)
+    {
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, caretOffset);
+        return {
+            lineNumber, 
+            columnPosition, 
+            codeLine, 
+            caretLine, 
+            scopeManager->currentScopeName()
+        };
+    }
+
+    /**
+     * @brief Verifies if a variable exists and throws a formatted exception if not
+     * 
+     * Searches for the variable in the current function's scope hierarchy, including
+     * arguments and local variables. Throws a detailed exception if not found.
+     * 
+     * @param variableName Name of the variable to verify
+     * @param lineNumber Line number where the variable is referenced
+     * @param columnPosition Column position where the variable is referenced
+     * @param contextInfo Additional context information for error messages
+     * @return std::shared_ptr<scope::Variable> The variable if found
+     * @throws VariableNotFoundException if the variable does not exist
+     */
+    std::shared_ptr<scope::Variable> SemanticAnalysis::verifyVariableExists(
+        const std::string &variableName, 
+        uint lineNumber,
+        uint columnPosition, 
+        const std::string &contextInfo)
+    {
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto currentFunction = getCurrentFunction();
+        auto variable = currentFunction->findVarAllScopesAndArg(variableName);
+
+        if (!variable)
+        {
+            throw VariableNotFoundException(util::format(
+                    "Variable '{}' not found.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}\n{}",
+                    color::colorText(variableName, color::BOLD_GREEN), 
+                    color::colorText(std::to_string(lineNumber), color::YELLOW),
+                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                    codeLine, 
+                    caretLine,
+                    contextInfo.empty() ? "" : "\n\n" + contextInfo));
+        }
+
+        return variable;
+    }
+
+    /**
+     * @brief Verifies if a function exists and throws a formatted exception if not
+     * 
+     * Searches for the function in the global scope. If not found there, checks if it
+     * might be a function pointer variable. Throws a detailed exception if not found.
+     * 
+     * @param functionName Name of the function to verify
+     * @param lineNumber Line number where the function is called
+     * @param columnPosition Column position where the function is called
+     * @return std::shared_ptr<scope::Function> The function if found
+     * @throws FunctionNotFoundException if the function does not exist
+     */
+    std::shared_ptr<scope::Function> SemanticAnalysis::verifyFunctionExists(
+        const std::string &functionName, 
+        uint lineNumber,
+        uint columnPosition)
+    {
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto calledFunction = scopeManager->getFunctionDeclarationByName(functionName);
+
+        if (!calledFunction)
+        {
+            // Try to find it as a variable (function pointer)
+            auto currentFunction = getCurrentFunction();
+            auto variable = currentFunction->findVarAllScopesAndArg(functionName);
+
+            if (variable && variable->type == tokenMap::FUNCTION && variable->function)
+            {
+                return variable->function;
+            }
+
+            throw FunctionNotFoundException(util::format(
+                    "Function {} not found.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}\n",
+                    color::colorText(functionName, color::BOLD_GREEN),
+                    color::colorText(std::to_string(lineNumber), color::YELLOW),
+                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                    codeLine, 
+                    caretLine));
+        }
+
+        return calledFunction;
+    }
+
+    /**
+     * @brief Verifies if two types match and throws a formatted exception if not
+     * 
+     * Checks type compatibility between two variables or expressions. If types don't match,
+     * throws a detailed exception with context information and clear error message.
+     * 
+     * @param typeA First type to compare
+     * @param typeB Second type to compare
+     * @param nameA Name of first variable/expression
+     * @param nameB Name of second variable/expression
+     * @param lineNumber Line number where the comparison happens
+     * @param columnPosition Column position where the comparison happens
+     * @param errorContextMsg Additional context message for the error
+     * @throws TypeMismatchException if types don't match
+     */
+    void SemanticAnalysis::verifyTypesMatch(
+        int typeA, 
+        int typeB, 
+        const std::string &nameA, 
+        const std::string &nameB,
+        uint lineNumber, 
+        uint columnPosition, 
+        const std::string &errorContextMsg) const
+    {
+        if (typeA == typeB) {
+            return; // Types match, no exception needed
+        }
+        
+        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+
+        throw TypeMismatchException(util::format(
+                "{}: {} of type {} is incompatible with {} of type {}.\n"
+                "Line: {}, Scope: {}\n\n"
+                "{}\n"
+                "{}\n",
+                errorContextMsg, 
+                color::colorText(nameA, color::BOLD_GREEN),
+                color::colorText(tokenMap::getTokenText(typeA), color::BOLD_GREEN),
+                color::colorText(nameB, color::BOLD_BLUE),
+                color::colorText(tokenMap::getTokenText(typeB), color::BOLD_BLUE),
+                color::colorText(std::to_string(lineNumber), color::YELLOW),
+                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
+                codeLine, 
+                caretLine));
+    }
+
+    /**
+     * @brief Determines the type of a literal value
+     * 
+     * Analyzes a literal string and determines its Iron language type.
+     * Handles special case for floating point numbers to determine precision.
+     * 
+     * @param valueString String representation of the literal
+     * @return int Token type representing the value's type
+     */
+    int SemanticAnalysis::determineValueType(const std::string &valueString)
+    {
+        int baseType = tokenMap::determineType(valueString);
+        if (baseType == tokenMap::REAL_NUMBER)
+        {
+            // Determine if this is a float or double based on precision
+            return tokenMap::determineFloatType(valueString);
+        }
+        return baseType;
+    }
+
+    /**
+     * @brief Validates and creates a variable for custom types like structs
+     * 
+     * Checks if a custom type name is a valid declared type (currently only structs)
+     * and creates a properly typed variable if it is. Throws an exception with
+     * detailed error information if the type doesn't exist.
+     * 
+     * @param variableName Name for the new variable
+     * @param typeName Name of the custom type
+     * @param isMutable Whether the variable is mutable
+     * @param lineNumber Line number for error reporting
+     * @param codeLine Source code line for error reporting
+     * @param caretLine Caret line for error reporting
+     * @return std::shared_ptr<scope::Variable> The newly created variable
+     * @throws TypeNotFoundException if the type doesn't exist
+     */
+    std::shared_ptr<scope::Variable>
+    SemanticAnalysis::checkAnotherTypes(
+        const std::string &variableName, 
+        const std::string &typeName, 
+        const bool isMutable,
+        const int lineNumber, 
+        const std::string &codeLine, 
+        const std::string &caretLine) const
+    {
+        // Check if it's a struct type
+        if (const auto structDefinition = scopeManager->getStructDeclarationByName(typeName))
+        {
+            auto variable = std::make_shared<scope::Variable>(variableName, tokenMap::STRUCT, isMutable);
+            variable->structStemt = structDefinition;
+            return variable;
+        }
+
+        // Type not found, throw a detailed error
+        throw TypeNotFoundException(util::format(
+                "Undefined type error: The Type '{}' is not defined.\n"
+                "Line: {}, Scope: {}\n\n"
+                "{}\n"
+                "{}\n\n",
+                color::colorText(typeName, color::BOLD_GREEN),
+                color::colorText(std::to_string(lineNumber), color::YELLOW),
+                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                caretLine, 
+                codeLine));
+    }
+
+} // namespace iron
