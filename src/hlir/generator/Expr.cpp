@@ -1,46 +1,87 @@
+/**
+ * @file Expr.cpp
+ * @brief Implementation of expression handling in the HLIR generator
+ */
 #include "../../headers/Analyser.h"
 #include "../../headers/HLIRGenerator.h"
 #include "../../headers/Hlir.h"
+#include <string_view>
 
 namespace hlir
 {
-
+    /**
+     * @brief Gets or creates variables needed for binary operations
+     * 
+     * This utility method finds or creates the variables needed for a binary operation,
+     * including optionally creating a temporary variable for the result.
+     * 
+     * @param currentFunction The current function context
+     * @param leftVarName Name of the left variable
+     * @param rightVarName Name of the right variable
+     * @param tempVarName Name for the temporary result variable
+     * @param targetType Type to use for the variables
+     * @param createTempVar Whether to create a temporary variable for the result
+     * @return Tuple of (leftVar, rightVar, tempVar) with tempVar possibly nullptr
+     * @throws HLIRException If variables cannot be found or created
+     */
     std::tuple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
-    HLIRGenerator::getVariableOrCreate(const std::shared_ptr<Function> &currentFunction, const std::string &strLeftVar,
-                                       const std::string &strRightVar, const std::string &tempVarStr,
-                                       const uint higherType, const bool createTempVar)
+    HLIRGenerator::getVariableOrCreate(
+        const std::shared_ptr<Function> &currentFunction, 
+        const std::string &strLeftVar,
+        const std::string &strRightVar, 
+        const std::string &tempVarStr,
+        uint higherType, 
+        bool createTempVar)
     {
-        auto newLeftVar = currentFunction->findVarAllScopesAndArg(strLeftVar);
-        if (!newLeftVar)
-        {
-            newLeftVar = std::make_shared<Variable>()->set(strLeftVar, std::make_shared<Type>(higherType));
+        if (!currentFunction) {
+            throw HLIRException("getVariableOrCreate: Current function is null");
         }
-
-        auto newRightVar = currentFunction->findVarAllScopesAndArg(strRightVar);
-        if (!newLeftVar)
-        {
-            newRightVar = std::make_shared<Variable>()->set(strRightVar, std::make_shared<Type>(higherType));
+        
+        // Find or create left variable
+        auto leftVar = currentFunction->findVarAllScopesAndArg(strLeftVar);
+        if (!leftVar) {
+            leftVar = std::make_shared<Variable>()->set(
+                strLeftVar, 
+                std::make_shared<Type>(higherType));
         }
-
-        if (!newRightVar)
-        {
-            throw HLIRException(util::format("HLIRGenerator::getVariableOrCreate. Undefined right variable: {} in expression", strRightVar));
+        
+        // Find or create right variable
+        auto rightVar = currentFunction->findVarAllScopesAndArg(strRightVar);
+        if (!rightVar) {
+            rightVar = std::make_shared<Variable>()->set(
+                strRightVar, 
+                std::make_shared<Type>(higherType));
         }
-
-        if (!newLeftVar)
-        {
-            throw HLIRException(util::format("HLIRGenerator::getVariableOrCreate. Undefined right variable: {} in expression", strLeftVar));
+        
+        // Verify variables were created successfully
+        if (!rightVar) {
+            throw HLIRException(util::format(
+                "Undefined right variable: {} in expression", 
+                strRightVar));
         }
-
-        if (createTempVar)
-        {
-            const auto tempVar = std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(higherType));
-            currentFunction->getCurrentLocalScope()->addDeclaredVariable(tempVar);
-
-            return std::make_tuple(newLeftVar, newRightVar, tempVar);
+        
+        if (!leftVar) {
+            throw HLIRException(util::format(
+                "Undefined left variable: {} in expression", 
+                strLeftVar));
         }
-
-        return std::make_tuple(newLeftVar, newRightVar, nullptr);
+        
+        // Create temp variable if requested
+        if (createTempVar) {
+            auto statement = currentFunction->getCurrentLocalScope();
+            if (!statement) {
+                throw HLIRException("Current scope is null");
+            }
+            
+            const auto tempVar = std::make_shared<Variable>()->set(
+                tempVarStr, 
+                std::make_shared<Type>(higherType));
+                
+            statement->addDeclaredVariable(tempVar);
+            return std::make_tuple(leftVar, rightVar, tempVar);
+        }
+        
+        return std::make_tuple(leftVar, rightVar, nullptr);
     }
 
     std::string HLIRGenerator::visitBoolExpr(IronParser::BoolExprContext *ctx,
@@ -91,7 +132,7 @@ namespace hlir
             std::string tempVarStr = currentFunction->generateVarName();
 
             const auto [newLeftVar, newRightVar, _] =
-                    getVariableOrCreate(currentFunction, strLeftVar, strRightVar, tempVarStr, higherType);
+                    getVariableOrCreate(currentFunction, strLeftVar, strRightVar, tempVarStr, higherType, false);
             auto tempVar =
                     std::make_shared<Variable>()->set(tempVarStr, std::make_shared<Type>(tokenMap::TYPE_BOOLEAN));
             statement->addDeclaredVariable(tempVar);

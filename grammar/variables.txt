@@ -1,16 +1,140 @@
+// This is a comprehensive Iron language test file
+// It demonstrates all major language features
+
+import std.io
+import std.math.*
 import std.output.printf
+
+// Struct declaration
+struct Person {
+    mut name: string,
+    age: int,
+    active: boolean
+}
+
+// Options declaration (enum-like)
+options UserRole {
+    Admin,
+    User,
+    Guest
+}
 
 options Message {
     None,
-    Result(r:string)
+    Result(r: string)
 }
 
-struct Pessoa {
-    mut name:string,
-    idade:int
+// External function declarations
+extern C {
+    fn printf(format: *char, ...) : int
+    fn malloc(size: int) : *void
+    fn free(ptr: *void) : void
 }
 
-fn main() {
-    let pessoa:Pessoa = {name:"Thiago", idade:2}
-    pessoa.name.casa.bola = "Novo nome"
+// Function with basic types and arithmetic
+fn calculate(a: int, b: int): int {
+    let result: int = a + b
+    
+    if (result > 10) {
+        return result * 2
+    } else {
+        return result
+    }
+}
+
+// Function with boolean expressions
+fn isAdult(age: int): boolean {
+    return age >= 18
+}
+
+// Function with nested if-else
+fn getDiscount(age: int, isStudent: boolean): float {
+    if (age < 18) {
+        if (isStudent) {
+            return 0.5  // 50% discount for students under 18
+        } else {
+            return 0.25  // 25% discount for non-students under 18
+        }
+    } else if (age >= 65) {
+        return 0.3  // 30% discount for seniors
+    } else {
+        if (isStudent) {
+            return 0.15  // 15% discount for adult students
+        } else {
+            return 0.0  // No discount
+        }
+    }
+}
+
+// Function that returns a struct
+fn createPerson(name: string, age: int): Person {
+    return Person{name: name, age: age, active: true}
+}
+
+// Function with arrow function as parameter
+fn applyOperation(x: int, y: int, op: fn(a: int, b: int): int): int {
+    return op(a: x, b: y)
+}
+
+// Main function with various statements
+public fn main() {
+    // Variable declarations
+    let x: int = 5
+    let y: int = 10
+    let result: int = calculate(a: x, b: y)
+    
+    // Struct initialization and access
+    let pessoa: Person = Person{name: "Thiago", idade: 2, active: true}
+    pessoa.name = "Novo nome"
+    
+    // Conditional block
+    if (pessoa.age > 18 and pessoa.active == true) {
+        f"(Person %s is an adult and active)", pessoa.name
+    } else if (pessoa.age > 18) {
+        f"(Person %s is an adult but not active)", pessoa.name
+    } else {
+        f"(Person %s is not an adult)", pessoa.name
+    }
+    
+    // For loop
+    for i in 1..10 {
+        let squared: int = i * i
+        if (squared > 50) {
+            break
+        }
+        f"(Square of %d is %d)", i, squared
+    }
+    
+    // While loop
+    let count: int = 0
+    while count < 5 {
+        count = count + 1
+        if (count == 3) {
+            continue
+        }
+        f"(Count: %d)", count
+    }
+    
+    // Repeat-while loop
+    repeat {
+        count = count - 1
+        f"(Counting down: %d)", count
+    } while count > 0
+    
+    // Using arrow functions
+    let add: fn(a: int, b: int): int = (a: int, b: int): int -> a + b
+    let multiply: fn(a: int, b: int): int = (a: int, b: int): int -> {
+        return a * b
+    }
+    
+    // Using functions as arguments
+    let addResult: int = applyOperation(x: 5, y: 3, op: add)
+    let multResult: int = applyOperation(x: 5, y: 3, op: multiply)
+    
+    // Boolean expressions
+    let isTrue: boolean = true and not false
+    let isFalse: boolean = true and false
+    let comparison: boolean = (x < y) or (x == 5)
+    
+    return
 }

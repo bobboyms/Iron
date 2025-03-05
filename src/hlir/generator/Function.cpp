@@ -1,29 +1,54 @@
+/**
+ * @file Function.cpp
+ * @brief Implementation of function processing in the HLIR generator
+ */
 #include "../../headers/Analyser.h"
 #include "../../headers/HLIRGenerator.h"
 #include "../../headers/Hlir.h"
+#include <string_view>
 
 namespace hlir
 {
+    /**
+     * @brief Processes a function declaration in the parser
+     * 
+     * This method converts a function declaration from the parse tree
+     * into a Function object in the HLIR representation.
+     * 
+     * @param ctx Function declaration context from the parser
+     * @throws HLIRException If required components are missing or invalid
+     */
     void HLIRGenerator::visitFunctionDeclaration(IronParser::FunctionDeclarationContext *ctx)
     {
+        if (!ctx) {
+            throw HLIRException("visitFunctionDeclaration: Context is null");
+        }
+        
+        if (!ctx->functionName) {
+            throw HLIRException("Function name is missing");
+        }
+        
+        // Create function components
         const auto functionName = ctx->functionName->getText();
         const auto functionArgs = std::make_shared<FunctionArgs>();
         const auto functionReturnType = std::make_shared<Type>();
 
-        const auto function = std::make_shared<Function>()->set(functionName, functionArgs, functionReturnType);
+        // Create the function and add it to the context
+        const auto function = std::make_shared<Function>()->set(
+            functionName, functionArgs, functionReturnType);
         context->addFunction(function);
 
-        if (ctx->functionSignature())
-        {
+        // Process function signature if present
+        if (ctx->functionSignature()) {
             visitFunctionSignature(ctx->functionSignature(), functionArgs, functionReturnType);
         }
 
-        function->enterLocalScope(std::make_shared<Statement>());
-        if (ctx->statementList())
-        {
+        // Process function body if present
+        auto scopeStatement = std::make_shared<Statement>();
+        ScopeGuard guard(function, scopeStatement);
+        if (ctx->statementList()) {
             visitStatementList(ctx->statementList(), function);
         }
-        function->exitLocalScope();
     }
 
 
@@ -242,16 +267,7 @@ namespace hlir
         if (ctx->dataFormat())
         {
             const auto strValue = ctx->dataFormat()->getText();
-
-            int realType;
-            if (auto definedType = tokenMap::determineType(strValue); definedType == tokenMap::REAL_NUMBER)
-            {
-                realType = tokenMap::determineFloatType(strValue);
-            }
-            else
-            {
-                realType = definedType;
-            }
+            const auto realType = defineRealType(strValue);
 
             auto strAnotherVar = currentFunction->generateVarName();
             auto type = std::make_shared<Type>(realType);
@@ -618,71 +634,7 @@ namespace hlir
         }
     }
 
-    std::shared_ptr<Function> HLIRGenerator::getFunctionValue(const std::shared_ptr<Function> &currentFunction,
-                                                              const std::string &varName)
-    {
 
-        auto statement = currentFunction->getCurrentLocalScope();
-
-        while (statement)
-        {
-
-            // 1. Tenta achar como variável local
-            if (const auto value = statement->getVariableValue(varName))
-            {
-                // Se subimos algum nível, marque a variável como estando em outro escopo
-                const auto data = value->getValue();
-                if (const auto funcPtr = std::get_if<std::shared_ptr<Function>>(&data))
-                {
-                    if (funcPtr)
-                    {
-                        return *funcPtr;
-                    }
-                }
-            }
-
-            // 3. Se não achou nem variável local, nem argumento,
-            //    subimos para o próximo escopo (função pai)
-            const auto parentFunction = currentFunction->getParentFunction();
-            if (!parentFunction)
-            {
-                break;
-            }
-
-            statement = parentFunction->getCurrentLocalScope();
-        }
-
-        const auto variable = currentFunction->findVarAllScopesAndArg(varName);
-        if (!variable)
-        {
-            throw HLIRException(
-                    util::format("HLIRGenerator::getFunctionValue. Undefined Function: '{}' in expression", varName));
-        }
-
-        if (variable->getVarType()->getType() != tokenMap::FUNCTION)
-        {
-            throw HLIRException(
-                    util::format("HLIRGenerator::getFunctionValue. Undefined Function: '{}' in expression", varName));
-        }
-
-        if (!variable->getSignature())
-        {
-            throw HLIRException(
-                    util::format("HLIRGenerator::getFunctionValue. Undefined Function: '{}' in expression", varName));
-        }
-
-        const auto functionArgs = std::make_shared<FunctionArgs>();
-
-        for (const auto arg: variable->getSignature()->getArgs())
-        {
-            functionArgs->addArg(arg);
-        }
-
-        const auto function = std::make_shared<Function>()->set(variable->getVarName(), functionArgs,
-                                                                variable->getSignature()->getReturnType());
-        function->changeToArgFunction();
-        return function;
-    }
 
     std::shared_ptr<Function> HLIRGenerator::gatArrowFunction(const std::shared_ptr<Function> &currentFunction,
                                                               const std::string &functionName)

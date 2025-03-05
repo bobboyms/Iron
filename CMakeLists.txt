@@ -142,6 +142,7 @@ endif()
 ###############################################################################
 set(SRC_MAIN
         src/main.cpp
+        src/hlir/generator/Structs.cpp
 )
 
 set(SRC_COMMON
@@ -157,6 +158,7 @@ set(SRC_COMMON
         src/hlir/generator/Function.cpp
         src/hlir/generator/HLIRGenerator.cpp
         src/hlir/generator/IFelse.cpp
+        src/hlir/generator/Structs.cpp
         src/llvm/Types.cpp
         src/llvm/LLVM.cpp
         src/llvm/functions.cpp
@@ -186,6 +188,8 @@ set(SRC_COMMON
         src/hlir/scope/Utilities.cpp
         src/semantic/Structs.cpp
         src/semantic/SemanticHelpers.cpp
+        src/hlir/scope/Structs.cpp
+        src/hlir/generator/HlirHelpers.cpp
 
 )
 
@@ -198,6 +202,7 @@ set(TEST_SRC
         tests/test_hlir_boolean.cpp
         tests/test_hlir_function_arg.cpp
         tests/test_hlir_loops.cpp
+        tests/test_hlir_structs.cpp
         # Semantic analysis tests
         tests/test_semantic_common.cpp
         tests/test_semantic_basic.cpp

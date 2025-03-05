@@ -105,6 +105,7 @@ namespace tokenMap
                                                                    {PUBLIC, "public"},
                                                                    {IMPORT, "import"},
                                                                    {RETURN, "return"},
+                                                                   {STRUCT, "struct"},
 
                                                                    {TRUE, "true"},
                                                                    {FALSE, "false"},
@@ -158,7 +159,6 @@ namespace tokenMap
         printf("Token: %i\n", tokenType);
         throw TokenNotFoundException(color::colorText("Compiler error, token not found.", color::BOLD_RED));
     }
-
 
 
     inline int getTokenType(const std::string &tokenString)
