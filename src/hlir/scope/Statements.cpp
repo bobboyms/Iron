@@ -193,7 +193,7 @@ namespace hlir
         return sb.str();
     }
 
-    std::shared_ptr<Value> Statement::getVariableValue(std::string varName)
+    std::shared_ptr<Value> Statement::getValueFromVariable(std::string varName)
     {
         std::shared_ptr<Value> value = nullptr;
         for (auto stmt: statementList)

@@ -27,6 +27,7 @@ namespace hlir
             tokenMap::PTR_TYPE_CHAR,
             tokenMap::PTR_TYPE_BOOLEAN,
             tokenMap::PTR_TYPE_DOUBLE,
+            tokenMap::STRUCT,
             tokenMap::OR,
             tokenMap::AND,
             tokenMap::EQEQ,
@@ -35,7 +36,8 @@ namespace hlir
             tokenMap::LTE,
             tokenMap::GT,
             tokenMap::GTE,
-            tokenMap::VOID
+            tokenMap::VOID,
+
         };
         
         if (validTypes.find(type) != validTypes.end()) {

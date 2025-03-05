@@ -57,6 +57,8 @@ namespace hlir
 
     class Struct;
 
+    class StructInit;
+
 
     /**
      * @class Basic
@@ -709,7 +711,7 @@ namespace hlir
      * This allows for flexible representation of different value types within
      * the HLIR without using inheritance or type erasure.
      */
-    using Data = std::variant<std::shared_ptr<Function>, std::shared_ptr<Variable>,
+    using Data = std::variant<std::shared_ptr<Function>, std::shared_ptr<Struct>, std::shared_ptr<StructInit>, std::shared_ptr<Variable>,
                               std::string>; //, int, float, double, bool
 
     /**
@@ -1503,7 +1505,7 @@ namespace hlir
         std::string getNewVarName();
         void addDeclaredVariable(const std::shared_ptr<Variable> &variable);
         std::shared_ptr<Variable> findVarByName(const std::string &varName);
-        std::shared_ptr<Value> getVariableValue(std::string varName);
+        std::shared_ptr<Value> getValueFromVariable(std::string varName);
         void insertStatementsAt(const std::vector<ValidStatement> &stmts, size_t pos);
         bool haveReturn() const;
 
@@ -1815,84 +1817,150 @@ namespace hlir
     };
 
     /**
- * @class Utilities
- * @brief Utility class for helper functions.
- *
- * The Utilities class provides static methods for common tasks, such as generating
- * textual representations from a signature. These helper functions facilitate data
- * conversion and standardization in the HLIR.
- */
-class Utilities
-{
-public:
-    /**
-     * @brief Generates text from a signature.
+     * @class Utilities
+     * @brief Utility class for helper functions.
      *
-     * This static method converts a Signature instance into a formatted textual
-     * representation, making it easier to display and debug.
-     *
-     * @param signature Shared pointer to the signature to be converted.
-     * @return A string containing the textual representation of the signature.
+     * The Utilities class provides static methods for common tasks, such as generating
+     * textual representations from a signature. These helper functions facilitate data
+     * conversion and standardization in the HLIR.
      */
-    static std::string generateTextFromSignature(const std::shared_ptr<Signature> &signature);
-};
-
-/**
- * @class Struct
- * @brief Represents a data structure in the HLIR.
- *
- * The Struct class encapsulates the concept of a structure, containing its name
- * and associated variables. It provides methods to obtain the textual representation,
- * search for variables by name, and access its components.
- */
-class Struct final : public Basic
-{
-private:
-    std::string name;                               ///< The name of the structure.
-    std::vector<std::shared_ptr<Variable>> variables; ///< List of variables contained in the structure.
-public:
-    /**
-     * @brief Constructs a new Struct instance.
-     *
-     * @param name The name of the structure.
-     * @param variables A vector of variables that belong to the structure.
-     */
-    Struct(const std::string &name, const std::vector<std::shared_ptr<Variable>> &variables);
+    class Utilities
+    {
+    public:
+        /**
+         * @brief Generates text from a signature.
+         *
+         * This static method converts a Signature instance into a formatted textual
+         * representation, making it easier to display and debug.
+         *
+         * @param signature Shared pointer to the signature to be converted.
+         * @return A string containing the textual representation of the signature.
+         */
+        static std::string generateTextFromSignature(const std::shared_ptr<Signature> &signature);
+    };
 
     /**
-     * @brief Produces a textual representation of the structure.
+     * @class Struct
+     * @brief Represents a data structure in the HLIR.
      *
-     * Returns a string that describes the structure, typically including the name
-     * and the list of declared variables.
-     *
-     * @return A string containing the description of the structure.
+     * The Struct class encapsulates the concept of a structure, containing its name
+     * and associated variables. It provides methods to obtain the textual representation,
+     * search for variables by name, and access its components.
      */
-    std::string getText() override;
+    class Struct final : public Basic
+    {
+    private:
+        std::string name; ///< The name of the structure.
+        std::vector<std::shared_ptr<Variable>> variables; ///< List of variables contained in the structure.
+    public:
+        /**
+         * @brief Constructs a new Struct instance.
+         *
+         * @param name The name of the structure.
+         * @param variables A vector of variables that belong to the structure.
+         */
+        Struct(const std::string &name, const std::vector<std::shared_ptr<Variable>> &variables);
+
+        /**
+         * @brief Produces a textual representation of the structure.
+         *
+         * Returns a string that describes the structure, typically including the name
+         * and the list of declared variables.
+         *
+         * @return A string containing the description of the structure.
+         */
+        std::string getText() override;
+
+        /**
+         * @brief Retrieves the name of the structure.
+         *
+         * @return A string with the name of the structure.
+         */
+        std::string getName();
+
+        /**
+         * @brief Gets all variables of the structure.
+         *
+         * @return A vector containing shared pointers to the structure's variables.
+         */
+        std::vector<std::shared_ptr<Variable>> getVariables();
+
+        /**
+         * @brief Searches for a variable by name in the structure.
+         *
+         * Searches and returns a variable with the specified name, if it exists.
+         *
+         * @param varName The name of the variable to search for.
+         * @return Shared pointer to the found variable or nullptr if not found.
+         */
+        std::shared_ptr<Variable> findVarByName(const std::string &varName);
+    };
 
     /**
-     * @brief Retrieves the name of the structure.
+     * @class StructInit
+     * @brief Represents the initialization of a structure in the HLIR.
      *
-     * @return A string with the name of the structure.
+     * The StructInit class encapsulates the initialization process for a structure.
+     * It holds a reference to the structure being initialized and a collection of
+     * assignment operations that set up the structure's variables.
+     *
+     * This class is used during the HLIR generation phase to represent the initialization
+     * of structure instances with specific values.
      */
-    std::string getName();
+    class StructInit final : public Basic
+    {
+    private:
+        /// Shared pointer to the structure being initialized.
+        std::shared_ptr<Struct> struct_;
 
-    /**
-     * @brief Gets all variables of the structure.
-     *
-     * @return A vector containing shared pointers to the structure's variables.
-     */
-    std::vector<std::shared_ptr<Variable>> getVariables();
+        /// List of assignment operations used to initialize the structure's fields.
+        std::vector<std::shared_ptr<Assign>> assigns;
 
-    /**
-     * @brief Searches for a variable by name in the structure.
-     *
-     * Searches and returns a variable with the specified name, if it exists.
-     *
-     * @param varName The name of the variable to search for.
-     * @return Shared pointer to the found variable or nullptr if not found.
-     */
-    std::shared_ptr<Variable> findVarByName(const std::string &varName);
-};
+    public:
+        /**
+         * @brief Constructs a new StructInit instance.
+         *
+         * Initializes the StructInit with the provided structure.
+         *
+         * @param struct_ Shared pointer to the structure to be initialized.
+         */
+        explicit StructInit(const std::shared_ptr<Struct> &struct_);
+
+        /**
+         * @brief Adds an assignment operation to the initialization.
+         *
+         * Appends an assignment (Assign) to the list of assignments that configure
+         * the structure's fields.
+         *
+         * @param assign Shared pointer to the assignment to add.
+         */
+        void addAssign(const std::shared_ptr<Assign> &assign);
+
+        /**
+         * @brief Retrieves the structure being initialized.
+         *
+         * @return Shared pointer to the structure associated with this initialization.
+         */
+        std::shared_ptr<Struct> getStruct();
+
+        /**
+         * @brief Gets the list of assignment operations.
+         *
+         * @return A vector containing shared pointers to all assignments used in this initialization.
+         */
+        std::vector<std::shared_ptr<Assign>> getAssigns();
+
+        /**
+         * @brief Produces a textual representation of the structure.
+         *
+         * Returns a string that describes the structure, typically including the name
+         * and the list of declared variables.
+         *
+         * @return A string containing the description of the structure.
+         */
+        std::string getText() override;
+    };
+
 
 
 } // namespace hlir

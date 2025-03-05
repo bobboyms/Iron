@@ -78,7 +78,6 @@ namespace hlir
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<Function>>)
                     {
-                        // Se Function tiver um método getText():
                         if (valueType->getType() == tokenMap::FUNCTION_PTR)
                         {
                             sb << util::format("{} {}", tokenMap::getTokenText(tokenMap::FUNCTION_PTR),
@@ -88,6 +87,14 @@ namespace hlir
                         {
                             sb << arg->getFunctionName();
                         }
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<Struct>>)
+                    {
+                        sb << util::format("{}", arg->getName());
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<StructInit>>)
+                    {
+                        sb << util::format("{}", arg->getText());
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<Variable>>)
                     {

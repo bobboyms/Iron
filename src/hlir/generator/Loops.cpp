@@ -11,12 +11,13 @@
 
 namespace hlir
 {
+
     /**
      * @brief Processes a while loop statement
-     * 
+     *
      * This method generates the HLIR representation of a while loop,
      * including condition checking, body execution, and proper flow control.
-     * 
+     *
      * @param ctx The while statement context
      * @param currentFunction The current function context
      * @throws HLIRException If the condition variable is not found or statement is null

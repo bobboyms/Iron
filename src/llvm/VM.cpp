@@ -1,4 +1,5 @@
 #include "../headers/LLVMIR.h"
+#include "../headers/Exceptions.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Linker/Linker.h"
 #include "llvm/Support/SourceMgr.h"
@@ -10,71 +11,102 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <stdexcept>
 
 namespace iron {
 
+    /**
+     * @brief Merges multiple LLVM modules into a single module
+     * 
+     * @param modules Vector of unique LLVM modules to merge
+     * @return std::unique_ptr<llvm::Module> The merged module
+     * @throws LLVMException If the modules can't be linked together
+     */
     std::unique_ptr<llvm::Module> LLVM::mergeModules(std::vector<std::unique_ptr<llvm::Module>> modules)
     {
         if (modules.empty()) {
-            llvm::errs() << "No modules provided.\n";
-            return nullptr;
+            throw LLVMException("mergeModules: No modules provided");
         }
 
-        // Usa o primeiro módulo como módulo principal.
+        // Use the first module as the main module
+        if (!modules[0]) {
+            throw LLVMException("mergeModules: First module is null");
+        }
+        
         std::unique_ptr<llvm::Module> mainModule = std::move(modules[0]);
 
-        // Cria um Linker para o módulo principal.
+        // Create a Linker for the main module
         llvm::Linker linker(*mainModule);
 
-        // Linka os demais módulos ao módulo principal.
+        // Link the remaining modules to the main module
         for (size_t i = 1; i < modules.size(); ++i) {
+            if (!modules[i]) {
+                llvm::errs() << "Warning: Module " << i << " is null, skipping\n";
+                continue;
+            }
+            
             if (linker.linkInModule(std::move(modules[i]))) {
-                llvm::errs() << "Error linking module " << i << "\n";
-                return nullptr;
+                throw LLVMException(util::format("Failed to link module {} into main module", i));
             }
         }
+        
         return mainModule;
     }
 
-
+    /**
+     * @brief Executes an LLVM module using the MCJIT execution engine
+     * 
+     * This function initializes the execution environment, finds the main function,
+     * and executes it with the JIT compiler.
+     * 
+     * @param mainModule The LLVM module to execute
+     * @throws LLVMException If the module can't be executed
+     */
     void LLVM::executeModule(std::unique_ptr<llvm::Module> mainModule) {
-        // Inicializa o target nativo.
-        llvm::InitializeNativeTarget();
-        llvm::InitializeNativeTargetAsmPrinter();
-        llvm::InitializeNativeTargetAsmParser();
-
-        // Cria um ExecutionEngine para o módulo mesclado.
-        std::string errStr;
-        const std::unique_ptr<llvm::ExecutionEngine> engine(
-            llvm::EngineBuilder(std::move(mainModule))
-                .setErrorStr(&errStr)
-                .setEngineKind(llvm::EngineKind::JIT)
-                .create()
-        );
-
-        if (!engine) {
-            llvm::errs() << "Failed to create ExecutionEngine: " << errStr << "\n";
-            return;
+        if (!mainModule) {
+            throw LLVMException("executeModule: Module is null");
         }
+        
+        try {
+            // Initialize the native target and components
+            llvm::InitializeNativeTarget();
+            llvm::InitializeNativeTargetAsmPrinter();
+            llvm::InitializeNativeTargetAsmParser();
 
-        // Finaliza a criação do objeto para preparação da execução.
-        engine->finalizeObject();
+            // Create an ExecutionEngine for the module
+            std::string errorMsg;
+            const std::unique_ptr<llvm::ExecutionEngine> engine(
+                llvm::EngineBuilder(std::move(mainModule))
+                    .setErrorStr(&errorMsg)
+                    .setEngineKind(llvm::EngineKind::JIT)
+                    .create()
+            );
 
-        // Procura a função "main" no módulo mesclado.
-        llvm::Function *mainFunc = engine->FindFunctionNamed("main");
-        if (!mainFunc) {
-            llvm::errs() << "No 'main' function found in the merged module.\n";
-            return;
+            if (!engine) {
+                throw LLVMException(util::format("Failed to create ExecutionEngine: {}", errorMsg));
+            }
+
+            // Finalize the object for execution preparation
+            engine->finalizeObject();
+
+            // Find the "main" function in the module
+            llvm::Function *mainFunc = engine->FindFunctionNamed("main");
+            if (!mainFunc) {
+                throw LLVMException("No 'main' function found in the module");
+            }
+
+            // Prepare the arguments (assuming no arguments for now)
+            const std::vector<llvm::GenericValue> args;
+
+            // Execute the "main" function
+            const llvm::GenericValue result = engine->runFunction(mainFunc, args);
+
+            // Print the result (assuming it's an int)
+            llvm::outs() << "Program executed successfully. Exit code: " << result.IntVal << "\n";
         }
-
-        // Prepara os argumentos (aqui, assumindo que não há argumentos).
-        const std::vector<llvm::GenericValue> args;
-
-        // Executa a função "main".
-        const llvm::GenericValue result = engine->runFunction(mainFunc, args);
-
-        // Imprime o resultado (por exemplo, se for um int).
-        llvm::outs() << "Program exited with code: " << result.IntVal << "\n";
+        catch (const std::exception& e) {
+            throw LLVMException(util::format("Error during module execution: {}", e.what()));
+        }
     }
 
 } // namespace iron
