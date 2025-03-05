@@ -21,16 +21,16 @@ TEST_F(HlirStructTests, T1)
 
     const std::string input = R"(
         struct Pessoa {
-        mut name:string,
-        idade:int,
-        altura:float,
-        salario:double,
-        casado:boolean
-    }
+            mut name:string,
+            idade:int,
+            altura:float,
+            salario:double,
+            casado:boolean
+        }
 
-    fn main() {
-        let pessoa:Pessoa = {name:"Thiago", idade:37, altura:1.75, salario:2500.2541D, casado:true}
-    }
+        fn main() {
+            let pessoa:Pessoa = {name:"Thiago", idade:37, altura:1.75, salario:2500.2541D, casado:true}
+        }
 
     )";
 

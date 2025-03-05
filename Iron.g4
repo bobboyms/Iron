@@ -122,7 +122,7 @@ structStatement:
 ;
 
 structBody:
-   MUT? varName = IDENTIFIER ':' varTypes
+   MUT? varName = IDENTIFIER ':' (varTypes | anotherType = IDENTIFIER)
 ;
 
 optionsStatement:
@@ -250,21 +250,25 @@ assignment:
 //{name:"Thiago", idade:2}
 
 structInit:
-    structName = IDENTIFIER? L_CURLY structInitBody (',' structInitBody)* R_CURLY
+    structName = IDENTIFIER? L_CURLY (structInitBody (',' structInitBody)*)? R_CURLY
 ;
 
 structInitBody:
     varName = IDENTIFIER COLON (
     		dataFormat
     		| anotherVarName = IDENTIFIER
+    		| structInit
     		| functionCall
     		| arrowFunctionInline
+
     	)
 ;
 
 varAssignment:
 	varName = IDENTIFIER ('.' IDENTIFIER )* EQ (
 		arrowFunctionInline
+		| functionCall
+		| structInit
 		| anotherVarName=IDENTIFIER
 		| dataFormat
 		| expr

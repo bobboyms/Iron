@@ -909,7 +909,6 @@ std::shared_ptr<hlir::Variable> LLVM::getVariableFromValue(const std::shared_ptr
             llvm_utils::checkNotNull(assign->getVariable()->getVarType(), "field type", "structInit");
             
             const auto fieldName = assign->getVariable()->getRealName();
-            // const auto typeOfField = assign->getVariable()->getVarType()->getType();
             const auto sourceVar = getVariableFromValue(assign->getValue());
             
             // Get the value from the source variable and store it directly in the struct field

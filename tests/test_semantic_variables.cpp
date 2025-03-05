@@ -227,3 +227,18 @@ TEST_F(SemanticVariableTests, TestStructInitFieldTypeMismatch)
     )";
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
+
+TEST_F(SemanticVariableTests, TestStructInitFieldTypeMismatch2)
+{
+    std::string input = R"(
+        struct Pessoa {
+            mut name:string
+        }
+
+        fn main() {
+            mut let pessoa:Pessoa = { name:"" }
+            pessoa.name = 2
+        }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}

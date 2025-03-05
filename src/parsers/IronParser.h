@@ -244,11 +244,13 @@ public:
   class  StructBodyContext : public antlr4::ParserRuleContext {
   public:
     antlr4::Token *varName = nullptr;
+    antlr4::Token *anotherType = nullptr;
     StructBodyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *COLON();
+    std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
+    antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
     VarTypesContext *varTypes();
-    antlr4::tree::TerminalNode *IDENTIFIER();
     antlr4::tree::TerminalNode *MUT();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -744,12 +746,12 @@ public:
     StructInitContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *L_CURLY();
+    antlr4::tree::TerminalNode *R_CURLY();
     std::vector<StructInitBodyContext *> structInitBody();
     StructInitBodyContext* structInitBody(size_t i);
-    antlr4::tree::TerminalNode *R_CURLY();
+    antlr4::tree::TerminalNode *IDENTIFIER();
     std::vector<antlr4::tree::TerminalNode *> COMMA();
     antlr4::tree::TerminalNode* COMMA(size_t i);
-    antlr4::tree::TerminalNode *IDENTIFIER();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -768,6 +770,7 @@ public:
     std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
     antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
     DataFormatContext *dataFormat();
+    StructInitContext *structInit();
     FunctionCallContext *functionCall();
     ArrowFunctionInlineContext *arrowFunctionInline();
 
@@ -788,8 +791,9 @@ public:
     std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
     antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
     ArrowFunctionInlineContext *arrowFunctionInline();
-    DataFormatContext *dataFormat();
     FunctionCallContext *functionCall();
+    StructInitContext *structInit();
+    DataFormatContext *dataFormat();
     ExprContext *expr();
     std::vector<antlr4::tree::TerminalNode *> DOT();
     antlr4::tree::TerminalNode* DOT(size_t i);

@@ -116,7 +116,7 @@ structStatement:
 ;
 
 structBody:
-   MUT? varName = IDENTIFIER COLON varTypes
+   MUT? varName = IDENTIFIER COLON (varTypes | anotherType = IDENTIFIER)
 ;
 
 structInit:

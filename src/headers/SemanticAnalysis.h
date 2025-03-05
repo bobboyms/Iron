@@ -4,12 +4,14 @@
 #include "../parsers/IronParser.h"
 #include "../scope/ScopeManager.h"
 #include "Configuration.h"
+#include "Hlir.h"
 #include "TokenMap.h"
 #include "Utils.h"
 
 namespace iron
 {
-    struct ErrorContext {
+    struct ErrorContext
+    {
         uint line;
         uint col;
         std::string codeLine;
@@ -36,19 +38,20 @@ namespace iron
 
 
         std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps) const;
-        
+
         // Helper functions for error handling and common operations
         ErrorContext getErrorContext(uint line, uint col, int caretOffset = 0);
-        std::shared_ptr<scope::Variable> verifyVariableExists(const std::string& varName, uint line, uint col, const std::string& contextInfo = "");
-        std::shared_ptr<scope::Function> verifyFunctionExists(const std::string& functionName, uint line, uint col);
+        std::shared_ptr<scope::Variable> verifyVariableExists(const std::string &varName, uint line, uint col,
+                                                              const std::string &contextInfo = "");
+        std::shared_ptr<scope::Function> verifyFunctionExists(const std::string &functionName, uint line, uint col);
         void verifyTypesMatch(int typeA, int typeB, const std::string &nameA, const std::string &nameB, uint line,
                               uint col, const std::string &errorContextMsg = "Type mismatch error") const;
-        static int determineValueType(const std::string& value);
+        static int determineValueType(const std::string &value);
 
         void visitStructDeclaration(IronParser::StructStatementContext *ctx) const;
         void visitStructStatement(IronParser::StructStatementContext *ctx) const;
-        void visitStructInit(IronParser::StructInitContext *ctx);
-        void visitStructInitBody(IronParser::StructInitBodyContext *ctx);
+        void visitStructInit(IronParser::StructInitContext *ctx, std::shared_ptr<scope::StructStemt> parentStructDef = nullptr);
+        void visitStructInitBody(IronParser::StructInitBodyContext *ctx, std::shared_ptr<scope::StructStemt> parentStructDef = nullptr);
 
         void visitExternBlock(IronParser::ExternBlockContext *ctx);
 
@@ -77,7 +80,11 @@ namespace iron
         void visitStatementList(const IronParser::StatementListContext *ctx);
         std::shared_ptr<scope::Variable> checkAnotherTypes(const std::string &varName,
                                                            const std::string &anotherTypeName, bool mut, int line,
-                                                           const std::string &codeLine, const std::string &caretLine) const;
+                                                           const std::string &codeLine,
+                                                           const std::string &caretLine) const;
+
+        std::pair<std::shared_ptr<scope::StructStemt>, std::shared_ptr<scope::Variable>>
+        getStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers);
 
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
 

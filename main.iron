@@ -1,18 +1,20 @@
-import std.output.printf
+      struct Cidade {
+         mut nome:string
+      }
 
-        fn sub(a:int):int {
-            return a - 2
-        }
+      struct Endereco {
+         mut rua:string,
+         cidade: Cidade
+      }
 
-        fn sum(p:int):int {
-
-            let block:fn = (x:int):int -> {
-                return sub(a:p) * x
-            }
-
-            return block(x:3)
-        }
+      struct Pessoa {
+            mut name:string,
+            mut endereco: Endereco,
+            func:fn
+      }
 
         fn main() {
-           printf(format: "resutl: %u\n", r:sum(p:3))
+            let x:fn = ():int -> 2 * 2
+            mut let pessoa:Pessoa = {endereco:{rua:"32", cidade:{nome:"taliba"}}}
+            pessoa.endereco = {rua:"25", cidade:{nome:"taliba"}}
         }
