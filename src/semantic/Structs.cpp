@@ -200,12 +200,12 @@ namespace iron
                             structInitBodyCtx->parent->parent->parent))
                     {
                         const auto rootVarName = grandParentCtx->varName->getText();
-                        auto rootStructVar = getCurrentFunction()->findVarAllScopesAndArg(rootVarName);
-                        
-                        if (rootStructVar && rootStructVar->structStemt) {
+
+                        if (auto rootStructVar = getCurrentFunction()->findVarAllScopesAndArg(rootVarName);
+                            rootStructVar && rootStructVar->structStemt) {
                             // Get the parent field which should be a struct type
-                            auto parentField = rootStructVar->structStemt->getVarByName(parentFieldName);
-                            if (parentField && parentField->structStemt) {
+                            if (auto parentField = rootStructVar->structStemt->getVarByName(parentFieldName);
+                                parentField && parentField->structStemt) {
                                 parentStructDef = parentField->structStemt;
                             }
                         }
@@ -227,9 +227,9 @@ namespace iron
                                     currentCtx->parent->parent->parent)) {
                                 // Found the root variable
                                 const auto rootVarName = varDeclCtx->varName->getText();
-                                auto rootVar = getCurrentFunction()->findVarAllScopesAndArg(rootVarName);
-                                
-                                if (rootVar && rootVar->structStemt) {
+
+                                if (auto rootVar = getCurrentFunction()->findVarAllScopesAndArg(rootVarName);
+                                    rootVar && rootVar->structStemt) {
                                     // Now we traverse down the field path to find the correct struct field
                                     auto currentStruct = rootVar->structStemt;
                                     
@@ -238,8 +238,8 @@ namespace iron
                                     
                                     // Follow the path except for the last element (which is the current field)
                                     for (size_t i = 0; i < fieldPath.size() - 1; i++) {
-                                        auto field = currentStruct->getVarByName(fieldPath[i]);
-                                        if (field && field->structStemt) {
+                                        if (auto field = currentStruct->getVarByName(fieldPath[i]);
+                                            field && field->structStemt) {
                                             currentStruct = field->structStemt;
                                         }
                                         else {

@@ -9,12 +9,10 @@
 
       struct Pessoa {
             mut name:string,
-            mut endereco: Endereco,
-            func:fn
+            mut endereco: Endereco
       }
 
-        fn main() {
-            let x:fn = ():int -> 2 * 2
+      fn main() {
             mut let pessoa:Pessoa = {endereco:{rua:"32", cidade:{nome:"taliba"}}}
-            pessoa.endereco = {rua:"25", cidade:{nome:"taliba"}}
-        }
+            pessoa.endereco = {rua:"25", cidade:{nomex:"taliba"}}
+      }

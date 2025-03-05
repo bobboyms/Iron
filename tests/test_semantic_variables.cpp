@@ -242,3 +242,103 @@ TEST_F(SemanticVariableTests, TestStructInitFieldTypeMismatch2)
     )";
     EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
 }
+
+TEST_F(SemanticVariableTests, T1)
+{
+    std::string input = R"(
+      struct Cidade {
+         mut nome:string
+      }
+
+      struct Endereco {
+         mut rua:string,
+         cidade: Cidade
+      }
+
+      struct Pessoa {
+            mut name:string,
+            mut endereco: Endereco
+      }
+
+      fn main() {
+            mut let pessoa:Pessoa = {endereco:{rua:"32", cidade:{nome:"taliba"}}}
+            pessoa.endereco = {rua:25, cidade:{nome:"taliba"}}
+      }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticVariableTests, T2)
+{
+    std::string input = R"(
+      struct Cidade {
+         mut nome:string
+      }
+
+      struct Endereco {
+         mut rua:string,
+         cidade: Cidade
+      }
+
+      struct Pessoa {
+            mut name:string,
+            mut endereco: Endereco
+      }
+
+      fn main() {
+            mut let pessoa:Pessoa = {endereco:{rua:"32", cidade:{nome:74}}}
+            pessoa.endereco = {rua:"25 de março", cidade:{nome:"taliba"}}
+      }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::TypeMismatchException);
+}
+
+TEST_F(SemanticVariableTests, T3)
+{
+    std::string input = R"(
+      struct Cidade {
+         mut nome:string
+      }
+
+      struct Endereco {
+         mut rua:string,
+         cidade: Cidade
+      }
+
+      struct Pessoa {
+            mut name:string,
+            endereco: Endereco
+      }
+
+      fn main() {
+            mut let pessoa:Pessoa = {endereco:{rua:"32", cidade:{nome:"José e Maria"}}}
+            pessoa.endereco = {rua:"25 de março", cidade:{nome:"taliba"}}
+      }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::VariableCannotBeChangedException);
+}
+
+TEST_F(SemanticVariableTests, T4)
+{
+    std::string input = R"(
+      struct Cidade {
+         mut nome:string
+      }
+
+      struct Endereco {
+         mut rua:string,
+         cidade: Cidade
+      }
+
+      struct Pessoa {
+            mut name:string,
+            mut endereco: Endereco
+      }
+
+      fn main() {
+            mut let pessoa:Pessoa = {endereco:{rua:"32", cidade:{nome:"taliba"}}}
+            pessoa.endereco = {rua:"25", cidade:{nomex:"taliba"}}
+      }
+    )";
+    EXPECT_THROW(runAnalysis(input), iron::VariableNotFoundException);
+}
