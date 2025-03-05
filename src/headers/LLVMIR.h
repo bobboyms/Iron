@@ -23,6 +23,58 @@
 namespace iron
 {
     /**
+     * @brief Utility functions for LLVM code generation
+     * 
+     * This namespace contains common utility functions used across the LLVM code generation.
+     */
+    namespace llvm_utils
+    {
+        /**
+         * @brief Check if a pointer is null and throw a consistent exception if it is
+         * 
+         * @tparam T Type of the pointer to check
+         * @param ptr The pointer to check for null
+         * @param paramName The name of the parameter for error messaging
+         * @param funcName The name of the calling function
+         * @throws LLVMException if the pointer is null
+         */
+        template<typename T>
+        void checkNotNull(const T& ptr, const std::string& paramName, const std::string& funcName) {
+            if (!ptr) {
+                throw LLVMException(util::format("{}: {} is null", funcName, paramName));
+            }
+        }
+        
+        /**
+         * @brief Format an error message with consistent style
+         * 
+         * @param funcName The name of the function raising the error
+         * @param message The error message
+         * @return std::string Formatted error message
+         */
+        inline std::string formatError(const std::string& funcName, const std::string& message) {
+            return util::format("{}: {}", funcName, message);
+        }
+        
+        /**
+         * @brief Check if two values are equal and throw an exception if not
+         * 
+         * @tparam T Type of the values to compare
+         * @param actual The actual value
+         * @param expected The expected value
+         * @param message The error message
+         * @param funcName The name of the calling function
+         * @throws LLVMException if the values are not equal
+         */
+        template<typename T>
+        void checkEqual(const T& actual, const T& expected, const std::string& message, const std::string& funcName) {
+            if (actual != expected) {
+                throw LLVMException(formatError(funcName, message));
+            }
+        }
+    }
+
+    /**
      * @class LLVM
      * @brief Main class for generating LLVM IR code from HLIR (High-Level IR) representation
      * 
@@ -57,6 +109,49 @@ namespace iron
         
         /** Source filename for the current module */
         std::string filename;
+        
+        //---------------------------------------------------------------------
+        // Utility methods for internal use
+        //---------------------------------------------------------------------
+        
+        /**
+         * @brief Creates a load instruction for a variable
+         *
+         * @param variable The variable to load
+         * @param function The function context
+         * @return llvm::LoadInst* The load instruction
+         * @throws LLVMException if the variable can't be found or loaded
+         */
+        llvm::LoadInst* loadVariable(const std::shared_ptr<hlir::Variable>& variable, llvm::Function* function);
+        
+        /**
+         * @brief Validates all operation inputs before execution
+         *
+         * @param operation The operation to validate
+         * @param function The function context
+         * @param funcName The name of the calling function
+         * @throws LLVMException if any validation fails
+         */
+        void validateOperationInputs(const std::shared_ptr<hlir::BinaryOperation>& operation, 
+                                    llvm::Function* function, 
+                                    const std::string& funcName);
+                                    
+        /**
+         * @brief Creates a struct field access and loads its value
+         * 
+         * @param structVar Variable containing the struct
+         * @param fieldName Name of the field to access
+         * @param fieldIndex Index of the field in the struct
+         * @param fieldType Type of the field 
+         * @param function Current function context
+         * @return llvm::Value* The loaded field value
+         */
+        llvm::Value* loadStructField(
+            const std::shared_ptr<hlir::Variable>& structVar,
+            const std::string& fieldName,
+            unsigned fieldIndex,
+            int fieldType,
+            llvm::Function* function);
 
     public:
         /**

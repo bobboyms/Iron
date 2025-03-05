@@ -32,53 +32,57 @@ namespace iron
         StructType->setBody(structElements, /*isPacked=*/false);
     }
 
-    void LLVM::visitStatement(const std::shared_ptr<hlir::Statement> &statements)
+    /**
+ * @brief Processes a list of statements and generates their LLVM IR
+ *
+ * This function traverses a list of statements and dispatches each to the 
+ * appropriate handler based on its type.
+ *
+ * @param statements The statements to process
+ * @throws LLVMException if statements is null
+ */
+void LLVM::visitStatement(const std::shared_ptr<hlir::Statement> &statements)
+{
+    llvm_utils::checkNotNull(statements, "statements", "visitStatement");
+
+    for (auto &statement: statements->getStatements())
     {
-
-        if (!statements)
-        {
-            throw LLVMException("LLVM::visitStatement. VisitStatement called with null hlirStatement");
-        }
-
-        for (auto &statement: statements->getStatements())
-        {
-
-            std::visit(
-                    [this](auto &&arg)
+        std::visit(
+                [this](auto &&arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Assign>>)
                     {
-                        using T = std::decay_t<decltype(arg)>;
-                        if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Assign>>)
-                        {
-                            this->visitAssignment(arg);
-                        }
-                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Expr>>)
-                        {
-                            this->visitExpr(arg);
-                        }
-                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FunctionCall>>)
-                        {
-                            this->visitFunctionCall(arg);
-                        }
-                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Conditional>>)
-                        {
-                            this->visitConditional(arg);
-                        }
-                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Block>>)
-                        {
-                            this->visitBlock(arg);
-                        }
-                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Jump>>)
-                        {
-                            this->visitJump(arg);
-                        }
-                        else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FuncReturn>>)
-                        {
-                            this->visitFuncReturn(arg);
-                        }
-                    },
-                    statement);
-        }
+                        this->visitAssignment(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Expr>>)
+                    {
+                        this->visitExpr(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FunctionCall>>)
+                    {
+                        this->visitFunctionCall(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Conditional>>)
+                    {
+                        this->visitConditional(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Block>>)
+                    {
+                        this->visitBlock(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Jump>>)
+                    {
+                        this->visitJump(arg);
+                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::FuncReturn>>)
+                    {
+                        this->visitFuncReturn(arg);
+                    }
+                },
+                statement);
     }
+}
 
 
     void printFunctionInfo(const llvm::Function *function)

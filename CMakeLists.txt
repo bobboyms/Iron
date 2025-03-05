@@ -161,11 +161,12 @@ set(SRC_COMMON
         src/hlir/generator/Structs.cpp
         src/llvm/Types.cpp
         src/llvm/LLVM.cpp
-        src/llvm/functions.cpp
+        src/llvm/Functions.cpp
         src/llvm/Operations.cpp
         src/llvm/EmitObject.cpp
         src/llvm/LLD.cpp
         src/llvm/VM.cpp
+        src/llvm/Utils.cpp
         src/utils/Colors.cpp
         src/semantic/SemanticAnalysis.cpp
         src/semantic/BoolExpr.cpp
