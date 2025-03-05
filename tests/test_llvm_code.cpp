@@ -66,6 +66,8 @@ protected:
         auto hlirOutPut = getHighLevelCode(input);
         const auto cleanInput = removeWhitespace(hlirOutPut);
         const auto cleanExpected = removeWhitespace(expectedOutput);
+
+        
         if (cleanInput == cleanExpected)
         {
             // Teste passou.
@@ -206,27 +208,31 @@ TEST_F(LLVMTestCode, T1)
 
         define i32 @gfn_gfn_soma_block1_block2(i32 %j, i32 %x) {
         entry:
-          %j_alloca2 = alloca i32, align 4
+          %j_alloca4 = alloca i32, align 4
           %var_6 = alloca i32, align 4
           %var_7 = alloca i32, align 4
           %var_4 = alloca i32, align 4
           %var_0 = alloca i32, align 4
+          %x_alloca2 = alloca i32, align 4
           %x_alloca = alloca i32, align 4
           %var_3 = alloca i32, align 4
+          %j_alloca1 = alloca i32, align 4
           %j_alloca = alloca i32, align 4
           %var_2 = alloca i32, align 4
           %var_1 = alloca i32, align 4
           store i32 2, ptr %var_1, align 4
           store i32 %j, ptr %j_alloca, align 4
           %load_var_1 = load i32, ptr %var_1, align 4
-          %load_j = load i32, ptr %j_alloca, align 4
+          store i32 %j, ptr %j_alloca1, align 4
+          %load_j = load i32, ptr %j_alloca1, align 4
           %rmult = mul i32 %load_var_1, %load_j
           store i32 %rmult, ptr %var_2, align 4
           store i32 %x, ptr %x_alloca, align 4
           %load_var_2 = load i32, ptr %var_2, align 4
-          %load_x = load i32, ptr %x_alloca, align 4
-          %rmult1 = mul i32 %load_var_2, %load_x
-          store i32 %rmult1, ptr %var_3, align 4
+          store i32 %x, ptr %x_alloca2, align 4
+          %load_x = load i32, ptr %x_alloca2, align 4
+          %rmult3 = mul i32 %load_var_2, %load_x
+          store i32 %rmult3, ptr %var_3, align 4
           %load_var_3 = load i32, ptr %var_3, align 4
           store i32 %load_var_3, ptr %var_0, align 4
           store i32 25, ptr %var_4, align 4
@@ -234,10 +240,10 @@ TEST_F(LLVMTestCode, T1)
           store ptr @gfn_gfn_gfn_soma_block1_block2_block3, ptr %var_5, align 8
           store i32 14524, ptr %var_7, align 4
           %load_var_7 = load i32, ptr %var_7, align 4
-          store i32 %j, ptr %j_alloca2, align 4
-          %load_j3 = load i32, ptr %j_alloca2, align 4
+          store i32 %j, ptr %j_alloca4, align 4
+          %load_j5 = load i32, ptr %j_alloca4, align 4
           %load_var_4 = load i32, ptr %var_4, align 4
-          %call_gfn_gfn_gfn_soma_block1_block2_block3 = call i32 @gfn_gfn_gfn_soma_block1_block2_block3(i32 %load_var_7, i32 %load_j3, i32 %load_var_4)
+          %call_gfn_gfn_gfn_soma_block1_block2_block3 = call i32 @gfn_gfn_gfn_soma_block1_block2_block3(i32 %load_var_7, i32 %load_j5, i32 %load_var_4)
           store i32 %call_gfn_gfn_gfn_soma_block1_block2_block3, ptr %var_6, align 4
           %load_var_6 = load i32, ptr %var_6, align 4
           ret i32 %load_var_6
@@ -246,29 +252,35 @@ TEST_F(LLVMTestCode, T1)
         define i32 @gfn_gfn_gfn_soma_block1_block2_block3(i32 %n, i32 %j, i32 %x) {
         entry:
           %var_0 = alloca i32, align 4
+          %n_alloca4 = alloca i32, align 4
           %n_alloca = alloca i32, align 4
           %var_4 = alloca i32, align 4
+          %x_alloca2 = alloca i32, align 4
           %x_alloca = alloca i32, align 4
           %var_3 = alloca i32, align 4
+          %j_alloca1 = alloca i32, align 4
           %j_alloca = alloca i32, align 4
           %var_2 = alloca i32, align 4
           %var_1 = alloca i32, align 4
           store i32 2, ptr %var_1, align 4
           store i32 %j, ptr %j_alloca, align 4
           %load_var_1 = load i32, ptr %var_1, align 4
-          %load_j = load i32, ptr %j_alloca, align 4
+          store i32 %j, ptr %j_alloca1, align 4
+          %load_j = load i32, ptr %j_alloca1, align 4
           %rmult = mul i32 %load_var_1, %load_j
           store i32 %rmult, ptr %var_2, align 4
           store i32 %x, ptr %x_alloca, align 4
           %load_var_2 = load i32, ptr %var_2, align 4
-          %load_x = load i32, ptr %x_alloca, align 4
-          %rmult1 = mul i32 %load_var_2, %load_x
-          store i32 %rmult1, ptr %var_3, align 4
+          store i32 %x, ptr %x_alloca2, align 4
+          %load_x = load i32, ptr %x_alloca2, align 4
+          %rmult3 = mul i32 %load_var_2, %load_x
+          store i32 %rmult3, ptr %var_3, align 4
           store i32 %n, ptr %n_alloca, align 4
           %load_var_3 = load i32, ptr %var_3, align 4
-          %load_n = load i32, ptr %n_alloca, align 4
-          %rmult2 = mul i32 %load_var_3, %load_n
-          store i32 %rmult2, ptr %var_4, align 4
+          store i32 %n, ptr %n_alloca4, align 4
+          %load_n = load i32, ptr %n_alloca4, align 4
+          %rmult5 = mul i32 %load_var_3, %load_n
+          store i32 %rmult5, ptr %var_4, align 4
           %load_var_4 = load i32, ptr %var_4, align 4
           store i32 %load_var_4, ptr %var_0, align 4
           %load_var_0 = load i32, ptr %var_0, align 4
@@ -340,6 +352,7 @@ TEST_F(LLVMTestCode, T2)
           %var_4 = alloca float, align 4
           %var_3 = alloca float, align 4
           %var_2 = alloca i32, align 4
+          %p_alloca1 = alloca float, align 4
           %p_alloca = alloca float, align 4
           %var_1 = alloca float, align 4
           %n_alloca = alloca i32, align 4
@@ -350,7 +363,8 @@ TEST_F(LLVMTestCode, T2)
           store float %cast_n, ptr %var_0, align 4
           store float %p, ptr %p_alloca, align 4
           %load_var_0 = load float, ptr %var_0, align 4
-          %load_p = load float, ptr %p_alloca, align 4
+          store float %p, ptr %p_alloca1, align 4
+          %load_p = load float, ptr %p_alloca1, align 4
           %rmult = fmul float %load_var_0, %load_p
           store float %rmult, ptr %var_1, align 4
           store i32 2, ptr %var_2, align 4
@@ -370,12 +384,14 @@ TEST_F(LLVMTestCode, T2)
           %var_3 = alloca float, align 4
           %ax_alloca = alloca i32, align 4
           %var_2 = alloca float, align 4
+          %bx_alloca1 = alloca float, align 4
           %bx_alloca = alloca float, align 4
           %var_1 = alloca float, align 4
           %var_0 = alloca float, align 4
           store float 1.000000e+00, ptr %var_0, align 4
           store float %bx, ptr %bx_alloca, align 4
-          %load_bx = load float, ptr %bx_alloca, align 4
+          store float %bx, ptr %bx_alloca1, align 4
+          %load_bx = load float, ptr %bx_alloca1, align 4
           %load_var_0 = load float, ptr %var_0, align 4
           %rmult = fmul float %load_bx, %load_var_0
           store float %rmult, ptr %var_1, align 4
@@ -439,6 +455,7 @@ TEST_F(LLVMTestCode, T2)
 
         define float @gfn_main_inline(i32 %a, float %x) {
         entry:
+          %x_alloca1 = alloca float, align 4
           %x_alloca = alloca float, align 4
           %var_1 = alloca float, align 4
           %a_alloca = alloca i32, align 4
@@ -449,7 +466,8 @@ TEST_F(LLVMTestCode, T2)
           store float %cast_a, ptr %var_0, align 4
           store float %x, ptr %x_alloca, align 4
           %load_var_0 = load float, ptr %var_0, align 4
-          %load_x = load float, ptr %x_alloca, align 4
+          store float %x, ptr %x_alloca1, align 4
+          %load_x = load float, ptr %x_alloca1, align 4
           %rmult = fmul float %load_var_0, %load_x
           store float %rmult, ptr %var_1, align 4
           %load_var_1 = load float, ptr %var_1, align 4
@@ -864,77 +882,81 @@ TEST_F(LLVMTestCode, T3)
 TEST_F(LLVMTestCode, T4)
 {
     const std::string output = R"(
-    ; ModuleID = 'output.o'
-    source_filename = "output.o"
+        ; ModuleID = 'output.o'
+        source_filename = "output.o"
 
-    declare i32 @printf(ptr, ...)
+        declare i32 @printf(ptr, ...)
 
-    define i32 @sub(i32 %a) {
-    entry:
-      %a_alloca = alloca i32, align 4
-      %var_1 = alloca i32, align 4
-      %var_0 = alloca i32, align 4
-      store i32 2, ptr %var_0, align 4
-      store i32 %a, ptr %a_alloca, align 4
-      %load_a = load i32, ptr %a_alloca, align 4
-      %load_var_0 = load i32, ptr %var_0, align 4
-      %rminus = sub i32 %load_a, %load_var_0
-      store i32 %rminus, ptr %var_1, align 4
-      %load_var_1 = load i32, ptr %var_1, align 4
-      ret i32 %load_var_1
-    }
+        define i32 @sub(i32 %a) {
+        entry:
+          %a_alloca1 = alloca i32, align 4
+          %a_alloca = alloca i32, align 4
+          %var_1 = alloca i32, align 4
+          %var_0 = alloca i32, align 4
+          store i32 2, ptr %var_0, align 4
+          store i32 %a, ptr %a_alloca, align 4
+          store i32 %a, ptr %a_alloca1, align 4
+          %load_a = load i32, ptr %a_alloca1, align 4
+          %load_var_0 = load i32, ptr %var_0, align 4
+          %rminus = sub i32 %load_a, %load_var_0
+          store i32 %rminus, ptr %var_1, align 4
+          %load_var_1 = load i32, ptr %var_1, align 4
+          ret i32 %load_var_1
+        }
 
-    define i32 @sum(i32 %p) {
-    entry:
-      %p_alloca = alloca i32, align 4
-      %var_1 = alloca i32, align 4
-      %var_2 = alloca i32, align 4
-      %var_0 = alloca ptr, align 8
-      store ptr @gfn_sum_block, ptr %var_0, align 8
-      store i32 3, ptr %var_2, align 4
-      %load_var_2 = load i32, ptr %var_2, align 4
-      store i32 %p, ptr %p_alloca, align 4
-      %load_p = load i32, ptr %p_alloca, align 4
-      %call_gfn_sum_block = call i32 @gfn_sum_block(i32 %load_var_2, i32 %load_p)
-      store i32 %call_gfn_sum_block, ptr %var_1, align 4
-      %load_var_1 = load i32, ptr %var_1, align 4
-      ret i32 %load_var_1
-    }
+        define i32 @sum(i32 %p) {
+        entry:
+          %p_alloca = alloca i32, align 4
+          %var_1 = alloca i32, align 4
+          %var_2 = alloca i32, align 4
+          %var_0 = alloca ptr, align 8
+          store ptr @gfn_sum_block, ptr %var_0, align 8
+          store i32 3, ptr %var_2, align 4
+          %load_var_2 = load i32, ptr %var_2, align 4
+          store i32 %p, ptr %p_alloca, align 4
+          %load_p = load i32, ptr %p_alloca, align 4
+          %call_gfn_sum_block = call i32 @gfn_sum_block(i32 %load_var_2, i32 %load_p)
+          store i32 %call_gfn_sum_block, ptr %var_1, align 4
+          %load_var_1 = load i32, ptr %var_1, align 4
+          ret i32 %load_var_1
+        }
 
-    define i32 @gfn_sum_block(i32 %x, i32 %p) {
-    entry:
-      %x_alloca = alloca i32, align 4
-      %var_1 = alloca i32, align 4
-      %p_alloca = alloca i32, align 4
-      %var_0 = alloca i32, align 4
-      store i32 %p, ptr %p_alloca, align 4
-      %load_p = load i32, ptr %p_alloca, align 4
-      %call_sub = call i32 @sub(i32 %load_p)
-      store i32 %call_sub, ptr %var_0, align 4
-      store i32 %x, ptr %x_alloca, align 4
-      %load_var_0 = load i32, ptr %var_0, align 4
-      %load_x = load i32, ptr %x_alloca, align 4
-      %rmult = mul i32 %load_var_0, %load_x
-      store i32 %rmult, ptr %var_1, align 4
-      %load_var_1 = load i32, ptr %var_1, align 4
-      ret i32 %load_var_1
-    }
+        define i32 @gfn_sum_block(i32 %x, i32 %p) {
+        entry:
+          %x_alloca1 = alloca i32, align 4
+          %x_alloca = alloca i32, align 4
+          %var_1 = alloca i32, align 4
+          %p_alloca = alloca i32, align 4
+          %var_0 = alloca i32, align 4
+          store i32 %p, ptr %p_alloca, align 4
+          %load_p = load i32, ptr %p_alloca, align 4
+          %call_sub = call i32 @sub(i32 %load_p)
+          store i32 %call_sub, ptr %var_0, align 4
+          store i32 %x, ptr %x_alloca, align 4
+          %load_var_0 = load i32, ptr %var_0, align 4
+          store i32 %x, ptr %x_alloca1, align 4
+          %load_x = load i32, ptr %x_alloca1, align 4
+          %rmult = mul i32 %load_var_0, %load_x
+          store i32 %rmult, ptr %var_1, align 4
+          %load_var_1 = load i32, ptr %var_1, align 4
+          ret i32 %load_var_1
+        }
 
-    define void @main() {
-    entry:
-      %var_2 = alloca i32, align 4
-      %var_1 = alloca i32, align 4
-      %var_0 = alloca [15 x i8], align 1
-      store [12 x i8] c"resutl: %u\0A\00", ptr %var_0, align 1
-      store i32 3, ptr %var_1, align 4
-      %load_var_1 = load i32, ptr %var_1, align 4
-      %call_sum = call i32 @sum(i32 %load_var_1)
-      store i32 %call_sum, ptr %var_2, align 4
-      %str_ptr = getelementptr [15 x i8], ptr %var_0, i32 0, i32 0
-      %load_var_2 = load i32, ptr %var_2, align 4
-      %call_printf = call i32 (ptr, ...) @printf(ptr %str_ptr, i32 %load_var_2)
-      ret void
-    }
+        define void @main() {
+        entry:
+          %var_2 = alloca i32, align 4
+          %var_1 = alloca i32, align 4
+          %var_0 = alloca [15 x i8], align 1
+          store [12 x i8] c"resutl: %u\0A\00", ptr %var_0, align 1
+          store i32 3, ptr %var_1, align 4
+          %load_var_1 = load i32, ptr %var_1, align 4
+          %call_sum = call i32 @sum(i32 %load_var_1)
+          store i32 %call_sum, ptr %var_2, align 4
+          %str_ptr = getelementptr [15 x i8], ptr %var_0, i32 0, i32 0
+          %load_var_2 = load i32, ptr %var_2, align 4
+          %call_printf = call i32 (ptr, ...) @printf(ptr %str_ptr, i32 %load_var_2)
+          ret void
+        }
     )";
 
     const std::string input = R"(
@@ -1123,6 +1145,63 @@ TEST_F(LLVMTestCode, T6)
                 x = x + 1
                 printf(format:"value if x: %i\n", r:x)
             }
+        }
+    )";
+
+    runAnalysis(input, output);
+}
+
+TEST_F(LLVMTestCode, T7)
+{
+    const std::string output = R"(
+        ; ModuleID = 'main.o'
+        source_filename = "main.o"
+
+        %struct.Pessoa = type { ptr, i32, float, double, i1 }
+
+        define void @main() {
+        entry:
+          %var_5 = alloca i1, align 1
+          %var_4 = alloca double, align 8
+          %var_3 = alloca float, align 4
+          %var_2 = alloca i32, align 4
+          %var_0 = alloca %struct.Pessoa, align 8
+          %var_1 = alloca [9 x i8], align 1
+          store [7 x i8] c"Thiago\00", ptr %var_1, align 1
+          store i32 37, ptr %var_2, align 4
+          store float 1.750000e+00, ptr %var_3, align 4
+          store double 0x40A3888219652BD4, ptr %var_4, align 8
+          store i1 true, ptr %var_5, align 1
+          %load_var_1 = load ptr, ptr %var_1, align 8
+          %name = getelementptr inbounds %struct.Pessoa, ptr %var_0, i32 0, i32 0
+          store ptr %load_var_1, ptr %name, align 8
+          %load_var_2 = load i32, ptr %var_2, align 4
+          %idade = getelementptr inbounds %struct.Pessoa, ptr %var_0, i32 0, i32 1
+          store i32 %load_var_2, ptr %idade, align 4
+          %load_var_3 = load float, ptr %var_3, align 4
+          %altura = getelementptr inbounds %struct.Pessoa, ptr %var_0, i32 0, i32 2
+          store float %load_var_3, ptr %altura, align 4
+          %load_var_4 = load double, ptr %var_4, align 8
+          %salario = getelementptr inbounds %struct.Pessoa, ptr %var_0, i32 0, i32 3
+          store double %load_var_4, ptr %salario, align 8
+          %load_var_5 = load i1, ptr %var_5, align 1
+          %casado = getelementptr inbounds %struct.Pessoa, ptr %var_0, i32 0, i32 4
+          store i1 %load_var_5, ptr %casado, align 1
+          ret void
+        }
+    )";
+
+    const std::string input = R"(
+        struct Pessoa {
+            mut name:string,
+            idade:int,
+            altura:float,
+            salario:double,
+            casado:boolean
+        }
+
+        fn main() {
+            let pessoa:Pessoa = {name:"Thiago", idade:37, altura:1.75, salario:2500.2541D, casado:true}
         }
     )";
 

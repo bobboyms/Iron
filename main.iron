@@ -1,8 +1,18 @@
-struct Pessoa {
-    mut name:string,
-    idade:int
-}
+import std.output.printf
 
-fn main() {
-    let pessoa:Pessoa = {name:"Thiago", idade:37}
-}
+        fn sub(a:int):int {
+            return a - 2
+        }
+
+        fn sum(p:int):int {
+
+            let block:fn = (x:int):int -> {
+                return sub(a:p) * x
+            }
+
+            return block(x:3)
+        }
+
+        fn main() {
+           printf(format: "resutl: %u\n", r:sum(p:3))
+        }

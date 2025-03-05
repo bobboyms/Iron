@@ -44,7 +44,7 @@ namespace hlir
         }
 
         // Process function body if present
-        auto scopeStatement = std::make_shared<Statement>();
+        const auto scopeStatement = std::make_shared<Statement>();
         ScopeGuard guard(function, scopeStatement);
         if (ctx->statementList()) {
             visitStatementList(ctx->statementList(), function);

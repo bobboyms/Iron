@@ -13,10 +13,7 @@ namespace iron
      */
     void LLVM::visitFunction(const std::shared_ptr<hlir::Function> &hlirFunction)
     {
-        if (!hlirFunction)
-        {
-            throw LLVMException("LLVM::visitFunction: VisitFunction called with null hlirFunction");
-        }
+        llvm_utils::checkNotNull(hlirFunction, "hlirFunction", "visitFunction");
 
         // Skip external function declarations
         if (hlirFunction->isExternal())
@@ -73,36 +70,17 @@ namespace iron
      */
     void LLVM::visitFuncReturn(const std::shared_ptr<hlir::FuncReturn> &funcReturn)
     {
-        if (!funcReturn) {
-            throw LLVMException("LLVM::visitFuncReturn: funcReturn is null");
-        }
-        
-        if (!funcReturn->getVariable()) {
-            throw LLVMException("LLVM::visitFuncReturn: return variable is null");
-        }
-        
-        if (!funcReturn->getVariable()->getVarType()) {
-            throw LLVMException("LLVM::visitFuncReturn: return variable type is null");
-        }
+        llvm_utils::checkNotNull(funcReturn, "funcReturn", "visitFuncReturn");
+        llvm_utils::checkNotNull(funcReturn->getVariable(), "return variable", "visitFuncReturn");
+        llvm_utils::checkNotNull(funcReturn->getVariable()->getVarType(), "return variable type", "visitFuncReturn");
         
         llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
-        if (!currentFunction)
-        {
-            throw LLVMException("LLVM::visitFuncReturn: currentFunction is null");
-        }
+        llvm_utils::checkNotNull(currentFunction, "currentFunction", "visitFuncReturn");
 
-        // Get the variable name and its allocation
-        const auto varName = funcReturn->getVariable()->getRealName();
-        const auto allocaVariable = findAllocaByName(currentFunction, varName);
-        if (!allocaVariable) {
-            throw LLVMException(util::format("LLVM::visitFuncReturn: Variable {} not found", varName));
-        }
-
-        // Map the variable type to LLVM type
-        const auto type = mapType(funcReturn->getVariable()->getVarType()->getType());
-
-        // Load the variable value and create a return instruction
-        llvm::Value *varValue = builder.CreateLoad(type, allocaVariable, util::format("load_{}", varName));
+        // Load the return variable value using our utility function
+        llvm::Value *varValue = loadVariable(funcReturn->getVariable(), currentFunction);
+        
+        // Create the return instruction
         builder.CreateRet(varValue);
     }
 
