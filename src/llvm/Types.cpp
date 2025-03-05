@@ -7,7 +7,7 @@ namespace iron
 {
     /**
      * @brief Assigns a value from another variable to the given allocation
-     * 
+     *
      * @param value Source value to assign
      * @param allocaVariable Destination allocation instruction
      * @param function Current function where the assignment takes place
@@ -16,15 +16,18 @@ namespace iron
     void LLVM::assignVariable(const std::shared_ptr<hlir::Value> &value, llvm::AllocaInst *allocaVariable,
                               llvm::Function *function)
     {
-        if (!value) {
+        if (!value)
+        {
             throw LLVMException("assignVariable: value is null");
         }
 
-        if (!allocaVariable) {
+        if (!allocaVariable)
+        {
             throw LLVMException("assignVariable: allocaVariable is null");
         }
 
-        if (!function) {
+        if (!function)
+        {
             throw LLVMException("assignVariable: function is null");
         }
 
@@ -38,8 +41,8 @@ namespace iron
                         {
                             auto type = mapType(value->getVarType()->getType());
                             auto anotherAlloca = this->findAllocaByName(function, value->getRealName());
-                            llvm::LoadInst *loadInst = builder.CreateLoad(type, anotherAlloca,
-                                                                          util::format("load_{}", value->getRealName()));
+                            llvm::LoadInst *loadInst = builder.CreateLoad(
+                                    type, anotherAlloca, util::format("load_{}", value->getRealName()));
                             builder.CreateStore(loadInst, allocaVariable);
                         }
                     }
@@ -57,7 +60,7 @@ namespace iron
 
     /**
      * @brief Assigns a constant value to a variable allocation
-     * 
+     *
      * @param variable The variable receiving the value
      * @param value The value to assign
      * @param allocaVariable The allocation instruction for the variable
@@ -90,7 +93,8 @@ namespace iron
         llvm::Value *valueToStore = nullptr;
         const int varType = variable->getVarType()->getType();
 
-        try {
+        try
+        {
             // Handle different types of constants based on the variable type
             switch (varType)
             {
@@ -120,7 +124,8 @@ namespace iron
                 }
                 case tokenMap::TYPE_STRING:
                 {
-                    valueToStore = llvm::ConstantDataArray::getString(llvmContext, normalizeUserString(value->getText()), true);
+                    valueToStore = llvm::ConstantDataArray::getString(llvmContext,
+                                                                      normalizeUserString(value->getText()), true);
                     break;
                 }
                 default:
@@ -128,12 +133,11 @@ namespace iron
                     throw iron::LLVMException(util::format("Unsupported type for literal: {}", value->getText()));
                 }
             }
-        } catch (const std::exception& e) {
-            throw iron::LLVMException(
-                util::format("Error converting value '{}' to type {}: {}",
-                            value->getText(),
-                            tokenMap::getTokenText(varType),
-                            e.what()));
+        }
+        catch (const std::exception &e)
+        {
+            throw iron::LLVMException(util::format("Error converting value '{}' to type {}: {}", value->getText(),
+                                                   tokenMap::getTokenText(varType), e.what()));
         }
 
         // String types are handled differently
@@ -146,10 +150,9 @@ namespace iron
             // Verify type compatibility before storing
             if (valueToStore->getType() != allocaVariable->getAllocatedType())
             {
-                throw iron::LLVMException(
-                    util::format("Type mismatch: expected {}, got {}",
-                                allocaVariable->getAllocatedType()->getTypeID(),
-                                valueToStore->getType()->getTypeID()));
+                throw iron::LLVMException(util::format("Type mismatch: expected {}, got {}",
+                                                       allocaVariable->getAllocatedType()->getTypeID(),
+                                                       valueToStore->getType()->getTypeID()));
             }
             builder.CreateStore(valueToStore, allocaVariable);
         }
@@ -157,13 +160,14 @@ namespace iron
 
     /**
      * @brief Generates a default return value based on the function return type
-     * 
+     *
      * @param functionReturnType The LLVM type that represents the function's return type
      * @throws LLVMException if the type is not supported
      */
     void LLVM::generateTerminator(llvm::Type *functionReturnType)
     {
-        if (!functionReturnType) {
+        if (!functionReturnType)
+        {
             throw LLVMException("LLVM::generateTerminator: 'functionReturnType' is a null pointer.");
         }
 
@@ -195,21 +199,21 @@ namespace iron
         else
         {
             throw LLVMException(
-                util::format("LLVM::generateTerminator: Type not handled: {}",
-                           functionReturnType->getTypeID()));
+                    util::format("LLVM::generateTerminator: Type not handled: {}", functionReturnType->getTypeID()));
         }
     }
 
     /**
      * @brief Maps Iron language types to LLVM types
-     * 
+     *
      * @param type The Iron type token
      * @return llvm::Type* The corresponding LLVM type
      * @throws LLVMException if the type is unknown
      */
     llvm::Type *LLVM::mapType(const int type) const
     {
-        switch (type) {
+        switch (type)
+        {
             case tokenMap::TYPE_INT:
                 return llvm::Type::getInt32Ty(llvmContext);
             case tokenMap::PTR_TYPE_INT:
@@ -241,7 +245,7 @@ namespace iron
 
     /**
      * @brief Finds a function argument by name
-     * 
+     *
      * @param function The function to search in
      * @param argName The name of the argument to find
      * @return llvm::Argument* Pointer to the argument or nullptr if not found
@@ -267,7 +271,7 @@ namespace iron
 
     /**
      * @brief Finds an allocation instruction or promotes an argument to an allocation
-     * 
+     *
      * @param varName The name of the variable to find
      * @param function The function to search in
      * @return llvm::AllocaInst* The allocation instruction
@@ -275,7 +279,8 @@ namespace iron
      */
     llvm::AllocaInst *LLVM::getOrPromoteToAlloca(const std::string &varName, llvm::Function *function)
     {
-        if (!function) {
+        if (!function)
+        {
             throw LLVMException("LLVM::getOrPromoteToAlloca: function is null");
         }
 
@@ -295,7 +300,7 @@ namespace iron
 
     /**
      * @brief Promotes a function argument to an allocation in the entry block
-     * 
+     *
      * @param function The function containing the argument
      * @param arg The argument to promote
      * @return llvm::AllocaInst* The allocation instruction
@@ -303,10 +308,11 @@ namespace iron
      */
     llvm::AllocaInst *LLVM::promoteArgumentToAlloca(llvm::Function *function, llvm::Argument *arg)
     {
-        if (!function) {
+        if (!function)
+        {
             throw LLVMException("LLVM::promoteArgumentToAlloca: function is null");
         }
-        
+
         if (!arg)
         {
             throw LLVMException("promoteArgumentToAlloca: Argument is null");
@@ -324,14 +330,15 @@ namespace iron
 
     /**
      * @brief Finds an allocation instruction by name in a function
-     * 
+     *
      * @param function The function to search in
      * @param varName The name of the variable to find
      * @return llvm::AllocaInst* The allocation instruction or nullptr if not found
      */
     llvm::AllocaInst *LLVM::findAllocaByName(llvm::Function *function, const std::string &varName)
     {
-        if (!function) {
+        if (!function)
+        {
             return nullptr;
         }
 
@@ -354,7 +361,7 @@ namespace iron
 
     /**
      * @brief Creates a constant value based on type information
-     * 
+     *
      * @param hlirType The HLIR type information
      * @param value The value to create
      * @return llvm::Value* The LLVM constant value
@@ -363,11 +370,13 @@ namespace iron
     llvm::Value *LLVM::createConstValue(const std::shared_ptr<hlir::Type> &hlirType,
                                         const std::shared_ptr<hlir::Value> &value)
     {
-        if (!hlirType) {
+        if (!hlirType)
+        {
             throw LLVMException("LLVM::createConstValue: hlirType is null");
         }
 
-        if (!value) {
+        if (!value)
+        {
             throw LLVMException("LLVM::createConstValue: value is null");
         }
 
@@ -377,32 +386,36 @@ namespace iron
                     using T = std::decay_t<decltype(argValue)>;
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
                     {
-                        if (!argValue) {
+                        if (!argValue)
+                        {
                             throw LLVMException("LLVM::createConstValue: function value is null");
                         }
                         return module->getFunction(argValue->getFunctionName());
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
                     {
-                        if (!argValue) {
+                        if (!argValue)
+                        {
                             throw LLVMException("LLVM::createConstValue: variable value is null");
                         }
-                        
+
                         if (argValue->getRealName().empty())
                         {
                             throw std::invalid_argument("Variable name is empty");
                         }
 
                         llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
-                        if (!currentFunction) {
+                        if (!currentFunction)
+                        {
                             throw LLVMException("LLVM::createConstValue: Unable to get current function");
                         }
 
                         llvm::AllocaInst *allocaVar = getOrPromoteToAlloca(argValue->getRealName(), currentFunction);
-                        if (!allocaVar) {
+                        if (!allocaVar)
+                        {
                             throw LLVMException(util::format(
-                                "LLVM::createConstValue: Unable to find or create allocation for variable '{}'", 
-                                argValue->getRealName()));
+                                    "LLVM::createConstValue: Unable to find or create allocation for variable '{}'",
+                                    argValue->getRealName()));
                         }
 
                         if (const llvm::Type *type = allocaVar->getAllocatedType(); type == nullptr)
@@ -427,23 +440,28 @@ namespace iron
                         // Create constants based on the string value and type
                         const auto argType = hlirType->getType();
                         llvm::Type *type = mapType(argType);
-                        
+
                         if (!type)
                         {
                             throw LLVMException("LLVM::createConstValue: Unknown type for argument.");
                         }
 
                         // Handle different constant types
-                        try {
-                            switch (argType) {
+                        try
+                        {
+                            switch (argType)
+                            {
                                 case tokenMap::TYPE_INT:
                                     return llvm::ConstantInt::get(type, std::stoi(argValue), true);
                                 case tokenMap::TYPE_FLOAT:
-                                    return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(std::stof(argValue)));
+                                    return llvm::ConstantFP::get(builder.getContext(),
+                                                                 llvm::APFloat(std::stof(argValue)));
                                 case tokenMap::TYPE_DOUBLE:
-                                    return llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(std::stod(argValue)));
+                                    return llvm::ConstantFP::get(builder.getContext(),
+                                                                 llvm::APFloat(std::stod(argValue)));
                                 case tokenMap::TYPE_CHAR:
-                                    if (argValue.empty()) {
+                                    if (argValue.empty())
+                                    {
                                         throw LLVMException("LLVM::createConstValue: Empty string for char type.");
                                     }
                                     return llvm::ConstantInt::get(type, static_cast<int>(argValue[0]), true);
@@ -451,23 +469,25 @@ namespace iron
                                     return llvm::ConstantInt::get(type, (argValue == "true") ? 1 : 0, false);
                                 case tokenMap::TYPE_STRING:
                                     // TODO: Implement proper string handling
-                                    throw LLVMException("LLVM::createConstValue: String type not fully implemented yet.");
+                                    throw LLVMException(
+                                            "LLVM::createConstValue: String type not fully implemented yet.");
                                 default:
-                                    throw LLVMException(util::format(
-                                        "LLVM::createConstValue: Unsupported argument type: {}", 
-                                        tokenMap::getTokenText(argType)));
+                                    throw LLVMException(
+                                            util::format("LLVM::createConstValue: Unsupported argument type: {}",
+                                                         tokenMap::getTokenText(argType)));
                             }
-                        } catch (const std::exception& e) {
-                            throw LLVMException(util::format(
-                                "LLVM::createConstValue: Error converting '{}' to type {}: {}", 
-                                argValue, tokenMap::getTokenText(argType), e.what()));
+                        }
+                        catch (const std::exception &e)
+                        {
+                            throw LLVMException(
+                                    util::format("LLVM::createConstValue: Error converting '{}' to type {}: {}",
+                                                 argValue, tokenMap::getTokenText(argType), e.what()));
                         }
                     }
                     else
                     {
-                        throw LLVMException(util::format(
-                            "LLVM::createConstValue: Unsupported type variant: {}", 
-                            typeid(T).name()));
+                        throw LLVMException(
+                                util::format("LLVM::createConstValue: Unsupported type variant: {}", typeid(T).name()));
                     }
                 },
                 value->getValue());
@@ -477,7 +497,7 @@ namespace iron
 
     /**
      * @brief Allocates a string variable
-     * 
+     *
      * @param variable The variable to allocate
      * @param value The string value
      * @return llvm::AllocaInst* The allocation instruction
@@ -498,7 +518,7 @@ namespace iron
             throw LLVMException("allocaVariableStr: value is empty");
         }
 
-        const unsigned strSize = value.size() + 1;  // +1 for null terminator
+        const unsigned strSize = value.size() + 1; // +1 for null terminator
         llvm::ArrayType *strArrType = llvm::ArrayType::get(llvm::Type::getInt8Ty(llvmContext), strSize);
         llvm::AllocaInst *localStr = builder.CreateAlloca(strArrType, nullptr, variable->getRealName());
         return localStr;
@@ -506,7 +526,7 @@ namespace iron
 
     /**
      * @brief Allocates a function pointer variable
-     * 
+     *
      * @param variable The variable to allocate
      * @param function The function to point to
      * @return llvm::AllocaInst* The allocation instruction
@@ -536,9 +556,8 @@ namespace iron
         const llvm::Function *calledFunction = module->getFunction(function->getFunctionName());
         if (!calledFunction)
         {
-            throw LLVMException(util::format(
-                "allocaVariableFuncPtr: function '{}' not found in module", 
-                function->getFunctionName()));
+            throw LLVMException(util::format("allocaVariableFuncPtr: function '{}' not found in module",
+                                             function->getFunctionName()));
         }
 
         llvm::PointerType *funcPtrType = llvm::PointerType::getUnqual(calledFunction->getFunctionType());
@@ -547,7 +566,7 @@ namespace iron
 
     /**
      * @brief Allocates a variable in the entry block of the current function
-     * 
+     *
      * @param variable The variable to allocate
      * @return llvm::AllocaInst* The allocation instruction
      * @throws LLVMException for various error conditions
@@ -579,9 +598,9 @@ namespace iron
 
     /**
      * @brief Creates a type cast operation
-     * 
+     *
      * This method handles various type conversions between Iron language types.
-     * 
+     *
      * @param variable The variable to cast
      * @param type The target type
      * @param currentFunction The current function context
@@ -618,8 +637,8 @@ namespace iron
         const auto castVar = getOrPromoteToAlloca(varName, currentFunction);
         if (!castVar)
         {
-            throw LLVMException(util::format(
-                    "LLVM::numberCasting: AllocaInst for variable '{}' was not found.", varName));
+            throw LLVMException(
+                    util::format("LLVM::numberCasting: AllocaInst for variable '{}' was not found.", varName));
         }
 
         // Get variable type
@@ -634,8 +653,8 @@ namespace iron
         llvm::LoadInst *loadedVar = builder.CreateLoad(allocatedType, castVar, util::format("load_{}", varName));
         if (!loadedVar)
         {
-            throw LLVMException(util::format(
-                    "LLVM::numberCasting: Failed to create LoadInst for variable '{}'.", varName));
+            throw LLVMException(
+                    util::format("LLVM::numberCasting: Failed to create LoadInst for variable '{}'.", varName));
         }
 
         // Get target type
@@ -659,7 +678,7 @@ namespace iron
 
         // Perform appropriate type cast based on source and target types
         llvm::Value *value = nullptr;
-        
+
         // Float -> Int
         if (variableType == tokenMap::TYPE_FLOAT && desiredTypeInt == tokenMap::TYPE_INT)
         {
@@ -712,10 +731,9 @@ namespace iron
         }
         else
         {
-            throw LLVMException(util::format(
-                "LLVM::numberCasting: Type conversion not defined: {} to {}", 
-                tokenMap::getTokenText(variableType), 
-                tokenMap::getTokenText(desiredTypeInt)));
+            throw LLVMException(util::format("LLVM::numberCasting: Type conversion not defined: {} to {}",
+                                             tokenMap::getTokenText(variableType),
+                                             tokenMap::getTokenText(desiredTypeInt)));
         }
 
         // Verify cast result
@@ -730,7 +748,7 @@ namespace iron
 
     /**
      * @brief Normalizes a string by processing escape sequences
-     * 
+     *
      * @param input The input string to normalize
      * @return std::string The normalized string
      */
@@ -756,11 +774,11 @@ namespace iron
                 char next = input[i + 1];
                 switch (next)
                 {
-                    case 'n':  // Newline
+                    case 'n': // Newline
                         output.push_back('\n');
                         i++;
                         break;
-                    case 't':  // Tab
+                    case 't': // Tab
                         output.push_back('\t');
                         i++;
                         break;
@@ -772,15 +790,15 @@ namespace iron
                         output.push_back('\\');
                         i++;
                         break;
-                    case 'r':  // Carriage return
+                    case 'r': // Carriage return
                         output.push_back('\r');
                         i++;
                         break;
-                    case '0':  // Null character
+                    case '0': // Null character
                         output.push_back('\0');
                         i++;
                         break;
-                    default:   // Unknown escape sequence
+                    default: // Unknown escape sequence
                         output.push_back(input[i]);
                         i++;
                         break;
@@ -793,6 +811,105 @@ namespace iron
         }
 
         return output;
+    }
+
+    /**
+     * @brief Retrieves a declared struct by its name.
+     *
+     * This method searches the LLVM context for a struct type that matches the provided name.
+     * If the struct type is not found, an LLVMException is thrown.
+     *
+     * @param name The name of the struct to retrieve.
+     * @return llvm::StructType* Pointer to the retrieved struct type.
+     * @throws LLVMException If the struct with the specified name is not found in the context.
+     */
+    llvm::StructType *LLVM::getStructByName(const std::string &name) const
+    {
+        const auto structType = llvm::StructType::getTypeByName(llvmContext, util::format("struct.{}", name));
+        if (!structType)
+        {
+            throw LLVMException(util::format("LLVM::getStructByName: Struct type '{}' not found.", name));
+        }
+        return structType;
+    }
+
+    std::shared_ptr<hlir::Variable> LLVM::getVariableFromValue(const std::shared_ptr<hlir::Value> &value) const
+    {
+        if (!value)
+        {
+            throw LLVMException("getVariableFromValue: value is null");
+        }
+
+        std::shared_ptr<hlir::Variable> variable;
+        const auto &valueData = value->getValue();
+
+        std::visit(
+                [&variable](auto &&arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
+                    {
+                        variable = arg;
+                    }
+                },
+                valueData);
+
+        if (!variable)
+        {
+            throw LLVMException("getVariableFromValue: variable not found");
+        }
+
+        return variable;
+    }
+
+    void LLVM::structInit(llvm::Function *currentFunction, const std::shared_ptr<hlir::StructInit> &structInit,
+                          const std::shared_ptr<hlir::Variable> &variable)
+    {
+        const auto structName = structInit->getStruct()->getName();
+        const auto structType = getStructByName(structName);
+        const auto structAlloca = findAllocaByName(currentFunction, variable->getRealName());
+        if (!structAlloca)
+        {
+            throw LLVMException("visitAssignment: Failed get allocate variable for struct");
+        }
+
+        uint index = 0;
+        for (auto const &assign: structInit->getAssigns())
+        {
+            const auto fieldName = assign->getVariable()->getRealName();
+            const auto typeOfField = assign->getVariable()->getVarType()->getType();
+            if (typeOfField == tokenMap::TYPE_STRING)
+            {
+                const auto anotherVar = getVariableFromValue(assign->getValue());
+                const auto allocaAnother = findAllocaByName(currentFunction, anotherVar->getRealName());
+                if (!allocaAnother)
+                {
+                    throw LLVMException(util::format("visitAssignment: Unable to find allocation for variable '{}'",
+                                                     anotherVar->getRealName()));
+                }
+
+                llvm::Value *anotherValue =
+                        builder.CreateLoad(builder.getInt8Ty()->getPointerTo(), allocaAnother, "var1_val");
+                llvm::Value *field = builder.CreateStructGEP(structType, structAlloca, index, fieldName);
+                builder.CreateStore(anotherValue, field);
+            }
+            else
+            {
+                const auto anotherVar = getVariableFromValue(assign->getValue());
+                const auto allocaAnother = findAllocaByName(currentFunction, anotherVar->getRealName());
+                if (!allocaAnother)
+                {
+                    throw LLVMException(util::format("visitAssignment: Unable to find allocation for variable '{}'",
+                                                     anotherVar->getRealName()));
+                }
+
+                llvm::Value *anotherValue = builder.CreateLoad(mapType(typeOfField), allocaAnother, "var1_val");
+                llvm::Value *field = builder.CreateStructGEP(structType, structAlloca, index, fieldName);
+                builder.CreateStore(anotherValue, field);
+            }
+
+            index++;
+        }
     }
 
 } // namespace iron

@@ -73,6 +73,7 @@ namespace iron
          */
         ~LLVM();
 
+        void visitStruct(const std::shared_ptr<hlir::Struct> & struct_) const;
         /**
          * @brief Generates LLVM IR code from the HLIR context
          * @return Unique pointer to the generated LLVM module
@@ -121,6 +122,10 @@ namespace iron
          * @return The normalized string
          */
         static std::string normalizeUserString(const std::string &input);
+        llvm::StructType *getStructByName(const std::string &name) const;
+        std::shared_ptr<hlir::Variable> getVariableFromValue(const std::shared_ptr<hlir::Value> &value) const;
+        void structInit(llvm::Function *currentFunction, const std::shared_ptr<hlir::StructInit> &structInit,
+                        const std::shared_ptr<hlir::Variable> &variable);
 
         //---------------------------------------------------------------------
         // Variable Handling

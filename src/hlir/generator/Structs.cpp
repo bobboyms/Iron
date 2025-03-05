@@ -63,12 +63,34 @@ namespace hlir
                 if (body->dataFormat())
                 {
                     const auto value = body->dataFormat()->getText();
-                    const auto realType = defineRealType(value);
 
-                    const auto type = std::make_shared<Type>(realType);
-                    const auto variable = std::make_shared<Variable>()->set(fieldName, type);
-                    const auto assign = generateAssignFromDataFormat(variable, value);
-                    structInit->addAssign(assign);
+                    if (const auto realType = defineRealType(value); realType == tokenMap::TYPE_STRING)
+                    {
+                        const auto type = std::make_shared<Type>(tokenMap::TYPE_STRING);
+                        const auto anotherVarName = currentFunction->generateVarName();
+                        const auto anotherVariable = std::make_shared<Variable>()->set(anotherVarName, type);
+                        const auto anotherAssign = generateAssignFromDataFormat(anotherVariable, value);
+                        statement->addStatement(anotherAssign);
+
+                        const auto variable = std::make_shared<Variable>()->set(fieldName, type);
+                        const auto anotherValue = std::make_shared<Value>()->set(anotherVariable, type);
+                        const auto assign = std::make_shared<Assign>()->set(variable, anotherValue);
+                        structInit->addAssign(assign);
+
+                    }
+                    else
+                    {
+                        const auto type = std::make_shared<Type>(realType);
+                        const auto anotherVarName = currentFunction->generateVarName();
+                        const auto anotherVariable = std::make_shared<Variable>()->set(anotherVarName, type);
+                        const auto anotherAssign = generateAssignFromDataFormat(anotherVariable, value);
+                        statement->addStatement(anotherAssign);
+
+                        const auto variable = std::make_shared<Variable>()->set(fieldName, type);
+                        const auto anotherValue = std::make_shared<Value>()->set(anotherVariable, type);
+                        const auto assign = std::make_shared<Assign>()->set(variable, anotherValue);
+                        structInit->addAssign(assign);
+                    }
                 }
             }
 

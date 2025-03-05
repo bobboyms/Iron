@@ -531,13 +531,11 @@ namespace hlir
 
         for (const auto &function: functions)
         {
-
             sb << util::format("{}\n", function->getText());
         }
 
         for (const auto &struct_: structs_)
         {
-
             sb << util::format("{}\n", struct_->getText());
         }
 

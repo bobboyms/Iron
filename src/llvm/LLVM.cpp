@@ -13,6 +13,25 @@ namespace iron
 
     LLVM::~LLVM() = default;
 
+    void LLVM::visitStruct(const std::shared_ptr<hlir::Struct> &struct_) const
+    {
+        if (!struct_)
+        {
+            throw LLVMException("LLVM::visitStruct. struct_ is null");
+        }
+
+        llvm::StructType *StructType =
+                llvm::StructType::create(llvmContext, util::format("struct.{}", struct_->getName()));
+        std::vector<llvm::Type *> structElements = {}; // builder.getInt8PtrTy(), builder.getInt32Ty()
+        for (const auto element: struct_->getVariables())
+        {
+            llvm::Type *llvmType = mapType(element->getVarType()->getType());
+            structElements.push_back(llvmType);
+        }
+
+        StructType->setBody(structElements, /*isPacked=*/false);
+    }
+
     void LLVM::visitStatement(const std::shared_ptr<hlir::Statement> &statements)
     {
 
@@ -111,6 +130,17 @@ namespace iron
                 [this, &hlirAssignment, currentFunction]([[maybe_unused]] auto &&arg)
                 {
                     using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Struct>>)
+                    {
+                        const auto structName = arg->getName();
+                        const auto structType = getStructByName(structName);
+                        const auto varName = hlirAssignment->getVariable()->getRealName();
+                        builder.CreateAlloca(structType, nullptr, varName);
+                    }
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::StructInit>>)
+                    {
+                        structInit(currentFunction, arg, hlirAssignment->getVariable());
+                    }
                     if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Function>>)
                     {
                         llvm::AllocaInst *alloca =
@@ -119,7 +149,7 @@ namespace iron
                         {
                             alloca = allocaVariableFuncPtr(hlirAssignment->getVariable(), arg);
                         }
-                        
+
                         if (!alloca)
                         {
                             throw LLVMException("visitAssignment: Failed to allocate variable for function pointer");
@@ -128,10 +158,10 @@ namespace iron
                         llvm::Function *calledFunction = module->getFunction(arg->getFunctionName());
                         if (!calledFunction)
                         {
-                            throw LLVMException(util::format("visitAssignment: Function '{}' not found in module", 
-                                               arg->getFunctionName()));
+                            throw LLVMException(util::format("visitAssignment: Function '{}' not found in module",
+                                                             arg->getFunctionName()));
                         }
-                        
+
                         builder.CreateStore(calledFunction, alloca);
                     }
                     else if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
@@ -153,6 +183,7 @@ namespace iron
                         {
                             if (!alloca)
                             {
+                                const auto varName = hlirAssignment->getVariable()->getRealName();
                                 alloca = allocaVariableStr(hlirAssignment->getVariable(), arg);
                             }
                         }
@@ -314,6 +345,11 @@ namespace iron
             }
 
             declareFunction(function);
+        }
+
+        for (const auto &struct_: hlirContext->getStructs())
+        {
+            visitStruct(struct_);
         }
 
         for (const auto &function: hlirContext->getFunctions())
