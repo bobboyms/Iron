@@ -36,9 +36,9 @@ namespace iron
 
             // Check if types are compatible for boolean operations
             bool leftIsValidType = tokenMap::isNumber(leftType) || leftType == tokenMap::TYPE_BOOLEAN;
-            bool rightIsValidType = tokenMap::isNumber(rightType) || rightType == tokenMap::TYPE_BOOLEAN;
-            
-            if (leftIsValidType && rightIsValidType)
+
+            if (bool rightIsValidType = tokenMap::isNumber(rightType) || rightType == tokenMap::TYPE_BOOLEAN;
+                leftIsValidType && rightIsValidType)
             {
                 // If either operand is boolean, the result is boolean
                 if (leftType == tokenMap::TYPE_BOOLEAN || rightType == tokenMap::TYPE_BOOLEAN)

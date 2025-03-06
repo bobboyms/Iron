@@ -56,10 +56,28 @@ namespace hlir
         this->type = type;
     }
 
+    Type::Type(const int type, const std::string &typeName)
+    {
+        verifyType(type);
+
+        if (typeName.empty())
+        {
+            throw HLIRException("Type::Type. typeName is empty");
+        }
+
+        this->type = type;
+        this->typeName = typeName;
+    }
+
     void Type::set(const int type)
     {
         verifyType(type);
         this->type = type;
+    }
+
+    std::string Type::getTypeName()
+    {
+        return typeName;
     }
 
     Type::~Type() = default;
@@ -120,7 +138,19 @@ namespace hlir
     {
         sb.str("");
         sb.clear();
-        sb << tokenMap::getTokenText(type);
+        if (!typeName.empty() && type == tokenMap::STRUCT)
+        {
+            sb << util::format("struct {}", typeName);
+        }
+        else if (!typeName.empty())
+        {
+            sb << util::format("{} {}", tokenMap::getTokenText(type), typeName);
+        }
+        else
+        {
+            sb << util::format("{}", tokenMap::getTokenText(type));
+        }
+
         return sb.str();
     }
 

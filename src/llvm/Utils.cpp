@@ -37,6 +37,12 @@ namespace iron
         }
 
         // Map the type and create the load instruction
+        if (variable->getVarType()->getType() == tokenMap::STRUCT)
+        {
+            const auto loadType = getStructByName(variable->getVarType()->getTypeName());
+            return builder.CreateLoad(loadType, alloca, util::format("load_{}", varName));
+        }
+
         llvm::Type *loadType = mapType(variable->getVarType()->getType());
         return builder.CreateLoad(loadType, alloca, util::format("load_{}", varName));
     }

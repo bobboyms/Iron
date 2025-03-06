@@ -50,8 +50,25 @@ namespace iron
 
         void visitStructDeclaration(IronParser::StructStatementContext *ctx) const;
         void visitStructStatement(IronParser::StructStatementContext *ctx) const;
-        void visitStructInit(IronParser::StructInitContext *ctx, std::shared_ptr<scope::StructStemt> parentStructDef = nullptr);
+        void visitStructInit(IronParser::StructInitContext *ctx,
+                             const std::shared_ptr<scope::StructStemt> &parentStructDef = nullptr);
         void visitStructInitBody(IronParser::StructInitBodyContext *ctx, std::shared_ptr<scope::StructStemt> parentStructDef = nullptr);
+        
+        // Helper functions for struct field validation
+        void validateFieldExists(const std::string &fieldName,
+                                 const std::shared_ptr<scope::StructStemt> &parentStructDef, uint lineNumber,
+                                 uint columnPosition) const;
+        void validateLiteralFieldValue(IronParser::StructInitBodyContext *ctx,
+                                       const std::shared_ptr<scope::Variable> &field);
+        void validateValueAssignment(const std::string &fieldName, const std::shared_ptr<scope::Variable> &field,
+                                     int valueType, const std::string &valueDesc, const std::string &valueTypeDesc,
+                                     uint lineNumber, uint columnPosition);
+        void validateNestedStructValues(IronParser::StructInitContext *ctx,
+                                        const std::shared_ptr<scope::Variable> &field);
+        std::shared_ptr<scope::StructStemt> findParentStructDefForNestedInit(IronParser::StructInitBodyContext *ctx);
+        void processDirectStructInitialization(IronParser::StructInitBodyContext *ctx, const std::string &variableName,
+                                               const std::shared_ptr<scope::Variable> &structVariable);
+        void processNestedStructFieldInit(IronParser::StructInitBodyContext *ctx);
 
         void visitExternBlock(IronParser::ExternBlockContext *ctx);
 

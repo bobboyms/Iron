@@ -231,12 +231,22 @@ namespace hlir
             const auto rightVar = currentFunction->findVarAllScopesAndArg(rightVarName);
             if (!rightVar)
             {
-                throw std::runtime_error("VrightVar not found");
+                throw std::runtime_error("Right var not found");
             }
 
             createMathExprAssign(leftVarName, tokenMap::getTokenText(leftVariable->getVarType()->getType()), rightVar,
                                  currentFunction);
         }
+
+        if (ctx->dataFormat())
+        {
+            printf("leftVarName %s\n",leftVarName.c_str());
+            if (ctx->IDENTIFIER().size() >= 1)
+            {
+                createStructAndField(ctx->IDENTIFIER(), currentFunction, ctx->dataFormat()->getText());
+            }
+        }
+
     }
 
     void HLIRGenerator::visitVarDeclaration(IronParser::VarDeclarationContext *ctx,
@@ -269,10 +279,8 @@ namespace hlir
                         variable, std::make_shared<Value>()->set(context->getStructByName(anotherType),
                                                                  std::make_shared<Type>(tokenMap::STRUCT)));
                 statement->addStatement(assign);
-
             }
         }
-
 
         // statement->addStatement(std::make_shared<DeclareVariable>(variable));
 
@@ -280,6 +288,7 @@ namespace hlir
         {
             visitAssignment(ctx->assignment(), currentFunction);
         }
+
     }
 
     void HLIRGenerator::visitAssignment(IronParser::AssignmentContext *ctx,
@@ -426,7 +435,19 @@ namespace hlir
 
         else if (ctx->structInit())
         {
-            visitStructInit(ctx->structInit(), currentFunction);
+            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+            {
+                const auto varName = varDeclaration->varName->getText();
+                const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+                if (!variable)
+                {
+                    throw HLIRException(util::format(
+                            "HLIRGenerator::visitStructInit. Undefined Variable: '{}' in expression", varName));
+                }
+
+                visitStructInit(ctx->structInit(), currentFunction, variable);
+            }
+
         }
     }
 
