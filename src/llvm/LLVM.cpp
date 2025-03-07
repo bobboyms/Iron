@@ -22,11 +22,20 @@ namespace iron
 
         llvm::StructType *StructType =
                 llvm::StructType::create(llvmContext, util::format("struct.{}", struct_->getName()));
-        std::vector<llvm::Type *> structElements = {}; // builder.getInt8PtrTy(), builder.getInt32Ty()
+        std::vector<llvm::Type *> structElements = {};
         for (const auto element: struct_->getVariables())
         {
-            llvm::Type *llvmType = mapType(element->getVarType()->getType());
-            structElements.push_back(llvmType);
+            if (element->getVarType()->getType() == tokenMap::STRUCT)
+            {
+                const auto structName = element->getVarType()->getTypeName();
+                const auto struct_ = getStructByName(structName);
+                structElements.push_back(struct_);
+            } else
+            {
+                llvm::Type *llvmType = mapType(element->getVarType()->getType());
+                structElements.push_back(llvmType);
+            }
+
         }
 
         StructType->setBody(structElements, /*isPacked=*/false);

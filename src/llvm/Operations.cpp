@@ -39,8 +39,10 @@ namespace iron
         
         // Pre-access allocas just to make sure they exist and are created in the expected order
         // This forces the allocation instructions to be emitted in the expected order
-        llvm::AllocaInst *leftAlloca = getOrPromoteToAlloca(varLeft->getRealName(), currentFunction);
-        llvm::AllocaInst *rightAlloca = getOrPromoteToAlloca(varRight->getRealName(), currentFunction);
+        // getOrPromoteToAlloca(varLeft->getRealName(), currentFunction);
+        // getOrPromoteToAlloca(varRight->getRealName(), currentFunction);
+        allocaVariable(varLeft);
+        allocaVariable(varRight);
         
         // Now load both variables
         // Because we've already ensured the allocations exist in the right order,

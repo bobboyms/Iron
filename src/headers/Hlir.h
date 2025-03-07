@@ -184,6 +184,7 @@ namespace hlir
          * @brief Integer-based type identifier from tokenMap (e.g., TYPE_INT, TYPE_FLOAT)
          */
         int type{};
+        std::string typeName;
 
     protected:
     public:
@@ -216,6 +217,18 @@ namespace hlir
         explicit Type(int type);
 
         /**
+         * @brief Constructs a Type object with an integer code and its textual name.
+         *
+         * This constructor initializes a Type instance by setting both its integer type code and its textual
+         * representation. It is useful when you want to immediately assign a name to the type, aiding in debugging and
+         * code generation.
+         *
+         * @param type The integer code representing the type (e.g., TYPE_INT, TYPE_FLOAT) as defined in tokenMap.
+         * @param typeName The textual representation of the type (e.g., "int", "float", "string", etc.).
+         */
+        explicit Type(int type, const std::string &typeName);
+
+        /**
          * @brief Default constructor creates an uninitialized type.
          *
          * The type must be explicitly set before use.
@@ -228,6 +241,16 @@ namespace hlir
          * @param type The new integer type code from tokenMap
          */
         void set(int type);
+
+        /**
+         * @brief Retrieves the textual name of the type.
+         *
+         * This method returns the string that represents the textual name of the type stored in the instance.
+         * If the type name has not been explicitly set, it may return an empty string or a default value.
+         *
+         * @return A string containing the textual name of the type.
+         */
+        std::string getTypeName();
 
         /**
          * @brief Virtual destructor for proper cleanup.
@@ -711,7 +734,8 @@ namespace hlir
      * This allows for flexible representation of different value types within
      * the HLIR without using inheritance or type erasure.
      */
-    using Data = std::variant<std::shared_ptr<Function>, std::shared_ptr<Struct>, std::shared_ptr<StructInit>, std::shared_ptr<Variable>,
+    using Data = std::variant<std::shared_ptr<Function>, std::shared_ptr<Struct>, std::shared_ptr<StructInit>,
+                              std::shared_ptr<Variable>,
                               std::string>; //, int, float, double, bool
 
     /**
@@ -1960,7 +1984,6 @@ namespace hlir
          */
         std::string getText() override;
     };
-
 
 
 } // namespace hlir

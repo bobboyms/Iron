@@ -18,10 +18,13 @@ namespace hlir
         std::shared_ptr<std::map<std::string, std::shared_ptr<Context>>> exportContexts;
 
         // structs
-        // void visitStructDeclaration(IronParser::StructStatementContext *ctx, const std::shared_ptr<Function> &currentFunction);
+        // void visitStructDeclaration(IronParser::StructStatementContext *ctx, const std::shared_ptr<Function>
+        // &currentFunction);
         void visitStructStatement(IronParser::StructStatementContext *ctx) const;
-        void visitStructInit(IronParser::StructInitContext *ctx, const std::shared_ptr<Function> &currentFunction);
-        // void visitStructInitBody(IronParser::StructInitBodyContext *ctx, const std::shared_ptr<Function> &currentFunction);
+        void visitStructInit(IronParser::StructInitContext *ctx, const std::shared_ptr<Function> &currentFunction,
+                             const std::shared_ptr<Variable> &variable);
+        // void visitStructInitBody(IronParser::StructInitBodyContext *ctx, const std::shared_ptr<Function>
+        // &currentFunction);
 
         // loops
         void visitWhileStatement(IronParser::WhileStatementContext *ctx,
@@ -43,7 +46,7 @@ namespace hlir
         std::string visitExpr(IronParser::ExprContext *ctx, const std::shared_ptr<Function> &currentFunction);
         static int defineRealType(const std::string &strValue);
         static std::shared_ptr<Assign> generateAssignFromDataFormat(const std::shared_ptr<Variable> &variable,
-                                                             const std::string &literalValue);
+                                                                    const std::string &literalValue);
         static std::tuple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, std::shared_ptr<Variable>>
         getVariableOrCreate(const std::shared_ptr<Function> &currentFunction, const std::string &strLeftVar,
                             const std::string &strRightVar, const std::string &tempVarStr, uint higherType,
@@ -128,10 +131,13 @@ namespace hlir
                                            const std::shared_ptr<FunctionArgs> &argsList);
 
         static std::shared_ptr<Function> gatArrowFunction(const std::shared_ptr<Function> &currentFunction,
-                                                   const std::string &functionName);
+                                                          const std::string &functionName);
 
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx,
                                 const std::shared_ptr<Function> &currentFunction);
+
+        void createStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers,
+                                  const std::shared_ptr<Function> &currentFunction, const std::string &value);
 
 
     public:

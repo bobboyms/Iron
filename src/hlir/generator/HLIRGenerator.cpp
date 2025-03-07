@@ -231,12 +231,22 @@ namespace hlir
             const auto rightVar = currentFunction->findVarAllScopesAndArg(rightVarName);
             if (!rightVar)
             {
-                throw std::runtime_error("VrightVar not found");
+                throw std::runtime_error("Right var not found");
             }
 
             createMathExprAssign(leftVarName, tokenMap::getTokenText(leftVariable->getVarType()->getType()), rightVar,
                                  currentFunction);
         }
+
+        if (ctx->dataFormat())
+        {
+            printf("leftVarName %s\n",leftVarName.c_str());
+            if (ctx->IDENTIFIER().size() >= 1)
+            {
+                createStructAndField(ctx->IDENTIFIER(), currentFunction, ctx->dataFormat()->getText());
+            }
+        }
+
     }
 
     void HLIRGenerator::visitVarDeclaration(IronParser::VarDeclarationContext *ctx,
@@ -261,18 +271,17 @@ namespace hlir
 
             if (const auto anotherType = ctx->anotherType->getText(); context->getStructByName(anotherType))
             {
+                const auto anotherStruct = context->getStructByName(anotherType);
                 const auto variable =
                         std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::STRUCT));
                 statement->addDeclaredVariable(variable);
                 variable->changeRealName(currentFunction->generateVarName());
                 const auto assign = std::make_shared<Assign>()->set(
-                        variable, std::make_shared<Value>()->set(context->getStructByName(anotherType),
+                        variable, std::make_shared<Value>()->set(anotherStruct,
                                                                  std::make_shared<Type>(tokenMap::STRUCT)));
                 statement->addStatement(assign);
-
             }
         }
-
 
         // statement->addStatement(std::make_shared<DeclareVariable>(variable));
 
@@ -280,6 +289,7 @@ namespace hlir
         {
             visitAssignment(ctx->assignment(), currentFunction);
         }
+
     }
 
     void HLIRGenerator::visitAssignment(IronParser::AssignmentContext *ctx,
@@ -426,7 +436,19 @@ namespace hlir
 
         else if (ctx->structInit())
         {
-            visitStructInit(ctx->structInit(), currentFunction);
+            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+            {
+                const auto varName = varDeclaration->varName->getText();
+                const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+                if (!variable)
+                {
+                    throw HLIRException(util::format(
+                            "HLIRGenerator::visitStructInit. Undefined Variable: '{}' in expression", varName));
+                }
+
+                visitStructInit(ctx->structInit(), currentFunction, variable);
+            }
+
         }
     }
 

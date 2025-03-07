@@ -107,6 +107,13 @@ namespace iron
         }
     };
 
+    class StructNotFoundException final : public SemanticException
+    {
+    public:
+        explicit StructNotFoundException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
 
     class ModuleRedefinitionException final : public SemanticException
     {
@@ -188,6 +195,14 @@ namespace iron
     {
     public:
         explicit TypeNotFoundException(const std::string &msg) : SemanticException(msg)
+        {
+        }
+    };
+
+    class FieldNotFoundException final : public SemanticException
+    {
+    public:
+        explicit FieldNotFoundException(const std::string &msg) : SemanticException(msg)
         {
         }
     };

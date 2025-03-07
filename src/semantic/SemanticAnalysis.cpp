@@ -167,7 +167,8 @@ namespace iron
         {
             const std::string varType = ctx->varTypes()->getText();
             statement->addVariable(varName, tokenMap::getTokenType(varType), mut);
-        } else
+        }
+        else
         {
             if (!ctx->anotherType)
             {
@@ -176,7 +177,6 @@ namespace iron
 
             const std::string anotherType = ctx->anotherType->getText();
             statement->addVariable(checkAnotherTypes(varName, anotherType, mut, line, codeLine, caretLine));
-
         }
 
         if (ctx->assignment())
@@ -208,7 +208,8 @@ namespace iron
         const auto function = getCurrentFunction();
 
         // Use the helper function to verify if the variable exists
-        const auto variable = verifyVariableExists(varName, line, col,
+        const auto variable = verifyVariableExists(
+                varName, line, col,
                 "Hint: Check for typos in the variable name or declare the variable before using it.");
 
         if (!variable->mut)
@@ -227,24 +228,131 @@ namespace iron
         }
 
         // Handle assignment based on the type of value
-        if (ctx->anotherVarName)
+        if (ctx->structInit())
+        {
+            // Check if assigning to a struct field
+            if (ctx->IDENTIFIER().size() >= 1)
+            {
+                // Handle nested struct field assignment
+                const auto [parentStructDef, field] = getStructAndField(ctx->IDENTIFIER());
+                
+                // Verify the field is mutable
+                if (!field->mut)
+                {
+                    throw VariableCannotBeChangedException(util::format(
+                            "Immutable field error: Cannot assign a new value to field '{}' because it is immutable.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n\n"
+                            "Hint: Add the '{}' keyword before the field name in the struct definition to make it mutable",
+                            color::colorText(field->name, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                            codeLine, caretLine,
+                            color::colorText("mut", color::BOLD_BLUE)));
+                }
+                
+                // Verify the field is a struct type
+                if (!field->structStemt)
+                {
+                    throw TypeMismatchException(util::format(
+                            "Type mismatch error: Cannot assign a struct value to field '{}' which is not a struct type.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n\n"
+                            "Hint: The field must be of a struct type to receive a struct initialization.",
+                            color::colorText(field->name, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                            codeLine, caretLine));
+                }
+                
+                // Process the struct initialization
+                visitStructInit(ctx->structInit(), field->structStemt);
+                return;
+            }
+            else
+            {
+                // Handle struct initialization for a variable
+                if (!variable->structStemt)
+                {
+                    throw TypeMismatchException(util::format(
+                            "Type mismatch error: Cannot assign a struct value to variable '{}' which is not a struct type.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n\n"
+                            "Hint: The variable must be declared as a struct type to receive a struct initialization.",
+                            color::colorText(varName, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                            codeLine, caretLine));
+                }
+                
+                // Process the struct initialization
+                visitStructInit(ctx->structInit(), variable->structStemt);
+            }
+        }
+        else if (ctx->anotherVarName)
         {
             const auto anotherVarName = ctx->anotherVarName->getText();
-            const auto anotherVariable = verifyVariableExists(anotherVarName, line, col,
+            const auto anotherVariable = verifyVariableExists(
+                    anotherVarName, line, col,
                     "Hint: Check for typos in the variable name or declare the variable before using it.");
 
             // Use the helper function to verify if types match
             verifyTypesMatch(variable->type, anotherVariable->type, varName, anotherVarName, line, col,
-                    "Type mismatch error: Cannot assign a value of type to a variable of type");
+                             "Type mismatch error: Cannot assign a value of type to a variable of type");
         }
         else if (ctx->dataFormat())
         {
+
             // Handle literal values (numbers, strings, booleans)
             const std::string value = ctx->dataFormat()->getText();
-            int valueType = determineValueType(value);
-            
+
+            if (ctx->IDENTIFIER().size() >= 1)
+            {
+                // Handle struct field assignment
+                const auto [structDef, field] = getStructAndField(ctx->IDENTIFIER());
+                
+                if (!field->mut)
+                {
+                    throw VariableCannotBeChangedException(util::format(
+                            "Immutable field error: Cannot assign a new value to field '{}' because it is immutable.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n\n"
+                            "Hint: Add the '{}' keyword before the field name in the struct definition to make it mutable",
+                            color::colorText(field->name, color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                            codeLine, caretLine,
+                            color::colorText("mut", color::BOLD_BLUE)));
+                }
+                
+                // Check if the value type matches the field type
+                if (int valueType = determineValueType(value); field->type != valueType)
+                {
+                    throw TypeMismatchException(util::format(
+                            "Type mismatch error: Cannot assign a value of type '{}' to a field of type '{}'.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}\n\n"
+                            "Hint: The literal '{}' (type: {}) cannot be assigned to field '{}' (type: {}). Use "
+                            "the correct type or cast the value.",
+                            color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
+                            color::colorText(tokenMap::getTokenText(field->type), color::BOLD_GREEN),
+                            color::colorText(std::to_string(line), color::YELLOW),
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine,
+                            color::colorText(value, color::BOLD_BLUE),
+                            color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
+                            color::colorText(field->name, color::BOLD_GREEN),
+                            color::colorText(tokenMap::getTokenText(field->type), color::BOLD_GREEN)));
+                }
+                return;
+            }
+
             // Check if the value type matches the variable type
-            if (variable->type != valueType)
+            if (int valueType = determineValueType(value); variable->type != valueType)
             {
                 throw TypeMismatchException(util::format(
                         "Type mismatch error: Cannot assign a value of type '{}' to a variable of type '{}'.\n"
@@ -256,8 +364,8 @@ namespace iron
                         color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
                         color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                        caretLine, color::colorText(value, color::BOLD_BLUE),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine,
+                        color::colorText(value, color::BOLD_BLUE),
                         color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
                         color::colorText(varName, color::BOLD_GREEN),
                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN)));
@@ -268,12 +376,13 @@ namespace iron
             // Handle function call
             const std::string functionName = ctx->functionCall()->functionName->getText();
             auto calledFunction = verifyFunctionExists(functionName, line, col);
-            
+
             // Check if the function return type matches the variable type
             if (variable->type != calledFunction->getReturnType())
             {
                 throw TypeMismatchException(util::format(
-                        "Type mismatch error: Cannot assign result of function '{}' returning type '{}' to variable '{}' of type '{}'.\n"
+                        "Type mismatch error: Cannot assign result of function '{}' returning type '{}' to variable "
+                        "'{}' of type '{}'.\n"
                         "Line: {}, Scope: {}\n\n"
                         "{}\n"
                         "{}\n\n"
@@ -283,22 +392,22 @@ namespace iron
                         color::colorText(varName, color::BOLD_GREEN),
                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
                         color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
-                        codeLine, caretLine));
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
-            
+
             visitFunctionCall(ctx->functionCall());
         }
         else if (ctx->arrowFunctionInline())
         {
             // Handle arrow function
             auto arrowFunction = visitArrowFunctionInline(ctx->arrowFunctionInline());
-            
+
             // Check if the arrow function return type matches the variable type
             if (variable->type != arrowFunction->getReturnType() && variable->type != tokenMap::FUNCTION)
             {
                 throw TypeMismatchException(util::format(
-                        "Type mismatch error: Cannot assign a function returning type '{}' to variable '{}' of type '{}'.\n"
+                        "Type mismatch error: Cannot assign a function returning type '{}' to variable '{}' of type "
+                        "'{}'.\n"
                         "Line: {}, Scope: {}\n\n"
                         "{}\n"
                         "{}\n\n"
@@ -307,20 +416,20 @@ namespace iron
                         color::colorText(varName, color::BOLD_GREEN),
                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
                         color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
-                        codeLine, caretLine));
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
         }
         else if (ctx->expr())
         {
             // Handle expression
             auto [exprResult, exprType] = visitExpr(ctx->expr());
-            
+
             // Check if the expression type matches the variable type
             if (variable->type != exprType)
             {
                 throw TypeMismatchException(util::format(
-                        "Type mismatch error: Cannot assign expression result of type '{}' to variable '{}' of type '{}'.\n"
+                        "Type mismatch error: Cannot assign expression result of type '{}' to variable '{}' of type "
+                        "'{}'.\n"
                         "Line: {}, Scope: {}\n\n"
                         "{}\n"
                         "{}\n\n"
@@ -329,8 +438,7 @@ namespace iron
                         color::colorText(varName, color::BOLD_GREEN),
                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
                         color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), 
-                        codeLine, caretLine));
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
         }
     }
@@ -748,7 +856,7 @@ namespace iron
 
         if (ctx->structInit())
         {
-            visitStructInit(ctx->structInit());
+            visitStructInit(ctx->structInit(), nullptr);
         }
     }
 
