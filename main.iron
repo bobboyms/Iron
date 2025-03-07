@@ -15,5 +15,4 @@
       fn main() {
            mut let pessoa:Pessoa = {}
            pessoa.endereco.cidade.nome = "Rua 25 de março"
-           //endereco:Struct = {rua:25}
       }
