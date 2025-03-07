@@ -14,6 +14,7 @@ namespace tokenMap
 
     enum Token
     {
+        UNKNOWN = -1,  // Tipo desconhecido
         GLOBAL,
         COLON,
         EQ,

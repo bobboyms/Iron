@@ -15,11 +15,14 @@ namespace iron
      * @param caretOffset Offset for positioning the caret under the error
      * @return ErrorContext Struct containing all error context information
      */
-    ErrorContext SemanticAnalysis::getErrorContext(uint lineNumber, uint columnPosition, int caretOffset)
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
+    ErrorContext SemanticAnalysis::getErrorContext(uint lineNumber, uint columnPosition, int caretOffset) const
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, caretOffset);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, caretOffset);
         return {lineNumber, columnPosition, codeLine, caretLine, scopeManager->currentScopeName()};
     }
+    */
 
     /**
      * @brief Verifies if a variable exists and throws a formatted exception if not
@@ -34,11 +37,13 @@ namespace iron
      * @return std::shared_ptr<scope::Variable> The variable if found
      * @throws VariableNotFoundException if the variable does not exist
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     std::shared_ptr<scope::Variable> SemanticAnalysis::verifyVariableExists(const std::string &variableName,
                                                                             uint lineNumber, uint columnPosition,
                                                                             const std::string &contextInfo)
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto currentFunction = getCurrentFunction();
         auto variable = currentFunction->findVarAllScopesAndArg(variableName);
 
@@ -57,6 +62,7 @@ namespace iron
 
         return variable;
     }
+    */
 
     /**
      * @brief Verifies if a function exists and throws a formatted exception if not
@@ -70,10 +76,12 @@ namespace iron
      * @return std::shared_ptr<scope::Function> The function if found
      * @throws FunctionNotFoundException if the function does not exist
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     std::shared_ptr<scope::Function> SemanticAnalysis::verifyFunctionExists(const std::string &functionName,
                                                                             uint lineNumber, uint columnPosition)
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         auto calledFunction = scopeManager->getFunctionDeclarationByName(functionName);
 
         if (!calledFunction)
@@ -99,6 +107,7 @@ namespace iron
 
         return calledFunction;
     }
+    */
 
     /**
      * @brief Verifies if two types match and throws a formatted exception if not
@@ -115,6 +124,8 @@ namespace iron
      * @param errorContextMsg Additional context message for the error
      * @throws TypeMismatchException if types don't match
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     void SemanticAnalysis::verifyTypesMatch(const int typeA, const int typeB, const std::string &nameA,
                                             const std::string &nameB, uint lineNumber, uint columnPosition,
                                             const std::string &errorContextMsg) const
@@ -124,7 +135,7 @@ namespace iron
             return; // Types match, no exception needed
         }
 
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         throw TypeMismatchException(util::format("{}: {} of type {} is incompatible with {} of type {}.\n"
                                                  "Line: {}, Scope: {}\n\n"
@@ -138,6 +149,7 @@ namespace iron
                                                  color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
                                                  codeLine, caretLine));
     }
+    */
 
     /**
      * @brief Determines the type of a literal value
@@ -148,6 +160,8 @@ namespace iron
      * @param valueString String representation of the literal
      * @return int Token type representing the value's type
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     int SemanticAnalysis::determineValueType(const std::string &valueString)
     {
         const int baseType = tokenMap::determineType(valueString);
@@ -158,6 +172,7 @@ namespace iron
         }
         return baseType;
     }
+    */
 
     /**
      * @brief Validates and creates a variable for custom types like structs
@@ -242,7 +257,7 @@ namespace iron
         // Look up the initial struct in the scope
         if (!baseVariable->structStemt)
         {
-            auto [caretLine, codeLine] = getCodeLineAndCaretLine(
+            auto [codeLine, caretLine] = getCodeLineAndCaretLine(
                     identifiers[0]->getSymbol()->getLine(), identifiers[0]->getSymbol()->getCharPositionInLine(), 0);
 
             throw TypeNotFoundException(util::format(
@@ -271,7 +286,7 @@ namespace iron
 
             if (!field)
             {
-                auto [caretLine, codeLine] =
+                auto [codeLine, caretLine] =
                         getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
                                                 identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
 
@@ -291,7 +306,7 @@ namespace iron
             {
                 if (field->type != tokenMap::STRUCT || !field->structStemt)
                 {
-                    auto [caretLine, codeLine] =
+                    auto [codeLine, caretLine] =
                             getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
                                                     identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
 

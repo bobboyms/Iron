@@ -27,7 +27,11 @@ namespace iron
         std::vector<std::string> sourceLines;
         std::shared_ptr<config::Configuration> config;
 
+        // Métodos de análise por fases
+        void analyzeDeclarations();
+        void analyzeDefinitions();
 
+        // Visitantes para declarações de loop
         void visitWhileStatement(IronParser::WhileStatementContext *ctx);
         void visitRepeatStatement(IronParser::RepeatStatementContext *ctx);
         void visitForStatement(IronParser::ForStatementContext *ctx);
@@ -36,14 +40,14 @@ namespace iron
         // void visitContinueStatement(IronParser::ContinueStatementContext *ctx);
         // void visitVoidReturnStatement(IronParser::VoidReturnStatementContext *ctx);
 
-
+        // Funções auxiliares para erro e contexto
         std::pair<std::string, std::string> getCodeLineAndCaretLine(uint line, uint col, int steps) const;
-
-        // Helper functions for error handling and common operations
-        ErrorContext getErrorContext(uint line, uint col, int caretOffset = 0);
+        ErrorContext getErrorContext(uint line, uint col, int caretOffset = 0) const;
+        
+        // Funções auxiliares para validação
         std::shared_ptr<scope::Variable> verifyVariableExists(const std::string &varName, uint line, uint col,
                                                               const std::string &contextInfo = "");
-        std::shared_ptr<scope::Function> verifyFunctionExists(const std::string &functionName, uint line, uint col);
+        std::shared_ptr<scope::Function> verifyFunctionExists(const std::string &functionName, uint line, uint col) const;
         void verifyTypesMatch(int typeA, int typeB, const std::string &nameA, const std::string &nameB, uint line,
                               uint col, const std::string &errorContextMsg = "Type mismatch error") const;
         static int determineValueType(const std::string &value);
@@ -54,21 +58,7 @@ namespace iron
                              const std::shared_ptr<scope::StructStemt> &parentStructDef = nullptr);
         void visitStructInitBody(IronParser::StructInitBodyContext *ctx, std::shared_ptr<scope::StructStemt> parentStructDef = nullptr);
         
-        // Helper functions for struct field validation
-        void validateFieldExists(const std::string &fieldName,
-                                 const std::shared_ptr<scope::StructStemt> &parentStructDef, uint lineNumber,
-                                 uint columnPosition) const;
-        void validateLiteralFieldValue(IronParser::StructInitBodyContext *ctx,
-                                       const std::shared_ptr<scope::Variable> &field);
-        void validateValueAssignment(const std::string &fieldName, const std::shared_ptr<scope::Variable> &field,
-                                     int valueType, const std::string &valueDesc, const std::string &valueTypeDesc,
-                                     uint lineNumber, uint columnPosition);
-        void validateNestedStructValues(IronParser::StructInitContext *ctx,
-                                        const std::shared_ptr<scope::Variable> &field);
-        std::shared_ptr<scope::StructStemt> findParentStructDefForNestedInit(IronParser::StructInitBodyContext *ctx);
-        void processDirectStructInitialization(IronParser::StructInitBodyContext *ctx, const std::string &variableName,
-                                               const std::shared_ptr<scope::Variable> &structVariable);
-        void processNestedStructFieldInit(IronParser::StructInitBodyContext *ctx);
+        // Métodos auxiliares para validação de struct removidos (já redefinidos abaixo)
 
         void visitExternBlock(IronParser::ExternBlockContext *ctx);
 
@@ -136,10 +126,40 @@ namespace iron
 
         // std::shared_ptr<scope::Function> visitArrowFunctionBlock(IronParser::ArrowFunctionBlockContext *ctx);
 
+        // Métodos para validação de retorno
         void visitReturn(IronParser::ReturnStatementContext *ctx);
+        void validateReturnLiteral(IronParser::ReturnStatementContext *ctx, 
+                                 const std::shared_ptr<scope::Function> &currentFunction,
+                                 uint line, uint col);
+        void validateReturnVariable(IronParser::ReturnStatementContext *ctx, 
+                                  const std::shared_ptr<scope::Function> &currentFunction,
+                                  uint line, uint col);
+        void validateReturnExpression(IronParser::ReturnStatementContext *ctx, 
+                                    const std::shared_ptr<scope::Function> &currentFunction,
+                                    uint line, uint col);
+        void validateReturnFunctionCall(IronParser::ReturnStatementContext *ctx, 
+                                      const std::shared_ptr<scope::Function> &currentFunction,
+                                      uint line, uint col);
 
+        // Métodos auxiliares para validação de campos de struct
+        void validateStructField(const std::string &fieldName,
+                              const std::shared_ptr<scope::StructStemt> &parentStructDef, uint lineNumber,
+                              uint columnPosition) const;
+        void validateStructFieldValue(IronParser::StructInitBodyContext *ctx,
+                                   const std::shared_ptr<scope::Variable> &field);
+        void validateStructFieldAssignment(const std::string &fieldName, const std::shared_ptr<scope::Variable> &field,
+                                        int valueType, const std::string &valueDesc, const std::string &valueTypeDesc,
+                                        uint lineNumber, uint columnPosition);
+
+        // Métodos para validação de struct
+        void validateNestedStructValues(IronParser::StructInitContext *ctx,
+                                      const std::shared_ptr<scope::Variable> &field);
+        std::shared_ptr<scope::StructStemt> findParentStructDefForNestedInit(IronParser::StructInitBodyContext *ctx);
+        void processDirectStructInitialization(IronParser::StructInitBodyContext *ctx, const std::string &variableName,
+                                             const std::shared_ptr<scope::Variable> &structVariable);
+        void processNestedStructFieldInit(IronParser::StructInitBodyContext *ctx);
+                                      
         std::vector<std::pair<std::string, int>>
-
         parseFormatSpecifiers(const std::string &format, uint line, const std::string &caretLine,
                               const std::string &codeLine) const;
 

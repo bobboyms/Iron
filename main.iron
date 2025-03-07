@@ -14,6 +14,5 @@ struct Cidade {
 
       fn main() {
          mut let pessoa:Pessoa = {}
-         //pessoa.endereco.cidade.nome = "Rua 25 de março"
-         let endereco:Endereco = pessoa.endereco.cidade
+         pessoa.endereco.cidade
       }
