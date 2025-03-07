@@ -17,15 +17,3 @@
            pessoa.endereco.cidade.nome = "Rua 25 de março"
            //endereco:Struct = {rua:25}
       }
-
-
-fn main():void {
-    var_0:struct = Pessoa
-    var_0:struct = Pessoa {}
-    var_1:struct = Endereco
-    var_2:struct = Cidade
-    var_3:string = "Rua 25 de março"
-    var_2:struct = Cidade {nome:string = var_3}
-    var_1:struct = Endereco {cidade:Cidade = var_2}
-    var_0:struct = Pessoa {endereco:struct Endereco = var_1}
-}

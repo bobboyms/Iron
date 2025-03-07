@@ -894,7 +894,9 @@ std::shared_ptr<hlir::Variable> LLVM::getVariableFromValue(const std::shared_ptr
         const auto structName = structInit->getStruct()->getName();
         const auto structType = getStructByName(structName);
         const auto structAlloca = findAllocaByName(currentFunction, variable->getRealName());
-        
+
+        printf("Alloca: %s\n",variable->getRealName().c_str());
+
         if (!structAlloca)
         {
             throw LLVMException(llvm_utils::formatError("structInit", 

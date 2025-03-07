@@ -271,12 +271,13 @@ namespace hlir
 
             if (const auto anotherType = ctx->anotherType->getText(); context->getStructByName(anotherType))
             {
+                const auto anotherStruct = context->getStructByName(anotherType);
                 const auto variable =
                         std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::STRUCT));
                 statement->addDeclaredVariable(variable);
                 variable->changeRealName(currentFunction->generateVarName());
                 const auto assign = std::make_shared<Assign>()->set(
-                        variable, std::make_shared<Value>()->set(context->getStructByName(anotherType),
+                        variable, std::make_shared<Value>()->set(anotherStruct,
                                                                  std::make_shared<Type>(tokenMap::STRUCT)));
                 statement->addStatement(assign);
             }
