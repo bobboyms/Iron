@@ -240,7 +240,7 @@ varDeclaration:
 assignment:
 	EQ (
 		arrowFunctionInline
-		| varName = IDENTIFIER
+		| varName = IDENTIFIER ('.' IDENTIFIER)*
 		| dataFormat
 		| structInit
 		| functionCall

@@ -1,13 +1,19 @@
-  struct Endereco {
-           mut rua:string
+struct Cidade {
+         mut nome:string
+      }
+
+      struct Endereco {
+         mut rua:string,
+         cidade: Cidade
       }
 
       struct Pessoa {
-            mut name:string,
-            endereco: Endereco
+         mut name:string,
+         mut endereco: Endereco
       }
 
-        fn main() {
-            mut let pessoa:Pessoa = { name:"" }
-            pessoa.name = "Taliba"
-        }
+      fn main() {
+         mut let pessoa:Pessoa = {}
+         pessoa.endereco.cidade.nome = "Rua 25 de março"
+         let endereco:Endereco = pessoa.endereco
+      }

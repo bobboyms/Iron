@@ -219,7 +219,7 @@ fnsignature:
 ;
 
 // Funções flecha (arrow functions)
-arrowFunctionInline: 
+arrowFunctionInline:
     functionSignature ARROW (expr | L_CURLY statementList R_CURLY);
 
 arrowFunctionBlock:
@@ -302,10 +302,10 @@ boolExpr
 
 // Operadores matemáticos
 math_op
-   : PLUS 
-   | MINUS 
-   | STAR 
-   | DIV 
+   : PLUS
+   | MINUS
+   | STAR
+   | DIV
    | MOD
    ;
 

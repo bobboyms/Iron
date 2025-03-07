@@ -235,7 +235,7 @@ namespace iron
             {
                 // Handle nested struct field assignment
                 const auto [parentStructDef, field] = getStructAndField(ctx->IDENTIFIER());
-                
+
                 // Verify the field is mutable
                 if (!field->mut)
                 {
@@ -244,32 +244,32 @@ namespace iron
                             "Line: {}, Scope: {}\n\n"
                             "{}\n"
                             "{}\n\n"
-                            "Hint: Add the '{}' keyword before the field name in the struct definition to make it mutable",
+                            "Hint: Add the '{}' keyword before the field name in the struct definition to make it "
+                            "mutable",
                             color::colorText(field->name, color::BOLD_GREEN),
                             color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                            codeLine, caretLine,
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine,
                             color::colorText("mut", color::BOLD_BLUE)));
                 }
-                
+
                 // Verify the field is a struct type
                 if (!field->structStemt)
                 {
-                    throw TypeMismatchException(util::format(
-                            "Type mismatch error: Cannot assign a struct value to field '{}' which is not a struct type.\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n"
-                            "{}\n\n"
-                            "Hint: The field must be of a struct type to receive a struct initialization.",
-                            color::colorText(field->name, color::BOLD_GREEN),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                            codeLine, caretLine));
+                    throw TypeMismatchException(
+                            util::format("Type mismatch error: Cannot assign a struct value to field '{}' which is not "
+                                         "a struct type.\n"
+                                         "Line: {}, Scope: {}\n\n"
+                                         "{}\n"
+                                         "{}\n\n"
+                                         "Hint: The field must be of a struct type to receive a struct initialization.",
+                                         color::colorText(field->name, color::BOLD_GREEN),
+                                         color::colorText(std::to_string(line), color::YELLOW),
+                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                         codeLine, caretLine));
                 }
-                
+
                 // Process the struct initialization
                 visitStructInit(ctx->structInit(), field->structStemt);
-                return;
             }
             else
             {
@@ -277,17 +277,18 @@ namespace iron
                 if (!variable->structStemt)
                 {
                     throw TypeMismatchException(util::format(
-                            "Type mismatch error: Cannot assign a struct value to variable '{}' which is not a struct type.\n"
+                            "Type mismatch error: Cannot assign a struct value to variable '{}' which is not a struct "
+                            "type.\n"
                             "Line: {}, Scope: {}\n\n"
                             "{}\n"
                             "{}\n\n"
                             "Hint: The variable must be declared as a struct type to receive a struct initialization.",
                             color::colorText(varName, color::BOLD_GREEN),
                             color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                            codeLine, caretLine));
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+                            caretLine));
                 }
-                
+
                 // Process the struct initialization
                 visitStructInit(ctx->structInit(), variable->structStemt);
             }
@@ -313,7 +314,7 @@ namespace iron
             {
                 // Handle struct field assignment
                 const auto [structDef, field] = getStructAndField(ctx->IDENTIFIER());
-                
+
                 if (!field->mut)
                 {
                     throw VariableCannotBeChangedException(util::format(
@@ -321,14 +322,14 @@ namespace iron
                             "Line: {}, Scope: {}\n\n"
                             "{}\n"
                             "{}\n\n"
-                            "Hint: Add the '{}' keyword before the field name in the struct definition to make it mutable",
+                            "Hint: Add the '{}' keyword before the field name in the struct definition to make it "
+                            "mutable",
                             color::colorText(field->name, color::BOLD_GREEN),
                             color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                            codeLine, caretLine,
+                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine,
                             color::colorText("mut", color::BOLD_BLUE)));
                 }
-                
+
                 // Check if the value type matches the field type
                 if (int valueType = determineValueType(value); field->type != valueType)
                 {
@@ -726,13 +727,83 @@ namespace iron
             {
                 const std::string anotherVarName = ctx->varName->getText();
                 const std::string varName = varDeclaration->varName->getText();
-                const std::string varType = varDeclaration->varTypes()->getText();
+                const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
 
+                if (!varDeclaration->varTypes())
+                {
+                    const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+                    if (!variable)
+                    {
+                        if (!anotherVariable)
+                        {
+                            throw VariableNotFoundException(
+                                    util::format("Variable {} not found.\n"
+                                                 "Line: {}, Scope: {}\n\n"
+                                                 "{}\n"
+                                                 "{}\n",
+                                                 color::colorText(varName, color::BOLD_GREEN),
+                                                 color::colorText(std::to_string(line), color::YELLOW),
+                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                                 codeLine, caretLine));
+                        }
+                    }
+
+                    if (!anotherVariable)
+                    {
+                        throw VariableNotFoundException(
+                                util::format("Variable {} not found.\n"
+                                             "Line: {}, Scope: {}\n\n"
+                                             "{}\n"
+                                             "{}\n",
+                                             color::colorText(anotherVarName, color::BOLD_GREEN),
+                                             color::colorText(std::to_string(line), color::YELLOW),
+                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                             codeLine, caretLine));
+                    }
+
+                    if (ctx->IDENTIFIER().size() >= 1)
+                    {
+                        const auto [structStmt, field] = getStructAndField(ctx->IDENTIFIER());
+                        if (field->type != variable->type)
+                        {
+                            throw TypeMismatchException(util::format(
+                                    "The variable {} of type {} is incompatible with the field {} of type {}.\n"
+                                    "Line: {}, Scope: {}\n\n"
+                                    "{}\n"
+                                    "{}\n",
+                                    color::colorText(varName, color::BOLD_GREEN),
+                                    color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
+                                    color::colorText(field->name, color::BOLD_BLUE),
+                                    color::colorText(tokenMap::getTokenText(field->type), color::BOLD_BLUE),
+                                    color::colorText(std::to_string(line), color::YELLOW),
+                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+                                    caretLine));
+                        }
+
+                        if (field->structStemt->name != variable->structStemt->name)
+                        {
+                            throw TypeMismatchException(util::format(
+                                    "The variable {} of type {} is incompatible with the field {} of type {}.\n"
+                                    "Line: {}, Scope: {}\n\n"
+                                    "{}\n"
+                                    "{}\n",
+                                    color::colorText(varName, color::BOLD_GREEN),
+                                    color::colorText(variable->structStemt->name, color::BOLD_GREEN),
+                                    color::colorText(field->name, color::BOLD_BLUE),
+                                    color::colorText(field->structStemt->name, color::BOLD_BLUE),
+                                    color::colorText(std::to_string(line), color::YELLOW),
+                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+                                    caretLine));
+                        }
+                    }
+
+                    return;
+                }
+                const std::string varType = varDeclaration->varTypes()->getText();
                 if (tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
                 {
                     std::shared_ptr<scope::Function> functionPtr;
-                    if (const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
-                        !anotherVariable)
+                    if (!anotherVariable)
                     {
                         const auto function = scopeManager->getFunctionDeclarationByName(anotherVarName);
                         if (!function)

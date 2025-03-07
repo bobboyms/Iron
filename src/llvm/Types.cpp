@@ -908,14 +908,14 @@ namespace iron
         const auto structType = getStructByName(structName);
         const auto structAlloca = findAllocaByName(currentFunction, variable->getRealName());
 
-        printf("Alloca: %s\n", variable->getRealName().c_str());
+        // printf("Alloca: %s\n", variable->getRealName().c_str());
 
         if (!structAlloca)
         {
             throw LLVMException(llvm_utils::formatError("structInit", "Failed to find allocated variable for struct"));
         }
 
-        uint index = 0;
+        // uint index = 0;
         for (auto const &assign: structInit->getAssigns())
         {
             llvm_utils::checkNotNull(assign, "field assignment", "structInit");
@@ -924,13 +924,12 @@ namespace iron
 
             const auto fieldName = assign->getVariable()->getRealName();
             const auto sourceVar = getVariableFromValue(assign->getValue());
+            const auto [index, _] = hlirContext->getStructByName(structName)->findVarByName(fieldName);
 
             // Get the value from the source variable and store it directly in the struct field
             llvm::Value *sourceValue = loadVariable(sourceVar, currentFunction);
             llvm::Value *field = builder.CreateStructGEP(structType, structAlloca, index, fieldName);
             builder.CreateStore(sourceValue, field);
-
-            index++;
         }
     }
 

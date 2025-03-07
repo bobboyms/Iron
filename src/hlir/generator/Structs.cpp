@@ -65,7 +65,7 @@ namespace hlir
             }
 
             const auto fieldName = body->varName->getText();
-            const auto field = struct_->findVarByName(fieldName);
+            const auto [_, field] = struct_->findVarByName(fieldName);
             if (!field)
             {
                 throw HLIRException(
@@ -198,7 +198,7 @@ namespace hlir
             fieldNames.push_back(fieldName);
             
             // Find the field in the current struct
-            auto field = currentStruct->findVarByName(fieldName);
+            auto [_, field] = currentStruct->findVarByName(fieldName);
             if (!field) {
                 throw HLIRException(util::format("Invalid struct field access: '{}' is not a field of '{}'.", 
                                                 fieldName, currentStruct->getName()));
@@ -240,7 +240,7 @@ namespace hlir
             auto structInit = std::make_shared<StructInit>(structTypes[i]);
             
             // Find the field we're setting at this level
-            auto field = structTypes[i]->findVarByName(fieldNames[i]);
+            auto [_, field] = structTypes[i]->findVarByName(fieldNames[i]);
             
             // Create the assignment for this field
             auto fieldAssign = std::make_shared<Assign>()->set(

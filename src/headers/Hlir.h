@@ -1917,7 +1917,7 @@ namespace hlir
          * @param varName The name of the variable to search for.
          * @return Shared pointer to the found variable or nullptr if not found.
          */
-        std::shared_ptr<Variable> findVarByName(const std::string &varName);
+        std::pair<int, std::shared_ptr<Variable>> findVarByName(const std::string &varName);
     };
 
     /**

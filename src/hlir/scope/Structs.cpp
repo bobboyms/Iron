@@ -44,17 +44,19 @@ namespace hlir
         return variables;
     }
 
-    std::shared_ptr<Variable> Struct::findVarByName(const std::string &varName)
+    std::pair<int, std::shared_ptr<Variable>> Struct::findVarByName(const std::string &varName)
     {
+        int index = 0;
         for (auto &variable: variables)
         {
             if (variable->getVarName() == varName)
             {
-                return variable;
+                return std::make_pair(index, variable);
             }
+            index++;
         }
 
-        return nullptr;
+        return std::make_pair(index, nullptr);
     }
 
     StructInit::StructInit(const std::shared_ptr<Struct> &struct_) : struct_(struct_)
