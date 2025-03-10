@@ -301,6 +301,23 @@ namespace iron
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
 
+            if (!field->initialized)
+            {
+                auto [codeLine, caretLine] =
+                        getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
+                                                identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
+
+                throw UninitializedFieldException(util::format(
+                        "Field '{}' not initialized in struct '{}'.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}",
+                        color::colorText(fieldName, color::BOLD_BLUE),
+                        color::colorText(lastStruct->name, color::BOLD_GREEN),
+                        color::colorText(std::to_string(identifiers[i]->getSymbol()->getLine()), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            }
+
             // If this is not the last field in the chain, ensure it's a struct for further traversal
             if (i < identifiers.size() - 1)
             {

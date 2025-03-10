@@ -3518,7 +3518,7 @@ IronParser::AssignmentContext* IronParser::assignment() {
 
     case 2: {
       setState(376);
-      antlrcpp::downCast<AssignmentContext *>(_localctx)->varName = match(IronParser::IDENTIFIER);
+      antlrcpp::downCast<AssignmentContext *>(_localctx)->anotherVarName = match(IronParser::IDENTIFIER);
       setState(381);
       _errHandler->sync(this);
       _la = _input->LA(1);

@@ -115,6 +115,22 @@ namespace iron
         }
     };
 
+    class UninitializedFieldException final : public SemanticException
+    {
+    public:
+        explicit UninitializedFieldException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
+    class FieldNotFoundException final : public SemanticException
+    {
+    public:
+        explicit FieldNotFoundException(const std::string &message) : SemanticException(message)
+        {
+        }
+    };
+
     class ModuleRedefinitionException final : public SemanticException
     {
     public:
@@ -199,13 +215,6 @@ namespace iron
         }
     };
 
-    class FieldNotFoundException final : public SemanticException
-    {
-    public:
-        explicit FieldNotFoundException(const std::string &msg) : SemanticException(msg)
-        {
-        }
-    };
 
     class ScopeNotFoundException final : public SemanticException
     {

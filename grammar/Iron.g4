@@ -236,11 +236,16 @@ functionCallArg:
 varDeclaration:
 	MUT? LET varName = IDENTIFIER COLON (varTypes | anotherType = IDENTIFIER) assignment?;
 
+
+identifier:
+    IDENTIFIER ('.' IDENTIFIER)*
+;
+
 // Atribuição
 assignment:
 	EQ (
 		arrowFunctionInline
-		| varName = IDENTIFIER ('.' IDENTIFIER)*
+		| varName = identifier
 		| dataFormat
 		| structInit
 		| functionCall
@@ -265,7 +270,7 @@ structInitBody:
 ;
 
 varAssignment:
-	varName = IDENTIFIER ('.' IDENTIFIER )* EQ (
+	varName = identifier EQ (
 		arrowFunctionInline
 		| functionCall
 		| structInit

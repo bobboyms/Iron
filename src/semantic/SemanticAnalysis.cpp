@@ -884,11 +884,11 @@ namespace iron
             visitFunctionCall(ctx->functionCall());
         }
 
-        if (ctx->varName)
+        if (ctx->anotherVarName)
         {
             if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
             {
-                const std::string anotherVarName = ctx->varName->getText();
+                const std::string anotherVarName = ctx->anotherVarName->getText();
                 const std::string varName = varDeclaration->varName->getText();
                 const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
 

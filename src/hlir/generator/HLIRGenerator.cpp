@@ -240,7 +240,7 @@ namespace hlir
 
         if (ctx->dataFormat())
         {
-            if (ctx->IDENTIFIER().size() >= 1)
+            if (ctx->IDENTIFIER().size() > 1)
             {
                 createStructAndField(ctx->IDENTIFIER(), currentFunction, ctx->dataFormat()->getText());
             }
@@ -309,12 +309,12 @@ namespace hlir
             }
         }
 
-        if (ctx->varName)
+        if (ctx->anotherVarName)
         {
 
             if (auto varDecl = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
             {
-                const auto anotherVarName = ctx->varName->getText();
+                const auto anotherVarName = ctx->anotherVarName->getText();
                 std::string varName = varDecl->varName->getText();
                 std::string varType = varDecl->varTypes()->getText();
 

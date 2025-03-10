@@ -121,11 +121,11 @@ namespace iron
                                                const std::shared_ptr<scope::StructStemt>& parentStructDef,
                                                const uint lineNumber, const uint columnPosition) const
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         if (const auto field = parentStructDef->getVarByName(fieldName); !field)
         {
-            throw VariableNotFoundException(util::format(
+            throw FieldNotFoundException(util::format(
                     "Field '{}' not found in struct '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
@@ -149,7 +149,7 @@ namespace iron
     {
         const auto lineNumber = ctx->getStart()->getLine();
         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto fieldName = ctx->varName->getText();
         const auto currentFunction = getCurrentFunction();
 
@@ -191,7 +191,7 @@ namespace iron
                                                    const std::string &valueDesc, const std::string &valueTypeDesc,
                                                    const uint lineNumber, const uint columnPosition)
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto currentFunction = getCurrentFunction();
 
         if (valueType != field->type)
@@ -225,7 +225,7 @@ namespace iron
         {
             const auto lineNumber = ctx->getStart()->getLine();
             const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-            auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+            auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
             throw TypeNotFoundException(util::format(
                     "Field '{}' is not a struct type but is being initialized as a struct.\n"
@@ -262,7 +262,7 @@ namespace iron
     {
         const auto lineNumber = ctx->getStart()->getLine();
         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         // Find the parent context to determine which struct this is part of
         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent->parent))
@@ -371,14 +371,14 @@ namespace iron
     {
         const auto lineNumber = ctx->getStart()->getLine();
         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto fieldName = ctx->varName->getText();
 
         // Find the field in the struct
         const auto field = structVariable->structStemt->getVarByName(fieldName);
         if (!field)
         {
-            throw VariableNotFoundException(util::format(
+            throw FieldNotFoundException(util::format(
                     "Field '{}' not found in struct '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
@@ -494,6 +494,7 @@ namespace iron
                     currentField = currentStruct->getVarByName(fieldPath[i]);
                     if (!currentField || !currentField->structStemt)
                     {
+                        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
                         throw TypeNotFoundException(
                                 util::format("Field '{}' is not a struct type but is being initialized as a struct.\n"
                                              "Line: {}, Scope: {}\n\n"
@@ -514,7 +515,7 @@ namespace iron
                     const auto field = currentStruct->getVarByName(fieldPath.back());
                     if (!field)
                     {
-                        throw VariableNotFoundException(
+                        throw FieldNotFoundException(
                                 util::format("Field '{}' not found in struct '{}'.\n"
                                              "Line: {}, Scope: {}\n\n"
                                              "{}\n"
@@ -540,7 +541,7 @@ namespace iron
                     const auto field = currentStruct->getVarByName(fieldPath.back());
                     if (!field)
                     {
-                        throw VariableNotFoundException(
+                        throw FieldNotFoundException(
                                 util::format("Field '{}' not found in struct '{}'.\n"
                                              "Line: {}, Scope: {}\n\n"
                                              "{}\n"
