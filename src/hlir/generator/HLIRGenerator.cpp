@@ -240,10 +240,9 @@ namespace hlir
 
         if (ctx->dataFormat())
         {
-            printf("leftVarName %s\n",leftVarName.c_str());
-            if (ctx->IDENTIFIER().size() >= 1)
+            if (const auto restSize = ctx->variableQualifiedName()->rest.size(); restSize >= 1)
             {
-                createStructAndField(ctx->IDENTIFIER(), currentFunction, ctx->dataFormat()->getText());
+                createStructAndField(ctx->variableQualifiedName(), currentFunction, ctx->dataFormat()->getText());
             }
         }
 
@@ -273,7 +272,7 @@ namespace hlir
             {
                 const auto anotherStruct = context->getStructByName(anotherType);
                 const auto variable =
-                        std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::STRUCT));
+                        std::make_shared<Variable>()->set(varName, std::make_shared<Type>(tokenMap::STRUCT, anotherType));
                 statement->addDeclaredVariable(variable);
                 variable->changeRealName(currentFunction->generateVarName());
                 const auto assign = std::make_shared<Assign>()->set(
@@ -310,12 +309,12 @@ namespace hlir
             }
         }
 
-        if (ctx->varName)
+        if (ctx->anotherVarName)
         {
 
             if (auto varDecl = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
             {
-                const auto anotherVarName = ctx->varName->getText();
+                const auto anotherVarName = ctx->anotherVarName->getText();
                 std::string varName = varDecl->varName->getText();
                 std::string varType = varDecl->varTypes()->getText();
 

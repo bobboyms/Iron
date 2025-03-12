@@ -22,12 +22,11 @@ R_PAREN: ')';
 PLUS: '+';
 MINUS: '-';
 DIV: '/';
-MOD: '%';
 L_BRACKET: '[';
 R_BRACKET: ']';
 ARROW: '->';
 
-// Tokens para operadores lógicos e relacionais
+// Tokens para operadores lógicos e relacionais (adicione esses tokens se ainda não existirem)
 AND: 'and';
 OR: 'or';
 NOT: 'not';
@@ -47,16 +46,12 @@ ELSE: 'else';
 PUBLIC: 'public';
 IMPORT: 'import';
 RETURN: 'return';
+
+// Tipos de dados
+
 IN: 'in';
 FOR: 'for';
 WHILE: 'while';
-REPEAT: 'repeat';
-STRUCT: 'struct';
-OPTIONS: 'options';
-CONTINUE: 'continue';
-BREAK: 'break';
-
-// Tipos de dados
 TYPE_INT: 'int';
 TYPE_CHAR: 'char';
 TYPE_FLOAT: 'float';
@@ -64,6 +59,11 @@ TYPE_STRING: 'string';
 TYPE_BOOLEAN: 'boolean';
 TYPE_DOUBLE: 'double';
 TYPE_VOID: 'void';
+REPEAT: 'repeat';
+STRUCT:'struct';
+OPTIONS: 'options';
+CONTINUE: 'continue';
+BREAK: 'break';
 
 // Literais
 REAL_NUMBER: '-'? [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)? [FD]?;
@@ -90,9 +90,12 @@ importStatement: IMPORT qualifiedName (DOT STAR)?;
 // Nome qualificado para importação (ex.: module.casa.janela)
 qualifiedName: IDENTIFIER (DOT IDENTIFIER)*;
 
+// Ponto de entrada principal entryPoint: '@main' '(' argVar = IDENTIFIER ')' L_CURLY statementList
+// R_CURLY;
+
 // Lista de declarações dentro do ponto de entrada ou função
 statementList: (
-        continueStatement
+        : continueStatement
 		| breakStatement
 		| varDeclaration
 		| varAssignment
@@ -103,33 +106,23 @@ statementList: (
 		| repeatStatement
 		| forStatement
 		| returnStatement
-		| formatStatement
 	)*;
 
-// Instruções de controle de fluxo
 breakStatement: BREAK;
 continueStatement: CONTINUE;
 
-// Declarações de struct e options
+
+//struct Pessoa {
+//    name:string
+//    idade:int
+//}
+
 structStatement:
     STRUCT structName = IDENTIFIER L_CURLY structBody (',' structBody)* R_CURLY
 ;
 
 structBody:
-   MUT? varName = IDENTIFIER COLON (varTypes | anotherType = IDENTIFIER)
-;
-
-structInit:
-    structName = IDENTIFIER? L_CURLY structInitBody (',' structInitBody)* R_CURLY
-;
-
-structInitBody:
-    varName = IDENTIFIER COLON (
-    		dataFormat
-    		| anotherVarName = IDENTIFIER
-    		| functionCall
-    		| arrowFunctionInline
-    	)
+   MUT? varName = IDENTIFIER ':' (varTypes | anotherType = IDENTIFIER)
 ;
 
 optionsStatement:
@@ -140,7 +133,6 @@ optionsBody:
     itemName = IDENTIFIER functionSignature?
 ;
 
-// Instrução de retorno
 returnStatement:
 	RETURN (
 		dataFormat
@@ -149,7 +141,7 @@ returnStatement:
 		| expr
 	)?;
 
-// Estruturas de controle de loop
+
 whileStatement:
     WHILE boolExpr L_CURLY statementList R_CURLY;
 
@@ -164,9 +156,10 @@ intervals:
     '..'
     (secondNumber = INT_NUMBER | secondVarName = IDENTIFIER);
 
-// Formato de string
+//printf("Taxa de aprovação: %d%%\n", 90);
+// f"Nome: %s", maria
 formatStatement:
-    'f\'(' STRING_LITERAL COMMA formatArguments ')'
+    'f\'(' STRING_LITERAL COMMA (formatArguments) ')'
 ;
 
 formatArguments: formatArgument (COMMA formatArgument)*;
@@ -174,16 +167,17 @@ formatArguments: formatArgument (COMMA formatArgument)*;
 formatArgument:
 	(dataFormat | varName=IDENTIFIER | functionCall | expr | STRING_LITERAL);
 
-// Declarações de funções externas
+//extern C function
+
 externBlock:
-	'extern' language = IDENTIFIER L_CURLY (
+	'extern' language = IDENTIFIER '{' (
 		externFunctionDeclaration+
-	)* R_CURLY;
+	)* '}';
 
 externFunctionDeclaration:
-	FUNCTION exterFunctionName = IDENTIFIER L_PAREN externFunctionArgs? (',' varied = '...')? R_PAREN functionReturnType?;
+	'fn' exterFunctionName = IDENTIFIER '(' externFunctionArgs? (',' varied = '...')? ')' functionReturnType?;
 
-// Argumentos da função externa
+// Argumentos da função
 externFunctionArgs: externFunctionArg (COMMA externFunctionArg)*;
 
 externFunctionArg:
@@ -198,9 +192,12 @@ cTypes:
 	| TYPE_VOID
 	;
 
-// Declaração e chamada de função
+// Declaração de função
 functionDeclaration:
 	PUBLIC? FUNCTION functionName = IDENTIFIER functionSignature L_CURLY statementList R_CURLY;
+
+//(peso:float, idade:int):float -> peso * idade
+arrowFunctionInline: functionSignature ARROW (expr | L_CURLY statementList R_CURLY);
 
 functionSignature:
 	L_PAREN functionArgs? R_PAREN functionReturnType?;
@@ -213,18 +210,11 @@ functionArgs: functionArg (COMMA functionArg)*;
 
 // Argumento da função
 functionArg:
-	varName = IDENTIFIER COLON (fnsignature | varTypes) assignment?;
+	varName = IDENTIFIER COLON (fnsignature | varTypes  ) assignment?;
 
 fnsignature:
     FUNCTION functionSignature
 ;
-
-// Funções flecha (arrow functions)
-arrowFunctionInline: 
-    functionSignature ARROW (expr | L_CURLY statementList R_CURLY);
-
-arrowFunctionBlock:
-	functionSignature ARROW L_CURLY statementList R_CURLY;
 
 // Chamada de função
 functionCall:
@@ -239,46 +229,62 @@ functionCallArg:
 		dataFormat
 		| anotherVarName = IDENTIFIER
 		| functionCall
-		| formatStatement
 		| arrowFunctionInline
-		| arrowFunctionBlock
-		| structInit
 	);
 
-// Declaração e atribuição de variáveis
+// Declaração de variável
 varDeclaration:
 	MUT? LET varName = IDENTIFIER COLON (varTypes | anotherType = IDENTIFIER) assignment?;
+
+
+identifier:
+    IDENTIFIER ('.' IDENTIFIER)*
+;
 
 // Atribuição
 assignment:
 	EQ (
 		arrowFunctionInline
-		| arrowFunctionBlock
-		| varName = IDENTIFIER
+		| varName = identifier
 		| dataFormat
 		| structInit
 		| functionCall
 		| expr
 		| boolExpr
 	);
+//{name:"Thiago", idade:2}
+
+structInit:
+    structName = IDENTIFIER? L_CURLY (structInitBody (',' structInitBody)*)? R_CURLY
+;
+
+structInitBody:
+    varName = IDENTIFIER COLON (
+    		dataFormat
+    		| anotherVarName = IDENTIFIER
+    		| structInit
+    		| functionCall
+    		| arrowFunctionInline
+
+    	)
+;
 
 varAssignment:
-	varName = IDENTIFIER ('.' IDENTIFIER)* EQ (
+	varName = identifier EQ (
 		arrowFunctionInline
-		| arrowFunctionBlock
-		| anotherVarName = IDENTIFIER
-		| dataFormat
-		| structInit
 		| functionCall
+		| structInit
+		| anotherVarName=IDENTIFIER
+		| dataFormat
 		| expr
-		| boolExpr
 	);
 
-// Estruturas de controle if-else
+//if e else
 ifBlock
     : L_CURLY statementList? R_CURLY
     ;
 
+// ifStatement
 ifStatement
     : IF L_PAREN boolExpr R_PAREN ifBlock (ELSE elseStatement)?
     ;
@@ -288,39 +294,27 @@ elseStatement
     | ifBlock
     ;
 
-// Expressões booleanas e aritméticas com prioridades claras
 boolExpr
-   : L_PAREN boolExpr R_PAREN                                  #parenBoolExpr
-   | NOT boolExpr                                              #notExpr
-   | left=boolExpr op=(AND|OR) right=boolExpr                 #logicalExpr
-   | left=boolExpr op=(EQEQ|NEQ|LT|LTE|GT|GTE) right=boolExpr #comparisonExpr
-   | BOOLEAN_VALUE                                             #booleanLiteral
-   | number                                                    #numberExpr
-   | IDENTIFIER                                                #identifierExpr
-   | functionCall                                              #functionCallExpr
-   | expr                                                      #arithmeticExpr
-   ;
 
-// Operadores matemáticos
-math_op
-   : PLUS 
-   | MINUS 
-   | STAR 
-   | DIV 
-   | MOD
-   ;
+   : L_PAREN boolExpr R_PAREN
+   | left=boolExpr op= ( EQEQ | NEQ | LT | LTE | GT | GTE) right=boolExpr
+   | left=boolExpr op= AND right=boolExpr
+   | left=boolExpr op= OR right=boolExpr
+   | not = NOT boolExpr
+   | booleanValue = BOOLEAN_VALUE
+   | number
+   | varName = IDENTIFIER
+   | functionCall
+   | expr;
 
-// Expressões aritméticas com prioridade de operadores
-expr
-   : L_PAREN expr R_PAREN                           #parenExpr
-   | left=expr op=(STAR|DIV|MOD) right=expr         #multExpr
-   | left=expr op=(PLUS|MINUS) right=expr           #addExpr
-   | number                                          #numberLiteral
-   | functionCall                                    #functionCallLiteral
-   | IDENTIFIER                                      #identifierLiteral
-   ;
+expr:
+	left = expr (mult = '*' | mod= '%' | div = '/') right = expr
+	| left = expr (plus = '+' | minus = '-') right = expr
+	| number
+	| functionCall
+	| varName = IDENTIFIER
+	| L_PAREN expr R_PAREN;
 
-// Valores numéricos
 number: REAL_NUMBER | INT_NUMBER;
 
 // Formato de dados para inicializadores

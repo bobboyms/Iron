@@ -1,13 +1,13 @@
-  struct Endereco {
-           mut rua:string
-      }
+struct Pessoa {
+            mut name:string
+        }
 
-      struct Pessoa {
-            mut name:string,
-            endereco: Endereco
-      }
+        fn getName():string {
+            return "Taliba"
+        }
 
         fn main() {
+            let name2:string = "name"
             mut let pessoa:Pessoa = { name:"" }
-            pessoa.name = "Taliba"
+            pessoa.name = name2
         }

@@ -65,7 +65,7 @@ namespace hlir
             }
 
             const auto fieldName = body->varName->getText();
-            const auto field = struct_->findVarByName(fieldName);
+            const auto [_, field] = struct_->findVarByName(fieldName);
             if (!field)
             {
                 throw HLIRException(
@@ -127,12 +127,14 @@ namespace hlir
     }
 
 
-    void HLIRGenerator::createStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers,
+    void HLIRGenerator::createStructAndField(IronParser::VariableQualifiedNameContext* identifiers,
                                         const std::shared_ptr<Function> &currentFunction, const std::string &value)
     {
         const auto statement = currentFunction->getCurrentLocalScope();
+
         // We must have at least two identifiers: [struct, field] or [struct, field, nested_field, ...]
-        if (identifiers.size() < 2)
+        const auto restSize = identifiers->rest.size();
+        if (restSize < 1)
         {
             throw std::invalid_argument(
                     util::format("Invalid struct field access: expected at least a struct name and field name.",
@@ -140,7 +142,8 @@ namespace hlir
         }
 
         // Get the base struct name and prepare to traverse the hierarchy
-        std::string baseName = identifiers[0]->getText();
+        const auto baseName = identifiers->base->getText();
+        const auto rest = identifiers->rest;
         auto baseVariable = currentFunction->findVarAllScopesAndArg(baseName);
 
         // Look up the initial struct in the scope
@@ -193,19 +196,19 @@ namespace hlir
         
         // First, verify the access path and build the field name hierarchy
         std::shared_ptr<Struct> currentStruct = baseStruct;
-        for (size_t i = 1; i < identifiers.size(); i++) {
-            std::string fieldName = identifiers[i]->getText();
+        for (size_t i = 0; i < restSize; i++) {
+            std::string fieldName = rest[i]->getText();
             fieldNames.push_back(fieldName);
             
             // Find the field in the current struct
-            auto field = currentStruct->findVarByName(fieldName);
+            auto [_, field] = currentStruct->findVarByName(fieldName);
             if (!field) {
                 throw HLIRException(util::format("Invalid struct field access: '{}' is not a field of '{}'.", 
                                                 fieldName, currentStruct->getName()));
             }
             
             // If not at the last field, prepare for the next nested struct
-            if (i < identifiers.size() - 1) {
+            if (i < rest.size()) {
                 if (field->getVarType()->getType() != tokenMap::STRUCT) {
                     throw HLIRException(util::format("Invalid struct field access: '{}' is not a struct field.", fieldName));
                 }
@@ -240,7 +243,7 @@ namespace hlir
             auto structInit = std::make_shared<StructInit>(structTypes[i]);
             
             // Find the field we're setting at this level
-            auto field = structTypes[i]->findVarByName(fieldNames[i]);
+            auto [_, field] = structTypes[i]->findVarByName(fieldNames[i]);
             
             // Create the assignment for this field
             auto fieldAssign = std::make_shared<Assign>()->set(

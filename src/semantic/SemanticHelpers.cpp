@@ -15,11 +15,14 @@ namespace iron
      * @param caretOffset Offset for positioning the caret under the error
      * @return ErrorContext Struct containing all error context information
      */
-    ErrorContext SemanticAnalysis::getErrorContext(uint lineNumber, uint columnPosition, int caretOffset)
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
+    ErrorContext SemanticAnalysis::getErrorContext(uint lineNumber, uint columnPosition, int caretOffset) const
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, caretOffset);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, caretOffset);
         return {lineNumber, columnPosition, codeLine, caretLine, scopeManager->currentScopeName()};
     }
+    */
 
     /**
      * @brief Verifies if a variable exists and throws a formatted exception if not
@@ -34,11 +37,13 @@ namespace iron
      * @return std::shared_ptr<scope::Variable> The variable if found
      * @throws VariableNotFoundException if the variable does not exist
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     std::shared_ptr<scope::Variable> SemanticAnalysis::verifyVariableExists(const std::string &variableName,
                                                                             uint lineNumber, uint columnPosition,
                                                                             const std::string &contextInfo)
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto currentFunction = getCurrentFunction();
         auto variable = currentFunction->findVarAllScopesAndArg(variableName);
 
@@ -57,6 +62,7 @@ namespace iron
 
         return variable;
     }
+    */
 
     /**
      * @brief Verifies if a function exists and throws a formatted exception if not
@@ -70,10 +76,12 @@ namespace iron
      * @return std::shared_ptr<scope::Function> The function if found
      * @throws FunctionNotFoundException if the function does not exist
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     std::shared_ptr<scope::Function> SemanticAnalysis::verifyFunctionExists(const std::string &functionName,
                                                                             uint lineNumber, uint columnPosition)
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         auto calledFunction = scopeManager->getFunctionDeclarationByName(functionName);
 
         if (!calledFunction)
@@ -99,6 +107,7 @@ namespace iron
 
         return calledFunction;
     }
+    */
 
     /**
      * @brief Verifies if two types match and throws a formatted exception if not
@@ -115,6 +124,8 @@ namespace iron
      * @param errorContextMsg Additional context message for the error
      * @throws TypeMismatchException if types don't match
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     void SemanticAnalysis::verifyTypesMatch(const int typeA, const int typeB, const std::string &nameA,
                                             const std::string &nameB, uint lineNumber, uint columnPosition,
                                             const std::string &errorContextMsg) const
@@ -124,7 +135,7 @@ namespace iron
             return; // Types match, no exception needed
         }
 
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         throw TypeMismatchException(util::format("{}: {} of type {} is incompatible with {} of type {}.\n"
                                                  "Line: {}, Scope: {}\n\n"
@@ -138,6 +149,7 @@ namespace iron
                                                  color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
                                                  codeLine, caretLine));
     }
+    */
 
     /**
      * @brief Determines the type of a literal value
@@ -148,6 +160,8 @@ namespace iron
      * @param valueString String representation of the literal
      * @return int Token type representing the value's type
      */
+    /* 
+    // This method is defined in SemanticAnalysis.cpp to avoid duplicate symbols
     int SemanticAnalysis::determineValueType(const std::string &valueString)
     {
         const int baseType = tokenMap::determineType(valueString);
@@ -158,6 +172,7 @@ namespace iron
         }
         return baseType;
     }
+    */
 
     /**
      * @brief Validates and creates a variable for custom types like structs
@@ -224,11 +239,11 @@ namespace iron
      * required.
      */
     std::pair<std::shared_ptr<scope::StructStemt>, std::shared_ptr<scope::Variable>>
-    SemanticAnalysis::getStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers)
+    SemanticAnalysis::getStructAndField(IronParser::VariableQualifiedNameContext* identifiers)
     {
         const auto function = getCurrentFunction();
         // We must have at least two identifiers: [struct, field] or [struct, field, nested_field, ...]
-        if (identifiers.size() < 2)
+        if (identifiers->rest.size() < 1)
         {
             throw std::invalid_argument(
                     util::format("Invalid struct field access: expected at least a struct name and field name.",
@@ -236,22 +251,23 @@ namespace iron
         }
 
         // Get the base struct name and prepare to traverse the hierarchy
-        std::string baseName = identifiers[0]->getText();
+        const auto rest = identifiers->rest;
+        const auto baseName = identifiers->base->getText();
 
         const auto baseVariable = function->findVarAllScopesAndArg(baseName);
         // Look up the initial struct in the scope
         if (!baseVariable->structStemt)
         {
-            auto [caretLine, codeLine] = getCodeLineAndCaretLine(
-                    identifiers[0]->getSymbol()->getLine(), identifiers[0]->getSymbol()->getCharPositionInLine(), 0);
+            auto [codeLine, caretLine] = getCodeLineAndCaretLine(
+                    rest[0]->getLine(), rest[0]->getCharPositionInLine(), 0);
 
             throw TypeNotFoundException(util::format(
-                    "Struct '%s' not defined.\n"
-                    "Line: %s, Scope: %s\n\n"
-                    "%s\n"
-                    "%s",
+                    "Struct '{}' not defined.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}",
                     color::colorText(baseName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(identifiers[0]->getSymbol()->getLine()), color::YELLOW),
+                    color::colorText(std::to_string(rest[0]->getLine()), color::YELLOW),
                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
         }
 
@@ -261,9 +277,9 @@ namespace iron
         std::string accessPath = baseName;
 
         // Start from index 1 (first field after struct name)
-        for (size_t i = 1; i < identifiers.size(); i++)
+        for (size_t i = 0; i < rest.size(); i++)
         {
-            const std::string fieldName = identifiers[i]->getText();
+            const std::string fieldName = rest[i]->getText();
             accessPath += "." + fieldName;
 
             // Get the field from the current struct
@@ -271,9 +287,9 @@ namespace iron
 
             if (!field)
             {
-                auto [caretLine, codeLine] =
-                        getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
-                                                identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
+                auto [codeLine, caretLine] =
+                        getCodeLineAndCaretLine(rest[i]->getLine(),
+                                                rest[i]->getCharPositionInLine(), 0);
 
                 throw FieldNotFoundException(util::format(
                         "Field '{}' not found in struct '{}'.\n"
@@ -282,27 +298,44 @@ namespace iron
                         "{}",
                         color::colorText(fieldName, color::BOLD_BLUE),
                         color::colorText(lastStruct->name, color::BOLD_GREEN),
-                        color::colorText(std::to_string(identifiers[i]->getSymbol()->getLine()), color::YELLOW),
+                        color::colorText(std::to_string(rest[i]->getLine()), color::YELLOW),
+                        color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
+            }
+
+            if (!field->initialized)
+            {
+                auto [codeLine, caretLine] =
+                        getCodeLineAndCaretLine(rest[i]->getLine(),
+                                                rest[i]->getCharPositionInLine(), 0);
+
+                throw UninitializedFieldException(util::format(
+                        "Field '{}' not initialized in struct '{}'.\n"
+                        "Line: {}, Scope: {}\n\n"
+                        "{}\n"
+                        "{}",
+                        color::colorText(fieldName, color::BOLD_BLUE),
+                        color::colorText(lastStruct->name, color::BOLD_GREEN),
+                        color::colorText(std::to_string(rest[i]->getLine()), color::YELLOW),
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
 
             // If this is not the last field in the chain, ensure it's a struct for further traversal
-            if (i < identifiers.size() - 1)
+            if (i < rest.size() -1)// -1
             {
                 if (field->type != tokenMap::STRUCT || !field->structStemt)
                 {
-                    auto [caretLine, codeLine] =
-                            getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
-                                                    identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
+                    auto [codeLine, caretLine] =
+                            getCodeLineAndCaretLine(rest[i]->getLine(),
+                                                    rest[i]->getCharPositionInLine(), 0);
 
                     throw TypeMismatchException(util::format(
-                            "Cannot access field '%s' as a struct: '%s' is not a struct type.\n"
-                            "Line: %s, Scope: %s\n\n"
-                            "%s\n"
-                            "%s",
-                            color::colorText(identifiers[i + 1]->getText(), color::BOLD_BLUE),
+                            "Cannot access field '{}' as a struct: '{}' is not a struct type.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}",
+                            color::colorText(rest[i]->getText(), color::BOLD_BLUE),
                             color::colorText(fieldName, color::BOLD_GREEN),
-                            color::colorText(std::to_string(identifiers[i]->getSymbol()->getLine()), color::YELLOW),
+                            color::colorText(std::to_string(rest[i]->getLine()), color::YELLOW),
                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
                             caretLine));
                 }

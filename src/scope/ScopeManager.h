@@ -113,6 +113,8 @@ namespace scope
         
         /** @brief Whether the variable is mutable */
         bool mut{false};
+
+        bool initialized{false};
         
         /** @brief Function reference (for function variables) */
         std::shared_ptr<Function> function;

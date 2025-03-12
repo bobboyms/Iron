@@ -117,15 +117,15 @@ namespace iron
      * @param columnPosition The column position for error reporting
      * @throws VariableNotFoundException if the field doesn't exist
      */
-    void SemanticAnalysis::validateFieldExists(const std::string &fieldName,
+    void SemanticAnalysis::validateStructField(const std::string &fieldName,
                                                const std::shared_ptr<scope::StructStemt>& parentStructDef,
                                                const uint lineNumber, const uint columnPosition) const
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         if (const auto field = parentStructDef->getVarByName(fieldName); !field)
         {
-            throw VariableNotFoundException(util::format(
+            throw FieldNotFoundException(util::format(
                     "Field '{}' not found in struct '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
@@ -144,12 +144,12 @@ namespace iron
      * @param field The field to validate against
      * @throws TypeMismatchException if the value type doesn't match the field type
      */
-    void SemanticAnalysis::validateLiteralFieldValue(IronParser::StructInitBodyContext *ctx,
+    void SemanticAnalysis::validateStructFieldValue(IronParser::StructInitBodyContext *ctx,
                                                      const std::shared_ptr<scope::Variable> &field)
     {
         const auto lineNumber = ctx->getStart()->getLine();
         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto fieldName = ctx->varName->getText();
         const auto currentFunction = getCurrentFunction();
 
@@ -186,12 +186,12 @@ namespace iron
      * @param columnPosition Column position for error reporting
      * @throws TypeMismatchException if the value type doesn't match the field type
      */
-    void SemanticAnalysis::validateValueAssignment(const std::string &fieldName,
+    void SemanticAnalysis::validateStructFieldAssignment(const std::string &fieldName,
                                                    const std::shared_ptr<scope::Variable> &field, const int valueType,
                                                    const std::string &valueDesc, const std::string &valueTypeDesc,
                                                    const uint lineNumber, const uint columnPosition)
     {
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto currentFunction = getCurrentFunction();
 
         if (valueType != field->type)
@@ -225,7 +225,7 @@ namespace iron
         {
             const auto lineNumber = ctx->getStart()->getLine();
             const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-            auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+            auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
             throw TypeNotFoundException(util::format(
                     "Field '{}' is not a struct type but is being initialized as a struct.\n"
@@ -246,7 +246,7 @@ namespace iron
             if (auto nestedField = field->structStemt->getVarByName(nestedFieldName);
                 nestedField && nestedFieldCtx->dataFormat())
             {
-                validateLiteralFieldValue(nestedFieldCtx, nestedField);
+                validateStructFieldValue(nestedFieldCtx, nestedField);
             }
         }
     }
@@ -262,7 +262,7 @@ namespace iron
     {
         const auto lineNumber = ctx->getStart()->getLine();
         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
 
         // Find the parent context to determine which struct this is part of
         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent->parent->parent))
@@ -371,14 +371,14 @@ namespace iron
     {
         const auto lineNumber = ctx->getStart()->getLine();
         const auto columnPosition = ctx->getStart()->getCharPositionInLine();
-        auto [caretLine, codeLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
+        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
         const auto fieldName = ctx->varName->getText();
 
         // Find the field in the struct
         const auto field = structVariable->structStemt->getVarByName(fieldName);
         if (!field)
         {
-            throw VariableNotFoundException(util::format(
+            throw FieldNotFoundException(util::format(
                     "Field '{}' not found in struct '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
@@ -393,7 +393,8 @@ namespace iron
         if (ctx->dataFormat())
         {
             // Literal value initialization
-            validateLiteralFieldValue(ctx, field);
+            validateStructFieldValue(ctx, field);
+            field->initialized = true;
         }
         else if (ctx->anotherVarName)
         {
@@ -403,8 +404,9 @@ namespace iron
                     sourceVarName, lineNumber, columnPosition,
                     "Hint: The variable must be declared before using it in a struct initialization.");
 
-            validateValueAssignment(fieldName, field, sourceVariable->type, "variable", sourceVarName, lineNumber,
+            validateStructFieldAssignment(fieldName, field, sourceVariable->type, "variable", sourceVarName, lineNumber,
                                     columnPosition);
+            field->initialized = true;
         }
         else if (ctx->functionCall())
         {
@@ -412,11 +414,12 @@ namespace iron
             const std::string functionName = ctx->functionCall()->functionName->getText();
             const auto function = verifyFunctionExists(functionName, lineNumber, columnPosition);
 
-            validateValueAssignment(fieldName, field, function->getReturnType(), "function", functionName, lineNumber,
+            validateStructFieldAssignment(fieldName, field, function->getReturnType(), "function", functionName, lineNumber,
                                     columnPosition);
 
             // Process the function call
             visitFunctionCall(ctx->functionCall());
+            field->initialized = true;
         }
         else if (ctx->arrowFunctionInline())
         {
@@ -494,6 +497,7 @@ namespace iron
                     currentField = currentStruct->getVarByName(fieldPath[i]);
                     if (!currentField || !currentField->structStemt)
                     {
+                        auto [codeLine, caretLine] = getCodeLineAndCaretLine(lineNumber, columnPosition, 0);
                         throw TypeNotFoundException(
                                 util::format("Field '{}' is not a struct type but is being initialized as a struct.\n"
                                              "Line: {}, Scope: {}\n\n"
@@ -514,7 +518,7 @@ namespace iron
                     const auto field = currentStruct->getVarByName(fieldPath.back());
                     if (!field)
                     {
-                        throw VariableNotFoundException(
+                        throw FieldNotFoundException(
                                 util::format("Field '{}' not found in struct '{}'.\n"
                                              "Line: {}, Scope: {}\n\n"
                                              "{}\n"
@@ -526,7 +530,7 @@ namespace iron
                                              codeLine, caretLine));
                     }
 
-                    validateLiteralFieldValue(ctx, field);
+                    validateStructFieldValue(ctx, field);
                 }
                 else if (ctx->anotherVarName)
                 {
@@ -540,7 +544,7 @@ namespace iron
                     const auto field = currentStruct->getVarByName(fieldPath.back());
                     if (!field)
                     {
-                        throw VariableNotFoundException(
+                        throw FieldNotFoundException(
                                 util::format("Field '{}' not found in struct '{}'.\n"
                                              "Line: {}, Scope: {}\n\n"
                                              "{}\n"
@@ -552,7 +556,7 @@ namespace iron
                                              codeLine, caretLine));
                     }
 
-                    validateValueAssignment(fieldPath.back(), field, sourceVariable->type, "variable", sourceVarName,
+                    validateStructFieldAssignment(fieldPath.back(), field, sourceVariable->type, "variable", sourceVarName,
                                             lineNumber, columnPosition);
                 }
                 // Similar handlers for function calls and arrow functions would go here
@@ -583,12 +587,12 @@ namespace iron
         {
             // Validate field exists in parent struct
             const auto field = parentStructDef->getVarByName(fieldName);
-            validateFieldExists(fieldName, parentStructDef, lineNumber, columnPosition);
+            validateStructField(fieldName, parentStructDef, lineNumber, columnPosition);
 
             // Check literal value type
             if (ctx->dataFormat())
             {
-                validateLiteralFieldValue(ctx, field);
+                validateStructFieldValue(ctx, field);
             }
         }
 
@@ -605,7 +609,7 @@ namespace iron
             if (parentStructDef)
             {
                 // Validate field exists in parent struct
-                validateFieldExists(fieldName, parentStructDef, lineNumber, columnPosition);
+                validateStructField(fieldName, parentStructDef, lineNumber, columnPosition);
                 const auto field = parentStructDef->getVarByName(fieldName);
 
                 // Validate nested field has struct type and check value types
@@ -613,6 +617,7 @@ namespace iron
 
                 // Process the nested struct initialization with the correct struct type
                 visitStructInit(ctx->structInit(), field->structStemt);
+                field->initialized = true;
             }
             else
             {

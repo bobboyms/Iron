@@ -191,6 +191,10 @@ set(SRC_COMMON
         src/semantic/SemanticHelpers.cpp
         src/hlir/scope/Structs.cpp
         src/hlir/generator/HlirHelpers.cpp
+        src/headers/AnotherVarCheck.h
+        src/semantic/Assignment.cpp
+        src/semantic/VarAssignment.cpp
+        src/semantic/FunctionCallArg.cpp
 
 )
 

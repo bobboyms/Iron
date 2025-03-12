@@ -39,7 +39,20 @@ namespace iron
                     {
                         if (value)
                         {
-                            auto type = mapType(value->getVarType()->getType());
+
+
+                            // const auto struct_ = getStructByName(structName);
+
+                            llvm::Type *type; //= mapType(value->getVarType()->getType());
+                            if (value->getVarType()->getType() == tokenMap::STRUCT)
+                            {
+                                type = getStructByName(value->getVarType()->getTypeName());
+                            }
+                            else
+                            {
+                                type = mapType(value->getVarType()->getType());
+                            }
+
                             auto anotherAlloca = this->findAllocaByName(function, value->getRealName());
                             llvm::LoadInst *loadInst = builder.CreateLoad(
                                     type, anotherAlloca, util::format("load_{}", value->getRealName()));
@@ -834,46 +847,46 @@ namespace iron
     }
 
     /**
- * @brief Extracts a Variable object from a Value container
- *
- * This method extracts a Variable from a Value object's variant storage.
- * It performs thorough validation to ensure the variable exists and is valid.
- *
- * @param value The value container that should hold a variable
- * @return std::shared_ptr<hlir::Variable> The extracted variable
- * @throws LLVMException if value is null, contains no variable, or contains a null variable
- */
-std::shared_ptr<hlir::Variable> LLVM::getVariableFromValue(const std::shared_ptr<hlir::Value> &value) const
-{
-    llvm_utils::checkNotNull(value, "value", "getVariableFromValue");
-
-    std::shared_ptr<hlir::Variable> variable;
-    const auto &valueData = value->getValue();
-
-    std::visit(
-            [&variable](auto &&arg)
-            {
-                using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
-                {
-                    variable = arg;
-                    if (!variable)
-                    {
-                        throw LLVMException("getVariableFromValue: variable in variant is null");
-                    }
-                }
-            },
-            valueData);
-
-    if (!variable)
+     * @brief Extracts a Variable object from a Value container
+     *
+     * This method extracts a Variable from a Value object's variant storage.
+     * It performs thorough validation to ensure the variable exists and is valid.
+     *
+     * @param value The value container that should hold a variable
+     * @return std::shared_ptr<hlir::Variable> The extracted variable
+     * @throws LLVMException if value is null, contains no variable, or contains a null variable
+     */
+    std::shared_ptr<hlir::Variable> LLVM::getVariableFromValue(const std::shared_ptr<hlir::Value> &value) const
     {
-        throw LLVMException("getVariableFromValue: no variable found in value variant");
+        llvm_utils::checkNotNull(value, "value", "getVariableFromValue");
+
+        std::shared_ptr<hlir::Variable> variable;
+        const auto &valueData = value->getValue();
+
+        std::visit(
+                [&variable](auto &&arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<hlir::Variable>>)
+                    {
+                        variable = arg;
+                        if (!variable)
+                        {
+                            throw LLVMException("getVariableFromValue: variable in variant is null");
+                        }
+                    }
+                },
+                valueData);
+
+        if (!variable)
+        {
+            throw LLVMException("getVariableFromValue: no variable found in value variant");
+        }
+
+        return variable;
     }
 
-    return variable;
-}
-
-   /**
+    /**
      * @brief Initializes a struct with field values
      *
      * This method handles the initialization of a struct by assigning values to each field.
@@ -890,35 +903,33 @@ std::shared_ptr<hlir::Variable> LLVM::getVariableFromValue(const std::shared_ptr
         llvm_utils::checkNotNull(currentFunction, "currentFunction", "structInit");
         llvm_utils::checkNotNull(structInit, "structInit", "structInit");
         llvm_utils::checkNotNull(variable, "variable", "structInit");
-        
+
         const auto structName = structInit->getStruct()->getName();
         const auto structType = getStructByName(structName);
         const auto structAlloca = findAllocaByName(currentFunction, variable->getRealName());
 
-        printf("Alloca: %s\n",variable->getRealName().c_str());
+        // printf("Alloca: %s\n", variable->getRealName().c_str());
 
         if (!structAlloca)
         {
-            throw LLVMException(llvm_utils::formatError("structInit", 
-                "Failed to find allocated variable for struct"));
+            throw LLVMException(llvm_utils::formatError("structInit", "Failed to find allocated variable for struct"));
         }
 
-        uint index = 0;
+        // uint index = 0;
         for (auto const &assign: structInit->getAssigns())
         {
             llvm_utils::checkNotNull(assign, "field assignment", "structInit");
             llvm_utils::checkNotNull(assign->getVariable(), "field variable", "structInit");
             llvm_utils::checkNotNull(assign->getVariable()->getVarType(), "field type", "structInit");
-            
+
             const auto fieldName = assign->getVariable()->getRealName();
             const auto sourceVar = getVariableFromValue(assign->getValue());
-            
+            const auto [index, _] = hlirContext->getStructByName(structName)->findVarByName(fieldName);
+
             // Get the value from the source variable and store it directly in the struct field
             llvm::Value *sourceValue = loadVariable(sourceVar, currentFunction);
             llvm::Value *field = builder.CreateStructGEP(structType, structAlloca, index, fieldName);
             builder.CreateStore(sourceValue, field);
-
-            index++;
         }
     }
 

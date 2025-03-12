@@ -136,7 +136,7 @@ namespace hlir
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx,
                                 const std::shared_ptr<Function> &currentFunction);
 
-        void createStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers,
+        void createStructAndField(IronParser::VariableQualifiedNameContext *identifiers,
                                   const std::shared_ptr<Function> &currentFunction, const std::string &value);
 
 
