@@ -37,9 +37,10 @@ public:
     RuleFunctionReturnType = 26, RuleFunctionArgs = 27, RuleFunctionArg = 28, 
     RuleFnsignature = 29, RuleFunctionCall = 30, RuleFunctionCallArgs = 31, 
     RuleFunctionCallArg = 32, RuleVarDeclaration = 33, RuleAssignment = 34, 
-    RuleStructInit = 35, RuleStructInitBody = 36, RuleVarAssignment = 37, 
-    RuleIfBlock = 38, RuleIfStatement = 39, RuleElseStatement = 40, RuleBoolExpr = 41, 
-    RuleExpr = 42, RuleNumber = 43, RuleDataFormat = 44, RuleVarTypes = 45
+    RuleStructInit = 35, RuleStructInitBody = 36, RuleVariableQualifiedName = 37, 
+    RuleVarAssignment = 38, RuleIfBlock = 39, RuleIfStatement = 40, RuleElseStatement = 41, 
+    RuleBoolExpr = 42, RuleExpr = 43, RuleNumber = 44, RuleDataFormat = 45, 
+    RuleVarTypes = 46
   };
 
   explicit IronParser(antlr4::TokenStream *input);
@@ -96,6 +97,7 @@ public:
   class AssignmentContext;
   class StructInitContext;
   class StructInitBodyContext;
+  class VariableQualifiedNameContext;
   class VarAssignmentContext;
   class IfBlockContext;
   class IfStatementContext;
@@ -721,7 +723,7 @@ public:
 
   class  AssignmentContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *anotherVarName = nullptr;
+    IronParser::VariableQualifiedNameContext *anotherVarName = nullptr;
     AssignmentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EQ();
@@ -731,10 +733,7 @@ public:
     FunctionCallContext *functionCall();
     ExprContext *expr();
     BoolExprContext *boolExpr();
-    std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
-    antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> DOT();
-    antlr4::tree::TerminalNode* DOT(size_t i);
+    VariableQualifiedNameContext *variableQualifiedName();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -784,22 +783,39 @@ public:
 
   StructInitBodyContext* structInitBody();
 
+  class  VariableQualifiedNameContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *base = nullptr;
+    antlr4::Token *identifierToken = nullptr;
+    std::vector<antlr4::Token *> rest;
+    VariableQualifiedNameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
+    antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> DOT();
+    antlr4::tree::TerminalNode* DOT(size_t i);
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  VariableQualifiedNameContext* variableQualifiedName();
+
   class  VarAssignmentContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *varName = nullptr;
+    IronParser::VariableQualifiedNameContext *varName = nullptr;
     antlr4::Token *anotherVarName = nullptr;
     VarAssignmentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EQ();
-    std::vector<antlr4::tree::TerminalNode *> IDENTIFIER();
-    antlr4::tree::TerminalNode* IDENTIFIER(size_t i);
+    VariableQualifiedNameContext *variableQualifiedName();
     ArrowFunctionInlineContext *arrowFunctionInline();
     FunctionCallContext *functionCall();
     StructInitContext *structInit();
     DataFormatContext *dataFormat();
     ExprContext *expr();
-    std::vector<antlr4::tree::TerminalNode *> DOT();
-    antlr4::tree::TerminalNode* DOT(size_t i);
+    antlr4::tree::TerminalNode *IDENTIFIER();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

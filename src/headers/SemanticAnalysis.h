@@ -91,7 +91,7 @@ namespace iron
                                                            const std::string &caretLine) const;
 
         std::pair<std::shared_ptr<scope::StructStemt>, std::shared_ptr<scope::Variable>>
-        getStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers);
+        getStructAndField(IronParser::VariableQualifiedNameContext *identifiers);
 
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
 
@@ -102,6 +102,32 @@ namespace iron
         std::pair<std::string, int> visitExpr(IronParser::ExprContext *ctx);
 
         void visitAssignment(IronParser::AssignmentContext *ctx);
+        void handleDataFormatAssignment(IronParser::AssignmentContext *ctx, uint line, const std::string &codeLine,
+                                        const std::string &caretLine) const;
+        void handleFunctionCallAssignment(IronParser::AssignmentContext *ctx, uint line, const std::string &codeLine,
+                                          const std::string &caretLine,
+                                          const std::shared_ptr<scope::Function> &currentFunction);
+        void handleAnotherVarNameAssignment(IronParser::AssignmentContext *ctx, uint line, const std::string &codeLine,
+                                            const std::string &caretLine,
+                                            const std::shared_ptr<scope::Function> &currentFunction);
+        void handleQualifiedNameAssignment(IronParser::AssignmentContext *ctx, uint line, const std::string &codeLine,
+                                           const std::string &caretLine, const std::string &varName,
+                                           const std::string &anotherVarName,
+                                           const std::shared_ptr<scope::Variable> &variable,
+                                           const std::shared_ptr<scope::Variable> &anotherVariable);
+        void handleFunctionAssignment(uint line, const std::string &codeLine, const std::string &caretLine,
+                                      const std::string &varName, const std::string &anotherVarName,
+                                      const std::shared_ptr<scope::Variable> &anotherVariable,
+                                      const std::shared_ptr<scope::Function> &currentFunction,
+                                      const std::shared_ptr<scope::Variable> &variable) const;
+        void handleVariableAssignment(uint line, const std::string &codeLine, const std::string &caretLine,
+                                      const std::string &varName, const std::string &varType,
+                                      const std::shared_ptr<scope::Variable> &variable,
+                                      const std::shared_ptr<scope::Variable> &anotherVariable) const;
+        void handleExprAssignment(IronParser::AssignmentContext *ctx, uint line, const std::string &codeLine,
+                                  const std::string &caretLine);
+        void handleBoolExprAssignment(IronParser::AssignmentContext *ctx, uint line, const std::string &codeLine,
+                                      const std::string &caretLine);
 
         void visitFunctionSignature(const IronParser::FunctionSignatureContext *ctx) const;
 

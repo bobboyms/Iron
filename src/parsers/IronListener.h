@@ -125,6 +125,9 @@ public:
   virtual void enterStructInitBody(IronParser::StructInitBodyContext *ctx) = 0;
   virtual void exitStructInitBody(IronParser::StructInitBodyContext *ctx) = 0;
 
+  virtual void enterVariableQualifiedName(IronParser::VariableQualifiedNameContext *ctx) = 0;
+  virtual void exitVariableQualifiedName(IronParser::VariableQualifiedNameContext *ctx) = 0;
+
   virtual void enterVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
   virtual void exitVarAssignment(IronParser::VarAssignmentContext *ctx) = 0;
 

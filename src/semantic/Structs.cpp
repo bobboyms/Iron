@@ -394,6 +394,7 @@ namespace iron
         {
             // Literal value initialization
             validateStructFieldValue(ctx, field);
+            field->initialized = true;
         }
         else if (ctx->anotherVarName)
         {
@@ -405,6 +406,7 @@ namespace iron
 
             validateStructFieldAssignment(fieldName, field, sourceVariable->type, "variable", sourceVarName, lineNumber,
                                     columnPosition);
+            field->initialized = true;
         }
         else if (ctx->functionCall())
         {
@@ -417,6 +419,7 @@ namespace iron
 
             // Process the function call
             visitFunctionCall(ctx->functionCall());
+            field->initialized = true;
         }
         else if (ctx->arrowFunctionInline())
         {
@@ -614,6 +617,7 @@ namespace iron
 
                 // Process the nested struct initialization with the correct struct type
                 visitStructInit(ctx->structInit(), field->structStemt);
+                field->initialized = true;
             }
             else
             {

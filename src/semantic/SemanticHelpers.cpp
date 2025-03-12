@@ -239,11 +239,11 @@ namespace iron
      * required.
      */
     std::pair<std::shared_ptr<scope::StructStemt>, std::shared_ptr<scope::Variable>>
-    SemanticAnalysis::getStructAndField(std::vector<antlr4::tree::TerminalNode *> identifiers)
+    SemanticAnalysis::getStructAndField(IronParser::VariableQualifiedNameContext* identifiers)
     {
         const auto function = getCurrentFunction();
         // We must have at least two identifiers: [struct, field] or [struct, field, nested_field, ...]
-        if (identifiers.size() < 2)
+        if (identifiers->rest.size() < 1)
         {
             throw std::invalid_argument(
                     util::format("Invalid struct field access: expected at least a struct name and field name.",
@@ -251,22 +251,23 @@ namespace iron
         }
 
         // Get the base struct name and prepare to traverse the hierarchy
-        std::string baseName = identifiers[0]->getText();
+        const auto rest = identifiers->rest;
+        const auto baseName = identifiers->base->getText();
 
         const auto baseVariable = function->findVarAllScopesAndArg(baseName);
         // Look up the initial struct in the scope
         if (!baseVariable->structStemt)
         {
             auto [codeLine, caretLine] = getCodeLineAndCaretLine(
-                    identifiers[0]->getSymbol()->getLine(), identifiers[0]->getSymbol()->getCharPositionInLine(), 0);
+                    rest[0]->getLine(), rest[0]->getCharPositionInLine(), 0);
 
             throw TypeNotFoundException(util::format(
-                    "Struct '%s' not defined.\n"
-                    "Line: %s, Scope: %s\n\n"
-                    "%s\n"
-                    "%s",
+                    "Struct '{}' not defined.\n"
+                    "Line: {}, Scope: {}\n\n"
+                    "{}\n"
+                    "{}",
                     color::colorText(baseName, color::BOLD_GREEN),
-                    color::colorText(std::to_string(identifiers[0]->getSymbol()->getLine()), color::YELLOW),
+                    color::colorText(std::to_string(rest[0]->getLine()), color::YELLOW),
                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
         }
 
@@ -276,9 +277,9 @@ namespace iron
         std::string accessPath = baseName;
 
         // Start from index 1 (first field after struct name)
-        for (size_t i = 1; i < identifiers.size(); i++)
+        for (size_t i = 0; i < rest.size(); i++)
         {
-            const std::string fieldName = identifiers[i]->getText();
+            const std::string fieldName = rest[i]->getText();
             accessPath += "." + fieldName;
 
             // Get the field from the current struct
@@ -287,8 +288,8 @@ namespace iron
             if (!field)
             {
                 auto [codeLine, caretLine] =
-                        getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
-                                                identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
+                        getCodeLineAndCaretLine(rest[i]->getLine(),
+                                                rest[i]->getCharPositionInLine(), 0);
 
                 throw FieldNotFoundException(util::format(
                         "Field '{}' not found in struct '{}'.\n"
@@ -297,15 +298,15 @@ namespace iron
                         "{}",
                         color::colorText(fieldName, color::BOLD_BLUE),
                         color::colorText(lastStruct->name, color::BOLD_GREEN),
-                        color::colorText(std::to_string(identifiers[i]->getSymbol()->getLine()), color::YELLOW),
+                        color::colorText(std::to_string(rest[i]->getLine()), color::YELLOW),
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
 
             if (!field->initialized)
             {
                 auto [codeLine, caretLine] =
-                        getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
-                                                identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
+                        getCodeLineAndCaretLine(rest[i]->getLine(),
+                                                rest[i]->getCharPositionInLine(), 0);
 
                 throw UninitializedFieldException(util::format(
                         "Field '{}' not initialized in struct '{}'.\n"
@@ -314,27 +315,27 @@ namespace iron
                         "{}",
                         color::colorText(fieldName, color::BOLD_BLUE),
                         color::colorText(lastStruct->name, color::BOLD_GREEN),
-                        color::colorText(std::to_string(identifiers[i]->getSymbol()->getLine()), color::YELLOW),
+                        color::colorText(std::to_string(rest[i]->getLine()), color::YELLOW),
                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine, caretLine));
             }
 
             // If this is not the last field in the chain, ensure it's a struct for further traversal
-            if (i < identifiers.size() - 1)
+            if (i < rest.size() -1)// -1
             {
                 if (field->type != tokenMap::STRUCT || !field->structStemt)
                 {
                     auto [codeLine, caretLine] =
-                            getCodeLineAndCaretLine(identifiers[i]->getSymbol()->getLine(),
-                                                    identifiers[i]->getSymbol()->getCharPositionInLine(), 0);
+                            getCodeLineAndCaretLine(rest[i]->getLine(),
+                                                    rest[i]->getCharPositionInLine(), 0);
 
                     throw TypeMismatchException(util::format(
-                            "Cannot access field '%s' as a struct: '%s' is not a struct type.\n"
-                            "Line: %s, Scope: %s\n\n"
-                            "%s\n"
-                            "%s",
-                            color::colorText(identifiers[i + 1]->getText(), color::BOLD_BLUE),
+                            "Cannot access field '{}' as a struct: '{}' is not a struct type.\n"
+                            "Line: {}, Scope: {}\n\n"
+                            "{}\n"
+                            "{}",
+                            color::colorText(rest[i]->getText(), color::BOLD_BLUE),
                             color::colorText(fieldName, color::BOLD_GREEN),
-                            color::colorText(std::to_string(identifiers[i]->getSymbol()->getLine()), color::YELLOW),
+                            color::colorText(std::to_string(rest[i]->getLine()), color::YELLOW),
                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
                             caretLine));
                 }

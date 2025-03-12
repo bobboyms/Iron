@@ -240,9 +240,9 @@ namespace hlir
 
         if (ctx->dataFormat())
         {
-            if (ctx->IDENTIFIER().size() > 1)
+            if (const auto restSize = ctx->variableQualifiedName()->rest.size(); restSize >= 1)
             {
-                createStructAndField(ctx->IDENTIFIER(), currentFunction, ctx->dataFormat()->getText());
+                createStructAndField(ctx->variableQualifiedName(), currentFunction, ctx->dataFormat()->getText());
             }
         }
 

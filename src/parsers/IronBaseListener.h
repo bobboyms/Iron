@@ -127,6 +127,9 @@ public:
   virtual void enterStructInitBody(IronParser::StructInitBodyContext * /*ctx*/) override { }
   virtual void exitStructInitBody(IronParser::StructInitBodyContext * /*ctx*/) override { }
 
+  virtual void enterVariableQualifiedName(IronParser::VariableQualifiedNameContext * /*ctx*/) override { }
+  virtual void exitVariableQualifiedName(IronParser::VariableQualifiedNameContext * /*ctx*/) override { }
+
   virtual void enterVarAssignment(IronParser::VarAssignmentContext * /*ctx*/) override { }
   virtual void exitVarAssignment(IronParser::VarAssignmentContext * /*ctx*/) override { }
 

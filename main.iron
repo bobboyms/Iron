@@ -1,15 +1,3 @@
-struct Cidade {
-            mut nome:string
-        }
-        struct Endereco {
-            mut rua:string,
-            cidade: Cidade
-        }
-        struct Pessoa {
-            mut name:string,
-            mut endereco: Endereco
-        }
-        fn main() {
-            mut let pessoa:Pessoa = {}
-            let rua:int = pessoa.endereco
+fn teste() {
+            let x:int = b
         }

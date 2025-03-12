@@ -240,7 +240,7 @@ varDeclaration:
 assignment:
 	EQ (
 		arrowFunctionInline
-		| anotherVarName = IDENTIFIER ('.' IDENTIFIER)*
+		| anotherVarName = variableQualifiedName
 		| dataFormat
 		| structInit
 		| functionCall
@@ -264,8 +264,12 @@ structInitBody:
     	)
 ;
 
+
+variableQualifiedName:
+    base=IDENTIFIER ('.' rest+=IDENTIFIER)*;
+
 varAssignment:
-	varName = IDENTIFIER ('.' IDENTIFIER)* EQ (
+	varName = variableQualifiedName EQ (
 		arrowFunctionInline
 		| functionCall
 		| structInit

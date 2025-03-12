@@ -22,13 +22,13 @@ namespace iron
     {
         // Fase 1: Coletar declarações de importações, estruturas e funções
         analyzeDeclarations();
-        
+
         // Fase 2: Analisar definições e implementações
         analyzeDefinitions();
 
         return scopeManager->getFunctionDeclarations();
     }
-    
+
     void SemanticAnalysis::analyzeDeclarations()
     {
         IronParser::ProgramContext *programContext = parser->program();
@@ -59,12 +59,12 @@ namespace iron
             }
         }
     }
-    
-    void SemanticAnalysis::analyzeDefinitions() 
+
+    void SemanticAnalysis::analyzeDefinitions()
     {
         parser->reset();
         const auto programContext = parser->program();
-        
+
         // Analisar implementações de estruturas
         for (const auto child: programContext->children)
         {
@@ -73,7 +73,7 @@ namespace iron
                 visitStructStatement(struct_);
             }
         }
-        
+
         // Analisar corpos de funções após todas as declarações
         for (const auto child: programContext->children)
         {
@@ -103,60 +103,60 @@ namespace iron
                 visitVarDeclaration(varDeclaration);
                 continue;
             }
-            
+
             // Chamadas de função
             if (const auto funcCall = dynamic_cast<IronParser::FunctionCallContext *>(child))
             {
                 visitFunctionCall(funcCall);
                 continue;
             }
-            
+
             // Atribuições de variável
             if (const auto varAssignment = dynamic_cast<IronParser::VarAssignmentContext *>(child))
             {
                 visitVarAssignment(varAssignment);
                 continue;
             }
-            
+
             // Expressões
             if (const auto expression = dynamic_cast<IronParser::ExprContext *>(child))
             {
                 visitExpr(expression);
                 continue;
             }
-            
+
             // Estruturas de controle de fluxo
             if (const auto whileLoop = dynamic_cast<IronParser::WhileStatementContext *>(child))
             {
                 visitWhileStatement(whileLoop);
                 continue;
             }
-            
+
             if (const auto forLoop = dynamic_cast<IronParser::ForStatementContext *>(child))
             {
                 visitForStatement(forLoop);
                 continue;
             }
-            
+
             if (const auto repeatLoop = dynamic_cast<IronParser::RepeatStatementContext *>(child))
             {
                 visitRepeatStatement(repeatLoop);
                 continue;
             }
-            
+
             if (const auto ifStatement = dynamic_cast<IronParser::IfStatementContext *>(child))
             {
                 visitIfStatement(ifStatement);
                 continue;
             }
-            
+
             // Comando de retorno
             if (const auto returnCtx = dynamic_cast<IronParser::ReturnStatementContext *>(child))
             {
                 visitReturn(returnCtx);
             }
         }
-        
+
         // Saindo do escopo local
         currentFunction->exitLocalScope();
     }
@@ -240,12 +240,12 @@ namespace iron
         }
     }
 
-    std::shared_ptr<scope::Variable> SemanticAnalysis::verifyVariableExists(const std::string &varName, uint line, uint col, 
-                                                              const std::string &contextInfo)
+    std::shared_ptr<scope::Variable> SemanticAnalysis::verifyVariableExists(const std::string &varName, uint line,
+                                                                            uint col, const std::string &contextInfo)
     {
         const auto function = getCurrentFunction();
         const auto variable = function->findVarAllScopesAndArg(varName);
-        
+
         if (!variable)
         {
             const auto context = getErrorContext(line, col, 0);
@@ -255,21 +255,19 @@ namespace iron
                     "{}\n"
                     "{}\n\n"
                     "{}",
-                    color::colorText(varName, color::BOLD_GREEN), 
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                    context.codeLine, context.caretLine,
+                    color::colorText(varName, color::BOLD_GREEN), color::colorText(std::to_string(line), color::YELLOW),
+                    color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine,
                     contextInfo));
         }
-        
+
         return variable;
     }
-    
+
     std::shared_ptr<scope::Function> SemanticAnalysis::verifyFunctionExists(const std::string &functionName,
                                                                             const uint line, const uint col) const
     {
         auto function = scopeManager->getFunctionDeclarationByName(functionName);
-        
+
         if (!function)
         {
             const auto context = getErrorContext(line, col, 0);
@@ -281,34 +279,34 @@ namespace iron
                     "Hint: Check for typos in the function name or import the module that contains this function.",
                     color::colorText(functionName, color::BOLD_GREEN),
                     color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(context.scopeName, color::BOLD_YELLOW),
-                    context.codeLine, context.caretLine));
+                    color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine));
         }
-        
+
         return function;
     }
-    
-    void SemanticAnalysis::verifyTypesMatch(const int typeA, const int typeB, const std::string &nameA, const std::string &nameB, const uint line, const uint col, const std::string &errorContextMsg) const
+
+    void SemanticAnalysis::verifyTypesMatch(const int typeA, const int typeB, const std::string &nameA,
+                                            const std::string &nameB, const uint line, const uint col,
+                                            const std::string &errorContextMsg) const
     {
         if (typeA != typeB)
         {
             const auto context = getErrorContext(line, col, 0);
-            throw TypeMismatchException(util::format(
-                    "{}: Cannot assign a value of type '{}' to '{}' of type '{}'.\n"
-                    "Line: {}, Scope: {}\n\n"
-                    "{}\n"
-                    "{}\n\n"
-                    "Hint: The types must match for assignment. Use the correct type or cast the value.",
-                    errorContextMsg,
-                    color::colorText(tokenMap::getTokenText(typeB), color::BOLD_BLUE),
-                    color::colorText(nameA, color::BOLD_GREEN),
-                    color::colorText(tokenMap::getTokenText(typeA), color::BOLD_GREEN),
-                    color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                    context.codeLine, context.caretLine));
+            throw TypeMismatchException(
+                    util::format("{}: Cannot assign a value of type '{}' to '{}' of type '{}'.\n"
+                                 "Line: {}, Scope: {}\n\n"
+                                 "{}\n"
+                                 "{}\n\n"
+                                 "Hint: The types must match for assignment. Use the correct type or cast the value.",
+                                 errorContextMsg, color::colorText(tokenMap::getTokenText(typeB), color::BOLD_BLUE),
+                                 color::colorText(nameA, color::BOLD_GREEN),
+                                 color::colorText(tokenMap::getTokenText(typeA), color::BOLD_GREEN),
+                                 color::colorText(std::to_string(line), color::YELLOW),
+                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+                                 context.codeLine, context.caretLine));
         }
     }
-    
+
     int SemanticAnalysis::determineValueType(const std::string &value)
     {
         if (value.front() == '"' && value.back() == '"')
@@ -339,10 +337,10 @@ namespace iron
         // Get error context with code line and caret line for error messages
         auto context = getErrorContext(line, col, 0);
         // Create local variables for backwards compatibility with existing code
-        const std::string& codeLine = context.codeLine;
-        const std::string& caretLine = context.caretLine;
+        const std::string &codeLine = context.codeLine;
+        const std::string &caretLine = context.caretLine;
 
-        const std::string varName = ctx->varName->getText();
+        const std::string varName = ctx->variableQualifiedName()->base->getText();
         const auto function = getCurrentFunction();
 
         // Use the helper function to verify if the variable exists
@@ -368,11 +366,11 @@ namespace iron
         // Handle assignment based on the type of value
         if (ctx->structInit())
         {
-            // Check if assigning to a struct field
-            if (ctx->IDENTIFIER().size() >= 1)
+
+            if (const auto restSize = ctx->variableQualifiedName()->rest.size(); restSize >= 1)
             {
                 // Handle nested struct field assignment
-                const auto [parentStructDef, field] = getStructAndField(ctx->IDENTIFIER());
+                const auto [parentStructDef, field] = getStructAndField(ctx->variableQualifiedName());
 
                 // Verify the field is mutable
                 if (!field->mut)
@@ -448,10 +446,10 @@ namespace iron
             // Handle literal values (numbers, strings, booleans)
             const std::string value = ctx->dataFormat()->getText();
 
-            if (ctx->IDENTIFIER().size() >= 1)
+            if (const auto restSize = ctx->variableQualifiedName()->rest.size(); restSize >= 1)
             {
                 // Handle struct field assignment
-                const auto [structDef, field] = getStructAndField(ctx->IDENTIFIER());
+                const auto [structDef, field] = getStructAndField(ctx->variableQualifiedName());
 
                 if (!field->mut)
                 {
@@ -690,407 +688,415 @@ namespace iron
     }
 
 
-    void SemanticAnalysis::visitAssignment(IronParser::AssignmentContext *ctx)
-    {
-        const uint line = ctx->getStart()->getLine();
-        const uint col = ctx->getStart()->getCharPositionInLine();
-
-        auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, 2);
-
-        const auto currentFunction = getCurrentFunction();
-
-        if (ctx->dataFormat())
-        {
-            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
-            {
-                const std::string varName = varDeclaration->varName->getText();
-                const std::string value = ctx->dataFormat()->getText();
-                const std::string varType = varDeclaration->varTypes()->getText();
-
-                if (tokenMap::determineType(value) == tokenMap::REAL_NUMBER)
-                {
-                    if (tokenMap::getTokenType(varType) != tokenMap::determineFloatType(value))
-                    {
-                        const auto valueType = tokenMap::getTokenText(tokenMap::determineFloatType(value));
-
-                        // Lançando exceção com a linha do código em destaque
-                        throw TypeMismatchException(util::format(
-                                "Type mismatch error: Cannot assign a float value '{}' to a variable of type '{}'.\n"
-                                "Line: {}, Scope: {}\n\n"
-                                "{}\n"
-                                "{}\n\n"
-                                "Hint: The float value's precision ({}) doesn't match the variable's type ({}). Use "
-                                "the correct type or cast the value.",
-                                color::colorText(value, color::BOLD_BLUE), color::colorText(varType, color::BOLD_GREEN),
-                                color::colorText(std::to_string(line), color::YELLOW),
-                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                caretLine, color::colorText(valueType, color::BOLD_BLUE),
-                                color::colorText(varType, color::BOLD_GREEN)));
-                    }
-                }
-                else
-                {
-                    if (tokenMap::getTokenType(varType) != tokenMap::determineType(value))
-                    {
-                        const auto valueType = tokenMap::getTokenText(tokenMap::determineType(value));
-
-                        throw TypeMismatchException(util::format(
-                                "Type mismatch error: Cannot assign a value of type '{}' to a variable of type '{}'.\n"
-                                "Line: {}, Scope: {}\n\n"
-                                "{}\n"
-                                "{}\n\n"
-                                "Hint: The literal '{}' (type: {}) cannot be assigned to variable '{}' (type: {}). Use "
-                                "the correct type or cast the value.",
-                                color::colorText(valueType, color::BOLD_BLUE),
-                                color::colorText(varType, color::BOLD_GREEN),
-                                color::colorText(std::to_string(line), color::YELLOW),
-                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                caretLine, color::colorText(value, color::BOLD_BLUE),
-                                color::colorText(valueType, color::BOLD_BLUE),
-                                color::colorText(varName, color::BOLD_GREEN),
-                                color::colorText(varType, color::BOLD_GREEN)));
-                    }
-                }
-            }
-        }
-
-        if (ctx->arrowFunctionInline())
-        {
-            visitArrowFunctionInline(ctx->arrowFunctionInline());
-        }
-
-        if (ctx->functionCall())
-        {
-
-            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
-            {
-                const std::string varName = varDeclaration->varName->getText();
-                const std::string varType = varDeclaration->varTypes()->getText();
-                const auto functionName = ctx->functionCall()->functionName->getText();
-
-                if (const auto variable = getCurrentFunction()->findVarAllScopesAndArg(functionName))
-                {
-
-                    if (variable->type == tokenMap::FUNCTION && !variable->function)
-                    {
-                        const auto arg = currentFunction->getArgByName(functionName);
-                        if (!arg || !arg->signature)
-                        {
-                            throw FunctionNotFoundException(
-                                    util::format("Function not found error: Function '{}' is not defined in current "
-                                                 "scope or standard library.\n"
-                                                 "Line: {}, Scope: {}\n\n"
-                                                 "{}\n"
-                                                 "{}\n\n"
-                                                 "Hint: Check for typos in the function name or import the module that "
-                                                 "contains this function.",
-                                                 color::colorText(functionName, color::BOLD_GREEN),
-                                                 color::colorText(std::to_string(line), color::YELLOW),
-                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                                 codeLine, caretLine));
-                        }
-
-                        if (arg->signature->getReturnType() != tokenMap::getTokenType(varType))
-                        {
-                            throw TypeMismatchException(util::format(
-                                    "Return type mismatch error: Cannot assign result of function '{}' to variable "
-                                    "'{}'.\n"
-                                    "Line: {}, Scope: {}\n\n"
-                                    "{}\n"
-                                    "{}\n\n"
-                                    "Hint: Function '{}' returns type '{}' but variable '{}' is of type '{}'. These "
-                                    "types are incompatible.",
-                                    color::colorText(functionName, color::BOLD_BLUE),
-                                    color::colorText(varName, color::BOLD_GREEN),
-                                    color::colorText(std::to_string(line), color::YELLOW),
-                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                    caretLine, color::colorText(functionName, color::BOLD_BLUE),
-                                    color::colorText(tokenMap::getTokenText(variable->function->getReturnType()),
-                                                     color::BOLD_BLUE),
-                                    color::colorText(varName, color::BOLD_GREEN),
-                                    color::colorText(varType, color::BOLD_GREEN)));
-                        }
-
-                        visitFunctionCall(ctx->functionCall());
-
-                        return;
-                    }
-
-                    if (!variable->function)
-                    {
-
-                        throw FunctionNotFoundException(
-                                util::format("Function {} not found.\n"
-                                             "Line: {}, Scope: {}\n\n"
-                                             "{}\n"
-                                             "{}\n",
-                                             color::colorText(functionName, color::BOLD_GREEN),
-                                             color::colorText(std::to_string(line), color::YELLOW),
-                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                             codeLine, caretLine));
-                    }
-
-                    if (variable->function->getReturnType() != tokenMap::getTokenType(varType))
-                    {
-                        throw TypeMismatchException(util::format(
-                                "The variable {} of type {} is incompatible with the function {} return of type {}.\n"
-                                "Line: {}, Scope: {}\n\n"
-                                "{}\n"
-                                "{}\n",
-                                color::colorText(varName, color::BOLD_GREEN),
-                                color::colorText(varType, color::BOLD_GREEN),
-                                color::colorText(functionName, color::BOLD_BLUE),
-                                color::colorText(tokenMap::getTokenText(variable->function->getReturnType()),
-                                                 color::BOLD_BLUE),
-                                color::colorText(std::to_string(line), color::YELLOW),
-                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                caretLine));
-                    }
-                }
-                else
-                {
-                    const auto function = scopeManager->getFunctionDeclarationByName(functionName);
-                    if (!function)
-                    {
-                        throw FunctionNotFoundException(
-                                util::format("Function {} not found.\n"
-                                             "Line: {}, Scope: {}\n\n"
-                                             "{}\n"
-                                             "{}\n",
-                                             color::colorText(functionName, color::BOLD_GREEN),
-                                             color::colorText(std::to_string(line), color::YELLOW),
-                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                             codeLine, caretLine));
-                    }
-
-                    if (function->getReturnType() != tokenMap::getTokenType(varType))
-                    {
-                        throw TypeMismatchException(util::format(
-                                "The variable {} of type {} is incompatible with the function {} return of type {}.\n"
-                                "Line: {}, Scope: {}\n\n"
-                                "{}\n"
-                                "{}\n",
-                                color::colorText(varName, color::BOLD_GREEN),
-                                color::colorText(varType, color::BOLD_GREEN),
-                                color::colorText(functionName, color::BOLD_BLUE),
-                                color::colorText(tokenMap::getTokenText(function->getReturnType()), color::BOLD_BLUE),
-                                color::colorText(std::to_string(line), color::YELLOW),
-                                color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                caretLine));
-                    }
-                }
-            }
-
-            visitFunctionCall(ctx->functionCall());
-        }
-
-        if (ctx->anotherVarName)
-        {
-            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
-            {
-                const std::string anotherVarName = ctx->anotherVarName->getText();
-                const std::string varName = varDeclaration->varName->getText();
-                const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
-
-                if (!varDeclaration->varTypes())
-                {
-                    const auto variable = currentFunction->findVarAllScopesAndArg(varName);
-                    if (!variable)
-                    {
-                        throw VariableNotFoundException(
-                                    util::format("Variable {} not found.\n"
-                                                 "Line: {}, Scope: {}\n\n"
-                                                 "{}\n"
-                                                 "{}\n",
-                                                 color::colorText(varName, color::BOLD_GREEN),
-                                                 color::colorText(std::to_string(line), color::YELLOW),
-                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                                 codeLine, caretLine));
-                    }
-
-                    if (!anotherVariable)
-                    {
-                        throw VariableNotFoundException(
-                                util::format("Variable {} not found.\n"
-                                             "Line: {}, Scope: {}\n\n"
-                                             "{}\n"
-                                             "{}\n",
-                                             color::colorText(anotherVarName, color::BOLD_GREEN),
-                                             color::colorText(std::to_string(line), color::YELLOW),
-                                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                             codeLine, caretLine));
-                    }
-
-                    if (ctx->IDENTIFIER().size() >= 1)
-                    {
-                        const auto [structStmt, field] = getStructAndField(ctx->IDENTIFIER());
-                        if (field->type != variable->type)
-                        {
-                            throw TypeMismatchException(util::format(
-                                    "The variable {} of type {} is incompatible with the field {} of type {}.\n"
-                                    "Line: {}, Scope: {}\n\n"
-                                    "{}\n"
-                                    "{}\n",
-                                    color::colorText(varName, color::BOLD_GREEN),
-                                    color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
-                                    color::colorText(field->name, color::BOLD_BLUE),
-                                    color::colorText(tokenMap::getTokenText(field->type), color::BOLD_BLUE),
-                                    color::colorText(std::to_string(line), color::YELLOW),
-                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                    caretLine));
-                        }
-
-                        if (field->structStemt->name != variable->structStemt->name)
-                        {
-                            throw TypeMismatchException(util::format(
-                                    "The variable {} of type {} is incompatible with the field {} of type {}.\n"
-                                    "Line: {}, Scope: {}\n\n"
-                                    "{}\n"
-                                    "{}\n",
-                                    color::colorText(varName, color::BOLD_GREEN),
-                                    color::colorText(variable->structStemt->name, color::BOLD_GREEN),
-                                    color::colorText(field->name, color::BOLD_BLUE),
-                                    color::colorText(field->structStemt->name, color::BOLD_BLUE),
-                                    color::colorText(std::to_string(line), color::YELLOW),
-                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                    caretLine));
-                        }
-                    }
-
-                    return;
-                }
-
-                const std::string varType = varDeclaration->varTypes()->getText();
-                if (tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
-                {
-                    std::shared_ptr<scope::Function> functionPtr;
-                    if (!anotherVariable)
-                    {
-                        const auto function = scopeManager->getFunctionDeclarationByName(anotherVarName);
-                        if (!function)
-                        {
-                            throw FunctionNotFoundException(
-                                    util::format("Function {} not found.\n"
-                                                 "Line: {}, Scope: {}\n\n"
-                                                 "{}\n"
-                                                 "{}\n",
-                                                 color::colorText(anotherVarName, color::BOLD_GREEN),
-                                                 color::colorText(std::to_string(line), color::YELLOW),
-                                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                                 codeLine, caretLine));
-                        }
-                        functionPtr = function;
-                    }
-                    else
-                    {
-                        if (!anotherVariable->function)
-                        {
-                            throw TypeMismatchException(util::format(
-                                    "The variable {} of type {} is incompatible with the variable {} of type {}.\n"
-                                    "Line: {}, Scope: {}\n\n"
-                                    "{}\n"
-                                    "{}\n",
-                                    color::colorText(varName, color::BOLD_GREEN),
-                                    color::colorText(varType, color::BOLD_GREEN),
-                                    color::colorText(anotherVariable->name, color::BOLD_BLUE),
-                                    color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
-                                    color::colorText(std::to_string(line), color::YELLOW),
-                                    color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                                    caretLine));
-                        }
-
-                        functionPtr = anotherVariable->function;
-                    }
-                    const auto variable = currentFunction->findVarAllScopesAndArg(varName);
-                    variable->function = functionPtr;
-                    return;
-                }
-
-                const auto variable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
-                if (!variable)
-                {
-                    throw VariableNotFoundException(
-                            util::format("Variable '{}' not found.\n"
-                                         "Line: {}, Scope: {}\n\n"
-                                         "{}\n"
-                                         "{}\n",
-                                         color::colorText(anotherVarName, color::BOLD_GREEN),
-                                         color::colorText(std::to_string(line), color::YELLOW),
-                                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
-                                         codeLine, caretLine));
-                }
-
-                if (variable->type != tokenMap::getTokenType(varType))
-                {
-
-                    throw TypeMismatchException(util::format(
-                            "The variable {} of type {} is incompatible with the variable {} of type {}.\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n"
-                            "{}\n",
-                            color::colorText(varName, color::BOLD_GREEN), color::colorText(varType, color::BOLD_GREEN),
-                            color::colorText(variable->name, color::BOLD_BLUE),
-                            color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                            caretLine));
-                }
-            }
-        }
-
-        if (ctx->expr())
-        {
-            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
-            {
-                const std::string varName = varDeclaration->varName->getText();
-                const std::string varType = varDeclaration->varTypes()->getText();
-
-                if (const auto [_, exprType] = visitExpr(ctx->expr()); exprType != tokenMap::getTokenType(varType))
-                {
-                    throw TypeMismatchException(util::format(
-                            "The variable {} of type {} is incompatible with the return of expression of type {}.\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n"
-                            "{}\n",
-                            color::colorText(varName, color::BOLD_GREEN), color::colorText(varType, color::BOLD_GREEN),
-                            color::colorText(tokenMap::getTokenText(exprType), color::BOLD_BLUE),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                            caretLine));
-                }
-            }
-        }
-
-        if (ctx->boolExpr())
-        {
-            if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
-            {
-                const std::string varName = varDeclaration->varName->getText();
-
-                if (const std::string varType = varDeclaration->varTypes()->getText();
-                    tokenMap::getTokenType(varType) != tokenMap::TYPE_BOOLEAN)
-                {
-                    throw TypeMismatchException(util::format(
-                            "The variable {} type need be {} to receive the value of a boolean expression\n"
-                            "Line: {}, Scope: {}\n\n"
-                            "{}\n"
-                            "{}\n",
-                            color::colorText(varName, color::BOLD_GREEN),
-                            color::colorText("boolean", color::BOLD_GREEN),
-                            color::colorText(std::to_string(line), color::YELLOW),
-                            color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
-                            caretLine));
-                }
-
-                visitBoolExpr(ctx->boolExpr());
-            }
-        }
-
-        if (ctx->structInit())
-        {
-            visitStructInit(ctx->structInit(), nullptr);
-        }
-    }
+    // void SemanticAnalysis::visitAssignment(IronParser::AssignmentContext *ctx)
+    // {
+    //     const uint line = ctx->getStart()->getLine();
+    //     const uint col = ctx->getStart()->getCharPositionInLine();
+    //
+    //     auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, 2);
+    //
+    //     const auto currentFunction = getCurrentFunction();
+    //
+    //     if (ctx->dataFormat())
+    //     {
+    //         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+    //         {
+    //             const std::string varName = varDeclaration->varName->getText();
+    //             const std::string value = ctx->dataFormat()->getText();
+    //             const std::string varType = varDeclaration->varTypes()->getText();
+    //
+    //             if (tokenMap::determineType(value) == tokenMap::REAL_NUMBER)
+    //             {
+    //                 if (tokenMap::getTokenType(varType) != tokenMap::determineFloatType(value))
+    //                 {
+    //                     const auto valueType = tokenMap::getTokenText(tokenMap::determineFloatType(value));
+    //
+    //                     // Lançando exceção com a linha do código em destaque
+    //                     throw TypeMismatchException(util::format(
+    //                             "Type mismatch error: Cannot assign a float value '{}' to a variable of type '{}'.\n"
+    //                             "Line: {}, Scope: {}\n\n"
+    //                             "{}\n"
+    //                             "{}\n\n"
+    //                             "Hint: The float value's precision ({}) doesn't match the variable's type ({}). Use "
+    //                             "the correct type or cast the value.",
+    //                             color::colorText(value, color::BOLD_BLUE), color::colorText(varType, color::BOLD_GREEN),
+    //                             color::colorText(std::to_string(line), color::YELLOW),
+    //                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                             caretLine, color::colorText(valueType, color::BOLD_BLUE),
+    //                             color::colorText(varType, color::BOLD_GREEN)));
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 if (tokenMap::getTokenType(varType) != tokenMap::determineType(value))
+    //                 {
+    //                     const auto valueType = tokenMap::getTokenText(tokenMap::determineType(value));
+    //
+    //                     throw TypeMismatchException(util::format(
+    //                             "Type mismatch error: Cannot assign a value of type '{}' to a variable of type '{}'.\n"
+    //                             "Line: {}, Scope: {}\n\n"
+    //                             "{}\n"
+    //                             "{}\n\n"
+    //                             "Hint: The literal '{}' (type: {}) cannot be assigned to variable '{}' (type: {}). Use "
+    //                             "the correct type or cast the value.",
+    //                             color::colorText(valueType, color::BOLD_BLUE),
+    //                             color::colorText(varType, color::BOLD_GREEN),
+    //                             color::colorText(std::to_string(line), color::YELLOW),
+    //                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                             caretLine, color::colorText(value, color::BOLD_BLUE),
+    //                             color::colorText(valueType, color::BOLD_BLUE),
+    //                             color::colorText(varName, color::BOLD_GREEN),
+    //                             color::colorText(varType, color::BOLD_GREEN)));
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     if (ctx->arrowFunctionInline())
+    //     {
+    //         visitArrowFunctionInline(ctx->arrowFunctionInline());
+    //     }
+    //
+    //     if (ctx->functionCall())
+    //     {
+    //
+    //         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+    //         {
+    //             const std::string varName = varDeclaration->varName->getText();
+    //             const std::string varType = varDeclaration->varTypes()->getText();
+    //             const auto functionName = ctx->functionCall()->functionName->getText();
+    //
+    //             if (const auto variable = getCurrentFunction()->findVarAllScopesAndArg(functionName))
+    //             {
+    //
+    //                 if (variable->type == tokenMap::FUNCTION && !variable->function)
+    //                 {
+    //                     const auto arg = currentFunction->getArgByName(functionName);
+    //                     if (!arg || !arg->signature)
+    //                     {
+    //                         throw FunctionNotFoundException(
+    //                                 util::format("Function not found error: Function '{}' is not defined in current "
+    //                                              "scope or standard library.\n"
+    //                                              "Line: {}, Scope: {}\n\n"
+    //                                              "{}\n"
+    //                                              "{}\n\n"
+    //                                              "Hint: Check for typos in the function name or import the module that "
+    //                                              "contains this function.",
+    //                                              color::colorText(functionName, color::BOLD_GREEN),
+    //                                              color::colorText(std::to_string(line), color::YELLOW),
+    //                                              color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                              codeLine, caretLine));
+    //                     }
+    //
+    //                     if (arg->signature->getReturnType() != tokenMap::getTokenType(varType))
+    //                     {
+    //                         throw TypeMismatchException(util::format(
+    //                                 "Return type mismatch error: Cannot assign result of function '{}' to variable "
+    //                                 "'{}'.\n"
+    //                                 "Line: {}, Scope: {}\n\n"
+    //                                 "{}\n"
+    //                                 "{}\n\n"
+    //                                 "Hint: Function '{}' returns type '{}' but variable '{}' is of type '{}'. These "
+    //                                 "types are incompatible.",
+    //                                 color::colorText(functionName, color::BOLD_BLUE),
+    //                                 color::colorText(varName, color::BOLD_GREEN),
+    //                                 color::colorText(std::to_string(line), color::YELLOW),
+    //                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                                 caretLine, color::colorText(functionName, color::BOLD_BLUE),
+    //                                 color::colorText(tokenMap::getTokenText(variable->function->getReturnType()),
+    //                                                  color::BOLD_BLUE),
+    //                                 color::colorText(varName, color::BOLD_GREEN),
+    //                                 color::colorText(varType, color::BOLD_GREEN)));
+    //                     }
+    //
+    //                     visitFunctionCall(ctx->functionCall());
+    //
+    //                     return;
+    //                 }
+    //
+    //                 if (!variable->function)
+    //                 {
+    //
+    //                     throw FunctionNotFoundException(
+    //                             util::format("Function {} not found.\n"
+    //                                          "Line: {}, Scope: {}\n\n"
+    //                                          "{}\n"
+    //                                          "{}\n",
+    //                                          color::colorText(functionName, color::BOLD_GREEN),
+    //                                          color::colorText(std::to_string(line), color::YELLOW),
+    //                                          color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                          codeLine, caretLine));
+    //                 }
+    //
+    //                 if (variable->function->getReturnType() != tokenMap::getTokenType(varType))
+    //                 {
+    //                     throw TypeMismatchException(util::format(
+    //                             "The variable {} of type {} is incompatible with the function {} return of type {}.\n"
+    //                             "Line: {}, Scope: {}\n\n"
+    //                             "{}\n"
+    //                             "{}\n",
+    //                             color::colorText(varName, color::BOLD_GREEN),
+    //                             color::colorText(varType, color::BOLD_GREEN),
+    //                             color::colorText(functionName, color::BOLD_BLUE),
+    //                             color::colorText(tokenMap::getTokenText(variable->function->getReturnType()),
+    //                                              color::BOLD_BLUE),
+    //                             color::colorText(std::to_string(line), color::YELLOW),
+    //                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                             caretLine));
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 const auto function = scopeManager->getFunctionDeclarationByName(functionName);
+    //                 if (!function)
+    //                 {
+    //                     throw FunctionNotFoundException(
+    //                             util::format("Function {} not found.\n"
+    //                                          "Line: {}, Scope: {}\n\n"
+    //                                          "{}\n"
+    //                                          "{}\n",
+    //                                          color::colorText(functionName, color::BOLD_GREEN),
+    //                                          color::colorText(std::to_string(line), color::YELLOW),
+    //                                          color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                          codeLine, caretLine));
+    //                 }
+    //
+    //                 if (function->getReturnType() != tokenMap::getTokenType(varType))
+    //                 {
+    //                     throw TypeMismatchException(util::format(
+    //                             "The variable {} of type {} is incompatible with the function {} return of type {}.\n"
+    //                             "Line: {}, Scope: {}\n\n"
+    //                             "{}\n"
+    //                             "{}\n",
+    //                             color::colorText(varName, color::BOLD_GREEN),
+    //                             color::colorText(varType, color::BOLD_GREEN),
+    //                             color::colorText(functionName, color::BOLD_BLUE),
+    //                             color::colorText(tokenMap::getTokenText(function->getReturnType()), color::BOLD_BLUE),
+    //                             color::colorText(std::to_string(line), color::YELLOW),
+    //                             color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                             caretLine));
+    //                 }
+    //             }
+    //         }
+    //
+    //         visitFunctionCall(ctx->functionCall());
+    //     }
+    //
+    //     if (ctx->anotherVarName)
+    //     {
+    //         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+    //         {
+    //             const std::string anotherVarName =
+    //                     ctx->variableQualifiedName()->base->getText(); // anotherVarName->getText();
+    //             const std::string varName = varDeclaration->varName->getText();
+    //             // printf("varName %s\n", varName.c_str());
+    //             // printf("anotherVarName %s\n", anotherVarName.c_str());
+    //             const auto anotherVariable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
+    //             const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+    //             const auto restSize = ctx->variableQualifiedName()->rest.size();
+    //
+    //             if (restSize > 0)
+    //             {
+    //                 if (!anotherVariable)
+    //                 {
+    //                     throw VariableNotFoundException(
+    //                             util::format("Variable {} not found.\n"
+    //                                          "Line: {}, Scope: {}\n\n"
+    //                                          "{}\n"
+    //                                          "{}\n",
+    //                                          color::colorText(anotherVarName, color::BOLD_GREEN),
+    //                                          color::colorText(std::to_string(line), color::YELLOW),
+    //                                          color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                          codeLine, caretLine));
+    //                 }
+    //
+    //                 if (anotherVariable->type == tokenMap::STRUCT)
+    //                 {
+    //
+    //                     if (const auto restSize = ctx->variableQualifiedName()->rest.size(); restSize >= 1)
+    //                     {
+    //                         const auto [structStmt, field] = getStructAndField(ctx->variableQualifiedName());
+    //                         if (field->type != variable->type)
+    //                         {
+    //                             throw TypeMismatchException(util::format(
+    //                                     "The variable {} of type {} is incompatible with the field {} of type {}.\n"
+    //                                     "Line: {}, Scope: {}\n\n"
+    //                                     "{}\n"
+    //                                     "{}\n",
+    //                                     color::colorText(varName, color::BOLD_GREEN),
+    //                                     color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_GREEN),
+    //                                     color::colorText(field->name, color::BOLD_BLUE),
+    //                                     color::colorText(tokenMap::getTokenText(field->type), color::BOLD_BLUE),
+    //                                     color::colorText(std::to_string(line), color::YELLOW),
+    //                                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                     codeLine, caretLine));
+    //                         }
+    //
+    //                         if (field->structStemt->name != variable->structStemt->name)
+    //                         {
+    //                             throw TypeMismatchException(util::format(
+    //                                     "The variable {} of type {} is incompatible with the field {} of type {}.\n"
+    //                                     "Line: {}, Scope: {}\n\n"
+    //                                     "{}\n"
+    //                                     "{}\n",
+    //                                     color::colorText(varName, color::BOLD_GREEN),
+    //                                     color::colorText(variable->structStemt->name, color::BOLD_GREEN),
+    //                                     color::colorText(field->name, color::BOLD_BLUE),
+    //                                     color::colorText(field->structStemt->name, color::BOLD_BLUE),
+    //                                     color::colorText(std::to_string(line), color::YELLOW),
+    //                                     color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                     codeLine, caretLine));
+    //                         }
+    //                     }
+    //
+    //                     return;
+    //                 }
+    //             }
+    //
+    //             const std::string varType = varDeclaration->varTypes()->getText();
+    //             if (tokenMap::getTokenType(varType) == tokenMap::FUNCTION)
+    //             {
+    //                 std::shared_ptr<scope::Function> functionPtr;
+    //                 if (!anotherVariable)
+    //                 {
+    //                     const auto function = scopeManager->getFunctionDeclarationByName(anotherVarName);
+    //                     if (!function)
+    //                     {
+    //                         throw FunctionNotFoundException(
+    //                                 util::format("Function {} not found.\n"
+    //                                              "Line: {}, Scope: {}\n\n"
+    //                                              "{}\n"
+    //                                              "{}\n",
+    //                                              color::colorText(anotherVarName, color::BOLD_GREEN),
+    //                                              color::colorText(std::to_string(line), color::YELLOW),
+    //                                              color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                              codeLine, caretLine));
+    //                     }
+    //                     functionPtr = function;
+    //                 }
+    //                 else
+    //                 {
+    //                     if (!anotherVariable->function)
+    //                     {
+    //                         throw TypeMismatchException(util::format(
+    //                                 "The variable {} of type {} is incompatible with the variable {} of type {}.\n"
+    //                                 "Line: {}, Scope: {}\n\n"
+    //                                 "{}\n"
+    //                                 "{}\n",
+    //                                 color::colorText(varName, color::BOLD_GREEN),
+    //                                 color::colorText(varType, color::BOLD_GREEN),
+    //                                 color::colorText(anotherVariable->name, color::BOLD_BLUE),
+    //                                 color::colorText(tokenMap::getTokenText(anotherVariable->type), color::BOLD_BLUE),
+    //                                 color::colorText(std::to_string(line), color::YELLOW),
+    //                                 color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                                 caretLine));
+    //                     }
+    //
+    //                     functionPtr = anotherVariable->function;
+    //                 }
+    //                 const auto variable = currentFunction->findVarAllScopesAndArg(varName);
+    //                 variable->function = functionPtr;
+    //                 return;
+    //             }
+    //
+    //             if (!anotherVariable)
+    //             {
+    //                 throw VariableNotFoundException(
+    //                         util::format("Variable {} not found.\n"
+    //                                      "Line: {}, Scope: {}\n\n"
+    //                                      "{}\n"
+    //                                      "{}\n",
+    //                                      color::colorText(anotherVarName, color::BOLD_GREEN),
+    //                                      color::colorText(std::to_string(line), color::YELLOW),
+    //                                      color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                      codeLine, caretLine));
+    //             }
+    //
+    //             // const auto variable = getCurrentFunction()->findVarAllScopesAndArg(anotherVarName);
+    //             if (!variable)
+    //             {
+    //                 throw VariableNotFoundException(
+    //                         util::format("Variable '{}' not found.\n"
+    //                                      "Line: {}, Scope: {}\n\n"
+    //                                      "{}\n"
+    //                                      "{}\n",
+    //                                      color::colorText(anotherVarName, color::BOLD_GREEN),
+    //                                      color::colorText(std::to_string(line), color::YELLOW),
+    //                                      color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW),
+    //                                      codeLine, caretLine));
+    //             }
+    //
+    //             if (variable->type != tokenMap::getTokenType(varType))
+    //             {
+    //
+    //                 throw TypeMismatchException(util::format(
+    //                         "The variable {} of type {} is incompatible with the variable {} of type {}.\n"
+    //                         "Line: {}, Scope: {}\n\n"
+    //                         "{}\n"
+    //                         "{}\n",
+    //                         color::colorText(varName, color::BOLD_GREEN), color::colorText(varType, color::BOLD_GREEN),
+    //                         color::colorText(variable->name, color::BOLD_BLUE),
+    //                         color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
+    //                         color::colorText(std::to_string(line), color::YELLOW),
+    //                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                         caretLine));
+    //             }
+    //         }
+    //     }
+    //
+    //     if (ctx->expr())
+    //     {
+    //         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+    //         {
+    //             const std::string varName = varDeclaration->varName->getText();
+    //             const std::string varType = varDeclaration->varTypes()->getText();
+    //
+    //             if (const auto [_, exprType] = visitExpr(ctx->expr()); exprType != tokenMap::getTokenType(varType))
+    //             {
+    //                 throw TypeMismatchException(util::format(
+    //                         "The variable {} of type {} is incompatible with the return of expression of type {}.\n"
+    //                         "Line: {}, Scope: {}\n\n"
+    //                         "{}\n"
+    //                         "{}\n",
+    //                         color::colorText(varName, color::BOLD_GREEN), color::colorText(varType, color::BOLD_GREEN),
+    //                         color::colorText(tokenMap::getTokenText(exprType), color::BOLD_BLUE),
+    //                         color::colorText(std::to_string(line), color::YELLOW),
+    //                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                         caretLine));
+    //             }
+    //         }
+    //     }
+    //
+    //     if (ctx->boolExpr())
+    //     {
+    //         if (const auto varDeclaration = dynamic_cast<IronParser::VarDeclarationContext *>(ctx->parent))
+    //         {
+    //             const std::string varName = varDeclaration->varName->getText();
+    //
+    //             if (const std::string varType = varDeclaration->varTypes()->getText();
+    //                 tokenMap::getTokenType(varType) != tokenMap::TYPE_BOOLEAN)
+    //             {
+    //                 throw TypeMismatchException(util::format(
+    //                         "The variable {} type need be {} to receive the value of a boolean expression\n"
+    //                         "Line: {}, Scope: {}\n\n"
+    //                         "{}\n"
+    //                         "{}\n",
+    //                         color::colorText(varName, color::BOLD_GREEN),
+    //                         color::colorText("boolean", color::BOLD_GREEN),
+    //                         color::colorText(std::to_string(line), color::YELLOW),
+    //                         color::colorText(scopeManager->currentScopeName(), color::BOLD_YELLOW), codeLine,
+    //                         caretLine));
+    //             }
+    //
+    //             visitBoolExpr(ctx->boolExpr());
+    //         }
+    //     }
+    //
+    //     if (ctx->structInit())
+    //     {
+    //         visitStructInit(ctx->structInit(), nullptr);
+    //     }
+    // }
 
     void SemanticAnalysis::visitReturn(IronParser::ReturnStatementContext *ctx)
     {
@@ -1122,19 +1128,19 @@ namespace iron
             validateReturnFunctionCall(ctx, currentFunction, line, col);
         }
     }
-    
+
     // Funções auxiliares para validação de retorno
-    
-    void SemanticAnalysis::validateReturnLiteral(IronParser::ReturnStatementContext *ctx, 
-                                                const std::shared_ptr<scope::Function> &currentFunction,
-                                                uint line, uint col)
+
+    void SemanticAnalysis::validateReturnLiteral(IronParser::ReturnStatementContext *ctx,
+                                                 const std::shared_ptr<scope::Function> &currentFunction, uint line,
+                                                 uint col)
     {
         // Get error context with code line and caret line for error messages
         auto context = getErrorContext(line, col, 0);
         // Create local variables for backwards compatibility with existing code
-        const std::string& codeLine = context.codeLine;
-        const std::string& caretLine = context.caretLine;
-        
+        const std::string &codeLine = context.codeLine;
+        const std::string &caretLine = context.caretLine;
+
         const auto value = ctx->dataFormat()->getText();
         auto valueType = tokenMap::determineType(value);
         if (valueType == tokenMap::REAL_NUMBER)
@@ -1147,7 +1153,8 @@ namespace iron
         {
             auto context = getErrorContext(line, col, 0);
             throw TypeMismatchException(util::format(
-                    "Return type mismatch error: Function '{}' returns type '{}' but attempting to return a value of type '{}'.\n"
+                    "Return type mismatch error: Function '{}' returns type '{}' but attempting to return a value of "
+                    "type '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
                     "{}\n\n"
@@ -1156,27 +1163,27 @@ namespace iron
                     color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
                     color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
                     color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                    context.codeLine, context.caretLine,
+                    color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine,
                     color::colorText(value, color::BOLD_BLUE),
                     color::colorText(tokenMap::getTokenText(valueType), color::BOLD_BLUE),
                     color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN)));
         }
     }
-    
-    void SemanticAnalysis::validateReturnVariable(IronParser::ReturnStatementContext *ctx, 
-                                                 const std::shared_ptr<scope::Function> &currentFunction,
-                                                 uint line, uint col)
+
+    void SemanticAnalysis::validateReturnVariable(IronParser::ReturnStatementContext *ctx,
+                                                  const std::shared_ptr<scope::Function> &currentFunction, uint line,
+                                                  uint col)
     {
         // Get error context with code line and caret line for error messages
         auto context = getErrorContext(line, col, 0);
         // Create local variables for backwards compatibility with existing code
-        const std::string& codeLine = context.codeLine;
-        const std::string& caretLine = context.caretLine;
-        
+        const std::string &codeLine = context.codeLine;
+        const std::string &caretLine = context.caretLine;
+
         const std::string varName = ctx->varName->getText();
-        const auto variable = verifyVariableExists(varName, line, col,
-                                                 "Hint: Check for typos in the variable name or declare the variable before using it.");
+        const auto variable = verifyVariableExists(
+                varName, line, col,
+                "Hint: Check for typos in the variable name or declare the variable before using it.");
 
         // Verificação especial para funções
         if (variable->type == tokenMap::FUNCTION)
@@ -1185,7 +1192,8 @@ namespace iron
             {
                 auto context = getErrorContext(line, col, 0);
                 throw TypeMismatchException(util::format(
-                        "Return type mismatch error: Function '{}' returns type '{}' but attempting to return a function variable '{}'.\n"
+                        "Return type mismatch error: Function '{}' returns type '{}' but attempting to return a "
+                        "function variable '{}'.\n"
                         "Line: {}, Scope: {}\n\n"
                         "{}\n"
                         "{}\n\n"
@@ -1194,8 +1202,7 @@ namespace iron
                         color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
                         color::colorText(variable->name, color::BOLD_BLUE),
                         color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                        context.codeLine, context.caretLine));
+                        color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine));
             }
         }
         // Verificação para variáveis normais
@@ -1203,7 +1210,8 @@ namespace iron
         {
             auto context = getErrorContext(line, col, 0);
             throw TypeMismatchException(util::format(
-                    "Return type mismatch error: Function '{}' returns type '{}' but attempting to return variable '{}' of type '{}'.\n"
+                    "Return type mismatch error: Function '{}' returns type '{}' but attempting to return variable "
+                    "'{}' of type '{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
                     "{}\n\n"
@@ -1213,28 +1221,28 @@ namespace iron
                     color::colorText(variable->name, color::BOLD_BLUE),
                     color::colorText(tokenMap::getTokenText(variable->type), color::BOLD_BLUE),
                     color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                    context.codeLine, context.caretLine));
+                    color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine));
         }
 
         currentFunction->updateReturnTokenStatusToFound();
     }
-    
-    void SemanticAnalysis::validateReturnExpression(IronParser::ReturnStatementContext *ctx, 
-                                                  const std::shared_ptr<scope::Function> &currentFunction,
-                                                  uint line, uint col)
+
+    void SemanticAnalysis::validateReturnExpression(IronParser::ReturnStatementContext *ctx,
+                                                    const std::shared_ptr<scope::Function> &currentFunction, uint line,
+                                                    uint col)
     {
         // Get error context with code line and caret line for error messages
         auto context = getErrorContext(line, col, 0);
         // Create local variables for backwards compatibility with existing code
-        const std::string& codeLine = context.codeLine;
-        const std::string& caretLine = context.caretLine;
+        const std::string &codeLine = context.codeLine;
+        const std::string &caretLine = context.caretLine;
 
         if (auto [_, typeExpr] = visitExpr(ctx->expr()); typeExpr != currentFunction->getReturnType())
         {
             auto context = getErrorContext(line, col, 0);
             throw TypeMismatchException(util::format(
-                    "Return type mismatch error: Function '{}' returns type '{}' but the expression returns type '{}'.\n"
+                    "Return type mismatch error: Function '{}' returns type '{}' but the expression returns type "
+                    "'{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
                     "{}\n\n"
@@ -1243,23 +1251,22 @@ namespace iron
                     color::colorText(tokenMap::getTokenText(currentFunction->getReturnType()), color::BOLD_GREEN),
                     color::colorText(tokenMap::getTokenText(typeExpr), color::BOLD_BLUE),
                     color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                    context.codeLine, context.caretLine));
+                    color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine));
         }
 
         currentFunction->updateReturnTokenStatusToFound();
     }
-    
-    void SemanticAnalysis::validateReturnFunctionCall(IronParser::ReturnStatementContext *ctx, 
-                                                    const std::shared_ptr<scope::Function> &currentFunction,
-                                                    uint line, uint col)
+
+    void SemanticAnalysis::validateReturnFunctionCall(IronParser::ReturnStatementContext *ctx,
+                                                      const std::shared_ptr<scope::Function> &currentFunction,
+                                                      uint line, uint col)
     {
         // Get error context with code line and caret line for error messages
         auto context = getErrorContext(line, col, 0);
         // Create local variables for backwards compatibility with existing code
-        const std::string& codeLine = context.codeLine;
-        const std::string& caretLine = context.caretLine;
-        
+        const std::string &codeLine = context.codeLine;
+        const std::string &caretLine = context.caretLine;
+
         const auto functionCallName = ctx->functionCall()->functionName->getText();
 
         // Verificar argumento de função como função
@@ -1270,7 +1277,8 @@ namespace iron
             {
                 auto context = getErrorContext(line, col, 0);
                 throw TypeMismatchException(util::format(
-                        "Return type mismatch error: Function '{}' returns type '{}' but function argument '{}' returns type '{}'.\n"
+                        "Return type mismatch error: Function '{}' returns type '{}' but function argument '{}' "
+                        "returns type '{}'.\n"
                         "Line: {}, Scope: {}\n\n"
                         "{}\n"
                         "{}\n\n"
@@ -1280,8 +1288,7 @@ namespace iron
                         color::colorText(functionCallName, color::BOLD_BLUE),
                         color::colorText(tokenMap::getTokenText(arg->signature->getReturnType()), color::BOLD_BLUE),
                         color::colorText(std::to_string(line), color::YELLOW),
-                        color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                        context.codeLine, context.caretLine));
+                        color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine));
             }
 
             visitFunctionCall(ctx->functionCall());
@@ -1296,7 +1303,8 @@ namespace iron
         {
             auto context = getErrorContext(line, col, 0);
             throw TypeMismatchException(util::format(
-                    "Return type mismatch error: Function '{}' returns type '{}' but called function '{}' returns type '{}'.\n"
+                    "Return type mismatch error: Function '{}' returns type '{}' but called function '{}' returns type "
+                    "'{}'.\n"
                     "Line: {}, Scope: {}\n\n"
                     "{}\n"
                     "{}\n\n"
@@ -1306,8 +1314,7 @@ namespace iron
                     color::colorText(functionCallName, color::BOLD_BLUE),
                     color::colorText(tokenMap::getTokenText(calledFunction->getReturnType()), color::BOLD_BLUE),
                     color::colorText(std::to_string(line), color::YELLOW),
-                    color::colorText(context.scopeName, color::BOLD_YELLOW), 
-                    context.codeLine, context.caretLine));
+                    color::colorText(context.scopeName, color::BOLD_YELLOW), context.codeLine, context.caretLine));
         }
 
         visitFunctionCall(ctx->functionCall());
