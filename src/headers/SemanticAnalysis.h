@@ -96,6 +96,24 @@ namespace iron
         void visitVarDeclaration(IronParser::VarDeclarationContext *ctx);
 
         void visitVarAssignment(IronParser::VarAssignmentContext *ctx);
+        void handleStructInitialization(IronParser::VarAssignmentContext *ctx,
+                                        const std::shared_ptr<scope::Variable> &variable, uint line, uint col,
+                                        const std::string &codeLine, const std::string &caretLine);
+        void handleAnotherVarAssignment(IronParser::VarAssignmentContext *ctx,
+                                        const std::shared_ptr<scope::Variable> &variable, uint line, uint col,
+                                        const std::string &codeLine, const std::string &caretLine);
+        void handleDataFormatAssignment(IronParser::VarAssignmentContext *ctx,
+                                        const std::shared_ptr<scope::Variable> &variable, uint line, uint col,
+                                        const std::string &codeLine, const std::string &caretLine);
+        void handleFunctionCallAssignment(IronParser::VarAssignmentContext *ctx,
+                                          const std::shared_ptr<scope::Variable> &variable, uint line, uint col,
+                                          const std::string &codeLine, const std::string &caretLine);
+        void handleArrowFunctionAssignment(IronParser::VarAssignmentContext *ctx,
+                                           const std::shared_ptr<scope::Variable> &variable, uint line, uint col,
+                                           const std::string &codeLine, const std::string &caretLine);
+        void handleExpressionAssignment(IronParser::VarAssignmentContext *ctx,
+                                        const std::shared_ptr<scope::Variable> &variable, uint line, uint col,
+                                        const std::string &codeLine, const std::string &caretLine);
 
         void visitImportStatement(IronParser::ImportStatementContext *ctx) const;
 
@@ -142,11 +160,26 @@ namespace iron
         void visitFunctionCallArgs(const IronParser::FunctionCallArgsContext *ctx);
 
         void visitFunctionCallArg(IronParser::FunctionCallArgContext *ctx);
+        void handleDataFormatFunctionArg(IronParser::FunctionCallArgContext *ctx,
+                                         const std::shared_ptr<scope::Function> &calledFunction,
+                                         const std::shared_ptr<scope::FunctionArg> &funcArg, const std::string &argName,
+                                         int line, const std::string &codeLine, const std::string &caretLine);
+        void handleAnotherVarFunctionArg(IronParser::FunctionCallArgContext *ctx,
+                                         const std::shared_ptr<scope::Function> &currentFunction,
+                                         const std::shared_ptr<scope::Function> &calledFunction,
+                                         const std::shared_ptr<scope::FunctionArg> &funcArg, const std::string &argName,
+                                         int line, int col, const std::string &codeLine,
+                                         const std::string &caretLine) const;
+        void handleNestedFunctionCallArg(IronParser::FunctionCallArgContext *ctx,
+                                         const std::shared_ptr<scope::Function> &currentFunction,
+                                         const std::shared_ptr<scope::Function> &calledFunction,
+                                         const std::shared_ptr<scope::FunctionArg> &funcArg, const std::string &argName,
+                                         int line, int col, const std::string &codeLine, const std::string &caretLine);
 
         static bool validateSignature(const std::shared_ptr<scope::Signature> &signature,
                                       const std::shared_ptr<scope::Function> &function);
 
-        std::shared_ptr<scope::Function> getCurrentFunction();
+        std::shared_ptr<scope::Function> getCurrentFunction() const;
 
         std::shared_ptr<scope::Function> visitArrowFunctionInline(IronParser::ArrowFunctionInlineContext *ctx);
 

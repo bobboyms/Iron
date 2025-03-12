@@ -7,61 +7,6 @@
 
 namespace iron
 {
-    void SemanticAnalysis::visitAssignment(IronParser::AssignmentContext *ctx)
-    {
-        const uint line = ctx->getStart()->getLine();
-        const uint col = ctx->getStart()->getCharPositionInLine();
-        auto [codeLine, caretLine] = getCodeLineAndCaretLine(line, col, 0);
-        const auto currentFunction = getCurrentFunction();
-
-        // Processa atribuição por literal ou formato de dado.
-        if (ctx->dataFormat())
-        {
-            handleDataFormatAssignment(ctx, line, codeLine, caretLine);
-            return;
-        }
-
-        // Processa funções inline (arrow functions).
-        if (ctx->arrowFunctionInline())
-        {
-            visitArrowFunctionInline(ctx->arrowFunctionInline());
-            return;
-        }
-
-        // Processa atribuição envolvendo chamada função.
-        if (ctx->functionCall())
-        {
-            handleFunctionCallAssignment(ctx, line, codeLine, caretLine, currentFunction);
-            return;
-        }
-
-        // Processa atribuição usando outro identificador (ex.: atribuição entre variáveis).
-        if (ctx->anotherVarName)
-        {
-            handleAnotherVarNameAssignment(ctx, line, codeLine, caretLine, currentFunction);
-            return;
-        }
-
-        // Processa atribuição por meio de expressão.
-        if (ctx->expr())
-        {
-            handleExprAssignment(ctx, line, codeLine, caretLine);
-            return;
-        }
-
-        // Processa atribuição via expressão booleana.
-        if (ctx->boolExpr())
-        {
-            handleBoolExprAssignment(ctx, line, codeLine, caretLine);
-            return;
-        }
-
-        // Processa inicialização de struct.
-        if (ctx->structInit())
-        {
-            visitStructInit(ctx->structInit(), nullptr);
-        }
-    }
 
     void SemanticAnalysis::handleDataFormatAssignment(IronParser::AssignmentContext *ctx, const uint line,
                                                       const std::string &codeLine, const std::string &caretLine) const
